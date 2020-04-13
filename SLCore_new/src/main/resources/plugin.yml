@@ -1,0 +1,10 @@
+author: SpleefLeague
+authors: [NickM13]
+description: SpleefLeague Core Plugin
+main: com.spleefleague.core.Core
+name: Core
+url: http://www.spleefleague.com/
+version: 1.0
+api-version: 1.13
+softdepend: [ProtocolLib]
+loadbefore: [Spleef, SuperJump]

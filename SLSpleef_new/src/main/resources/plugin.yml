@@ -1,0 +1,8 @@
+author: SpleefLeague
+authors: [NickM13]
+description: SpleefLeague Spleef Plugin
+main: com.spleefleague.spleef.Spleef
+name: Spleef
+url: http://www.spleefleague.com/
+version: 1.0
+api-version: 1.13
