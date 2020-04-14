@@ -20,12 +20,12 @@ public class Checkpoint implements DBVariable<Document> {
     // Expiration time in seconds
     protected Integer expireTime;
     
-    public Checkpoint(String warp, int duration) {
+    public Checkpoint(String warp, int seconds) {
         this.warp = warp;
-        if (duration == 0)
+        if (seconds == 0)
             this.expireTime = 0;
         else
-            this.expireTime = (int)(System.currentTimeMillis() / 1000) + duration;
+            this.expireTime = (int)(System.currentTimeMillis() / 1000) + seconds;
     }
     
     public Location getLocation() {

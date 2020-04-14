@@ -14,7 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
@@ -58,7 +57,7 @@ public class InventoryMenuEditor extends InventoryMenuContainer {
             
         }
         else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
-            InventoryMenuContainer menu = cp.getInventoryMenu();
+            InventoryMenuContainer menu = cp.getInventoryMenuContainer();
             InventoryMenuItem clicked = menu.getMenuItem(cp, e.getSlot());
             if (e.getSlot() < MENU_COUNT) {
                 InventoryMenuItem prevItem = this.getMenuItem(cp, e.getSlot());

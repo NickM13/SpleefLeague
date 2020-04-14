@@ -268,7 +268,7 @@ public class InventoryMenuContainer {
             e.setCancelled(true);
         }
         else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
-            InventoryMenuContainer menu = cp.getInventoryMenu();
+            InventoryMenuContainer menu = cp.getInventoryMenuContainer();
             InventoryMenuItem clicked = menu.getMenuItem(cp, e.getSlot());
             e.setCancelled(true);
             if (clicked != null &&
