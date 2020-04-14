@@ -88,7 +88,13 @@ public class Core extends CorePlugin<CorePlayer> {
         instance = this;
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
-        
+
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+
         initMongo();
         Credits.init();
         Rank.init();
@@ -100,15 +106,10 @@ public class Core extends CorePlugin<CorePlayer> {
         Tickets.init();
         InventoryMenuAPI.init();
         CorePlayerOptions.init();
-        
+
         // Initialize listeners
-        Bukkit.getPluginManager().registerEvents(new AfkListener(), this);
-        Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
-        Bukkit.getPluginManager().registerEvents(new ConnectionListener(), this);
-        Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
-        Bukkit.getPluginManager().registerEvents(new GameListener(), this);
-        Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
-        
+        initListeners();
+
         // Initialize manager
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
         commandManager = new CommandManager();
@@ -118,19 +119,19 @@ public class Core extends CorePlugin<CorePlayer> {
         initCommands();
         initMenu();
         initTabList();
-        
+
         Leaderboard.init();
-        
+
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (CorePlayer cp : getPlayers().getAll()) {
                 cp.updateArmorEffects();
             }
         }, 0L, 15L);
-        
+
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (CorePlayer cp : getPlayers().getAll()) {
                 cp.checkAfk();
-                cp.updateRank();
+                cp.checkTempRanks();
             }
             RequestManager.checkTimeouts();
         }, 0L, 60L);
@@ -157,6 +158,15 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public static Core getInstance() {
         return instance;
+    }
+
+    private void initListeners() {
+        Bukkit.getPluginManager().registerEvents(new AfkListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ConnectionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
+        Bukkit.getPluginManager().registerEvents(new GameListener(), this);
+        Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
     }
 
     private void initMongo() {
@@ -192,10 +202,11 @@ public class Core extends CorePlugin<CorePlayer> {
     }
     
     public void returnToWorld(CorePlayer cp1) {
-        if (cp1.isVanished())
+        if (cp1.isVanished()) {
             cp1.getPlayer().hidePlayer(Core.getInstance(), cp1.getPlayer());
-        else
+        } else {
             cp1.getPlayer().showPlayer(Core.getInstance(), cp1.getPlayer());
+        }
         // See and become visible to all players outside of games
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getAll()) {

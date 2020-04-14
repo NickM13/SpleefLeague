@@ -160,6 +160,9 @@ public class Warp {
         String a[] = name.split(":", 2);
         return warps.get(a[a.length-1].toLowerCase());
     }
+    public static Set<Warp> getWarps(String folder) {
+        return folders.get(folder);
+    }
     public static boolean setWarp(String name, Location loc) {
         String warpfolder = DEFAULT_FOLDER;
         String warpname = name;

@@ -10,8 +10,6 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -60,7 +58,7 @@ public class MenuListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent e) {
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getWhoClicked().getName());
         
-        if (cp.getInventoryMenu() != null) {
+        if (cp.getInventoryMenuContainer() != null) {
             e.setCancelled(true);
         }
     }
@@ -70,8 +68,8 @@ public class MenuListener implements Listener {
         if (e.getClickedInventory() == null) return;
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getWhoClicked().getName());
         
-        if (cp.getInventoryMenu() != null) {
-            cp.getInventoryMenu().onInventoryInteract(e, cp);
+        if (cp.getInventoryMenuContainer() != null) {
+            cp.getInventoryMenuContainer().onInventoryInteract(e, cp);
         } else if (e.getCurrentItem() != null && !cp.canBuild()) {
             e.setCancelled(true);
         }
