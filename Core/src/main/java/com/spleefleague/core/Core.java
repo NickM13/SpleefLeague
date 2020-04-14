@@ -89,6 +89,12 @@ public class Core extends CorePlugin<CorePlayer> {
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
 
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+        System.out.println("Core");
+
         initMongo();
         Credits.init();
         Rank.init();

@@ -71,10 +71,6 @@ import org.bukkit.util.Vector;
  */
 public class CorePlayer extends DBPlayer {
 
-    // Available permissions based on rank
-    //private static Map<UUID, PermissionAttachment> perms = new HashMap<>();
-
-    PermissionAttachment permissions;
     /**
      * Database variables
      */
@@ -141,6 +137,8 @@ public class CorePlayer extends DBPlayer {
     private final Set<CosmeticArmor> activeCosmetics = new HashSet<>();
     
     private Player replyPlayer = null;
+
+    private PermissionAttachment permissions;
 
     public CorePlayer() {
         super();
