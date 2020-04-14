@@ -14,9 +14,7 @@ import com.spleefleague.core.player.CorePlayer;
  * @author NickM13
  */
 public class Pet {
-    
-    
-    
+
     public Pet() {
         
     }
