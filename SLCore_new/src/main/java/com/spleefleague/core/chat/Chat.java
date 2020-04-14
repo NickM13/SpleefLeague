@@ -16,6 +16,7 @@ import org.bukkit.ChatColor;
 
 /**
  * @author NickM13
+ * jack_limestone wuz here
  */
 public class Chat {
 
