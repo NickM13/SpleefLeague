@@ -5,3 +5,5 @@ out/
 *.prefs
 *.classpath
 *.project
+*.bat
+Splegg/replacejar.xml
