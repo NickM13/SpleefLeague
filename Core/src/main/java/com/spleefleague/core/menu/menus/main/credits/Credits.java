@@ -35,14 +35,10 @@ public class Credits extends DBEntity {
         return credits;
     }
     
-    @DBField
-    private String uuid;
-    @DBField
-    private String role;
-    @DBField
-    private String description;
-    @DBField
-    private Integer slot;
+    @DBField private String uuid;
+    @DBField private String role;
+    @DBField private String description;
+    @DBField private Integer slot;
     
     public UUID getUuid() {
         return UUID.fromString(uuid);
