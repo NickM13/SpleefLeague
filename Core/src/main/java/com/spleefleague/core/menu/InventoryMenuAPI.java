@@ -158,6 +158,9 @@ public class InventoryMenuAPI {
         }
         return null;
     }
+    public static String getHotbarTag(ItemStack item) {
+        return InventoryMenuItemHotbar.getHotbarTag(item);
+    }
     
     public static void init() {
         hotbarItems.put(InvMenuType.SLMENU.name().toLowerCase(), (InventoryMenuItemHotbar) InvMenuType.SLMENU.create()

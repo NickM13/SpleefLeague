@@ -7,33 +7,40 @@
 package com.spleefleague.spleef.game;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.Point;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.spleef.Spleef;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bukkit.Location;
 
 /**
+ * Spleef Arenas are defined areas read from the Database
+ * used in Spleef Battles, containing a number of players,
+ * and the field of snow
+ *
  * @author NickM13
  */
 
 public class SpleefArena extends Arena {
-    /*
-    Spleef Arenas are the defined areas that a Spleef Battle
-    will take place in, containing the number of players, 
-    field size, world, and other variables
-    */
     
     protected SpleefField field;
     protected Point center = new Point();
-    
-    @DBLoad(fieldname="field")
+
+    /**
+     * Boxes that the snow is filled into
+     * ObjectId links to the SuperSpleef:Fields document
+     *
+     * @param id ObjectID
+     */
+    @DBLoad(fieldName="field")
     protected void loadSpleefField(ObjectId id) {
         field = SpleefField.getField(id);
         
@@ -44,13 +51,24 @@ public class SpleefArena extends Arena {
         }
         center = bbdim.getCenter();
     }
-    
+
+    /**
+     * Gets center of snow field (Used for facing players towards center)
+     *
+     * @return Center Point
+     */
     public Point getCenter() {
         return new Point(center.x, center.y, center.z);
     }
-    
+
+    /**
+     * Initialize all Spleef arenas from the SuperSpleef:Arenas database
+     * All Spleef arenas also attempt to load as Splegg arenas temporarily
+     * TODO: Move Splegg to its own *plugin?*
+     *
+     */
     public static void init() {
-        Iterator<Document> arenaTypes = Core.getInstance().getMongoClient().getDatabase("SuperSpleef").getCollection("Arenas").aggregate(Arrays.asList(
+        Iterator<Document> arenaTypes = Spleef.getInstance().getPluginDB().getCollection("Arenas").aggregate(Arrays.asList(
                 new Document("$unwind", new Document("path", "$spleefMode")),
                 new Document("$group", new Document("_id", "$spleefMode").append("arenas", new Document("$addToSet", "$$ROOT")))
         )).iterator();
@@ -64,15 +82,6 @@ public class SpleefArena extends Arena {
                 if (amount > 0) System.out.println("Loaded " + amount + " " + mode.getDisplayName() + " arenas.");
             } catch(IllegalArgumentException e) {
                 System.err.println(arenas.get("_id") + " is not a valid spleef mode.");
-            }
-            
-            try {
-                ArenaMode mode = SpleggMode.valueOf(arenas.get("_id", String.class)).getArenaMode();
-                int amount = 0;
-                amount = loadArenas(arenaInstances, mode);
-                if (amount > 0) System.out.println("Loaded " + amount + " " + mode.getDisplayName() + " arenas.");
-            } catch(IllegalArgumentException e) {
-                System.err.println(arenas.get("_id") + " is not a valid splegg mode.");
             }
         }
     }

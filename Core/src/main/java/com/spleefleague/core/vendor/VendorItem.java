@@ -6,11 +6,11 @@
 
 package com.spleefleague.core.vendor;
 
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.database.variable.DBEntity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -114,7 +114,7 @@ public class VendorItem extends DBEntity {
         }
     }
     
-    @DBLoad(fieldname="material")
+    @DBLoad(fieldName ="material")
     protected void loadMaterial(String str) {
         material = Material.getMaterial(str);
     }

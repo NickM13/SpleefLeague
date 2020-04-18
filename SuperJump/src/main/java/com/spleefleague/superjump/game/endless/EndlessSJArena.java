@@ -6,7 +6,7 @@
 
 package com.spleefleague.superjump.game.endless;
 
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.Leaderboard;
 import com.spleefleague.core.menu.InventoryMenuAPI;
@@ -73,7 +73,7 @@ public class EndlessSJArena extends SJArena {
                         .setName(arena.getDisplayName())
                         .setDescription(cp -> arena.getDescription())
                         .setDisplayItem(cp -> { return new ItemStack(Material.ENDER_EYE); })
-                        .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                        .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getArenaMode(), cp, arena))));
         
         SuperJump.getInstance().getSJMenuItem().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

@@ -6,9 +6,10 @@
 
 package com.spleefleague.superjump.commands;
 
-import com.spleefleague.core.command.CommandAnnotation;
-import com.spleefleague.core.command.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.command.annotation.LiteralArg;
+import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
@@ -17,7 +18,6 @@ import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.game.conquest.ConquestPack;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import javax.annotation.Nullable;
-import com.spleefleague.core.command.OptionArg;
 
 /**
  * @author NickM13

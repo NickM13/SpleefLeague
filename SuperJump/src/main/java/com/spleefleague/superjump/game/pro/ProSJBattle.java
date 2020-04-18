@@ -6,13 +6,12 @@
 
 package com.spleefleague.superjump.game.pro;
 
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.Point;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.superjump.game.Jumps.Jump;
 import com.spleefleague.superjump.game.SJBattle;
-import com.spleefleague.superjump.player.SuperJumpPlayer;
 import java.util.List;
 import org.bukkit.Material;
 
@@ -51,11 +50,11 @@ public class ProSJBattle extends SJBattle<ProSJArena> {
     }
     
     @Override
-    protected void winPlayer(SuperJumpPlayer sjp) {
+    protected void winPlayer(DBPlayer dbp) {
         //resetPlayers();
         //gameWorld.clear();
         //fillField();
-        
+
         nextJumpIndex++;
         if (nextJumpIndex < totalJumps) {
             FakeBlock fb;

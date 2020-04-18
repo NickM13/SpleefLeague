@@ -18,7 +18,7 @@ import org.bukkit.World;
  */
 public class LocationConverter {
 
-    public static Location load(List list) {
+    public static Location load(List<Object> list) {
         if (list == null || list.size() < 3) return null;
         
         double x = 0, y = 0, z = 0;
@@ -43,9 +43,9 @@ public class LocationConverter {
         return list.size() < 5 ? new Location(world, x, y, z) : new Location(world, x, y, z, pitch, yaw);
     }
 
-    public static List save(Location v) {
+    public static List<Object> save(Location v) {
         if (v == null) return null;
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<>();
         list.add(v.getX());
         list.add(v.getY());
         list.add(v.getZ());

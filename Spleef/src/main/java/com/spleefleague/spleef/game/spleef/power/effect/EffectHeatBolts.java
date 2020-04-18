@@ -6,10 +6,9 @@
 
 package com.spleefleague.spleef.game.spleef.power.effect;
 
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.world.projectile.FakeProjectile;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.spleef.game.SpleefBattle;
 import com.spleefleague.spleef.player.SpleefPlayer;
-import org.bukkit.entity.EntityType;
 
 /**
  * @author NickM13
@@ -42,15 +41,17 @@ public class EffectHeatBolts extends Effect {
     }
     
     @Override
-    public void updateEffect(SpleefPlayer sp) {
+    public void updateEffect(SpleefPlayer sp, SpleefBattle sb) {
         
     }
     
     @Override
-    public void activate(SpleefPlayer sp) {
+    public void activate(SpleefPlayer sp, SpleefBattle sb) {
+        /*
         for (int i = 0; i < count; i++) {
             //sp.getBattle().getGameWorld().shootProjectile(sp.getPlayer(), new FakeProjectile(EntityType.SNOWBALL, range, 0, power, true, 0, 0, spread));
         }
+        */
     }
     
 }

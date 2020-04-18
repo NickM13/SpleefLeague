@@ -23,6 +23,10 @@ public class FakeBlock {
         this.blockData = blockData;
     }
     
+    public ChunkCoord getChunkCoord() {
+        return new ChunkCoord(blockPosition.getX() / 16, blockPosition.getZ() / 16);
+    }
+    
     public BlockPosition getBlockPosition() {
         return blockPosition;
     }
@@ -35,8 +39,8 @@ public class FakeBlock {
         switch (blockData.getMaterial()) {
             case SNOW: case SNOW_BLOCK:
                 return Sound.BLOCK_SNOW_BREAK;
+            default: return Sound.ENTITY_DOLPHIN_DEATH;
         }
-        return null;
     }
     
 }

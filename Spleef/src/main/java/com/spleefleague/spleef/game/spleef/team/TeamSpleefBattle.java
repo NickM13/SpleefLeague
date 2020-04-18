@@ -6,22 +6,37 @@
 
 package com.spleefleague.spleef.game.spleef.team;
 
-import com.spleefleague.core.util.database.DBPlayer;
-import com.spleefleague.spleef.game.SpleefBattleTeam;
+import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.spleef.game.SpleefBattleTeamed;
 import java.util.List;
 
 /**
  * @author NickM13
  */
-public class TeamSpleefBattle extends SpleefBattleTeam {
+public class TeamSpleefBattle extends SpleefBattleTeamed {
     
-    public TeamSpleefBattle(List<DBPlayer> players, TeamSpleefArena arena) {
-        super(players, arena);
+    public TeamSpleefBattle(List<CorePlayer> players, TeamSpleefArena arena) {
+        super(players, arena, TeamSpleefBattlePlayer.class);
     }
-    
+
     @Override
-    protected void startBattle() {
-        super.startBattle();
+    protected void joinBattler(CorePlayer dbPlayer) {
+
     }
-    
+
+    @Override
+    protected void resetPlayer(CorePlayer dbPlayer) {
+
+    }
+
+    @Override
+    protected void endRound(BattlePlayer winner) {
+
+    }
+
+    @Override
+    protected void endBattle(BattlePlayer winner) {
+
+    }
 }

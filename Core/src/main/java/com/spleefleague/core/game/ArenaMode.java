@@ -13,6 +13,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Arena Mode defines a gamemode, named ArenaMode for lack of
+ * a better word since GameMode is already taken by Minecraft
+ *
+ * TODO: Better name
+ *
  * @author NickM13
  */
 public class ArenaMode {
@@ -34,9 +39,10 @@ public class ArenaMode {
     protected final Set<Integer> requiredTeamSizes;
     protected final boolean joinOngoing;
     protected final Class<? extends Arena> arenaClass;
-    protected final Class<? extends Battle> battleClass;
-    
-    protected ArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle> battleClass) {
+    protected final Class<? extends Battle<? extends Arena>> battleClass;
+
+    // TODO: Rework this, constructor is enormongo
+    protected ArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle<? extends Arena>> battleClass) {
         this.name = name;
         this.displayName = displayName;
         this.requiredTeams = requiredTeams;
@@ -48,7 +54,7 @@ public class ArenaMode {
         this.battleClass = battleClass;
     }
     
-    public static void addArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle> battleClass) {
+    public static void addArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle<? extends Arena>> battleClass) {
         arenaModes.put(name, new ArenaMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, arenaClass, battleClass));
     }
     public static ArenaMode getArenaMode(String name) {
@@ -79,7 +85,7 @@ public class ArenaMode {
     public String getRequiredTeamSizesString() {
         String formatted = "";
         for (Integer size : requiredTeamSizes) {
-            formatted += (!formatted.isEmpty() ? ", " : "") + size;
+            formatted = formatted.concat(!formatted.isEmpty() ? ", " : "") + size;
         }
         return formatted;
     }
@@ -96,7 +102,7 @@ public class ArenaMode {
         return arenaClass;
     }
     
-    public Class<? extends Battle> getBattleClass() {
+    public Class<? extends Battle<? extends Arena>> getBattleClass() {
         return battleClass;
     }
     

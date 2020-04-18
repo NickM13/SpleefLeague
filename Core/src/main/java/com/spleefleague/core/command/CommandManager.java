@@ -7,7 +7,7 @@
 package com.spleefleague.core.command;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.command.CommandTemplate;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -20,7 +20,7 @@ import org.bukkit.command.CommandMap;
  */
 public class CommandManager {
     
-    private ArrayList<CommandTemplate> commandsToRegister = new ArrayList<>();
+    private final ArrayList<CommandTemplate> commandsToRegister = new ArrayList<>();
     private CommandMap commandMap = null;
     
     public CommandManager() {

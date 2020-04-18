@@ -6,11 +6,9 @@
 
 package com.spleefleague.superjump.player;
 
+import com.spleefleague.core.database.variable.DBVariable;
 import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.util.Day;
-import com.spleefleague.core.util.database.DBVariable;
-import com.spleefleague.core.util.database.DatabaseUtil;
-import com.spleefleague.superjump.game.SJMode;
+import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.superjump.game.endless.EndlessSJArena;
 import org.bson.Document;
 

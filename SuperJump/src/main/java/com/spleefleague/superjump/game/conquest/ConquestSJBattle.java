@@ -8,7 +8,7 @@ package com.spleefleague.superjump.game.conquest;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.superjump.game.SJBattle;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import java.util.List;
@@ -23,25 +23,26 @@ public class ConquestSJBattle extends SJBattle<ConquestSJArena> {
     }
     
     @Override
-    protected void winPlayer(SuperJumpPlayer sjp) {
+    protected void winPlayer(DBPlayer dbp) {
+        SuperJumpPlayer sjp = (SuperJumpPlayer) dbp;
         double time = getRoundTime();
         switch (sjp.getConquestStats().tryNewTime(arena, time)) {
             case NEW:
-                Core.sendMessageToPlayer(sjp, "You've set a new score for "
+                Core.getInstance().sendMessage(sjp, "You've set a new score for "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time
                         + Chat.DEFAULT + ")");
                 break;
             case BEAT:
-                Core.sendMessageToPlayer(sjp, "You beat your previous score on "
+                Core.getInstance().sendMessage(sjp, "You beat your previous score on "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time
                         + Chat.DEFAULT + ")");
                 break;
             case NONE:
-                Core.sendMessageToPlayer(sjp, "You did not set any records on "
+                Core.getInstance().sendMessage(sjp, "You did not set any records on "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time

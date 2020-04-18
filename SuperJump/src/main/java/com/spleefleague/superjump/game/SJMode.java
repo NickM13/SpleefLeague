@@ -20,15 +20,13 @@ import com.spleefleague.superjump.game.versus.shuffle.*;
  */
 public enum SJMode {
     
-    CLASSIC(true),
-    SHUFFLE(true),
-    CONQUEST(true),
-    ENDLESS(true),
-    PARTY(true),
-    PRACTICE(true),
-    PRO(true);
-    
-    private final boolean queue;
+    CLASSIC,
+    SHUFFLE,
+    CONQUEST,
+    ENDLESS,
+    PARTY,
+    PRACTICE,
+    PRO;
     
     public static void init() {
         ArenaMode.addArenaMode("SJ_CLASSIC", "SuperJump: Classic", 2, 2, ArenaMode.TeamStyle.MULTI_STATIC, false, ClassicSJArena.class, ClassicSJBattle.class);
@@ -39,17 +37,9 @@ public enum SJMode {
         ArenaMode.addArenaMode("SJ_PRACTICE", "SuperJump: Practice", 1, 1, ArenaMode.TeamStyle.SOLO, false, PracticeSJArena.class, PracticeSJBattle.class);
         ArenaMode.addArenaMode("SJ_PRO", "SuperJump: Pro", 1, 1, ArenaMode.TeamStyle.SOLO, false, ProSJArena.class, ProSJBattle.class);
     }
-    
-    private SJMode(boolean queue) {
-        this.queue = queue;
-    }
-    
+
     public ArenaMode getArenaMode() {
         return ArenaMode.getArenaMode("SJ_" + this.name());
-    }
-    
-    public boolean hasQueue() {
-        return queue;
     }
     
 }

@@ -7,16 +7,12 @@
 package com.spleefleague.spleef.commands;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.command.CommandAnnotation;
-import com.spleefleague.core.command.HelperArg;
-import com.spleefleague.core.command.LiteralArg;
-import com.spleefleague.core.command.OptionArg;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
 import com.spleefleague.core.request.ConsoleRequest;
-import com.spleefleague.core.request.Request;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.Shovel;

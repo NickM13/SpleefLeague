@@ -36,11 +36,11 @@ public class PowerSpleefArena extends SpleefArena {
         menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), Spleef.getInstance().getPlayers().get(cp))));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), cp)));
         
         getArenas(SpleefMode.POWER.getArenaMode()).forEach((String s, Arena arena) -> {
             menuItem.getLinkedContainer().addMenuItem(arena.createMenu((cp -> {
-                Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), Spleef.getInstance().getPlayers().get(cp), arena);
+                Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), cp, arena);
             })));
         });
         

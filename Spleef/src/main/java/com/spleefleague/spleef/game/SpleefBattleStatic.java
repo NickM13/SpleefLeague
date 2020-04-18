@@ -8,54 +8,56 @@ package com.spleefleague.spleef.game;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.database.DBPlayer;
-import com.spleefleague.spleef.player.SpleefPlayer;
+import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.spleef.game.spleef.SpleefBattlePlayer;
+
 import java.util.List;
 
 /**
  * @author NickM13
  */
-public class SpleefBattleStatic extends SpleefBattle {
+public abstract class SpleefBattleStatic extends SpleefBattle {
 
-    public SpleefBattleStatic(List<DBPlayer> players, SpleefArena arena) {
-        super(players, arena);
+    public SpleefBattleStatic(List<CorePlayer> players,
+                              SpleefArena arena,
+                              Class<? extends BattlePlayer> battlePlayerClass) {
+        super(players, arena, battlePlayerClass);
     }
-    
+
     @Override
-    protected void sendStartMessage() {
-        Core.getInstance().sendMessage("A " +
-                Chat.GAMEMODE + getMode().getDisplayName() + " " +
-                Chat.DEFAULT + "match between " +
-                playersFormatted +
-                Chat.DEFAULT + " has begun on " +
-                Chat.GAMEMAP + arena.getDisplayName());
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (int i = 0; i < sortedBattlers.size(); i++) {
+            ((SpleefBattlePlayer) sortedBattlers.get(i)).setSpawn(arena.getSpawns().get(i));
+        }
     }
-    
+
     @Override
-    protected void startBattle() {
-        chatGroup.addTeam("PlayTo", Chat.SCORE + "PlayTo: " + playToPoints);
-        //chatGroup.setTeamDisplayName("PlayTo", "PlayTo: " + playToPoints);
-        super.startBattle();
-    }
-    
+    protected abstract void sendStartMessage();
+
     @Override
-    public boolean surrender(SpleefPlayer sp) {
-        if (battlers.containsKey(sp)) {
+    protected abstract void applyEloChange(BattlePlayer winner);
+
+    @Override
+    public void surrender(CorePlayer cp) {
+        if (battlers.containsKey(cp)) {
             if (battlers.size() <= 1) {
-                Core.getInstance().sendMessage(Chat.PLAYER_NAME + sp.getDisplayName() +
+                Core.getInstance().sendMessage(Chat.PLAYER_NAME + cp.getDisplayName() +
                         Chat.DEFAULT + " has surrendered");
                 endBattle();
-                return true;
             } else {
-                BattlePlayer winner = (BattlePlayer) (battlers.keySet().toArray()[0].equals(sp) ? battlers.values().toArray()[1] : battlers.values().toArray()[0]);
-                endBattle(winner);
-                Core.getInstance().sendMessage(Chat.PLAYER_NAME + sp.getDisplayName() +
+                SpleefBattlePlayer winner = (SpleefBattlePlayer) (battlers.keySet().toArray()[0].equals(cp)
+                        ? battlers.values().toArray()[1]
+                        : battlers.values().toArray()[0]);
+                endBattle();
+                /*
+                Core.getInstance().sendMessage(Chat.PLAYER_NAME + dbp.getDisplayName() +
                         Chat.DEFAULT + " has surrendered to " +
                         Chat.PLAYER_NAME + winner.player.getDisplayName());
+                */
             }
-            return true;
         }
-        return false;
     }
 
 }

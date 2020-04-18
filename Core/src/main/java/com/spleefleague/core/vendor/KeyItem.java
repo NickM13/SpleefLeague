@@ -8,7 +8,7 @@ package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

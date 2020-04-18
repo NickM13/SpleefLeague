@@ -1,0 +1,5 @@
+<project name="Replace Jar" default="replacejar" basedir=".">
+    <target name="replacejar">
+        <exec executable="replacejar.bat"/>
+    </target>
+</project>

@@ -6,9 +6,9 @@
 
 package com.spleefleague.superjump.game;
 
-import com.spleefleague.core.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.util.Dimension;
+import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.superjump.SuperJump;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,7 +22,7 @@ public class SJArena extends Arena {
     
     protected List<Dimension> goals = new ArrayList<>();
     
-    @DBLoad(fieldname="goals")
+    @DBLoad(fieldName="goals")
     protected void setGoals(List<Document> goalList) {
         goalList.forEach(g -> {
             Dimension dim = new Dimension();

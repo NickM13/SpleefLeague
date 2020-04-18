@@ -6,17 +6,17 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.core.annotation.DBField;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.Day;
-import com.spleefleague.core.util.database.DBPlayer;
-import com.spleefleague.superjump.game.SJBattle;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.superjump.game.SJMode;
 
 /**
  * @author NickM13
  */
-public class SuperJumpPlayer extends DBPlayer<SJBattle> {
+public class SuperJumpPlayer extends DBPlayer {
     
     @DBField
     protected Integer points;
@@ -43,7 +43,12 @@ public class SuperJumpPlayer extends DBPlayer<SJBattle> {
         endlessStats.setPlayer(this);
         conquestStats.setPlayer(this);
     }
-    
+
+    @Override
+    public void close() {
+
+    }
+
     public int getPoints() {
         return points;
     }
@@ -69,5 +74,28 @@ public class SuperJumpPlayer extends DBPlayer<SJBattle> {
         dbp.getPlayer().sendMessage(Chat.DEFAULT + "[" + Chat.GAMEMODE + SJMode.ENDLESS.getArenaMode().getDisplayName() + Chat.DEFAULT + "]: " +
                 Chat.ELO + endlessStats.getHighestLevel());
     }
-    
+
+    /**
+     * Get the elo of a player in a certain mode
+     * Warning: Not cross-dbplayer compatible, Elos are saved
+     * in plugin specific variables and database
+     *
+     * @param arenaMode ArenaMode
+     * @return Elo
+     */
+    @Override
+    public int getRating(ArenaMode arenaMode) {
+        return 0;
+    }
+
+    @Override
+    public void addRating(ArenaMode arenaMode, int i) {
+
+    }
+
+    @Override
+    public String getDisplayElo(ArenaMode arenaMode) {
+        return null;
+    }
+
 }

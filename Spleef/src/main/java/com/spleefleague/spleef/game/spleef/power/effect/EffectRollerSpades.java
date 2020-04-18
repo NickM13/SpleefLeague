@@ -7,7 +7,8 @@
 package com.spleefleague.spleef.game.spleef.power.effect;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.spleef.game.SpleefBattle;
 import com.spleefleague.spleef.player.SpleefPlayer;
 
 /**
@@ -39,18 +40,18 @@ public class EffectRollerSpades extends Effect {
     }
     
     @Override
-    public void updateEffect(SpleefPlayer sp) {
+    public void updateEffect(SpleefPlayer sp, SpleefBattle sb) {
         if (System.currentTimeMillis() < expireTime) {
             BlockPosition pos = new BlockPosition(sp.getPlayer().getLocation().clone().add(0, -0.05, 0).toVector());
             if (!prevBlock.equals(pos)) {
-                sp.getBattle().chipBlock(prevBlock, 2);
+                sb.chipBlock(prevBlock, 2);
                 prevBlock = pos;
             }
         }
     }
     
     @Override
-    public void activate(SpleefPlayer sp) {
+    public void activate(SpleefPlayer sp, SpleefBattle sb) {
         prevBlock = new BlockPosition(sp.getPlayer().getLocation().clone().add(0, -0.05, 0).toVector());
         expireTime = System.currentTimeMillis() + (long) (duration * 1000);
     }

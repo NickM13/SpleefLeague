@@ -2,15 +2,15 @@ package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
-import com.spleefleague.core.annotation.DBSave;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.menu.InventoryMenuEditor;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.database.variable.DBEntity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -267,11 +267,11 @@ public class Vendor extends DBEntity {
                         .setDisplayItem(vendorItem.getItem())
                         .setAction(cp2 -> {
                             if (vendorItem.isUnlocked(cp)) {
-                                Core.sendMessageToPlayer(cp, "You already own that!");
+                                Core.getInstance().sendMessage(cp, "You already own that!");
                             } else if (vendorItem.isPurchaseable(cp)) {
                                 vendorItem.purchase(cp);
                             } else {
-                                Core.sendMessageToPlayer(cp, "You can't buy that!");
+                                Core.getInstance().sendMessage(cp, "You can't buy that!");
                             }
                         }), item.getKey());
             } else {
@@ -286,7 +286,7 @@ public class Vendor extends DBEntity {
         return menu;
     }
     
-    @DBLoad(fieldname="items")
+    @DBLoad(fieldName ="items")
     protected void loadItems(List<Document> items) {
         for (Document doc : items) {
             int slot = doc.get("slot", Integer.class);
@@ -295,7 +295,7 @@ public class Vendor extends DBEntity {
             this.items.put(slot, new SimpleVendorItem(type, id));
         }
     }
-    @DBSave(fieldname="items")
+    @DBSave(fieldName ="items")
     protected List<Document> saveItems() {
         List<Document> docs = new ArrayList<>();
         for (Map.Entry<Integer, SimpleVendorItem> item : items.entrySet()) {

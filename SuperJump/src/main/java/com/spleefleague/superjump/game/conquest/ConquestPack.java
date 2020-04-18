@@ -7,11 +7,11 @@
 package com.spleefleague.superjump.game.conquest;
 
 import com.mongodb.client.MongoCursor;
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.util.database.DBEntity;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
@@ -90,7 +90,7 @@ public class ConquestPack extends DBEntity {
                             default: return InventoryMenuAPI.createCustomItem(Material.DIAMOND_AXE, 19);
                         }
                         }))
-                    .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CONQUEST.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena));
+                    .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CONQUEST.getArenaMode(), cp, arena));
         }
         
         return menu;

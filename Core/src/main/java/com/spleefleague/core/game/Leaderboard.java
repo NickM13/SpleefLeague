@@ -10,11 +10,11 @@ import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.core.util.Day;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.util.variable.Day;
+import com.spleefleague.core.database.variable.DBEntity;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,12 +27,17 @@ import org.bson.Document;
 import org.bukkit.inventory.ItemStack;
 
 /**
+ * All leaderboards are stored in the Core database Leaderboard collection
+ *
+ * Leaderboards contain a set of players in order defined
+ * by their points
+ *
  * @author NickM13
  */
 public class Leaderboard extends DBEntity {
     
-    private static Map<String, Leaderboard> leaderboards = new TreeMap<>();
-    private static MongoCollection lbCollection = null;
+    private static final Map<String, Leaderboard> LEADERBOARDS = new TreeMap<>();
+    private static MongoCollection<Document> lbCollection = null;
     
     public static void init() {
         lbCollection = Core.getInstance().getPluginDB().getCollection("Leaderboards");
@@ -45,19 +50,19 @@ public class Leaderboard extends DBEntity {
             leaderboard.load(doc);
         }
         leaderboard.checkResetDay();
-        leaderboards.put(name, leaderboard);
+        LEADERBOARDS.put(name, leaderboard);
     }
     
     public static Leaderboard getLeaderboard(String name) {
-        if (leaderboards.containsKey(name))
-            return leaderboards.get(name);
+        if (LEADERBOARDS.containsKey(name))
+            return LEADERBOARDS.get(name);
         return null;
     }
     public static Map<String, Leaderboard> getLeaderboards() {
-        return leaderboards;
+        return LEADERBOARDS;
     }
     public static Set<String> getLeaderboardNames() {
-        return leaderboards.keySet();
+        return LEADERBOARDS.keySet();
     }
     public static Set<String> getLeaderboardStyles() {
         return CoreUtils.enumToSet(LeaderboardStyle.class);
@@ -66,7 +71,7 @@ public class Leaderboard extends DBEntity {
     public static void close() {
         if (lbCollection == null) return;
         
-        for (HashMap.Entry<String, Leaderboard> lb : leaderboards.entrySet()) {
+        for (HashMap.Entry<String, Leaderboard> lb : LEADERBOARDS.entrySet()) {
             Document doc = lb.getValue().save();
             if (lbCollection.find(new Document("name", lb.getValue().getName())).first() != null) {
                 lbCollection.replaceOne(new Document("name", lb.getValue().getName()), doc);
@@ -76,25 +81,25 @@ public class Leaderboard extends DBEntity {
         }
     }
     public static void refreshPlayer(String name, UUID player) {
-        leaderboards.get(name).updatePlayer(player);
+        LEADERBOARDS.get(name).updatePlayer(player);
     }
     public static UUID getLeadingPlayer(String name) {
-        return leaderboards.get(name).first();
+        return LEADERBOARDS.get(name).first();
     }
     public static String getLeadingPlayerName(String name) {
-        UUID player = leaderboards.get(name).first();
+        UUID player = LEADERBOARDS.get(name).first();
         return player != null ? Core.getInstance().getPlayers().getOffline(player).getDisplayName() : "No Lead";
     }
     public static int getLeadingPlayerScore(String name) {
-        UUID player = leaderboards.get(name).first();
-        return player != null ? Core.getInstance().getPlayers().getOffline(leaderboards.get(name).first()).getScore(name) : 0;
+        UUID player = LEADERBOARDS.get(name).first();
+        return player != null ? Core.getInstance().getPlayers().getOffline(LEADERBOARDS.get(name).first()).getScore(name) : 0;
     }
     public static int getPlace(String name, UUID player) {
-        return leaderboards.get(name).getPlaceOf(player);
+        return LEADERBOARDS.get(name).getPlaceOf(player);
     }
     public static void setPlayerScore(String name, UUID player, int score) {
         Core.getInstance().getPlayers().get(player).setScore(name, score);
-        leaderboards.get(name).updatePlayer(player);
+        LEADERBOARDS.get(name).updatePlayer(player);
     }
     /** 
      * Only sets player score if its higher than their previous best
@@ -105,9 +110,12 @@ public class Leaderboard extends DBEntity {
      */
     public static void checkPlayerScore(String name, UUID player, int score) {
         Core.getInstance().getPlayers().get(player).checkScore(name, score);
-        leaderboards.get(name).updatePlayer(player);
+        LEADERBOARDS.get(name).updatePlayer(player);
     }
-    
+
+    /**
+     * Reset style of leaderboards
+     */
     public enum LeaderboardStyle {
         ALLTIME,
         YEARLY,
@@ -118,15 +126,12 @@ public class Leaderboard extends DBEntity {
         DAILY;
     }
     
-    class RankedPlayer {
-        
+    static class RankedPlayer {
         public CorePlayer cp;
         public int score;
-        
     }
     
-    class RankedPlayerComparator implements Comparator<UUID> {
-        
+    static class RankedPlayerComparator implements Comparator<UUID> {
         String name;
         
         public RankedPlayerComparator(String name) {
@@ -143,7 +148,6 @@ public class Leaderboard extends DBEntity {
             }
             return 1;
         }
-        
     }
     
     @DBField
@@ -183,7 +187,7 @@ public class Leaderboard extends DBEntity {
         createDay = Day.getCurrentDay();
     }
     
-    public boolean checkResetDay() {
+    public void checkResetDay() {
         switch (style) {
             case DAILY:
                 if (createDay + 1 <= Day.getCurrentDay()) {
@@ -199,10 +203,6 @@ public class Leaderboard extends DBEntity {
                 
                 break;
         }
-        if (style == LeaderboardStyle.ALLTIME || createDay <= Day.getCurrentDay()) {
-            
-        }
-        return true;
     }
     
     public List<UUID> getPlayers() {

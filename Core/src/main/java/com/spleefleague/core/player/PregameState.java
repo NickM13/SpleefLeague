@@ -8,9 +8,7 @@ package com.spleefleague.core.player;
 
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.core.util.Warp;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.database.variable.DBPlayer;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.bukkit.GameMode;
@@ -29,30 +27,30 @@ public class PregameState {
         ALL
     }
     
-    private final DBPlayer dbp;
+    private final CorePlayer cp;
     private Location location = null;
     private ItemStack[] inventory = null;
     private GameMode gameMode = null;
     
-    public PregameState(DBPlayer dbp) {
-        this.dbp = dbp;
+    public PregameState(CorePlayer cp) {
+        this.cp = cp;
     }
     
     public void save(PSFlag ... include) {
         Set<PSFlag> flags = Sets.newHashSet(include);
         if (flags.contains(PSFlag.ALL)) {
-            location = dbp.getPlayer().getLocation();
-            inventory = dbp.getPlayer().getInventory().getContents();
-            gameMode = dbp.getPlayer().getGameMode();
+            location = cp.getPlayer().getLocation();
+            inventory = cp.getPlayer().getInventory().getContents();
+            gameMode = cp.getPlayer().getGameMode();
         } else {
             if (flags.contains(PSFlag.LOCATION)) {
-                location = dbp.getPlayer().getLocation();
+                location = cp.getPlayer().getLocation();
             }
             if (flags.contains(PSFlag.INVENTORY)) {
-                inventory = dbp.getPlayer().getInventory().getContents();
+                inventory = cp.getPlayer().getInventory().getContents();
             }
             if (flags.contains(PSFlag.GAMEMODE)) {
-                gameMode = dbp.getPlayer().getGameMode();
+                gameMode = cp.getPlayer().getGameMode();
             }
         }
     }
@@ -64,7 +62,6 @@ public class PregameState {
     
     public void load(@Nullable Location arenaLoc) {
         if (location != null) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(dbp);
             switch (cp.getOptions().getOption(CorePlayerOptions.CPOptions.POST_GAME_WARP)) {
                 case 0:
                     cp.gotoSpawn();
@@ -82,10 +79,10 @@ public class PregameState {
             location = null;
         }
         if (inventory != null) {
-            dbp.getPlayer().getInventory().setContents(inventory);
+            cp.getPlayer().getInventory().setContents(inventory);
         }
         if (gameMode != null) {
-            dbp.setGameMode(gameMode);
+            cp.setGameMode(gameMode);
         }
         clear();
     }

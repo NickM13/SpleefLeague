@@ -1,0 +1,9 @@
+author: SpleefLeague
+authors: [NickM13]
+description: SpleefLeague Splegg Plugin
+main: com.spleefleague.splegg.Splegg
+name: Splegg
+url: http://www.spleefleague.com/
+version: 1.0
+api-version: 1.13
+softdepend: [ProtocolLib]

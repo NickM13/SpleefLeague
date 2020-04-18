@@ -7,11 +7,11 @@
 package com.spleefleague.core.player;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
-import com.spleefleague.core.annotation.DBSave;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.database.variable.DBEntity;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,11 +80,11 @@ public class CorePlayerOptions extends DBEntity {
         return optionManager.get(cpo.name());
     }
     
-    @DBSave(fieldname="disabledChats")
+    @DBSave(fieldName ="disabledChats")
     protected List<String> saveDisabledChatChannels() {
         return Lists.newArrayList(disabledChannels);
     }
-    @DBLoad(fieldname="disabledChats")
+    @DBLoad(fieldName ="disabledChats")
     protected void loadDisabledChatChannels(List<String> channels) {
         for (String c : channels) {
             disabledChannels.add(c.toLowerCase());

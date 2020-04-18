@@ -43,12 +43,12 @@ public class ClassicSJArena extends SJArena {
                         .setName(arena.getDisplayName())
                         .setDescription(cp -> arena.getDescription())
                         .setDisplayItem(cp -> { return new ItemStack(Material.ENDER_EYE); })
-                        .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                        .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getArenaMode(), cp, arena))));
         Arena.getArenas(SJMode.CLASSIC.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CLASSIC.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CLASSIC.getArenaMode(), cp, arena))));
         
         menuItem.getLinkedContainer().addMenuItem(menuItem);
         

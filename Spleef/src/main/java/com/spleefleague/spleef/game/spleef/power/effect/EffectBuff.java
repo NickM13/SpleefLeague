@@ -6,7 +6,8 @@
 
 package com.spleefleague.spleef.game.spleef.power.effect;
 
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.spleef.game.SpleefBattle;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -30,36 +31,39 @@ public class EffectBuff extends Effect {
     public EffectBuff() {
         super();
     }
-    public EffectBuff(EffectBuff o) {
-        amplifier = o.amplifier;
-        duration = o.duration;
-        potionEffectType = o.potionEffectType;
-    }
-    
+
     @Override
     public void reset(SpleefPlayer sp) {
-        sp.getPlayer().removePotionEffect(PotionEffectType.getByName(potionEffectType));
+        PotionEffectType pet = PotionEffectType.getByName(potionEffectType);
+        if (pet != null)
+            sp.getPlayer().removePotionEffect(pet);
     }
     
     @Override
-    public void updateEffect(SpleefPlayer sp) {
+    public void updateEffect(SpleefPlayer sp, SpleefBattle sb) {
         
     }
     
     @Override
-    public void activate(SpleefPlayer sp) {
-        sp.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.getByName(potionEffectType), (int) (duration * 20), amplifier, false, false, true));
+    public void activate(SpleefPlayer sp, SpleefBattle sb) {
+        PotionEffectType pet = PotionEffectType.getByName(potionEffectType);
+        if (pet != null)
+            sp.getPlayer().addPotionEffect(new PotionEffect(pet, (int) (duration * 20), amplifier, false, false, true));
     }
     @Override
-    public void onMove(SpleefPlayer sp) {
+    public void onMove(SpleefPlayer sp, SpleefBattle sb) {
         if (removeOnMove) {
-            sp.getPlayer().removePotionEffect(PotionEffectType.getByName(potionEffectType));
+            PotionEffectType pet = PotionEffectType.getByName(potionEffectType);
+            if (pet != null)
+                sp.getPlayer().removePotionEffect(pet);
         }
     }
     @Override
-    public void onBlockBreak(SpleefPlayer sp) {
+    public void onBlockBreak(SpleefPlayer sp, SpleefBattle sb) {
         if (removeOnBreak) {
-            sp.getPlayer().removePotionEffect(PotionEffectType.getByName(potionEffectType));
+            PotionEffectType pet = PotionEffectType.getByName(potionEffectType);
+            if (pet != null)
+                sp.getPlayer().removePotionEffect(pet);
         }
     }
     

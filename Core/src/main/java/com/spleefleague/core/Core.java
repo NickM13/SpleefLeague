@@ -9,30 +9,19 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Lists;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.credits.Credits;
+import com.spleefleague.core.menu.menus.credits.Credits;
 import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.infraction.Infraction;
+import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menus.CreditsMenu;
-import com.spleefleague.core.menus.DonorMenu;
-import com.spleefleague.core.menus.HatMenu;
-import com.spleefleague.core.menus.HeldItemMenu;
-import com.spleefleague.core.menus.LeaderboardMenu;
-import com.spleefleague.core.menus.ModerativeMenu;
-import com.spleefleague.core.menus.OptionsMenu;
-import com.spleefleague.core.menus.ProfileMenu;
-import com.spleefleague.core.party.Party;
+import com.spleefleague.core.menu.menus.*;
+import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerOptions;
 import com.spleefleague.core.player.PlayerManager;
@@ -42,18 +31,16 @@ import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.queue.QueueRunnable;
 import com.spleefleague.core.request.RequestManager;
-import com.spleefleague.core.util.Warp;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.util.variable.Warp;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.vendor.KeyItem;
 import com.spleefleague.core.vendor.Vendor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bson.Document;
+
+import com.spleefleague.core.world.build.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -63,6 +50,8 @@ import org.bukkit.entity.Player;
 import org.reflections.Reflections;
 
 /**
+ * SpleefLeague's Core Plugin
+ *
  * @author NickM13
  */
 public class Core extends CorePlugin<CorePlayer> {
@@ -70,8 +59,6 @@ public class Core extends CorePlugin<CorePlayer> {
     public static World DEFAULT_WORLD;
 
     private static Core instance;
-
-    private MongoClient mongoClient;
 
     private QueueManager queueManager;
     private QueueRunnable qrunnable;
@@ -89,13 +76,9 @@ public class Core extends CorePlugin<CorePlayer> {
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
 
-        System.out.println("Core");
-        System.out.println("Core");
-        System.out.println("Core");
-        System.out.println("Core");
-        System.out.println("Core");
+        CorePlugin.initMongo();
+        setPluginDB("SpleefLeague");
 
-        initMongo();
         Credits.init();
         Rank.init();
         Chat.init();
@@ -139,19 +122,16 @@ public class Core extends CorePlugin<CorePlayer> {
 
     @Override
     public void close() {
+        BuildWorld.close();
         Warp.close();
         Infraction.close();
         KeyItem.close();
         Vendor.close();
         Tickets.close();
         Leaderboard.close();
+        CorePlugin.closeMongo();
         qrunnable.close();
         playerManager.close();
-        try {
-            mongoClient.close();
-        } catch (NoClassDefFoundError e) {
-            System.out.println("Jar files updated, unable to close MongoDB");
-        }
         running = false;
         ProtocolLibrary.getPlugin().onDisable();
     }
@@ -162,31 +142,16 @@ public class Core extends CorePlugin<CorePlayer> {
 
     private void initListeners() {
         Bukkit.getPluginManager().registerEvents(new AfkListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BattleListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BuildListener(), this);
         Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
-        Bukkit.getPluginManager().registerEvents(new GameListener(), this);
         Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
     }
 
-    private void initMongo() {
-        // Disable mongodb logging
-        System.setProperty("DEBUG.MONGO", "false");
-        System.setProperty("DB.TRACE", "false");
-        Logger.getLogger("org.mongodb").setLevel(Level.OFF);
-        try {
-            // Test server connection driver, from MongoDB Atlas (free)
-            // TODO: Change this when updating to live server !!
-            MongoClientURI uri = new MongoClientURI(
-                    "mongodb://nickm13:MeadNick0313@spleefleague-shard-00-00-foua3.mongodb.net:27017,spleefleague-shard-00-01-foua3.mongodb.net:27017,spleefleague-shard-00-02-foua3.mongodb.net:27017/test?ssl=true&replicaSet=SpleefLeague-shard-0&authSource=admin&retryWrites=true&w=majority");
-            mongoClient = new MongoClient(uri);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private void initCommands() {
-        Reflections reflections = new Reflections("com.spleefleague.core.commands");
+        Reflections reflections = new Reflections("com.spleefleague.core.command.commands");
         
         Set<Class<? extends CommandTemplate>> subTypes = reflections.getSubTypesOf(CommandTemplate.class);
         
@@ -197,11 +162,18 @@ public class Core extends CorePlugin<CorePlayer> {
                 Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-        
+
         commandManager.flushRegisters();
     }
-    
-    public void returnToWorld(CorePlayer cp1) {
+
+    /**
+     * Hide/show players based on in-game state and
+     * vanished state
+     *
+     * @param dbp DBPlayer
+     */
+    public void returnToWorld(DBPlayer dbp) {
+        CorePlayer cp1 = Core.getInstance().getPlayers().get(dbp);
         if (cp1.isVanished()) {
             cp1.getPlayer().hidePlayer(Core.getInstance(), cp1.getPlayer());
         } else {
@@ -211,7 +183,7 @@ public class Core extends CorePlugin<CorePlayer> {
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getAll()) {
             if (!cp1.equals(cp2)) {
-                if ((CorePlugin.getBattleGlobal(cp1.getPlayer()) == CorePlugin.getBattleGlobal(cp2.getPlayer()))) {
+                if (cp1.getBattle() == cp2.getBattle()) {
                     cp1.getPlayer().showPlayer(this, cp2.getPlayer());
                     if (!cp1.isVanished()) cp2.getPlayer().showPlayer(this, cp1.getPlayer());
                     else                   cp2.getPlayer().hidePlayer(this, cp1.getPlayer());
@@ -222,7 +194,10 @@ public class Core extends CorePlugin<CorePlayer> {
             }
         }
     }
-    
+
+    /**
+     * Initialize base menu items
+     */
     public void initMenu() {
         InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
                 .getLinkedContainer()
@@ -256,12 +231,14 @@ public class Core extends CorePlugin<CorePlayer> {
                 .getLinkedContainer()
                 .addMenuItem(ModerativeMenu.getItem(), 8, 1);
     }
-    
+
+    /**
+     * Initialize Tab List packet listener that prevents players from
+     * being removed upon entering a game and becoming invisible, and
+     * removes players from Tab List when they become vanished
+     */
     public void initTabList() {
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), 
-                PacketType.Play.Server.PLAYER_INFO,
-                PacketType.Play.Server.NAMED_ENTITY_SPAWN,
-                PacketType.Play.Server.ENTITY_DESTROY) {
+        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
             @Override
             public void onPacketSending(PacketEvent pe) {
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
@@ -294,70 +271,88 @@ public class Core extends CorePlugin<CorePlayer> {
                             break;
                         default: break;
                     }
-                } else if (pe.getPacketType() == PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
-                    PacketContainer packet = pe.getPacket();
-                } else if (pe.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY) {
-                    /*
-                    PacketContainer packet = pe.getPacket();
-                    switch (packet.getPlayerInfoAction().read(0)) {
-                        case ADD_PLAYER:
-                            break;
-                        case REMOVE_PLAYER:
-                            break;
-                        case UPDATE_DISPLAY_NAME:
-                            break;
-                        case UPDATE_GAME_MODE:
-                            break;
-                        case UPDATE_LATENCY:
-                            break;
-                        default: break;
-                    }
-                    */
-                    //pe.setCancelled(true);
                 }
             }
         });
     }
 
-    public MongoClient getMongoClient() {
-        return mongoClient;
-    }
-
-    @Override
-    public MongoDatabase getPluginDB() {
-        return mongoClient.getDatabase("SpleefLeague");
-    }
-    
+    /**
+     * @return Protocol Manager
+     */
     public static ProtocolManager getProtocolManager() {
         return protocolManager;
     }
-    public static void sendPacket(List<Player> players, PacketContainer packet) {
-        for (Player p : players) {
-            sendPacket(p, packet);
-        }
-    }
-    public static void sendPacket(Player p, PacketContainer packet) {
+
+    /**
+     * Sends a packet to a single player
+     *
+     * @param dbp DBPlayer
+     * @param packet Packet Container
+     */
+    public static void sendPacket(DBPlayer dbp, PacketContainer packet) {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
-                protocolManager.sendServerPacket(p, packet);
+                protocolManager.sendServerPacket(dbp.getPlayer(), packet);
             } catch (InvocationTargetException ex) {
                 Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
             }
         }, 1L);
     }
-    public static void sendPacketAll(PacketContainer packet) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
-            sendPacket(cp.getPlayer(), packet);
+
+    /**
+     * Sends a packet to a list of players
+     *
+     * @param dbplayers DBPlayer List
+     * @param packet Packet Container
+     */
+    public static void sendPacket(List<DBPlayer> dbplayers, PacketContainer packet) {
+        for (DBPlayer dbp : dbplayers) {
+            sendPacket(dbp, packet);
         }
     }
-    public static void sendPacketAllExcept(CorePlayer cp, PacketContainer packet) {
-        for (CorePlayer cp1 : Core.getInstance().getPlayers().getAll()) {
-            if (!cp.equals(cp1)) {
-                sendPacket(cp1.getPlayer(), packet);
+
+    /**
+     * Sends a packet to all online players
+     *
+     * @param packet Packet Container
+     */
+    public static void sendPacketAll(PacketContainer packet) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
+            sendPacket(cp, packet);
+        }
+    }
+
+    /**
+     * Sends a packet to all online players except for dbp
+     *
+     * @param dbp DBPlayer
+     * @param packet Packet Container
+     */
+    public static void sendPacketAllExcept(DBPlayer dbp, PacketContainer packet) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
+            if (!dbp.equals(cp)) {
+                sendPacket(cp, packet);
             }
         }
     }
 
+    /**
+     * Sends a packet to all online players except for dbplayers
+     *
+     * @param dbplayers DBPlayer List
+     * @param packet Packet Container
+     */
+    public static void sendPacketAllExcept(List<DBPlayer> dbplayers, PacketContainer packet) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
+            if (!dbplayers.contains(cp)) {
+                sendPacket(cp, packet);
+            }
+        }
+    }
+
+    /**
+     * Initialize queue runnable thread
+     */
     private void initQueues() {
         queueManager = new QueueManager();
         queueManager.initialize();
@@ -366,72 +361,92 @@ public class Core extends CorePlugin<CorePlayer> {
         Bukkit.getScheduler().runTaskTimer(getInstance(), qrunnable, 0L, qrunnable.getDelayTicks());
     }
 
+    /**
+     * Add a queue to the Queue Manager
+     *
+     * @param queue Player Queue
+     */
     public void addQueue(PlayerQueue queue) {
         queueManager.addQueue(queue);
     }
 
+    /**
+     * Remove a queue from the Queue Manager
+     *
+     * @param queue Player Queue
+     */
     public void removeQueue(PlayerQueue queue) {
         queueManager.removeQueue(queue);
     }
 
-    public void unqueuePlayerGlobally(CorePlayer player) {
+    /**
+     * Unqueue a player from all Queues
+     *
+     * @param cp Core Player
+     */
+    public boolean unqueuePlayerGlobally(CorePlayer cp) {
+        boolean unqueued = false;
         for (PlayerQueue pq : queueManager.getQueues()) {
-            pq.unqueuePlayer(player);
+            unqueued = unqueued || pq.unqueuePlayer(cp);
         }
+        return unqueued;
     }
-    
+
+    /**
+     * Unqueue a party from all Queues
+     * (Really just removes the lead player from the queues)
+     *
+     * @param party Party
+     * @return If player was unqueued
+     */
     public boolean unqueuePartyGlobally(Party party) {
         boolean unqueued = false;
         for (PlayerQueue pq : queueManager.getQueues()) {
             if (pq.isTeamQueue()) {
-                unqueued = pq.unqueuePlayer(party.getOwner());
+                unqueued = unqueued || pq.unqueuePlayer(party.getOwner());
             }
         }
         return unqueued;
     }
 
+    /**
+     * @return Queue Manager
+     */
     public QueueManager getQueueManager() {
         return queueManager;
     }
-    
-    public String getUsername(UUID uuid) {
-        CorePlayer cp;
-        if ((cp = playerManager.get(uuid)) != null) {
-            return cp.getDisplayName();
-        } else {
-            MongoCollection<Document> collection = getPluginDB().getCollection("Players");
-            Document doc = collection.find(new Document("uuid", uuid.toString())).first();
-            return doc.get("username", String.class);
-        }
-    }
-    public UUID getUniqueId(String name) {
-        CorePlayer cp;
-        if ((cp = playerManager.get(name)) != null) {
-            return cp.getPlayer().getUniqueId();
-        }
-        return UUID.randomUUID();
-    }
 
-    public PlayerManager getPlayerManager() {
+    public PlayerManager<?> getPlayerManager() {
         return playerManager;
     }
-    
+
+    /**
+     * Returns list of players that are less than maxDist
+     * and further than minDist from location
+     *
+     * @param loc Location
+     * @param minDist Minimum Distance
+     * @param maxDist Maximum Distance
+     * @return Player List
+     */
     public List<CorePlayer> getPlayersInRadius(Location loc, Double minDist, Double maxDist) {
         List<CorePlayer> cpList = new ArrayList<>();
-        
+
         for (CorePlayer cp1 : playerManager.getAll()) {
-            if (loc.getWorld().equals(cp1.getLocation().getWorld()) &&
-                    loc.distance(cp1.getLocation()) >= minDist &&
-                    loc.distance(cp1.getLocation()) <= maxDist) {
+            if (loc.getWorld().equals(cp1.getLocation().getWorld())
+                    && loc.distance(cp1.getLocation()) >= minDist
+                    && loc.distance(cp1.getLocation()) <= maxDist) {
+                boolean inserted = false;
                 for (int i = 0; i < cpList.size(); i++) {
                     CorePlayer cp2 = cpList.get(i);
                     if (loc.distance(cp1.getLocation()) < loc.distance(cp2.getLocation())) {
                         cpList.add(i, cp1);
+                        inserted = true;
                         break;
                     }
-                    if (i == cpList.size() - 1) {
-                        cpList.add(cp1);
-                    }
+                }
+                if (!inserted) {
+                    cpList.add(cp1);
                 }
             }
         }
@@ -439,18 +454,37 @@ public class Core extends CorePlugin<CorePlayer> {
         return cpList;
     }
 
+    /**
+     * Register a command to Command Manager
+     *
+     * @param command CommandTemplate
+     */
     public void addCommand(CommandTemplate command) {
         commandManager.addCommand(command);
     }
 
+    /**
+     * Push all newly registered commands through
+     */
     public void flushCommands() {
         commandManager.flushRegisters();
     }
 
+    /**
+     * @return Chat Prefix
+     */
     public static String getChatPrefix() {
         return Chat.BRACE + "[" + Chat.PLUGIN_PREFIX + "SpleefLeague" + Chat.BRACE + "] " + Chat.DEFAULT;
     }
-    
+
+    /**
+     * Secretly mute a player
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param millis Time in milliseconds
+     * @param reason Reason
+     */
     public void muteSecret(String sender, OfflinePlayer target, long millis, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -463,6 +497,15 @@ public class Core extends CorePlugin<CorePlayer> {
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
                 "Secretly muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
+
+    /**
+     * Publicly mute a player
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param millis Time in milliseconds
+     * @param reason Reason
+     */
     public void mutePublic(String sender, OfflinePlayer target, long millis, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -473,11 +516,19 @@ public class Core extends CorePlugin<CorePlayer> {
         Infraction.create(infraction);
         
         if (target.isOnline()) {
-            Core.sendMessageToPlayer(Core.getInstance().getPlayers().get(target.getPlayer()), "Muted by " + sender + " for " + infraction.getRemainingTimeString() + ": " + reason);
+            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Muted by " + sender + " for " + infraction.getRemainingTimeString() + ": " + reason);
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
                 "Public muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
+
+    /**
+     * Unmute a player
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param reason Reason
+     */
     public void unmute(String sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -488,12 +539,20 @@ public class Core extends CorePlugin<CorePlayer> {
         Infraction.create(infraction);
         
         if (target.isOnline()) {
-            Core.sendMessageToPlayer(Core.getInstance().getPlayers().get(target.getPlayer()), "You've been unmuted by " + sender);
+            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "You've been unmuted by " + sender);
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
                 "Unmuted player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
+    /**
+     * Temporarily ban a player from the server
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param millis Time in milliseconds
+     * @param reason Reason
+     */
     public void tempban(String sender, OfflinePlayer target, long millis, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -510,7 +569,14 @@ public class Core extends CorePlugin<CorePlayer> {
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
                 "TempBanned player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
-    
+
+    /**
+     * Ban a player from the server
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param reason Reason
+     */
     public void ban(String sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -526,7 +592,14 @@ public class Core extends CorePlugin<CorePlayer> {
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Banned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
-    
+
+    /**
+     * Unban a player from the server
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param reason Reason
+     */
     public void unban(String sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -539,6 +612,13 @@ public class Core extends CorePlugin<CorePlayer> {
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Unbanned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
+    /**
+     * Kick a player from the server
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param reason Reason
+     */
     public void kick(String sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -555,6 +635,14 @@ public class Core extends CorePlugin<CorePlayer> {
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Kicked player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
+    /**
+     * Send a warning to a player
+     * Also used for post-ban information
+     *
+     * @param sender Name of punisher
+     * @param target OfflinePlayer
+     * @param reason Reason
+     */
     public void warn(String sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
@@ -565,56 +653,95 @@ public class Core extends CorePlugin<CorePlayer> {
         Infraction.create(infraction);
         
         if (target.isOnline()) {
-            Core.sendMessageToPlayer(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
+            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Warned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
-    // Send message to global channel
+    /**
+     * Send a message to the global channel
+     *
+     * @param msg Message
+     */
     public void sendMessage(String msg) {
         Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg);
     }
 
-    // Send message to a specific player
+    /**
+     * Send a message to a specific player
+     *
+     * @param dbp DBPlayer
+     * @param msg Message
+     */
     public void sendMessage(DBPlayer dbp, String msg) {
         Chat.sendMessageToPlayer(dbp, getChatPrefix() + msg);
     }
+
+    /**
+     * Send a message to a CommandSender (Block, Console, etc)
+     *
+     * @param cs CommandSender
+     * @param msg Message
+     */
     public void sendMessage(CommandSender cs, String msg) {
         cs.sendMessage(getChatPrefix() + msg);
     }
 
-    // Send an invalid command format message to player
+    /**
+     * Send an invalid command format message to player
+     *
+     * @param dbp DBPlayer
+     * @param msg Message
+     */
     public void sendMessageInvalid(DBPlayer dbp, String msg) {
         Chat.sendMessageToPlayerInvalid(dbp, getChatPrefix() + msg);
     }
 
-    // Send player to a ChatChannel
+    /**
+     * Send player to a ChatChannel
+     *
+     * @param cc Chat Channel
+     * @param msg Message
+     */
     public void sendMessage(ChatChannel cc, String msg) {
         Chat.sendMessage(cc, getChatPrefix() + msg);
     }
 
-    // Send player to a ChatGroup
+    /**
+     * Send player to a ChatGroup
+     *
+     * @param cg Chat Group
+     * @param msg Message
+     */
     public void sendMessage(ChatGroup cg, String msg) {
         cg.sendMessage(getChatPrefix() + msg);
     }
-    
-    // Tell player to player message
+
+    /**
+     * Send a message from one player to another
+     *
+     * @param sender CorePlayer
+     * @param target CorePlayer
+     * @param msg Message
+     */
     public void sendTell(CorePlayer sender, CorePlayer target, String msg) {
         sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
         target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
         target.setReply(sender.getPlayer());
     }
 
+    /**
+     * Send a title to all players, stay is based on how long message is
+     * Used by /broadcast command
+     *
+     * @param msg Message
+     */
     public void broadcast(String msg) {
         String title, subtitle;
-        String msgs[] = msg.split("/");
+        String[] msgs = msg.split("/");
         title = msgs[0];
         subtitle = msgs.length > 1 ? msgs[1] : "";
         Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
     }
-    
-    // Send message to a player
-    public static void sendMessageToPlayer(DBPlayer dbp, String msg) {
-        Chat.sendMessageToPlayer(dbp, getChatPrefix() + msg);
-    }
+
 }
