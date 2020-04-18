@@ -6,7 +6,7 @@
 
 package com.spleefleague.superjump.game.versus.classic;
 
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.game.SJBattle;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class ClassicSJBattle extends SJBattle<ClassicSJArena> {
 
-    public ClassicSJBattle(List<DBPlayer> players, ClassicSJArena arena) {
+    public ClassicSJBattle(List<CorePlayer> players, ClassicSJArena arena) {
         super(players, arena);
     }
 

@@ -8,11 +8,16 @@ package com.spleefleague.core.command.commands;
 
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.annotation.HelperArg;
+import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
+
+import java.util.Comparator;
 import java.util.List;
 import net.md_5.bungee.api.ChatColor;
 
@@ -29,13 +34,17 @@ public class SPingCommand extends CommandTemplate {
     @CommandAnnotation
     public void sping(CorePlayer sender) {
         List<CorePlayer> players = Lists.newArrayList(Core.getInstance().getPlayers().getOnline());
-        players.sort((cp1, cp2) -> {
-            return cp1.getPing() - cp2.getPing();
-        });
+        players.sort(Comparator.comparingInt(CorePlayer::getPing));
         
-        sender.sendMessage(Chat.fillTitle(ChatColor.AQUA + "[" + ChatColor.GOLD + " Everyone's Ping " + ChatColor.AQUA + "]"));
+        sender.sendMessage(ChatUtils.centerTitle(ChatColor.AQUA + "[" + ChatColor.GOLD + " Everyone's Ping " + ChatColor.AQUA + "]"));
+        int maxDisplay = 8;
         for (CorePlayer cp : players) {
             sender.sendMessage(cp.getPingFormatted() + Chat.DEFAULT + " >> " + cp.getDisplayName());
+            maxDisplay--;
+            if (maxDisplay < 0) {
+                sender.sendMessage(Chat.ERROR + "...");
+                break;
+            }
         }
     }
 

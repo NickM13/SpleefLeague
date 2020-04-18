@@ -15,12 +15,12 @@ import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.menu.menus.credits.Credits;
+import com.spleefleague.core.menu.menus.main.credits.Credits;
 import com.spleefleague.core.game.Leaderboard;
+import com.spleefleague.core.menu.menus.main.*;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.menus.*;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerOptions;
@@ -32,14 +32,14 @@ import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.queue.QueueRunnable;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.vendor.KeyItem;
-import com.spleefleague.core.vendor.Vendor;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.spleefleague.core.vendor.VendorManager;
 import com.spleefleague.core.world.build.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -69,7 +69,10 @@ public class Core extends CorePlugin<CorePlayer> {
     
     // For packet managing
     private static ProtocolManager protocolManager;
-
+    
+    /**
+     * Called when the plugin is enabling
+     */
     @Override
     public void init() {
         instance = this;
@@ -85,7 +88,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Warp.init();
         Infraction.init();
         KeyItem.init();
-        Vendor.init();
+        VendorManager.init();
         Tickets.init();
         InventoryMenuAPI.init();
         CorePlayerOptions.init();
@@ -119,14 +122,17 @@ public class Core extends CorePlugin<CorePlayer> {
             RequestManager.checkTimeouts();
         }, 0L, 60L);
     }
-
+    
+    /**
+     * Called when the plugin is disabling
+     */
     @Override
     public void close() {
         BuildWorld.close();
         Warp.close();
         Infraction.close();
         KeyItem.close();
-        Vendor.close();
+        VendorManager.close();
         Tickets.close();
         Leaderboard.close();
         CorePlugin.closeMongo();
@@ -139,7 +145,10 @@ public class Core extends CorePlugin<CorePlayer> {
     public static Core getInstance() {
         return instance;
     }
-
+    
+    /**
+     * Initialize Bukkit event listener objects
+     */
     private void initListeners() {
         Bukkit.getPluginManager().registerEvents(new AfkListener(), this);
         Bukkit.getPluginManager().registerEvents(new BattleListener(), this);
@@ -149,7 +158,13 @@ public class Core extends CorePlugin<CorePlayer> {
         Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
         Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
     }
-
+    
+    /**
+     * Initialize commands, uses a reflection library in Core to copy
+     * all commands from the commands package
+     *
+     * Does not work with sub-plugins
+     */
     private void initCommands() {
         Reflections reflections = new Reflections("com.spleefleague.core.command.commands");
         
@@ -170,26 +185,25 @@ public class Core extends CorePlugin<CorePlayer> {
      * Hide/show players based on in-game state and
      * vanished state
      *
-     * @param dbp DBPlayer
+     * @param cp Core Player
      */
-    public void returnToWorld(DBPlayer dbp) {
-        CorePlayer cp1 = Core.getInstance().getPlayers().get(dbp);
-        if (cp1.isVanished()) {
-            cp1.getPlayer().hidePlayer(Core.getInstance(), cp1.getPlayer());
+    public void returnToWorld(CorePlayer cp) {
+        if (cp.isVanished()) {
+            cp.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
         } else {
-            cp1.getPlayer().showPlayer(Core.getInstance(), cp1.getPlayer());
+            cp.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
         }
         // See and become visible to all players outside of games
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getAll()) {
-            if (!cp1.equals(cp2)) {
-                if (cp1.getBattle() == cp2.getBattle()) {
-                    cp1.getPlayer().showPlayer(this, cp2.getPlayer());
-                    if (!cp1.isVanished()) cp2.getPlayer().showPlayer(this, cp1.getPlayer());
-                    else                   cp2.getPlayer().hidePlayer(this, cp1.getPlayer());
+            if (!cp.equals(cp2)) {
+                if (cp.getBattle() == cp2.getBattle()) {
+                    cp.getPlayer().showPlayer(this, cp2.getPlayer());
+                    if (!cp.isVanished()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    else                   cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
-                    cp1.getPlayer().hidePlayer(this, cp2.getPlayer());
-                    cp2.getPlayer().hidePlayer(this, cp1.getPlayer());
+                    cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 }
             }
         }
@@ -286,13 +300,13 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Sends a packet to a single player
      *
-     * @param dbp DBPlayer
+     * @param cp Core Player
      * @param packet Packet Container
      */
-    public static void sendPacket(DBPlayer dbp, PacketContainer packet) {
+    public static void sendPacket(CorePlayer cp, PacketContainer packet) {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
-                protocolManager.sendServerPacket(dbp.getPlayer(), packet);
+                protocolManager.sendServerPacket(cp.getPlayer(), packet);
             } catch (InvocationTargetException ex) {
                 Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -302,12 +316,12 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Sends a packet to a list of players
      *
-     * @param dbplayers DBPlayer List
+     * @param players Core Player List
      * @param packet Packet Container
      */
-    public static void sendPacket(List<DBPlayer> dbplayers, PacketContainer packet) {
-        for (DBPlayer dbp : dbplayers) {
-            sendPacket(dbp, packet);
+    public static void sendPacket(List<CorePlayer> players, PacketContainer packet) {
+        for (CorePlayer cp : players) {
+            sendPacket(cp, packet);
         }
     }
 
@@ -325,13 +339,13 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Sends a packet to all online players except for dbp
      *
-     * @param dbp DBPlayer
+     * @param cp Core Player
      * @param packet Packet Container
      */
-    public static void sendPacketAllExcept(DBPlayer dbp, PacketContainer packet) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
-            if (!dbp.equals(cp)) {
-                sendPacket(cp, packet);
+    public static void sendPacketAllExcept(CorePlayer cp, PacketContainer packet) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
+            if (!cp.equals(cp2)) {
+                sendPacket(cp2, packet);
             }
         }
     }
@@ -339,12 +353,12 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Sends a packet to all online players except for dbplayers
      *
-     * @param dbplayers DBPlayer List
+     * @param players Core Player List
      * @param packet Packet Container
      */
-    public static void sendPacketAllExcept(List<DBPlayer> dbplayers, PacketContainer packet) {
+    public static void sendPacketAllExcept(List<CorePlayer> players, PacketContainer packet) {
         for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
-            if (!dbplayers.contains(cp)) {
+            if (!players.contains(cp)) {
                 sendPacket(cp, packet);
             }
         }
@@ -670,11 +684,11 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Send a message to a specific player
      *
-     * @param dbp DBPlayer
+     * @param cp Core Player
      * @param msg Message
      */
-    public void sendMessage(DBPlayer dbp, String msg) {
-        Chat.sendMessageToPlayer(dbp, getChatPrefix() + msg);
+    public void sendMessage(CorePlayer cp, String msg) {
+        Chat.sendMessageToPlayer(cp, getChatPrefix() + msg);
     }
 
     /**
@@ -690,11 +704,11 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Send an invalid command format message to player
      *
-     * @param dbp DBPlayer
+     * @param cp Core Player
      * @param msg Message
      */
-    public void sendMessageInvalid(DBPlayer dbp, String msg) {
-        Chat.sendMessageToPlayerInvalid(dbp, getChatPrefix() + msg);
+    public void sendMessageInvalid(CorePlayer cp, String msg) {
+        Chat.sendMessageToPlayerInvalid(cp, getChatPrefix() + msg);
     }
 
     /**

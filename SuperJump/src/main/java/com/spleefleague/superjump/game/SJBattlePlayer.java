@@ -3,6 +3,7 @@ package com.spleefleague.superjump.game;
 import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.Battle;
 import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -15,8 +16,8 @@ public class SJBattlePlayer extends BattlePlayer {
     private int falls;
     private Location spawn;
 
-    public SJBattlePlayer(DBPlayer dbp, Battle battle) {
-        super(dbp, battle);
+    public SJBattlePlayer(CorePlayer cp, Battle battle) {
+        super(cp, battle);
     }
 
     @Override

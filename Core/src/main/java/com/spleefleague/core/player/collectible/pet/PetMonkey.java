@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.player.pet;
+package com.spleefleague.core.player.collectible.pet;
 
 import net.minecraft.server.v1_15_R1.EntityChicken;
 import net.minecraft.server.v1_15_R1.EntityTypes;

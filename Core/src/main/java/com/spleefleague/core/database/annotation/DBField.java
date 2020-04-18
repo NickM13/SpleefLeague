@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
+@SuppressWarnings("final")
 public @interface DBField {
     
     String fieldName() default "";

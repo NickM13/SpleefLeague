@@ -8,6 +8,7 @@ package com.spleefleague.core.menu;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,7 +88,7 @@ public class InventoryMenuContainer {
                 .setDisplayItem(Material.DIAMOND_AXE, 8)
                 .setCloseOnAction(false)
                 .setVisibility(cp -> (cp.getPage() < this.getPageCount(cp) - 1/* || editting*/))
-                .setAction(cp -> { cp.nextPage(); })));
+                .setAction(CorePlayer::nextPage)));
         
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
                 .setName("Prev Page")
@@ -95,7 +96,7 @@ public class InventoryMenuContainer {
                 .setDisplayItem(Material.DIAMOND_AXE, 9)
                 .setCloseOnAction(false)
                 .setVisibility(cp -> cp.getPage() > 0)
-                .setAction(cp -> { cp.prevPage(); })));
+                .setAction(CorePlayer::prevPage)));
     }
     
     public InventoryMenuContainer setParentContainer(InventoryMenuContainer parentContainer) {
@@ -144,7 +145,7 @@ public class InventoryMenuContainer {
         if (pageCount > 1) {
             title = title + " (" + (cp.getPage() + 1) + "/" + pageCount + ")";
         }
-        String formattedTitle = Chat.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
+        String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
         
         Inventory inv = Bukkit.createInventory(null, MENU_SIZE, formattedTitle);
         

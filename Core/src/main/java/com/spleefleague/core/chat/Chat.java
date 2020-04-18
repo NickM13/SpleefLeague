@@ -8,9 +8,12 @@ package com.spleefleague.core.chat;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.database.variable.DBPlayer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.BiConsumer;
+
+import com.spleefleague.core.request.PlayerRequest;
+import com.spleefleague.core.request.RequestManager;
 import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 
@@ -56,47 +59,46 @@ public class Chat {
     }
     
     public static String colorize(String msg) {
-        String newmsg = "";
+        StringBuilder newmsg = new StringBuilder();
         int i;
         for (i = 0; i < msg.length() - 1; i++) {
             if (msg.charAt(i) == '&') {
                 switch (msg.charAt(i+1)) {
-                    case 'b': newmsg += ChatColor.AQUA; break;
-                    case '0': newmsg += ChatColor.BLACK; break;
-                    case '9': newmsg += ChatColor.BLUE; break;
-                    case '3': newmsg += ChatColor.DARK_AQUA; break;
-                    case '1': newmsg += ChatColor.DARK_BLUE; break;
-                    case '8': newmsg += ChatColor.DARK_GRAY; break;
-                    case '2': newmsg += ChatColor.DARK_GREEN; break;
-                    case '5': newmsg += ChatColor.DARK_PURPLE; break;
-                    case '4': newmsg += ChatColor.DARK_RED; break;
-                    case '6': newmsg += ChatColor.GOLD; break;
-                    case '7': newmsg += ChatColor.GRAY; break;
-                    case 'a': newmsg += ChatColor.GREEN; break;
-                    case 'd': newmsg += ChatColor.LIGHT_PURPLE; break;
-                    case 'c': newmsg += ChatColor.RED; break;
-                    case 'f': newmsg += ChatColor.WHITE; break;
-                    case 'e': newmsg += ChatColor.YELLOW; break;
-                    case 'l': newmsg += ChatColor.BOLD; break;
-                    case 'i': newmsg += ChatColor.ITALIC; break;
-                    case 'r': newmsg += ChatColor.RESET; break;
-                    default: newmsg = newmsg.concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i+1))); break;
+                    case 'b': newmsg.append(ChatColor.AQUA); break;
+                    case '0': newmsg.append(ChatColor.BLACK); break;
+                    case '9': newmsg.append(ChatColor.BLUE); break;
+                    case '3': newmsg.append(ChatColor.DARK_AQUA); break;
+                    case '1': newmsg.append(ChatColor.DARK_BLUE); break;
+                    case '8': newmsg.append(ChatColor.DARK_GRAY); break;
+                    case '2': newmsg.append(ChatColor.DARK_GREEN); break;
+                    case '5': newmsg.append(ChatColor.DARK_PURPLE); break;
+                    case '4': newmsg.append(ChatColor.DARK_RED); break;
+                    case '6': newmsg.append(ChatColor.GOLD); break;
+                    case '7': newmsg.append(ChatColor.GRAY); break;
+                    case 'a': newmsg.append(ChatColor.GREEN); break;
+                    case 'd': newmsg.append(ChatColor.LIGHT_PURPLE); break;
+                    case 'c': newmsg.append(ChatColor.RED); break;
+                    case 'f': newmsg.append(ChatColor.WHITE); break;
+                    case 'e': newmsg.append(ChatColor.YELLOW); break;
+                    case 'l': newmsg.append(ChatColor.BOLD); break;
+                    case 'i': newmsg.append(ChatColor.ITALIC); break;
+                    case 'r': newmsg.append(ChatColor.RESET); break;
+                    default: newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1)))); break;
                 }
                 i++;
             } else {
-                newmsg = newmsg.concat(Character.toString(msg.charAt(i)));
+                newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))));
             }
         }
         if (i <= msg.length() - 1) {
-            newmsg = newmsg.concat(Character.toString(msg.charAt(msg.length() - 1)));
+            newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(msg.length() - 1))));
         }
-        return newmsg;
+        return newmsg.toString();
     }
 
-    public static void sendMessage(DBPlayer dbp, String msg) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(dbp);
+    public static void sendMessage(CorePlayer cp, String msg) {
         if (cp.isMuted() == 1) {
-            Core.getInstance().sendMessage(dbp, "You're muted!");
+            Core.getInstance().sendMessage(cp, "You're muted!");
             return;
         }
         ChatChannel cc = cp.getChatChannel();
@@ -105,8 +107,8 @@ public class Chat {
             cp.setChatChannel(cc);
         }
         if (cp.getOptions().isChannelDisabled(cc.getName())) {
-            Core.getInstance().sendMessage(dbp, "You have " + cc.getName() + " muted!");
-            Core.getInstance().sendMessage(dbp, "To unmute, go to Menu->Options->Chat Channels");
+            Core.getInstance().sendMessage(cp, "You have " + cc.getName() + " muted!");
+            Core.getInstance().sendMessage(cp, "To unmute, go to Menu->Options->Chat Channels");
             return;
         }
         msg = cc.formatMessage(cp, msg);
@@ -139,149 +141,37 @@ public class Chat {
             }
         }
     }
-    public static void sendTitle(DBPlayer dbp, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        dbp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+    public static void sendTitle(CorePlayer cp, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
 
-    public static void sendMessageToPlayer(DBPlayer dbp, String msg) {
-        if (dbp.isOnline())
-            dbp.getPlayer().sendMessage(chatColors.get("DEFAULT") + msg);
+    public static void sendMessageToPlayer(CorePlayer cp, String msg) {
+        if (cp.isOnline())
+            cp.getPlayer().sendMessage(chatColors.get("DEFAULT") + msg);
     }
 
-    public static void sendMessageToPlayerSuccess(DBPlayer dbp, String msg) {
-        if (dbp.isOnline())
-            dbp.getPlayer().sendMessage(chatColors.get("SUCCESS") + msg);
+    public static void sendMessageToPlayerSuccess(CorePlayer cp, String msg) {
+        if (cp.isOnline())
+            cp.getPlayer().sendMessage(chatColors.get("SUCCESS") + msg);
     }
 
-    public static void sendMessageToPlayerError(DBPlayer dbp, String msg) {
-        if (dbp.isOnline())
-            dbp.getPlayer().sendMessage(chatColors.get("ERROR") + msg);
+    public static void sendMessageToPlayerError(CorePlayer cp, String msg) {
+        if (cp.isOnline())
+            cp.getPlayer().sendMessage(chatColors.get("ERROR") + msg);
     }
 
-    public static void sendMessageToPlayerInvalid(DBPlayer dbp, String msg) {
-        if (dbp.isOnline())
-            dbp.getPlayer().sendMessage(chatColors.get("ERROR") + "Invalid command: " + msg);
+    public static void sendMessageToPlayerInvalid(CorePlayer cp, String msg) {
+        if (cp.isOnline())
+            cp.getPlayer().sendMessage(chatColors.get("ERROR") + "Invalid command: " + msg);
     }
 
-    public static void sendMessageToPlayerInfo(DBPlayer dbp, String msg) {
-        if (dbp.isOnline())
-            dbp.getPlayer().sendMessage(chatColors.get("INFO") + msg);
-    }
-
-    /**
-     *
-     * @author SirSpoodles (DefaultFontInfo.java)
-     *
-     */
-    
-    public static String centerText(String message, int centerPos) {
-        StringBuilder centered = new StringBuilder();
-        
-        int msgPxSize = 0;
-        boolean prevCode = false;
-        boolean isBold = false;
-        
-        for (char c : message.toCharArray()) {
-            if (c == '§') {
-                prevCode = true;
-            } else if (prevCode == true) {
-                prevCode = false;
-                isBold = (c == 'l' || c == 'L');
-            } else {
-                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-                int change = (isBold ? dFI.getBoldLength() : dFI.getLength()) + 1;
-                msgPxSize += change;
-            }
-        }
-        
-        int whitePxSize = (centerPos * 2 - msgPxSize);
-        int spaceCount = whitePxSize / 2 / (DefaultFontInfo.SPACE.getLength() + 1);
-        
-        centered.append(Strings.repeat(' ', spaceCount));
-        centered.append(message);
-        
-        return centered.toString();
-    }
-    public static String centerTitle(String message) {
-        return centerText(message, DefaultFontInfo.SPACE.getLength() * 27);
+    public static void sendMessageToPlayerInfo(CorePlayer cp, String msg) {
+        if (cp.isOnline())
+            cp.getPlayer().sendMessage(chatColors.get("INFO") + msg);
     }
     
-    private static final int DESC_WIDTH = 180;
-    
-    private static ArrayList<String> wrapDesc(String message) {
-        ArrayList<String> msgs = new ArrayList<>();
-        String line = "", word = "";
-        
-        int msgPxSize = 0;
-        boolean prevCode = false;
-        boolean isBold = false;
-        String prevColor = Chat.DEFAULT;
-        
-        for (char c : message.toCharArray()) {
-            if (c == '§') {
-                prevCode = true;
-            } else if (prevCode == true) {
-                prevCode = false;
-                isBold = (c == 'l' || c == 'L');
-                word += "§" + c;
-                prevColor = ChatColor.getByChar(c) + "";
-            } else {
-                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-                int change = isBold ? dFI.getBoldLength() : dFI.getLength() + 1;
-                if (msgPxSize + change > DESC_WIDTH) {
-                    msgPxSize = 0;
-                    if (line.length() < 2) {
-                        line += word;
-                        word = "";
-                    }
-                    msgs.add(prevColor + line);
-                    line = "";
-                }
-                msgPxSize += change;
-                if (c == ' ') {
-                    line += word + " ";
-                    word = "";
-                } else {
-                    word += c;
-                }
-            }
-        }
-        if (!word.isEmpty()) {
-            line += word;
-        }
-        if (!line.isEmpty()) {
-            msgs.add(prevColor + line);
-        }
-        if (msgs.isEmpty()) {
-            msgs.add("");
-        }
-        return msgs;
+    public static void sendRequest(String message, CorePlayer sender, CorePlayer receiver, BiConsumer<CorePlayer, CorePlayer> action) {
+        RequestManager.sendRequest(Core.getChatPrefix(), message, receiver, sender.getName(), new PlayerRequest(action));
     }
     
-    public static ArrayList<String> wrapDescription(String message) {
-        if (message == null || message.equals("")) return Lists.newArrayList("");
-        
-        ArrayList<String> messageSplit = Lists.newArrayList(message.split("\n"));
-        
-        ArrayList<String> msgs = new ArrayList<>();
-        
-        for (String m : messageSplit)
-            msgs.addAll(wrapDesc(m));
-        
-        return msgs;
-    }
-    
-    public static ArrayList<String> wrapDescription(ArrayList<String> messages) {
-        ArrayList<String> msgs = new ArrayList<>();
-        
-        for (String m : messages) {
-            msgs.addAll(wrapDescription(m));
-        }
-        
-        return msgs;
-    }
-    
-    public static String fillTitle(String msg) {
-        return centerText(msg, 160);
-    }
 }

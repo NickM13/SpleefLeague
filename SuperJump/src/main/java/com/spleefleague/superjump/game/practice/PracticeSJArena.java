@@ -41,13 +41,13 @@ public class PracticeSJArena extends SJArena {
         mapMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getArenaMode(), cp)));
         
         getArenas(SJMode.PRACTICE.getArenaMode()).forEach((String s, Arena arena) -> mapMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getArenaMode(), cp, arena))));
         
         spleefMenuItem.getLinkedContainer().addMenuItem(mapMenuItem, 0);
         

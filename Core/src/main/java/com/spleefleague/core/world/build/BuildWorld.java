@@ -26,15 +26,18 @@ public class BuildWorld extends FakeWorld {
     
     private static final Set<BuildWorld> BUILD_WORLDS = new HashSet<>();
     private static final Map<UUID, BuildWorld> PLAYER_BUILD_WORLDS = new HashMap<>();
-    private static final Set<BuildTool> BUILD_TOOLS = new HashSet<>();
+    private static final Map<String, BuildTool> BUILD_TOOLS = new HashMap<>();
     
     /**
      * Initialize build tools
      */
     public static void init() {
-        BUILD_TOOLS.add(new BreakTool());
-        BUILD_TOOLS.add(new PlaceTool());
-        BUILD_TOOLS.add(new SelectTool());
+        addBuildTool(new BreakTool());
+        addBuildTool(new PlaceTool());
+        addBuildTool(new SelectTool());
+    }
+    private static void addBuildTool(BuildTool buildTool) {
+        BUILD_TOOLS.put(buildTool.getHotbarItem().getHotbarIdentifier(), buildTool);
     }
     
     /**
@@ -122,10 +125,8 @@ public class BuildWorld extends FakeWorld {
     protected boolean onItemUse(CorePlayer cp) {
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         String hotbarTag = InventoryMenuAPI.getHotbarTag(heldItem);
-        for (BuildTool builderTool : BUILD_TOOLS) {
-            if (builderTool.getHotbarItem().getHotbarIdentifier().equals(hotbarTag)) {
-                builderTool.use(cp, this);
-            }
+        if (BUILD_TOOLS.containsKey(hotbarTag)) {
+            BUILD_TOOLS.get(hotbarTag).use(cp, this);
         }
         return true;
     }
@@ -142,8 +143,8 @@ public class BuildWorld extends FakeWorld {
         cp.getPlayer().setAllowFlight(true);
         cp.getPlayer().getInventory().clear();
         ((BuildWorldPlayer) getPlayerMap().get(cp.getUniqueId())).setSelectedMaterial(buildMaterials.iterator().next());
-        BUILD_TOOLS.forEach(tool -> {
-            cp.getPlayer().getInventory().setItem(tool.getHotbarItem().getSlot(), tool.getHotbarItem().createItem(cp));
+        BUILD_TOOLS.forEach((name, buildTool) -> {
+            cp.getPlayer().getInventory().setItem(buildTool.getHotbarItem().getSlot(), buildTool.getHotbarItem().createItem(cp));
         });
         PLAYER_BUILD_WORLDS.put(cp.getUniqueId(), this);
     }

@@ -36,6 +36,7 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
     @Override
     protected void joinBattler(CorePlayer dbPlayer) {
         Core.getInstance().sendMessage(dbPlayer.getDisplayName() + " joined a Classic Spleef");
+        Core.getInstance().sendMessage("Wait, that shouldn't be possible...");
     }
 
     @Override
@@ -90,7 +91,7 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
 
     @Override
     protected void endRound(BattlePlayer winner) {
-        SpleefBattlePlayer wsbp = (SpleefBattlePlayer) battlers.get(winner);
+        SpleefBattlePlayer wsbp = (SpleefBattlePlayer) battlers.get(winner.getCorePlayer());
         wsbp.addPoints(1);
         sortBattlers();
         if (wsbp.getPoints() < playToPoints) {
@@ -102,11 +103,11 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
 
     @Override
     protected void endBattle(BattlePlayer winner) {
-        SpleefBattlePlayer wsbp = (SpleefBattlePlayer) battlers.get(winner);
+        SpleefBattlePlayer wsbp = (SpleefBattlePlayer) battlers.get(winner.getCorePlayer());
         SpleefBattlePlayer lsbp = null;
-        for (CorePlayer dbp : battlers.keySet()) {
-            if (!dbp.equals(winner)) {
-                lsbp = (SpleefBattlePlayer) battlers.get(dbp);
+        for (CorePlayer cp : battlers.keySet()) {
+            if (!cp.equals(winner.getCorePlayer())) {
+                lsbp = (SpleefBattlePlayer) battlers.get(cp);
                 break;
             }
         }

@@ -7,6 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.chat.Chat;
@@ -16,7 +17,6 @@ import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
 import com.spleefleague.core.request.PlayerRequest;
-import com.spleefleague.core.request.RequestManager;
 
 /**
  * @author NickM13
@@ -32,7 +32,7 @@ public class PartyCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void party(CorePlayer sender) {
-        sender.sendMessage(Chat.fillTitle("[ Party Commands ]"));
+        sender.sendMessage(ChatUtils.centerChat("[ Party Commands ]"));
         sender.sendMessage(Chat.DEFAULT + "/party join <party>: Request to join a party");
         sender.sendMessage(Chat.DEFAULT + "/party create: Create a party");
         sender.sendMessage(Chat.DEFAULT + "/party invite <player>: Invite to your party");
@@ -55,9 +55,9 @@ public class PartyCommand extends CommandTemplate {
                 party.add(s);
             }, 120);
             */
-            RequestManager.sendRequest(Core.getChatPrefix(), sender.getDisplayName() + " want's to join your party!", receiver, sender.getName(), new PlayerRequest((r, s) -> {
+            Chat.sendRequest(sender.getDisplayName() + " wants to join your party!", receiver, sender, (r, s) -> {
                 r.getParty().add(s);
-            }));
+            });
         }
     }
     
@@ -87,9 +87,9 @@ public class PartyCommand extends CommandTemplate {
         if (party.isOwner(sender)) {
             if (receiver.getParty() == null) {
                 success(sender, "You send a party invite to " + receiver.getDisplayName());
-                RequestManager.sendRequest(Core.getChatPrefix(), sender.getDisplayName() + " has invited you to a party!", receiver, sender.getName(), new PlayerRequest((r, s) -> {
+                Chat.sendRequest(sender.getDisplayName() + " has invited you to a party!", receiver, sender, (r, s) -> {
                     s.getParty().add(r);
-                }));
+                });
             } else {
                 error(sender, receiver.getDisplayName() + " is already in a party");
             }

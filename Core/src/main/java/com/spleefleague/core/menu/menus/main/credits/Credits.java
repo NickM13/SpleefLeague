@@ -4,9 +4,8 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus.credits;
+package com.spleefleague.core.menu.menus.main.credits;
 
-import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;
@@ -16,6 +15,8 @@ import java.util.UUID;
 import org.bson.Document;
 
 /**
+ * Credits for players who helped build the server
+ *
  * @author NickM13
  */
 public class Credits extends DBEntity {
@@ -23,10 +24,9 @@ public class Credits extends DBEntity {
     protected static List<Credits> credits = new ArrayList<>();
     
     public static void init() {
-        MongoCursor<Document> mc = Core.getInstance().getPluginDB().getCollection("ServerCredits").find().iterator();
-        while (mc.hasNext()) {
+        for (Document document : Core.getInstance().getPluginDB().getCollection("ServerCredits").find()) {
             Credits credit = new Credits();
-            credit.load(mc.next());
+            credit.load(document);
             credits.add(credit);
         }
     }

@@ -19,6 +19,7 @@ import org.bukkit.persistence.PersistentDataType;
 public class InventoryMenuItemHotbar extends InventoryMenuItem {
     
     public static String getHotbarTag(ItemStack item) {
+        if (!item.hasItemMeta()) return "";
         return item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Core.getInstance(), "hotbar"), PersistentDataType.STRING);
     }
     
@@ -41,15 +42,12 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
     }
     
     @Override
-    public boolean isHotbarItem() {
-        return true;
-    }
-    
-    @Override
     public ItemStack createItem(CorePlayer cp) {
         ItemStack item = super.createItem(cp);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(new NamespacedKey(Core.getInstance(), "hotbar"), PersistentDataType.STRING, hotbarIdentifier);
+        if (meta != null) {
+            meta.getPersistentDataContainer().set(new NamespacedKey(Core.getInstance(), "hotbar"), PersistentDataType.STRING, hotbarIdentifier);
+        }
         item.setItemMeta(meta);
         return item;
     }

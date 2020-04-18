@@ -234,8 +234,8 @@ public class ChatGroup {
      * @param msg Message
      */
     public void sendMessage(String msg) {
-        for (DBPlayer dbp : players) {
-            Chat.sendMessageToPlayer(dbp, msg);
+        for (CorePlayer cp : players) {
+            Chat.sendMessageToPlayer(cp, msg);
         }
     }
     

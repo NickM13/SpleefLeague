@@ -15,7 +15,7 @@ import org.bukkit.Location;
 /**
  * @author NickM13
  */
-public class Dimension implements DBVariable<Document> {
+public class Dimension extends DBVariable<Document> {
     private Point low, high;
     
     public Dimension() {

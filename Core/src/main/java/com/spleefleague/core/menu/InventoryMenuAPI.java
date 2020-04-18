@@ -33,7 +33,7 @@ import org.bukkit.potion.PotionType;
  */
 public class InventoryMenuAPI {
     
-    private static ItemStack LOCKED_ICON = createCustomItem(Material.DIAMOND_AXE, 12);
+    private static final ItemStack LOCKED_ICON = createCustomItem(Material.DIAMOND_AXE, 12);
     
     public static InventoryMenuItem createLockedMenuItem() {
         return createLockedMenuItem("Locked");
@@ -50,33 +50,38 @@ public class InventoryMenuAPI {
     public static ItemStack createCustomItem(Material displayItem) {
         ItemStack itemStack = new ItemStack(displayItem);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setUnbreakable(true);
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(itemMeta);
+        if (itemMeta != null) {
+            itemMeta.setUnbreakable(true);
+            itemMeta.addItemFlags(ItemFlag.values());
+            itemStack.setItemMeta(itemMeta);
+        }
         return itemStack;
     }
     public static ItemStack createCustomItem(Material displayItem, int damage) {
         ItemStack itemStack = new ItemStack(displayItem);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof Damageable) {
-            ((Damageable)itemMeta).setDamage(damage);
+        if (itemMeta != null) {
+            if (itemMeta instanceof Damageable) {
+                ((Damageable) itemMeta).setDamage(damage);
+            }
+            itemMeta.setUnbreakable(true);
+            itemMeta.addItemFlags(ItemFlag.values());
+            itemStack.setItemMeta(itemMeta);
         }
-        itemMeta.setUnbreakable(true);
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemStack.setItemMeta(itemMeta);
         return itemStack;
     }
     public static ItemStack createCustomItem(String name, Material displayItem, int damage) {
         ItemStack item = createCustomItem(displayItem, damage);
-        item.getItemMeta().setDisplayName(name);
+        if (item.getItemMeta() != null)
+            item.getItemMeta().setDisplayName(name);
         return item;
     }
     
     public static ItemStack createCustomPotion(PotionType pt) {
         ItemStack item = new ItemStack(Material.POTION);
-        PotionMeta meta = (PotionMeta) item.getItemMeta();
-        meta.setBasePotionData(new PotionData(pt));
-        item.setItemMeta(meta);
+        PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
+        potionMeta.setBasePotionData(new PotionData(pt));
+        item.setItemMeta(potionMeta);
         return item;
     }
     
@@ -173,8 +178,8 @@ public class InventoryMenuAPI {
                 .setName(cp -> cp.getHeldItem().getDisplayName())
                 .setDisplayItem(cp -> cp.getHeldItem().getItem())
                 .setDescription(cp -> cp.getHeldItem().getDescription())
-                .setVisibility(cp -> cp.hasSelectedHeldItem())
-                .setAction(cp -> { cp.activateHeldItem(); }));
+                .setVisibility(CorePlayer::hasSelectedHeldItem)
+                .setAction(CorePlayer::activateHeldItem));
     }
     
 }

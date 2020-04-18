@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus;
+package com.spleefleague.core.menu.menus.main;
 
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.menu.InventoryMenuAPI;
@@ -23,6 +23,12 @@ public class OptionsMenu {
     
     private static InventoryMenuItem menuItem = null;
     
+    /**
+     * Gets the menu item for this menu, if it doesn't exist
+     * already then initialize it
+     *
+     * @return Inventory Menu Item
+     */
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             // Options Menus

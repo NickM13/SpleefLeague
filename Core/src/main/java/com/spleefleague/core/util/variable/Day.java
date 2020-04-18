@@ -14,7 +14,7 @@ import java.util.TimeZone;
 /**
  * @author NickM13
  */
-public class Day implements DBVariable<Integer> {
+public class Day extends DBVariable<Integer> {
     
     private static final TimeZone timeZone = TimeZone.getTimeZone("PST");
     private int day;

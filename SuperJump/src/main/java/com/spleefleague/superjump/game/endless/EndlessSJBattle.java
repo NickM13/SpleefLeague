@@ -10,10 +10,12 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.BattlePlayer;
 import com.spleefleague.core.game.Leaderboard;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.util.TimeUtils;
 import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJBattle;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import java.time.LocalDate;
@@ -28,9 +30,9 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
 
     private final SuperJumpPlayer endlessPlayer;
     
-    public EndlessSJBattle(List<DBPlayer> players, EndlessSJArena arena) {
+    public EndlessSJBattle(List<CorePlayer> players, EndlessSJArena arena) {
         super(players, arena);
-        endlessPlayer = (SuperJumpPlayer) battlers.keySet().iterator().next();
+        endlessPlayer = SuperJump.getInstance().getPlayers().get(battlers.keySet().iterator().next());
     }
 
     /*
@@ -88,7 +90,7 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
     @Override
     public void updateScoreboard() {
         BattlePlayer bp = battlers.values().iterator().next();
-        SuperJumpPlayer sjp = (SuperJumpPlayer) bp.getDBPlayer();
+        SuperJumpPlayer sjp = SuperJump.getInstance().getPlayers().get(bp.getCorePlayer());
         chatGroup.setTeamDisplayName("TodayPersonal", ChatColor.AQUA + " Personal: " + sjp.getEndlessStats().getLevel() +
                 "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), sjp.getUniqueId())) + "]");
         chatGroup.setTeamDisplayName("TodayServer", ChatColor.AQUA + " Server: " +

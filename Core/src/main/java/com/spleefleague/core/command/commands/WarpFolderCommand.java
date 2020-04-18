@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
@@ -50,7 +51,7 @@ public class WarpFolderCommand extends CommandTemplate {
     public void warpfolderList(CorePlayer sender,
             @LiteralArg(value="list") String l,
             @OptionArg(listName="folderList") String folder) {
-        sender.sendMessage(Chat.fillTitle("[ Warps: " + folder + " ]"));
+        sender.sendMessage(ChatUtils.centerTitle("[ Warps: " + folder + " ]"));
         sender.getPlayer().spigot().sendMessage(Warp.getWarpsFormatted(folder));
     }
     

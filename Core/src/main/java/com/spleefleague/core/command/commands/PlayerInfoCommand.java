@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
@@ -47,7 +48,7 @@ public class PlayerInfoCommand extends CommandTemplate {
     public void playerinfo(CorePlayer sender, OfflinePlayer op) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(op.getUniqueId());
         List<String> strings = new ArrayList<>();
-        strings.add(Chat.BRACE + Chat.fillTitle("[ " + cp.getDisplayNamePossessive() + " data" + Chat.BRACE + " ]"));
+        strings.add(Chat.BRACE + ChatUtils.centerTitle("[ " + cp.getDisplayNamePossessive() + " data" + Chat.BRACE + " ]"));
         strings.add(Chat.BRACE + "Name: " +
                 Chat.DEFAULT + op.getName());
         strings.add(Chat.BRACE + "UUID: " +

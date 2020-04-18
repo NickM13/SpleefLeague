@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.spleefleague.core.vendor.Vendor;
+import com.spleefleague.core.vendor.VendorManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -182,7 +183,7 @@ public class EnvironmentListener implements Listener {
                 if (!damageableMobs.contains(event.getEntityType()))
                     event.setCancelled(true);
             } else {
-                Vendor.punchEvent(event);
+                VendorManager.punchEvent(event);
             }
         } else if (!event.getEntityType().equals(EntityType.PLAYER) && !damageableMobs.contains(event.getEntityType())) {
             event.setCancelled(true);
@@ -206,7 +207,7 @@ public class EnvironmentListener implements Listener {
             }
         }
         if (event.getHand() == EquipmentSlot.HAND) {
-            Vendor.interactEvent(event);
+            VendorManager.interactEvent(event);
         }
     }
 

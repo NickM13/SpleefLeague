@@ -20,6 +20,9 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 /**
+ * A DBEntity is an object that can be
+ * saved and loaded from a JSON Document
+ *
  * @author NickM13
  */
 public class DBEntity {
@@ -30,6 +33,11 @@ public class DBEntity {
         return _id;
     }
     
+    /**
+     * Converts the DBEntity into a document
+     *
+     * @return Document
+     */
     public Document save() {
         Document doc = new Document();
         Class<?> clazz = this.getClass();
@@ -44,16 +52,7 @@ public class DBEntity {
                             fieldName = f.getName();
                         }
                         if (DBVariable.class.isAssignableFrom(f.getType())) {
-                            for (Method method : f.getType().getMethods()) {
-                                if (method.getName().equalsIgnoreCase("save")) {
-                                    try {
-                                        doc.append(fieldName, method.invoke(f.get(this)));
-                                    } catch (InvocationTargetException ex) {
-                                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                    break;
-                                }
-                            }
+                            doc.append(fieldName, ((DBVariable<?>) f.get(this)).save());
                         } else if (UUID.class.isAssignableFrom(f.getType())) {
                             doc.append(fieldName, ((UUID) f.get(this)).toString());
                         } else if (DBEntity.class.isAssignableFrom(f.getType())) {
@@ -95,6 +94,11 @@ public class DBEntity {
         return doc;
     }
     
+    /**
+     * Loads fields from a Document into the DBEntity
+     *
+     * @param doc Document
+     */
     public void load(Document doc) {
         if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
         Class<?> clazz = this.getClass();

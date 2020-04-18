@@ -149,6 +149,7 @@ public class Ticket extends DBEntity {
         if (!open) return;
         open = false;
         Chat.sendMessageToPlayer(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + " Your ticket has been closed.");
+        
         Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), Chat.TICKET_PREFIX + "[Ticket: " + getSenderPlayer().getDisplayName() + Chat.TICKET_PREFIX + "]" + Chat.TICKET_ISSUE + " Ticket closed.");
     }
     

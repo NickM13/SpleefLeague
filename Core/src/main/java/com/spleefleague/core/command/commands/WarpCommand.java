@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.chat.Chat;
@@ -28,7 +29,7 @@ public class WarpCommand extends CommandTemplate {
     }
     
     private void printWarps(CorePlayer sender) {
-        sender.sendMessage(Chat.fillTitle("[ List of Warps ]"));
+        sender.sendMessage(ChatUtils.centerTitle("[ List of Warps ]"));
         sender.sendMessage(Warp.getWarpsFormatted(sender.getRank()));
     }
     

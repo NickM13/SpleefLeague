@@ -6,7 +6,7 @@
 
 package com.spleefleague.superjump.game.practice;
 
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.game.SJBattle;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class PracticeSJBattle extends SJBattle<PracticeSJArena> {
 
-    public PracticeSJBattle(List<DBPlayer> players, PracticeSJArena arena) {
+    public PracticeSJBattle(List<CorePlayer> players, PracticeSJArena arena) {
         super(players, arena);
     }
 

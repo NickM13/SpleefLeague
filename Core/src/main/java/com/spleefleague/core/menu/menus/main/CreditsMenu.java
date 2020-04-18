@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus;
+package com.spleefleague.core.menu.menus.main;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.menu.menus.credits.Credits;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.menus.main.credits.Credits;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +21,12 @@ public class CreditsMenu {
     
     private static InventoryMenuItem menuItem = null;
     
+    /**
+     * Gets the menu item for this menu, if it doesn't exist
+     * already then initialize it
+     *
+     * @return Inventory Menu Item
+     */
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             // Options Menus
