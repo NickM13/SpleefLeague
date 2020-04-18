@@ -7,13 +7,14 @@
 package com.spleefleague.spleef.game.spleef.power;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.util.database.DBEntity;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.SpleefBattle;
 import com.spleefleague.spleef.game.spleef.power.effect.Effect;
 import com.spleefleague.spleef.game.spleef.power.effect.EffectBuff;
 import com.spleefleague.spleef.game.spleef.power.effect.EffectHeatBolts;
@@ -198,7 +199,7 @@ public class Power extends DBEntity {
         }
     }
     
-    @DBLoad(fieldname="effects")
+    @DBLoad(fieldName="effects")
     public void loadEffects(List<Document> docs) {
         for (Document doc : docs) {
             Effect.EffectType type = Effect.EffectType.valueOf(doc.get("type", String.class));
@@ -267,9 +268,9 @@ public class Power extends DBEntity {
         return cooldown;
     }
     
-    public void activate(SpleefPlayer sp) {
+    public void activate(SpleefPlayer sp, SpleefBattle sb) {
         for (Effect effect : effects) {
-            effect.activate(sp);
+            effect.activate(sp, sb);
         }
         sp.getPlayer().setCooldown(slotItem[slot], (int) (cooldown * 20));
     }
@@ -279,19 +280,19 @@ public class Power extends DBEntity {
         }
         sp.getPlayer().setCooldown(slotItem[slot], 0);
     }
-    public void updateEffects(SpleefPlayer sp) {
+    public void updateEffects(SpleefPlayer sp, SpleefBattle sb) {
         for (Effect effect : effects) {
-            effect.updateEffect(sp);
+            effect.updateEffect(sp, sb);
         }
     }
-    public void onBlockBreak(SpleefPlayer sp) {
+    public void onBlockBreak(SpleefPlayer sp, SpleefBattle sb) {
         for (Effect effect : effects) {
-            effect.onBlockBreak(sp);
+            effect.onBlockBreak(sp, sb);
         }
     }
-    public void onMove(SpleefPlayer sp) {
+    public void onMove(SpleefPlayer sp, SpleefBattle sb) {
         for (Effect effect : effects) {
-            effect.onMove(sp);
+            effect.onMove(sp, sb);
         }
     }
     

@@ -8,132 +8,93 @@ package com.spleefleague.superjump.game;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.Request;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.BattlePlayer;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.Point;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.superjump.SuperJump;
-import com.spleefleague.superjump.player.SuperJumpPlayer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+
+import java.util.*;
+
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 /**
  * @author NickM13
  * @param <A>
  */
-public class SJBattle<A extends SJArena> extends Battle<SuperJumpPlayer, A> {
+public class SJBattle<A extends SJArena> extends Battle<A> {
     
     protected Random random;
     
-    protected class BattlePlayer {
-        public SuperJumpPlayer player;
-        public int falls;
-        public Location spawn;
-        
-        public BattlePlayer(SuperJumpPlayer player, Location spawn) {
-            this.player = player;
-            this.falls = 0;
-            this.spawn = spawn;
-        }
-    }
-    // List of battling players
-    protected final Map<SuperJumpPlayer, BattlePlayer> battlers = new HashMap<>();
-    // List of battling players using number indices
-    private final List<SuperJumpPlayer> arenaPlayers = new ArrayList<>();
-    
     protected List<Dimension> goals = new ArrayList<>();
     
-    protected final Request endGameRequest = new Request();
+    //protected final Request endGameRequest = new Request();
     
     protected long timeLastLap;
     
     public SJBattle(List<DBPlayer> players, A arena) {
-        super(SuperJump.getInstance(), players, arena);
+        super(SuperJump.getInstance(), players, arena, SJBattlePlayer.class);
         this.gameMode = GameMode.ADVENTURE;
-        for (Dimension goal : arena.getGoals()) {
-            goals.add(goal);
-        }
+        goals.addAll(arena.getGoals());
         this.gameWorld.showSpectators(false);
-        for (int i = 0; i < players.size(); i++) {
-            SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(players.get(i));
-            battlers.put(sjp, new BattlePlayer(sjp, getSpawn(i)));
-            arenaPlayers.add(sjp);
-        }
         timeLastLap = 0;
     }
-    
+
+    @Override
+    protected void setupBattlers() {
+
+    }
+
+    @Override
+    protected void sendStartMessage() {
+
+    }
+
     protected long getLevelTime() {
         if (this.timeLastLap == 0) return 0;
         return System.currentTimeMillis() - this.timeLastLap;
     }
-    
+
     @Override
-    protected void startBattle() {
-        super.startBattle();
+    protected void saveBattlerStats(DBPlayer dbPlayer) {
+
     }
-    
-    public void endBattle(BattlePlayer winner) {
-        if (winner != null) {
-            BattlePlayer loser = null;
-            for (BattlePlayer bp : battlers.values()) {
-                if (!bp.equals(winner)) {
-                    loser = bp;
-                }
-            }
-            if (loser == null) {
-                loser = winner;
-            }
-            Core.getInstance().sendMessage(Chat.PLAYER_NAME + winner.player.getDisplayName() +
-                    Chat.DEFAULT + " has " + this.randomDefeatSynonym() + " " +
-                    Chat.PLAYER_NAME + loser.player.getDisplayName() +
-                    Chat.DEFAULT + " in " +
-                    Chat.GAMEMODE + getMode().getDisplayName());
-        }
-        endBattle();
-    }
-    
+
     @Override
-    public boolean surrender(SuperJumpPlayer sjp) {
-        if (battlers.containsKey(sjp)) {
-            endBattle(null);
-            return true;
-        }
-        return false;
+    protected void setupBaseSettings() {
+
     }
     
     @Override
     public void updateScoreboard() {
         
     }
-    
+
     @Override
-    protected void resetPlayers() {
-        battlers.forEach((p, bp) -> {
-            p.getPlayer().teleport(bp.spawn, PlayerTeleportEvent.TeleportCause.COMMAND);
-        });
+    public void updateField() {
+
+    }
+
+    @Override
+    public void updateExperience() {
+
     }
     
     @Override
-    public void requestEndGame(SuperJumpPlayer sjp) {
+    public void requestEndGame(DBPlayer sjp) {
         if (!battlers.containsKey(sjp)) return;
         CorePlayer cp = Core.getInstance().getPlayers().get(sjp);
         if (battlers.size() == 1) {
-            endBattle(null);
+            endBattle();
         } else {
+            /*
             if (endGameRequest.getRequester() == null || endGameRequest.getRequester().equals(sjp)) {
                 endGameRequest.setRequest(sjp);
                 Core.getInstance().sendMessage(this.chatGroup, Chat.PLAYER_NAME + cp.getDisplayName() + Chat.DEFAULT + " is requesting to end the game");
@@ -141,30 +102,41 @@ public class SJBattle<A extends SJArena> extends Battle<SuperJumpPlayer, A> {
                 endGameRequest.setRequest(null);
                 endBattle(null);
             }
+             */
         }
     }
-    
+
     @Override
-    public void onMove(SuperJumpPlayer sjp, PlayerMoveEvent e) {
-        if (sjp.getBattleState() == BattleState.BATTLER) {
-            if (!isRoundStarted()) {
-                if (e.getFrom().distance(e.getTo()) > 0) {
-                e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
-                        e.getFrom().getX(),
-                        e.getFrom().getY(),
-                        e.getFrom().getZ(),
-                        e.getTo().getYaw(),
-                        e.getTo().getPitch()));
-                }
-            } else if (e.getPlayer().getLocation().getBlock().isLiquid() || !isInBorder(sjp)) {
-                failPlayer(sjp);
-            } else if (isInGoal(sjp)) {
-                winPlayer(sjp);
-            }
-        }
+    protected void resetPlayer(DBPlayer dbPlayer) {
+
     }
-    
-    protected boolean isInGoal(SuperJumpPlayer sjp) {
+
+    @Override
+    protected void leaveBattler(DBPlayer dbPlayer) {
+
+    }
+
+    @Override
+    protected void fillField() {
+
+    }
+
+    @Override
+    protected void joinBattler(DBPlayer dbPlayer) {
+
+    }
+
+    @Override
+    protected void setupBattleInventory(DBPlayer dbPlayer) {
+
+    }
+
+    @Override
+    protected void failBattler(DBPlayer dbPlayer) {
+
+    }
+
+    protected boolean isInGoal(DBPlayer sjp) {
         for (Dimension goal : goals) {
             if (goal.isContained(new Point(sjp.getPlayer().getLocation()))) {
                 return true;
@@ -179,20 +151,7 @@ public class SJBattle<A extends SJArena> extends Battle<SuperJumpPlayer, A> {
         timeLastLap = System.currentTimeMillis();
     }
     
-    @Override
-    protected void failPlayer(SuperJumpPlayer sjp) {
-        for (BattlePlayer bp : battlers.values()) {
-            if (bp.player.equals(sjp)) {
-                gameWorld.doFailBlast(sjp.getPlayer());
-                bp.falls++;
-                bp.player.getPlayer().teleport(bp.spawn);
-                break;
-            }
-        }
-        super.failPlayer(sjp);
-    }
-    
-    protected void winPlayer(SuperJumpPlayer sjp) {
+    protected void winPlayer(DBPlayer sjp) {
         
     }
 
@@ -292,19 +251,20 @@ public class SJBattle<A extends SJArena> extends Battle<SuperJumpPlayer, A> {
             if (j == jumps.size() - 1) {
                 fakeBlocks.add(new FakeBlock(new BlockPosition(forwardLoc.toVector()), Material.DRIED_KELP_BLOCK.createBlockData()));
                 fakeBlocks.add(new FakeBlock(new BlockPosition(backwardLoc.toVector()), Material.DRIED_KELP_BLOCK.createBlockData()));
-                battlers.get(arenaPlayers.get(0)).spawn = forwardLoc.clone().add(0, 1, 0);
-                battlers.get(arenaPlayers.get(0)).spawn.setYaw(90);
-                battlers.get(arenaPlayers.get(1)).spawn = backwardLoc.clone().add(0, 1, 0);
-                battlers.get(arenaPlayers.get(1)).spawn.setYaw(270);
+                Iterator<BattlePlayer> bit = battlers.values().iterator();
+                SJBattlePlayer sjbp1 = (SJBattlePlayer) bit.next();
+                SJBattlePlayer sjbp2 = (SJBattlePlayer) bit.next();
+                sjbp1.setSpawn(forwardLoc.clone().add(0, 1, 0));
+                sjbp1.getSpawn().setYaw(90);
+                sjbp2.setSpawn(backwardLoc.clone().add(0, 1, 0));
+                sjbp2.getSpawn().setYaw(270);
             } else {
                 fakeBlocks.add(new FakeBlock(new BlockPosition(forwardLoc.toVector()), Material.REDSTONE_LAMP.createBlockData()));
                 fakeBlocks.add(new FakeBlock(new BlockPosition(backwardLoc.toVector()), Material.REDSTONE_LAMP.createBlockData()));
             }
         }
-        
-        Iterator<FakeBlock> fbit = fakeBlocks.iterator();
-        while (fbit.hasNext()) {
-            FakeBlock fb = fbit.next();
+
+        for (FakeBlock fb : fakeBlocks) {
             gameWorld.setBlock(fb.getBlockPosition(), fb.getBlockData());
         }
         

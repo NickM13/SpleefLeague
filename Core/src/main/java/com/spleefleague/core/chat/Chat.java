@@ -8,7 +8,7 @@ package com.spleefleague.core.chat;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.database.variable.DBPlayer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import joptsimple.internal.Strings;
@@ -40,7 +40,8 @@ public class Chat {
             PLAYER_CHAT = ChatColor.WHITE + "",
             PLUGIN_PREFIX = ChatColor.GOLD + "",
             TICKET_PREFIX = ChatColor.GOLD + "",
-            TICKET_ISSUE = ChatColor.GREEN + "";
+            TICKET_ISSUE = ChatColor.GREEN + "",
+            SCOREBOARD_DEFAULT = ChatColor.WHITE + "";
 
     public static ChatColor getColor(String color) {
         return chatColors.get(color);
@@ -95,7 +96,7 @@ public class Chat {
     public static void sendMessage(DBPlayer dbp, String msg) {
         CorePlayer cp = Core.getInstance().getPlayers().get(dbp);
         if (cp.isMuted() == 1) {
-            Core.sendMessageToPlayer(dbp, "You're muted!");
+            Core.getInstance().sendMessage(dbp, "You're muted!");
             return;
         }
         ChatChannel cc = cp.getChatChannel();
@@ -104,8 +105,8 @@ public class Chat {
             cp.setChatChannel(cc);
         }
         if (cp.getOptions().isChannelDisabled(cc.getName())) {
-            Core.sendMessageToPlayer(dbp, "You have " + cc.getName() + " muted!");
-            Core.sendMessageToPlayer(dbp, "To unmute, go to Menu->Options->Chat Channels");
+            Core.getInstance().sendMessage(dbp, "You have " + cc.getName() + " muted!");
+            Core.getInstance().sendMessage(dbp, "To unmute, go to Menu->Options->Chat Channels");
             return;
         }
         msg = cc.formatMessage(cp, msg);

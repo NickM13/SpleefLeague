@@ -7,9 +7,9 @@
 package com.spleefleague.spleef.game;
 
 import com.mongodb.client.MongoCursor;
-import com.spleefleague.core.annotation.DBLoad;
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.spleef.Spleef;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class SpleefField extends DBEntity {
     // Array of areas to fill for the field
     private final List<Dimension> areas = new ArrayList<>();
     
-    @DBLoad(fieldname="field")
+    @DBLoad(fieldName="field")
     public void setAreas(List<Document> areadoc) {
         for (Document d : areadoc) {
             Dimension dim = new Dimension();

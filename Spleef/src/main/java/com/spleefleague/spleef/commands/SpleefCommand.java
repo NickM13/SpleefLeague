@@ -7,19 +7,17 @@
 package com.spleefleague.spleef.commands;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.command.CommandAnnotation;
-import com.spleefleague.core.command.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.error.CoreError;
+import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.party.Party;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import javax.annotation.Nullable;
-import com.spleefleague.core.command.OptionArg;
-import com.spleefleague.core.party.Party;
 
 /**
  * @author NickM13
@@ -40,8 +38,7 @@ public class SpleefCommand extends CommandTemplate {
     public void spleefDebug(CorePlayer sender,
             @LiteralArg(value="debug") String l) {
         Party.createParty(sender);
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getArenaMode()).startMatch(Lists.newArrayList(sp, sp), "temple");
+        Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getArenaMode()).startMatch(Lists.newArrayList(sender, sender), "temple");
     }
     
     @CommandAnnotation
@@ -51,33 +48,28 @@ public class SpleefCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void spleefClassic(CorePlayer sender, @LiteralArg(value="classic") String l, @Nullable @OptionArg(listName="classicArenas") String arena) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), sp, Arena.getByName(arena, SpleefMode.CLASSIC.getArenaMode()));
+        Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.CLASSIC.getArenaMode()));
     }
     
     @CommandAnnotation
     public void spleefMulti(CorePlayer sender, @LiteralArg(value="multi") String l) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), sp);
+        Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), sender);
     }
     
     @CommandAnnotation
     public void spleefPower(CorePlayer sender, @LiteralArg(value="power") String l, @Nullable @OptionArg(listName="powerArenas") String arena) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), sp, Arena.getByName(arena, SpleefMode.POWER.getArenaMode()));
+        Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.POWER.getArenaMode()));
     }
     
     @CommandAnnotation
     public void spleefTeam(CorePlayer sender, @LiteralArg(value="team") String l, @Nullable @OptionArg(listName="teamArenas") String arena) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getArenaMode(), sp, Arena.getByName(arena, SpleefMode.TEAM.getArenaMode()));
+        Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.TEAM.getArenaMode()));
     }
     
     @CommandAnnotation(hidden=true)
     public void spleefWc(CorePlayer sender, @LiteralArg(value="wc") String l, @Nullable @OptionArg(listName="wcArenas") String arena) {
         error(sender, CoreError.SETUP);
-        //SpleefPlayer sp = Spleef.getInstance().getPlayers().get(sender);
-        //Spleef.getInstance().queuePlayer(SpleefMode.WC.getArenaMode(), sp, Arena.getByName(arena, SpleefMode.WC.getArenaMode()));
+        //Spleef.getInstance().queuePlayer(SpleefMode.WC.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.WC.getArenaMode()));
     }
     
 }

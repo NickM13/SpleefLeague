@@ -6,17 +6,32 @@
 
 package com.spleefleague.core.player;
 
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.variable.DBEntity;
+
 /**
  * @author NickM13
  */
-public class TempRank {
+public class TempRank extends DBEntity {
 
-    public Rank rank = null;
-    public Long expireTime = 0L;
+    @DBField
+    private String rankName = null;
+    @DBField
+    private Long expireTime = 0L;
 
-    public TempRank(String rank, Long expireTime) {
-        this.rank = Rank.getRank(rank);
+    public TempRank() { }
+
+    public TempRank(String rankName, Long expireTime) {
+        this.rankName = rankName;
         this.expireTime = expireTime;
     }
-        
+
+    public Rank getRank() {
+        return Rank.getRank(rankName);
+    }
+
+    public long getExpireTime() {
+        return expireTime;
+    }
+
 }

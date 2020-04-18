@@ -6,13 +6,20 @@
 
 package com.spleefleague.core.listener;
 
+import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
-import com.spleefleague.core.util.Warp;
+import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.util.variable.Warp;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.spleefleague.core.vendor.Vendor;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -20,77 +27,86 @@ import org.bukkit.craftbukkit.v1_15_R1.block.CraftSign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockExplodeEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityToggleGlideEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 /**
+ * Player listener for out of game actions
+ *
  * @author NickM13
  */
 public class EnvironmentListener implements Listener {
-    
-    protected static int BLOCKS_BELOW = 5;
-    
-    protected Double parseDouble(String l) {
-        try {
-            return Double.parseDouble(l);
-        } catch(Exception e1) {
-            try {
-                return (double) Integer.parseInt(l);
-            } catch(Exception e2) {
-                return 0.;
-            }
-        }
-    }
-    
-    protected Vector getSignVector(CraftSign sign) {
+
+    /**
+     * Converts lines 1, 2, and 3 to doubles
+     *
+     * @param sign Sign
+     * @return Vector
+     */
+    private Vector getSignVector(CraftSign sign) {
         Vector vec = new Vector();
-        vec.setX(parseDouble(sign.getLine(1)));
-        vec.setY(parseDouble(sign.getLine(2)));
-        vec.setZ(parseDouble(sign.getLine(3)));
+        vec.setX(Double.parseDouble(sign.getLine(1)));
+        vec.setY(Double.parseDouble(sign.getLine(2)));
+        vec.setZ(Double.parseDouble(sign.getLine(3)));
         return vec;
     }
-    
-    protected Set<Block> getBlocksBelow(Block block) {
+
+    /**
+     * Returns a set of blocks below a block
+     *
+     * @param block Origin
+     * @return Block Set
+     */
+    private Set<Block> getBlocksBelow(Block block) {
         Set<Block> blocks = new HashSet<>();
+        if (block == null) return blocks;
         Block rel = block;
-        for (int i = 0; i < BLOCKS_BELOW || rel == null; i++) {
+        int BLOCKS_BELOW = 5;
+        for (int i = 0; i < BLOCKS_BELOW; i++) {
             blocks.add(rel);
             rel = rel.getRelative(BlockFace.DOWN);
         }
         return blocks;
     }
-    
+
+    /**
+     * Perform some actions if a player walks into or above a sign
+     * with specific text on it
+     *
+     * @param event Event
+     */
     @EventHandler
-    public void onPlayerMoveSign(PlayerMoveEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
-        for (Block block : getBlocksBelow(e.getTo().getBlock())) {
+    public void onPlayerMoveSign(PlayerMoveEvent event) {
+        if (event.getTo() == null) return;
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        for (Block block : getBlocksBelow(event.getTo().getBlock())) {
             BlockState state = block.getState();
             if (state instanceof CraftSign) {
                 CraftSign sign = (CraftSign) state;
                 switch (sign.getLine(0).toLowerCase()) {
                     case "[jump]":
-                        e.getPlayer().setVelocity(e.getPlayer().getVelocity().add(getSignVector(sign)));
+                        event.getPlayer().setVelocity(event.getPlayer().getVelocity().add(getSignVector(sign)));
                         break;
                     case "[teleport]":
                         cp.teleport(getSignVector(sign));
                         break;
                     case "[min-rank]":
                         if (!cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
-                            e.setCancelled(true);
+                            event.setCancelled(true);
                         }
                         break;
                     case "[max-rank]":
                         if (cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
-                            e.setCancelled(true);
+                            event.setCancelled(true);
                         }
                         break;
                     case "[warp]":
@@ -103,11 +119,11 @@ public class EnvironmentListener implements Listener {
                         try {
                             PotionEffectType type = PotionEffectType.getByName(sign.getLine(1));
                             if (type == null) break;
-                            int duration = Integer.valueOf(sign.getLine(2));
-                            int amplifier = Integer.valueOf(sign.getLine(3));
-                            e.getPlayer().addPotionEffect(type.createEffect(duration, amplifier));
-                        } catch (NumberFormatException exception) {
-                            
+                            int duration = Integer.parseInt(sign.getLine(2));
+                            int amplifier = Integer.parseInt(sign.getLine(3));
+                            event.getPlayer().addPotionEffect(type.createEffect(duration, amplifier));
+                        } catch (NumberFormatException ignored) {
+
                         }
                         break;
                     default:
@@ -117,51 +133,323 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-    
+
+    /**
+     * Prevent non building players from dropping blocks
+     *
+     * @param event Event
+     */
     @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getEntity());
-        cp.saveLastLocation();
-        e.setDeathMessage(cp.getDisplayName() + " somehow died on SpleefLeague?  Kinda sus.  Oh but here's the real reason: " + e.getDeathMessage());
-        Core.getInstance().sendMessage(e.getDeathMessage());
+    public void onDropItem(PlayerDropItemEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!cp.canBuild()) {
+            event.setCancelled(true);
+        }
     }
-    
+
+    /**
+     * Perform effects based on the type of damage
+     * a player takes
+     *
+     * @param event Event
+     */
     @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
-        e.setRespawnLocation(cp.getSpawnLocation());
-    }
-    
-    @EventHandler
-    public void onBlockExplode(BlockExplodeEvent e) {
-        e.setCancelled(true);
-    }
-    
-    @EventHandler
-    public void onEntityExplode(EntityExplodeEvent e) {
-        e.blockList().clear();
-    }
-    
-    @EventHandler
-    public void onEntityToggleGlide(EntityToggleGlideEvent e) {
-        if (e.isGliding()
-                && e.getEntityType().equals(EntityType.PLAYER)) {
-            Player p = (Player) e.getEntity();
-            CorePlayer cp = Core.getInstance().getPlayers().get(p);
-            if (!cp.getGameMode().equals(GameMode.CREATIVE)) {
-                e.setCancelled(true);
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
+                event.setDamage(event.getFinalDamage() / 2);
             }
         }
     }
-    
+
+    private static final Set<EntityType> damageableMobs = Sets.newHashSet(EntityType.BLAZE, EntityType.BOAT, EntityType.CAVE_SPIDER,
+            EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.ENDER_DRAGON,
+            EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE,
+            EntityType.MINECART, EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER,
+            EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH,
+            EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER);
+
+    /**
+     * Handle certain entity damaging events
+     *
+     * @param event Event
+     */
     @EventHandler
-    public void onBlockFade(BlockFadeEvent e) {
-        e.setCancelled(true);
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player) {
+            if (!Core.getInstance().getPlayers().get((Player)event.getDamager()).canBuild()) {
+                if (!damageableMobs.contains(event.getEntityType()))
+                    event.setCancelled(true);
+            } else {
+                Vendor.punchEvent(event);
+            }
+        } else if (!event.getEntityType().equals(EntityType.PLAYER) && !damageableMobs.contains(event.getEntityType())) {
+            event.setCancelled(true);
+        }
     }
-    
+
+    private static final Set<EntityType> interactableEntities = Sets.newHashSet();
+
+    /**
+     * Handle certain player entity interactions such
+     * as interacting with vendors
+     *
+     * @param event Event
+     */
     @EventHandler
-    public void onBlockPhysics(BlockPhysicsEvent e) {
-        
+    public void onEntityInteractEntity(PlayerInteractEntityEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!cp.canBuild()) {
+            if (!interactableEntities.contains(event.getRightClicked().getType())) {
+                event.setCancelled(true);
+            }
+        }
+        if (event.getHand() == EquipmentSlot.HAND) {
+            Vendor.interactEvent(event);
+        }
+    }
+
+    /**
+     * Prevent player food from dropping
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onPlayerFoodChange(FoodLevelChangeEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player p = (Player) event.getEntity();
+            p.setFoodLevel(20);
+            event.setCancelled(true);
+        }
+    }
+
+    /**
+     * Save location of death for /back usage
+     * TODO: Do we really need this?
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity());
+        cp.saveLastLocation();
+        event.setDeathMessage(cp.getDisplayName() + " somehow died on SpleefLeague?  Seems kinda sus.  Oh well, here's the real reason: " + event.getDeathMessage());
+        Core.getInstance().sendMessage(event.getDeathMessage());
+    }
+
+    /**
+     * Removes player's cosmetic armor when they click
+     * the armor slot
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onArmorEquip(InventoryClickEvent event) {
+        if (event.getSlotType().equals(InventoryType.SlotType.ARMOR) && event.getClickedInventory() != null) {
+            ItemStack itemStack = event.getClickedInventory().getItem(event.getSlot());
+            if (event.getClickedInventory().getHolder() instanceof Player) {
+                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                    Core.getInstance().getPlayers().get((Player)event.getClickedInventory().getHolder()).updateArmor();
+                }, 10L);
+            }
+        }
+    }
+
+    private static final Set<CreatureSpawnEvent.SpawnReason> noSpawnReasons = Sets.newHashSet(CreatureSpawnEvent.SpawnReason.BEEHIVE, CreatureSpawnEvent.SpawnReason.BREEDING,
+            CreatureSpawnEvent.SpawnReason.BUILD_IRONGOLEM, CreatureSpawnEvent.SpawnReason.BUILD_SNOWMAN, CreatureSpawnEvent.SpawnReason.BUILD_WITHER, CreatureSpawnEvent.SpawnReason.CURED, /*SpawnReason.CUSTOM,*/ /*SpawnReason.DEFAULT,*/
+            CreatureSpawnEvent.SpawnReason.DROWNED, CreatureSpawnEvent.SpawnReason.DISPENSE_EGG, CreatureSpawnEvent.SpawnReason.EGG, CreatureSpawnEvent.SpawnReason.ENDER_PEARL, CreatureSpawnEvent.SpawnReason.EXPLOSION, CreatureSpawnEvent.SpawnReason.INFECTION,
+            CreatureSpawnEvent.SpawnReason.JOCKEY, CreatureSpawnEvent.SpawnReason.LIGHTNING, CreatureSpawnEvent.SpawnReason.MOUNT, CreatureSpawnEvent.SpawnReason.NATURAL, CreatureSpawnEvent.SpawnReason.NETHER_PORTAL, CreatureSpawnEvent.SpawnReason.OCELOT_BABY,
+            CreatureSpawnEvent.SpawnReason.PATROL, CreatureSpawnEvent.SpawnReason.RAID, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS, CreatureSpawnEvent.SpawnReason.SHEARED, /*SpawnReason.SHOULDER_ENTITY,*/ CreatureSpawnEvent.SpawnReason.SILVERFISH_BLOCK,
+            CreatureSpawnEvent.SpawnReason.SLIME_SPLIT, CreatureSpawnEvent.SpawnReason.SPAWNER, /*SpawnReason.SPAWNER_EGG,*/ CreatureSpawnEvent.SpawnReason.TRAP, CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE, CreatureSpawnEvent.SpawnReason.VILLAGE_INVASION);
+
+    /**
+     * Prevent mobs from spawning naturally
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onMobSpawn(CreatureSpawnEvent event) {
+        if (noSpawnReasons.contains(event.getSpawnReason())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /**
+     * Prevent non-building players from picking up items
+     * TODO: **Idea** Add handler to possibly add vendor items to collection on pickup?
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onItemPickup(EntityPickupItemEvent event) {
+        if (event.getEntityType().equals(EntityType.PLAYER)) {
+            CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity().getName());
+            if (!cp.canBuild()) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    /**
+     * Prevent non-building players from breaking blocks
+     * Fixes issue with swords breaking blocks in creative
+     *
+     * @param event Event
+     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onBlockBreak(BlockBreakEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!cp.canBreak()) {
+            event.setCancelled(true);
+        } else {
+            event.setDropItems(false);
+            event.setExpToDrop(0);
+        }
+    }
+
+    /**
+     * Prevent non-building players from placing blocks
+     *
+     * @param event Event
+     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+
+        if (!cp.canBuild()) {
+            event.setCancelled(true);
+        }
+    }
+
+    /**
+     * Prevent entities from dropping anything on death
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event) {
+        event.getDrops().clear();
+        event.setDroppedExp(0);
+    }
+
+    /**
+     * Prevent player items from taking durability
+     *
+     * @param event Event
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerItemDamage(PlayerItemDamageEvent event) {
+        event.setCancelled(true);
+    }
+
+    /**
+     * Prevent gamemode from being changed by other plugins
+     * (looking at you MultiVerse)
+     *
+     * @param event
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onGameModeChange(PlayerGameModeChangeEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!event.getNewGameMode().equals(cp.getGameMode())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /**
+     * Force player to spawn at a designated spawn location
+     * as opposed to world spawn
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        event.setRespawnLocation(cp.getSpawnLocation());
+    }
+
+    /**
+     * Not sure what this one is preventing but I'm leaving
+     * it here anyway - Nick
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent event) {
+        event.setCancelled(true);
+    }
+
+    /**
+     * Allow creeper and tnt explosions but don't destroy blocks
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().clear();
+    }
+
+    /**
+     * Prevent non-creative (maybe do by role?) players
+     * from being able to use elytras, for when they
+     * become a cosmetic item
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onEntityToggleGlide(EntityToggleGlideEvent event) {
+        if (event.isGliding()
+                && event.getEntityType().equals(EntityType.PLAYER)) {
+            Player p = (Player) event.getEntity();
+            CorePlayer cp = Core.getInstance().getPlayers().get(p);
+            if (!cp.getGameMode().equals(GameMode.CREATIVE)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    /**
+     * Prevent coral blocks from dying outside of water
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onBlockFade(BlockFadeEvent event) {
+        event.setCancelled(true);
+    }
+
+    private static final Set<Material> interactables = Sets.newHashSet(Material.STONE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON,
+            Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON, Material.LEVER,
+            Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.OAK_DOOR, Material.JUNGLE_DOOR, Material.DARK_OAK_DOOR);
+
+    /**
+     * Prevent most of world from being interacted with
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!cp.canBuild()) {
+            if (event.getClickedBlock() != null) {
+                if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    if (!interactables.contains(event.getClickedBlock().getType())) {
+                        event.setCancelled(true);
+                    }
+                }
+                if (event.getAction() == Action.PHYSICAL) {
+                    // Cancel trample event
+                    if (event.getClickedBlock().getType().equals(Material.FARMLAND)) {
+                        event.setCancelled(true);
+                    }
+                }
+                // Cancel fire punch event
+                if (event.getClickedBlock().getRelative(event.getBlockFace()).getType().equals(Material.FIRE)) {
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
     
 }

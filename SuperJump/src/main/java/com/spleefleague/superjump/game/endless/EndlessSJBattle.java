@@ -7,23 +7,19 @@
 package com.spleefleague.superjump.game.endless;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.game.BattlePlayer;
 import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.core.util.Day;
 import com.spleefleague.core.util.TimeUtils;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.superjump.game.SJBattle;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 
 /**
  * @author NickM13
@@ -34,36 +30,23 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
     
     public EndlessSJBattle(List<DBPlayer> players, EndlessSJArena arena) {
         super(players, arena);
-        endlessPlayer = battlers.keySet().iterator().next();
+        endlessPlayer = (SuperJumpPlayer) battlers.keySet().iterator().next();
     }
-    
+
+    /*
     @Override
-    protected void startBattle() {
+    public void startBattle() {
         if (getResetTime() <= 0) {
             for (BattlePlayer bp : battlers.values()) {
-                Core.getInstance().sendMessage(bp.player, "Endless is currently disabled, try again in " + TimeUtils.gcdTimeToString(Day.getTomorrowMillis()));
+                Core.getInstance().sendMessage(bp.getDBPlayer(), "Endless is currently disabled, try again in " + TimeUtils.gcdTimeToString(Day.getTomorrowMillis()));
             }
             endBattle();
             return;
         }
         super.startBattle();
-        //chatGroup.addTeam("Level", Chat.SCORE + "Level");
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.SUPERJUMP), "A " +
-                Chat.GAMEMODE + getMode().getDisplayName() + " " +
-                Chat.DEFAULT + "match between " +
-                playersFormatted +
-                Chat.DEFAULT + " has begun on " +
-                Chat.GAMEMAP + arena.getDisplayName());
-        for (BattlePlayer bp : battlers.values()) {
-            bp.player.joinBattle(this, BattleState.BATTLER);
-            
-            bp.player.getPlayer().getInventory().setHeldItemSlot(0);
-            bp.player.getPlayer().getInventory().clear();
-            
-            bp.player.getPlayer().setGameMode(GameMode.SURVIVAL);
-            
-            chatGroup.addPlayer(bp.player);
-        }
+
+        // TODO: Initialize battlers players (create a custom BattlePlayer variable)
+
         chatGroup.setScoreboardName(ChatColor.GREEN + "" + ChatColor.BOLD + "ENDLESS");
         chatGroup.addTeam("Today", ChatColor.WHITE + "" + ChatColor.BOLD + "Today");
         chatGroup.addTeam("TodayPersonal", " Personal: ");
@@ -76,11 +59,12 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         chatGroup.addTeam("Time", ChatColor.WHITE + "" + ChatColor.BOLD + "Time");
         chatGroup.addTeam("TimeReset", " Reset In: ");
     }
-    
-    @Override
-    public void endBattle() {
-        super.endBattle();
-        endlessPlayer.getEndlessStats().addTime(getLevelTime() / 1000);
+    */
+
+    public void saveBattlerStats(DBPlayer dbp) {
+        if (dbp.equals(endlessPlayer)) {
+            endlessPlayer.getEndlessStats().addTime(getLevelTime() / 1000);
+        }
     }
     
     private long getResetTime() {
@@ -104,13 +88,14 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
     @Override
     public void updateScoreboard() {
         BattlePlayer bp = battlers.values().iterator().next();
-        chatGroup.setTeamDisplayName("TodayPersonal", ChatColor.AQUA + " Personal: " + bp.player.getEndlessStats().getLevel() +
-                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), bp.player.getUniqueId())) + "]");
+        SuperJumpPlayer sjp = (SuperJumpPlayer) bp.getDBPlayer();
+        chatGroup.setTeamDisplayName("TodayPersonal", ChatColor.AQUA + " Personal: " + sjp.getEndlessStats().getLevel() +
+                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), sjp.getUniqueId())) + "]");
         chatGroup.setTeamDisplayName("TodayServer", ChatColor.AQUA + " Server: " +
                 Leaderboard.getLeadingPlayerName(EndlessSJArena.EndlessLeaderboard.DAILY.getName()) +
                 ChatColor.AQUA + "[" + Leaderboard.getLeadingPlayerScore(EndlessSJArena.EndlessLeaderboard.DAILY.getName()) + "]");
-        chatGroup.setTeamDisplayName("RecordPersonal", ChatColor.AQUA + " Personal: " + bp.player.getEndlessStats().getHighestLevel() +
-                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.BEST.getName(), bp.player.getUniqueId())) + "]");
+        chatGroup.setTeamDisplayName("RecordPersonal", ChatColor.AQUA + " Personal: " + sjp.getEndlessStats().getHighestLevel() +
+                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.BEST.getName(), sjp.getUniqueId())) + "]");
         chatGroup.setTeamDisplayName("RecordServer", ChatColor.AQUA + " Server: " +
                 Leaderboard.getLeadingPlayerName(EndlessSJArena.EndlessLeaderboard.BEST.getName()) +
                 ChatColor.AQUA + "[" + Leaderboard.getLeadingPlayerScore(EndlessSJArena.EndlessLeaderboard.BEST.getName()) + "]");
@@ -148,10 +133,8 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         random = new Random(LocalDate.now().getDayOfYear());
         random = new Random(random.nextInt() + endlessPlayer.getEndlessStats().getLevel());
         List<FakeBlock> fakeBlocks = generate1(getSpawn(0), arena.getJumpCount(), difficulty, false);
-        
-        Iterator<FakeBlock> it = fakeBlocks.iterator();
-        while (it.hasNext()) {
-            FakeBlock fb = it.next();
+
+        for (FakeBlock fb : fakeBlocks) {
             gameWorld.setBlock(fb.getBlockPosition(), fb.getBlockData());
         }
     }
@@ -160,22 +143,25 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
     public void releasePlayers() {
         super.releasePlayers();
     }
-    
+
+    /*
     @Override
-    protected void failPlayer(SuperJumpPlayer sjp) {
-        super.failPlayer(sjp);
+    protected void failPlayer(DBPlayer dbp) {
+        super.failPlayer(dbp);
         endlessPlayer.getEndlessStats().incrementFalls();
     }
-    
+     */
+
+    /*
     @Override
-    protected void winPlayer(SuperJumpPlayer sjp) {
+    protected void winPlayer(DBPlayer dbp) {
         resetPlayers();
         gameWorld.clear();
         fillField();
         doCountdown();
         String completeMessage;
         
-        float levelTime = Math.floorDiv(getLevelTime(), 10) / 100.f;
+        float levelTime = Math.floorDiv(getLevelTime(), 10L) / 100.f;
         if(levelTime < 30)      completeMessage = "" + ChatColor.GREEN;
         else if(levelTime < 60) completeMessage = "" + ChatColor.YELLOW;
         else                    completeMessage = "" + ChatColor.RED;
@@ -187,6 +173,7 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         
         timeLastLap = System.currentTimeMillis();
     }
+     */
     
     @Override
     public void doCountdown() {

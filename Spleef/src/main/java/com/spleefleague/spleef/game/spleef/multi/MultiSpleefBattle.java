@@ -7,8 +7,11 @@
 package com.spleefleague.spleef.game.spleef.multi;
 
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.spleef.game.SpleefBattleDynamic;
+import com.spleefleague.spleef.game.spleef.SpleefBattlePlayer;
+
 import java.util.List;
 
 /**
@@ -19,8 +22,9 @@ public class MultiSpleefBattle extends SpleefBattleDynamic {
     protected long FIELD_RESET = 5000;
     protected long fieldResetTime = 0;
     
-    public MultiSpleefBattle(List<DBPlayer> players, MultiSpleefArena arena) {
-        super(players, arena);
+    public MultiSpleefBattle(List<CorePlayer> players,
+                             MultiSpleefArena arena) {
+        super(players, arena, MultiSpleefBattlePlayer.class);
     }
     
     @Override
@@ -30,28 +34,29 @@ public class MultiSpleefBattle extends SpleefBattleDynamic {
         //chatGroup.setTeamScore("PlayerCount", playToPoints+1);
         //chatGroup.setTeamScore("PlayTo", playToPoints);
         
-        BattlePlayer bp;
+        SpleefBattlePlayer sbp;
         for (int i = 0; i < sortedBattlers.size() && i < seenScores; i++) {
-            bp = sortedBattlers.get(i);
-            chatGroup.setTeamDisplayName("PLACE" + i, Chat.PLAYER_NAME + bp.player.getName());
+            sbp = (SpleefBattlePlayer) sortedBattlers.get(i);
+            chatGroup.setTeamDisplayName("PLACE" + i, Chat.PLAYER_NAME + sbp.getCorePlayer().getName());
             //chatGroup.setTeamScore("PLACE" + i, bp.points);
         }
     }
-    
+
+    @Override
+    protected void endRound(BattlePlayer winner) {
+
+    }
+
+    @Override
+    protected void endBattle(BattlePlayer winner) {
+
+    }
+
     @Override
     public void updateField() {
         if (System.currentTimeMillis() > fieldResetTime) {
             fillField();
             fieldResetTime = System.currentTimeMillis() + FIELD_RESET;
-        }
-    }
-    
-    @Override
-    protected void startBattle() {
-        super.startBattle();
-        chatGroup.addTeam("PlayerCount", Chat.SCORE + "Players");
-        for (BattlePlayer bp : battlers.values()) {
-            bp.player.getPlayer().getInventory().addItem(bp.player.getActiveShovel().getItem());
         }
     }
     

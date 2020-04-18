@@ -6,7 +6,7 @@
 
 package com.spleefleague.superjump.game.practice;
 
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.superjump.game.SJBattle;
 import java.util.List;
 

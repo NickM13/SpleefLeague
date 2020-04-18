@@ -42,7 +42,7 @@ public class ChatListener implements Listener {
             if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR)) {
                 System.out.println("No permission");
                 e.setCancelled(true);
-                Core.sendMessageToPlayer(cp, "Please ask for permission to send a url");
+                Core.getInstance().sendMessage(cp, "Please ask for permission to send a url");
                 System.out.println(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 return;
             }

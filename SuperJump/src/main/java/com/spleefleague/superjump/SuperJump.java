@@ -8,7 +8,6 @@ package com.spleefleague.superjump;
 
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.game.Leaderboard;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.menu.InventoryMenuItem;
@@ -28,7 +27,7 @@ import org.bukkit.Material;
 /**
  * @author NickM13
  */
-public class SuperJump extends CorePlugin {
+public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     
     private static SuperJump instance;
     
@@ -37,16 +36,16 @@ public class SuperJump extends CorePlugin {
     @Override
     public void init() {
         instance = this;
-        
+
+        setPluginDB("SuperJump");
+
         initCommands();
         
         playerManager = new PlayerManager<>(this, SuperJumpPlayer.class, getPluginDB().getCollection("Players"));
         
         SJMode.init();
         for (SJMode mode : SJMode.values()) {
-            if (mode.hasQueue()) {
-                addBattleManager(mode.getArenaMode());
-            }
+            addBattleManager(mode.getArenaMode());
         }
         
         SJArena.init();
@@ -98,11 +97,6 @@ public class SuperJump extends CorePlugin {
     
     private void initLeaderboards() {
         EndlessSJArena.initLeaderboard();
-    }
-    
-    @Override
-    public MongoDatabase getPluginDB() {
-        return Core.getInstance().getMongoClient().getDatabase("SuperJump");
     }
     
 }

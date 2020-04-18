@@ -7,7 +7,8 @@
 package com.spleefleague.core.player;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.Core;
+import com.spleefleague.core.database.variable.DBPlayer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,106 +27,182 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
+ * Manager for custom DBPlayer objects based on Player UUIDs
+ *
  * @author NickM13
- * @param <T>
+ * @param <P>
  */
-public class PlayerManager <T extends DBPlayer> implements Listener {
+public class PlayerManager <P extends DBPlayer> implements Listener {
     
-    private final Map<UUID, T> playerList;
-    private final Class<T> playerClass;
+    private final Map<UUID, P> playerList;
+    private final Class<P> playerClass;
     private final MongoCollection<Document> playerCol;
     
-    public PlayerManager(JavaPlugin plugin, Class<T> playerClass, MongoCollection<Document> collection) {
+    public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
         this.playerList = new HashMap<>();
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.playerClass = playerClass;
         this.playerCol = collection;
     }
-    
+
+    /**
+     * Called on startup of CorePlugin
+     * Add all online players to player list
+     */
     public void initOnline() {
         playerList.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p);
         }
-        for (T p : playerList.values()) {
+        for (P p : playerList.values()) {
             p.init();
         }
     }
-    
-    public T get(String username) {
+
+    /**
+     * Get the DBPlayer by Player Username
+     *
+     * @param username Player Username
+     * @return DBPlayer
+     */
+    public P get(String username) {
         return PlayerManager.this.get(Bukkit.getPlayer(username));
     }
-    
-    public T get(Player player) {
+
+    /**
+     * Get the DBPlayer by Player
+     *
+     * @param player Player
+     * @return DBPlayer
+     */
+    public P get(Player player) {
         if (player != null) {
-            T t;
-            if ((t = PlayerManager.this.get(player.getUniqueId())) != null) {
-                return t;
+            P p;
+            if ((p = PlayerManager.this.get(player.getUniqueId())) != null) {
+                return p;
             } else {
-                load(player).init();
-                return PlayerManager.this.get(player.getUniqueId());
+                p = load(player);
+                if (p != null) {
+                    p.init();
+                    return PlayerManager.this.get(player.getUniqueId());
+                }
             }
         }
         return null;
     }
-    
-    public T get(UUID uniqueId) {
-        return playerList.containsKey(uniqueId) ? playerList.get(uniqueId) : null;
+
+    /**
+     * Get the DBPlayer by UUID
+     *
+     * @param uniqueId Player UUID
+     * @return DBPlayer
+     */
+    public P get(UUID uniqueId) {
+        return playerList.getOrDefault(uniqueId, null);
     }
-    
-    public T get(DBPlayer dbp) {
-        return get(UUID.fromString(dbp.getUuid()));
+
+    /**
+     * Returns the DBPlayer related to passed DBPlayer
+     *
+     * @param dbp DBPlayer
+     * @return DBPlayer
+     */
+    public P get(DBPlayer dbp) {
+        return get(dbp.getUniqueId());
     }
-    
-    public T getOffline(UUID uniqueId) {
+
+    /**
+     * Get the DBPlayer of an offline player by UUID
+     *
+     * @param uniqueId Player UUID
+     * @return DBPlayer
+     */
+    public P getOffline(UUID uniqueId) {
         try {
-            T p = get(uniqueId);
+            P p = get(uniqueId);
             if (p != null) return p;
-            p = playerClass.newInstance();
+            p = playerClass.getDeclaredConstructor().newInstance();
             Document doc = playerCol.find(new Document("uuid", uniqueId.toString())).first();
             if (doc != null) {
                 p.load(doc);
             }
             return p;
-        } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+        } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
             Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
-    public T getOffline(String username) {
-        T p = get(username);
+
+    /**
+     * Get the DBPlayer of an offline player by name
+     *
+     * @param username Username
+     * @return DBPlayer
+     * @deprecated Bukkit's getOfflinePlayer(name) is deprecated
+     */
+    @Deprecated
+    public P getOffline(String username) {
+        P p = get(username);
         if (p != null) return p;
         return getOffline(Bukkit.getOfflinePlayer(username).getUniqueId());
     }
-    
-    public Collection<T> getAll() {
+
+    /**
+     * Get all players, including vanished
+     *
+     * @return Players
+     */
+    public Collection<P> getAll() {
         return playerList.values();
     }
-    public Collection<T> getOnline() {
-        Collection<T> col = new HashSet<>();
+
+    /**
+     * Get all players that are not vanished
+     *
+     * @return Unvanished Players
+     */
+    public Collection<P> getOnline() {
+        Collection<P> col = new HashSet<>();
         
         for (Player p : Bukkit.getOnlinePlayers()) {
-            T tp = playerList.get(p.getUniqueId());
-            if (!tp.isVanished()) {
+            if (!Core.getInstance().getPlayers().get(p).isVanished()) {
                 col.add(playerList.get(p.getUniqueId()));
             }
         }
         
         return col;
     }
-    
+
+    /**
+     * Check whether a player has logged in before by seeing
+     * if they are currently in the database
+     *
+     * @param uniqueId Player UUID
+     * @return Exists
+     */
     public boolean hasPlayedBefore(UUID uniqueId) {
         return playerCol.find(new Document("uuid", uniqueId.toString())).first() != null;
     }
-    
-    private T load(Player player) {
+
+    /**
+     * Load a DBPlayer's information in from the database
+     * Called on player log in
+     *
+     * @param player Player
+     * @return DBPlayer
+     */
+    private P load(Player player) {
         if (playerList.get(player.getUniqueId()) == null) {
             try {
-                T t = playerClass.getDeclaredConstructor().newInstance();
+                P p = playerClass.getDeclaredConstructor().newInstance();
                 Document pdoc = playerCol.find(new Document("uuid", player.getUniqueId().toString())).first();
-                t.init(pdoc, player);
-                t.setOnline(true);
-                playerList.put(player.getUniqueId(), t);
+                if (pdoc != null) {
+                    p.load(pdoc);
+                } else {
+                    p.newPlayer(player);
+                }
+                p.setOnline(true);
+                playerList.put(p.getUniqueId(), p);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
                 Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
@@ -133,8 +210,14 @@ public class PlayerManager <T extends DBPlayer> implements Listener {
         }
         return playerList.get(player.getUniqueId());
     }
-    
-    private void save(T player) {
+
+    /**
+     * Saves a DBPlayer's information to the database
+     * Called on player log out
+     *
+     * @param player Player
+     */
+    private void save(P player) {
         try {
             Document doc = player.save();
             if (playerCol.find(new Document("uuid", doc.get("uuid"))).first() != null) {
@@ -142,47 +225,50 @@ public class PlayerManager <T extends DBPlayer> implements Listener {
             }
             playerCol.insertOne(doc);
         } catch (NoClassDefFoundError e) {
-            System.out.println("Jar files updated, unable to save player " + player.getDisplayName());
+            System.out.println("Jar files updated, unable to save player " + player.getName());
         }
     }
-    
+
+    /**
+     * Remove a DBPlayer from the player list
+     * Called on player log out
+     *
+     * @param player Player
+     */
     private void remove(Player player) {
         save(playerList.get(player.getUniqueId()));
         playerList.get(player.getUniqueId()).setOnline(false);
         playerList.remove(player.getUniqueId());
     }
-    
+
+    /**
+     * When a player logs in load their DBPlayer data
+     *
+     * @param event Event
+     */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        load(event.getPlayer()).init();
+        P p = load(event.getPlayer());
+        if (p != null) p.init();
     }
-    
+
+    /**
+     * When a player leaves save their DBPlayer data
+     *
+     * @param event Event
+     */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         remove(event.getPlayer());
     }
-    
-    public void printPlayers() {
-        for (Map.Entry<UUID, T> p : playerList.entrySet()) {
-            System.out.println(p.getValue().getPlayer().getName());
-        }
-    }
 
+    /**
+     * Save all DBPlayer
+     */
     public void close() {
-        for (T p : playerList.values()) {
+        for (P p : playerList.values()) {
             save(p);
         }
     }
-    
-    /*
-    @Deprecated
-    public void __debugRemove(Player p) {
-        playerList.get(p.getUniqueId()).__debugDelete();
-        playerList.remove(p.getUniqueId());
-    }
-    @Deprecated
-    public void __debugAdd(Player p, T cp) {
-        playerList.put(p.getUniqueId(), cp);
-    }
-    */
+
 }

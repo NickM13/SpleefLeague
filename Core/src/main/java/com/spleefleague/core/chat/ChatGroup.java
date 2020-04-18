@@ -6,8 +6,9 @@
 
 package com.spleefleague.core.chat;
 
-import com.spleefleague.core.scoreboard.PersonalScoreboard;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
+import com.spleefleague.core.database.variable.DBPlayer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import joptsimple.internal.Strings;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.Team;
 
@@ -23,7 +25,7 @@ import org.bukkit.scoreboard.Team;
  */
 public class ChatGroup {
     
-    private class SimpleScore {
+    private static class SimpleScore {
         public String name, displayName;
         public int score;
         
@@ -34,7 +36,7 @@ public class ChatGroup {
         }
     }
     
-    private final Set<DBPlayer> players = new HashSet<>();
+    private final Set<CorePlayer> players = new HashSet<>();
     
     private String scoreboardName = "empty";
     private final Map<String, SimpleScore> scores = new HashMap<>();
@@ -46,8 +48,8 @@ public class ChatGroup {
     
     public void setScoreboardName(String name) {
         scoreboardName = name;
-        for (DBPlayer dbp : players) {
-            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
+        for (CorePlayer cp : players) {
+            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             ps.getObjective().setDisplayName(name);
         }
     }
@@ -60,53 +62,56 @@ public class ChatGroup {
      */
     private final Map<String, String> nameIdHash = new HashMap<>();
     private String idToStr(int id) {
-        String str = "";
+        StringBuilder str = new StringBuilder();
         while (id >= 0) {
             switch (id % 16) {
-                case 0: str += ChatColor.AQUA;          break;
-                case 1: str += ChatColor.BLACK;         break;
-                case 2: str += ChatColor.BLUE;          break;
-                case 3: str += ChatColor.DARK_AQUA;     break;
-                case 4: str += ChatColor.DARK_BLUE;     break;
-                case 5: str += ChatColor.DARK_GRAY;     break;
-                case 6: str += ChatColor.DARK_GREEN;    break;
-                case 7: str += ChatColor.DARK_PURPLE;   break;
-                case 8: str += ChatColor.DARK_RED;      break;
-                case 9: str += ChatColor.GOLD;          break;
-                case 10: str += ChatColor.GRAY;         break;
-                case 11: str += ChatColor.GREEN;        break;
-                case 12: str += ChatColor.LIGHT_PURPLE; break;
-                case 13: str += ChatColor.RED;          break;
-                case 14: str += ChatColor.WHITE;        break;
-                case 15: str += ChatColor.YELLOW;       break;
+                case 0: str.append(ChatColor.AQUA);          break;
+                case 1: str.append(ChatColor.BLACK);         break;
+                case 2: str.append(ChatColor.BLUE);          break;
+                case 3: str.append(ChatColor.DARK_AQUA);     break;
+                case 4: str.append(ChatColor.DARK_BLUE);     break;
+                case 5: str.append(ChatColor.DARK_GRAY);     break;
+                case 6: str.append(ChatColor.DARK_GREEN);    break;
+                case 7: str.append(ChatColor.DARK_PURPLE);   break;
+                case 8: str.append(ChatColor.DARK_RED);      break;
+                case 9: str.append(ChatColor.GOLD);          break;
+                case 10: str.append(ChatColor.GRAY);         break;
+                case 11: str.append(ChatColor.GREEN);        break;
+                case 12: str.append(ChatColor.LIGHT_PURPLE); break;
+                case 13: str.append(ChatColor.RED);          break;
+                case 14: str.append(ChatColor.WHITE);        break;
+                case 15: str.append(ChatColor.YELLOW);       break;
             }
             id -= 16;
         }
-        return str;
+        return str.toString();
     }
     /**
      * Adds a line at the bottom of the scoreboard, name is used to refer
      * to the team but is converted to an unreadable string of ChatColors
      * to prevent it from showing up on the board
      * 
-     * @param name
-     * @param displayName 
+     * @param name Name
+     * @param displayName Display Name
      */
     public void addTeam(String name, String displayName) {
         String str = idToStr(nameIdHash.size() + 16);
         nameIdHash.put(name, str);
         SimpleScore ss = new SimpleScore(str, 0);
-        ss.displayName = displayName;
+        ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
         scores.put(name, ss);
         sortedScores.add(name);
-        for (DBPlayer dbp : players) {
-            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
-            
-            if (ps.getScoreboard().getTeam(ss.name) == null)
-                ps.getScoreboard().registerNewTeam(ss.name).addEntry(ss.name);
-            ps.getScoreboard().getTeam(ss.name).setDisplayName(ss.displayName);
-            ps.getScoreboard().getTeam(ss.name).setPrefix(ss.displayName);
-            ps.getScoreboard().getTeam(ss.name).setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        for (CorePlayer cp : players) {
+            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
+            Team team = ps.getScoreboard().getTeam(ss.name);
+            if (team == null) {
+                team = ps.getScoreboard().registerNewTeam(ss.name);
+                // TODO: Is this necessary?
+                team.addEntry(ss.name);
+            }
+            team.setDisplayName(ss.displayName);
+            team.setPrefix(ss.displayName);
+            team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             int i = sortedScores.size() - 1;
             for (String sscore : sortedScores) {
                 scores.get(sscore).score = i;
@@ -120,28 +125,32 @@ public class ChatGroup {
      * Sets the displayed name of a team, sent to all
      * players in the ChatGroup
      * 
-     * @param name
-     * @param displayName 
+     * @param name Name
+     * @param displayName Display Name
      */
     public void setTeamDisplayName(String name, String displayName) {
         SimpleScore ss = scores.get(name);
-        ss.displayName = displayName;
-        for (DBPlayer dbp : players) {
-            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
+        ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
+        for (CorePlayer cp : players) {
+            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             
-            dbp.getPlayer().getScoreboard().getTeam(ss.name).setPrefix(ss.displayName);
+            Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
+            if (team == null) continue;
+            team.setPrefix(ss.displayName);
         }
     }
     
     /**
      * Does not store name locally, only sent to specified player
      * 
-     * @param dbp
-     * @param name
-     * @param displayName 
+     * @param dbp DBPlayer
+     * @param name Identifier
+     * @param displayName Display Name
      */
     public void setTeamDisplayNamePersonal(DBPlayer dbp, String name, String displayName) {
-        PersonalScoreboard.getScoreboard(dbp.getUniqueId()).getScoreboard().getTeam(scores.get(name).name).setPrefix(displayName);
+        Team team = PersonalScoreboard.getScoreboard(dbp.getUniqueId()).getScoreboard().getTeam(scores.get(name).name);
+        if (team != null)
+            team.setPrefix(displayName);
     }
     
     /**
@@ -149,8 +158,8 @@ public class ChatGroup {
      * instead use a display name with the score included
      * because scores are used for sorting lines
      * 
-     * @param name
-     * @param score
+     * @param name Identifier
+     * @param score Score
      * @deprecated
      */
     @Deprecated
@@ -167,8 +176,8 @@ public class ChatGroup {
     /**
      * Sets the experience level and progress of every player in the ChatGroup
      * 
-     * @param progress
-     * @param level 
+     * @param progress Progress 0 to 1
+     * @param level Level
      */
     public void setExperience(float progress, int level) {
         for (DBPlayer dbp : players) {
@@ -180,19 +189,23 @@ public class ChatGroup {
      * Adds a player to the ChatGroup and updates their scoreboard to match
      * the default version (no personal scores filled)
      * 
-     * @param dbp 
+     * @param cp Core Player
      */
-    public void addPlayer(DBPlayer dbp) {
-        players.add(dbp);
+    public void addPlayer(CorePlayer cp) {
+        players.add(cp);
         
-        PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
+        PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
         ps.getObjective().setDisplayName(scoreboardName);
         for (SimpleScore ss : scores.values()) {
-            if (ps.getScoreboard().getTeam(ss.name) == null)
-                ps.getScoreboard().registerNewTeam(ss.name).addEntry(ss.name);
-            ps.getScoreboard().getTeam(ss.name).setDisplayName(ss.displayName);
-            ps.getScoreboard().getTeam(ss.name).setPrefix(ss.displayName);
-            ps.getScoreboard().getTeam(ss.name).setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+            Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
+            if (team == null) {
+                team = ps.getScoreboard().registerNewTeam(ss.name);
+                //TODO: Is this necessary?
+                team.addEntry(ss.name);
+            }
+            team.setDisplayName(ss.displayName);
+            team.setPrefix(ss.displayName);
+            team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             ps.getObjective().getScore(ss.name).setScore(ss.score);
             int i = sortedScores.size() - 1;
             for (String sscore : sortedScores) {
@@ -207,18 +220,18 @@ public class ChatGroup {
      * Removes a player from the ChatGroup and resets their
      * SideBar scoreboard
      * 
-     * @param dbp 
+     * @param cp Core Player
      */
-    public void removePlayer(DBPlayer dbp) {
-        dbp.getPlayer().sendExperienceChange(0, 0);
-        players.remove(dbp);
-        PersonalScoreboard.getScoreboard(dbp.getUniqueId()).resetObjective();
+    public void removePlayer(CorePlayer cp) {
+        cp.getPlayer().sendExperienceChange(0, 0);
+        players.remove(cp);
+        PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
     }
     
     /**
      * Sends a chat message to all players in the ChatGroup
      * 
-     * @param msg 
+     * @param msg Message
      */
     public void sendMessage(String msg) {
         for (DBPlayer dbp : players) {
@@ -229,11 +242,11 @@ public class ChatGroup {
     /**
      * Sends a title to all players in the ChatGroup
      * 
-     * @param title
-     * @param subtitle
-     * @param fadeIn
-     * @param stay
-     * @param fadeOut 
+     * @param title Title
+     * @param subtitle Sub Title
+     * @param fadeIn Ticks
+     * @param stay Ticks
+     * @param fadeOut Ticks
      */
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         for (DBPlayer dbp : players) {

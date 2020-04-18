@@ -6,9 +6,7 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.database.DBVariable;
+import com.spleefleague.core.database.variable.DBVariable;
 import com.spleefleague.superjump.game.conquest.ConquestSJArena;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +19,7 @@ import org.bson.Document;
  */
 public class ConquestStats implements DBVariable<List<Document>> {
     
-    public class ConquestScore {
+    public static class ConquestScore {
         double bestTime;
         int totalRuns;
         

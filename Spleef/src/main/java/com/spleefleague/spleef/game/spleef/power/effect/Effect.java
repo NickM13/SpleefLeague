@@ -6,8 +6,9 @@
 
 package com.spleefleague.spleef.game.spleef.power.effect;
 
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.spleef.game.SpleefBattle;
 import com.spleefleague.spleef.player.SpleefPlayer;
 
 /**
@@ -44,17 +45,16 @@ public class Effect extends DBEntity implements Cloneable {
         return false;
     }
     
-    public void updateEffect(SpleefPlayer sp) {
+    public void updateEffect(SpleefPlayer sp, SpleefBattle sb) {
         
     }
-
-    public void activate(SpleefPlayer sp) {
+    public void activate(SpleefPlayer sp, SpleefBattle sb) {
         
     }
-    public void onMove(SpleefPlayer sp) {
+    public void onMove(SpleefPlayer sp, SpleefBattle sb) {
 
     }
-    public void onBlockBreak(SpleefPlayer sp) {
+    public void onBlockBreak(SpleefPlayer sp, SpleefBattle sb) {
 
     }
     

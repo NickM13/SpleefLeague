@@ -9,13 +9,14 @@ package com.spleefleague.superjump.game.versus.shuffle;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.superjump.game.versus.VersusSJBattle;
-import com.spleefleague.superjump.player.SuperJumpPlayer;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+
+import java.util.List;
 
 /**
  * @author NickM13
@@ -33,46 +34,18 @@ public class ShuffleSJBattle extends VersusSJBattle<ShuffleSJArena> {
     }
     
     @Override
-    protected void startBattle() {
-        super.startBattle();
-        //chatGroup.addTeam("Level", Chat.SCORE + "Level");
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.SUPERJUMP), "A " +
-                Chat.GAMEMODE + getMode().getDisplayName() + " " +
-                Chat.DEFAULT + "match between " +
-                playersFormatted +
-                Chat.DEFAULT + " has begun on " +
-                Chat.GAMEMAP + arena.getDisplayName());
-        for (BattlePlayer bp : battlers.values()) {
-            bp.player.joinBattle(this, BattleState.BATTLER);
-            
-            bp.player.getPlayer().getInventory().setHeldItemSlot(0);
-            bp.player.getPlayer().getInventory().clear();
-            
-            bp.player.getPlayer().setGameMode(GameMode.SURVIVAL);
-            
-            chatGroup.addPlayer(bp.player);
-        }
-        chatGroup.setScoreboardName(ChatColor.AQUA + "" + ChatColor.BOLD + "SHUFFLE");
-        chatGroup.addTeam("Today", ChatColor.WHITE + "" + ChatColor.BOLD + "Today");
-        chatGroup.addTeam("TodayPersonal", " Personal: ");
-        chatGroup.addTeam("TodayServer", " Server: ");
-        chatGroup.addTeam("0", " ");
-    }
-    
-    @Override
     protected void fillField() {
         generate2(getSpawn(0), arena.getJumpCount(), arena.getDifficulty(), true);
     }
     
     @Override
-    protected void winPlayer(SuperJumpPlayer sjp) {
-        resetPlayers();
+    protected void winPlayer(DBPlayer dbp) {
         gameWorld.clear();
         fillField();
         doCountdown();
         String completeMessage;
         
-        float levelTime = Math.floorDiv(getLevelTime(), 10) / 100.f;
+        float levelTime = Math.floorDiv(getLevelTime(), 10L) / 100.f;
         if(levelTime < 30)      completeMessage = "" + ChatColor.GREEN;
         else if(levelTime < 60) completeMessage = "" + ChatColor.YELLOW;
         else                    completeMessage = "" + ChatColor.RED;
@@ -81,7 +54,7 @@ public class ShuffleSJBattle extends VersusSJBattle<ShuffleSJArena> {
         
         timeLastLap = System.currentTimeMillis();
         
-        Core.getInstance().sendMessage("Shuffle match complete: " + sjp.getDisplayName() + " won! grats I think");
+        Core.getInstance().sendMessage("Shuffle match complete: " + dbp.getDisplayName() + " won! grats I think");
         
         endBattle();
     }

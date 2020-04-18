@@ -42,13 +42,13 @@ public class ClassicSpleefArena extends SpleefArena {
                     container.addMenuItem(InventoryMenuAPI.createItem()
                             .setName("Random Arena")
                             .setDisplayItem(new ItemStack(Material.EMERALD))
-                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), Spleef.getInstance().getPlayers().get(cp))));
+                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), cp)));
 
                     Arena.getArenas(SpleefMode.CLASSIC.getArenaMode()).forEach((String s, Arena arena) -> container.addMenuItem(InventoryMenuAPI.createItem()
                             .setName(arena.getDisplayName())
                             .setDescription(cp -> arena.getDescription())
                             .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), Spleef.getInstance().getPlayers().get(cp), arena))));
+                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), cp, arena))));
                 });
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);

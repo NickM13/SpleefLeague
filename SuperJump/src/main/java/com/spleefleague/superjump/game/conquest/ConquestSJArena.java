@@ -6,8 +6,8 @@
 
 package com.spleefleague.superjump.game.conquest;
 
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.superjump.SuperJump;
@@ -26,7 +26,7 @@ public class ConquestSJArena extends SJArena {
     @DBField
     protected List<Double> starTimes;
     
-    @DBLoad(fieldname="starTimes")
+    @DBLoad(fieldName="starTimes")
     protected void loadStarTimes(List<Double> times) {
         Collections.sort(times);
         starTimes = times;

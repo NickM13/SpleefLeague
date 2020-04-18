@@ -8,24 +8,19 @@ package com.spleefleague.core.command;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.error.CoreError;
+import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.Rank;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -36,8 +31,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import com.spleefleague.core.util.TpCoord;
-import com.spleefleague.core.util.database.DBPlayer;
+import com.spleefleague.core.util.variable.TpCoord;
+import com.spleefleague.core.database.variable.DBPlayer;
 import net.minecraft.server.v1_15_R1.CommandListenerWrapper;
 import net.minecraft.server.v1_15_R1.IChatBaseComponent;
 import org.bukkit.command.Command;
@@ -199,11 +194,8 @@ public class CommandTemplate extends Command {
         
         Integer limit = null;
         SortType sort = SortType.ARBITRARY;
-        
-        HashSet<Entity> entitySet = new HashSet<>();
-        for (Entity e : entities) {
-            entitySet.add(e);
-        }
+
+        HashSet<Entity> entitySet = new HashSet<>(entities);
         
         if (selectorArgs.charAt(0) == '[' &&
                 selectorArgs.charAt(selectorArgs.length() - 1) == ']') {
@@ -302,8 +294,9 @@ public class CommandTemplate extends Command {
                         } else {
                             it.remove();
                         }
-                        if ((value.charAt(0) == '!' && p.getGameMode().equals(gm)) ||
-                                (value.charAt(0) != '!' && !p.getGameMode().equals(gm))) {
+                        if (p == null
+                                || (value.charAt(0) == '!' && p.getGameMode().equals(gm))
+                                || (value.charAt(0) != '!' && !p.getGameMode().equals(gm))) {
                             it.remove();
                         }
                     }
@@ -331,12 +324,12 @@ public class CommandTemplate extends Command {
                 }
             }
         } else {
-            return null;
+            return new ArrayList<>();
         }
         
         class EntityDistanced {
-            Entity entity;
-            Integer distance;
+            final Entity entity;
+            final Integer distance;
             
             public EntityDistanced(Entity entity, Integer distance) {
                 this.entity = entity;
@@ -352,7 +345,7 @@ public class CommandTemplate extends Command {
         if (sort != SortType.ARBITRARY) {
             switch (sort) {
                 case NEAREST:
-                    entityDistancedList.sort((e1, e2) -> e1.distance-e2.distance);
+                    entityDistancedList.sort(Comparator.comparingInt(e -> e.distance));
                     break;
                 case FURTHEST:
                     entityDistancedList.sort((e1, e2) -> e2.distance-e1.distance);
@@ -376,6 +369,7 @@ public class CommandTemplate extends Command {
         return entityList;
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     public boolean execute(CommandSender cs, String command, String[] args) {
         CorePlayer cp = null;
@@ -392,9 +386,12 @@ public class CommandTemplate extends Command {
             cbcs = (CraftBlockCommandSender) bcs;
             listener = cbcs.getWrapper();
             loc = bcs.getBlock().getLocation().clone().add(0.5, 0.5, 0.5);
+        } else {
+            loc = new Location(Core.DEFAULT_WORLD, 0, 0, 0);
         }
-        if (cp == null ||
-                (cp.getPlayer().hasPermission(this.getPermission()))) {
+        if (cp == null
+                || this.getPermission() == null
+                || cp.getPlayer().hasPermission(this.getPermission())) {
             Random random = new Random();
             for (Method method : commandClass.getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(CommandAnnotation.class)) {
@@ -447,13 +444,13 @@ public class CommandTemplate extends Command {
                     if (pi == paramCount - 1 &&
                             paramSize - 1 != args.length) {
                         for (; ai < args.length; ai++) {
-                            varArgStr += args[ai];
+                            varArgStr = varArgStr.concat(args[ai]);
                             if (ai < args.length - 1) varArgStr += " ";
                         }
                     }
 
                     Parameter param = method.getParameters()[pi];
-                    Class paramClass = param.getType();
+                    Class<?> paramClass = param.getType();
                     String arg = varArgStr.length() == 0 ? args[ai] : varArgStr;
 
                     if (varArgStr.length() == 0) {
@@ -559,8 +556,8 @@ public class CommandTemplate extends Command {
                             ai++;
                             continue;
                         }
-                        if (paramClass.equals(OfflinePlayer.class) &&
-                                (obj = Bukkit.getOfflinePlayer(arg)) != null) {
+                        if (paramClass.equals(OfflinePlayer.class)) {
+                            obj = Bukkit.getOfflinePlayer(arg);
                             params.add(obj);
                             ai++;
                             continue;
@@ -608,34 +605,32 @@ public class CommandTemplate extends Command {
                     }
                     invalidArg = true;
                 }
-                if (!invalidArg) {
-                    for (int r = paramCount; r < method.getParameterCount(); r++) {
-                        if (method.getParameters()[r].isAnnotationPresent(Nullable.class)) {
-                            params.add(null);
-                        } else {
-                            invalidArg = false;
-                            break;
-                        }
+                for (int r = paramCount; r < method.getParameterCount(); r++) {
+                    if (method.getParameters()[r].isAnnotationPresent(Nullable.class)) {
+                        params.add(null);
+                    } else {
+                        invalidArg = false;
+                        break;
                     }
-                    if (!invalidArg) {
-                        try {
-                            if (boolean.class.isAssignableFrom(method.getReturnType())
-                                    && bcs != null) {
-                                success = (Boolean) method.invoke(this, params.toArray(new Object[0]));
-                                if (success) {
-                                    listener.a(3);
-                                } else {
-                                    listener.sendFailureMessage(IChatBaseComponent.ChatSerializer.a("Failure"));
-                                }
-                                return success;
+                }
+                if (!invalidArg) {
+                    try {
+                        if (boolean.class.isAssignableFrom(method.getReturnType())
+                                && bcs != null) {
+                            success = (Boolean) method.invoke(this, params.toArray(new Object[0]));
+                            if (success) {
+                                listener.a(3);
                             } else {
-                                method.invoke(this, params.toArray(new Object[0]));
-                                return true;
+                                listener.sendFailureMessage(IChatBaseComponent.ChatSerializer.a("Failure"));
                             }
-                        } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                            //error(cp, "Command error");
-                            Logger.getLogger(CommandTemplate.class.getName()).log(Level.SEVERE, null, ex);
+                            return success;
+                        } else {
+                            method.invoke(this, params.toArray(new Object[0]));
+                            return true;
                         }
+                    } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        //error(cp, "Command error");
+                        Logger.getLogger(CommandTemplate.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -653,6 +648,7 @@ public class CommandTemplate extends Command {
         return true;
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     public List<String> tabComplete(CommandSender cs, String alias, String[] args) {
         List<String> options = new ArrayList<>();
@@ -695,7 +691,7 @@ public class CommandTemplate extends Command {
                 // Check for "vararg"
 
                 Parameter param = method.getParameters()[pi];
-                Class paramClass = param.getType();
+                Class<?> paramClass = param.getType();
                 String arg = args[ai];
                 if (arg.length() == 0) {
                     invalidArg = true;
@@ -710,25 +706,13 @@ public class CommandTemplate extends Command {
 
                     List<Entity> entities;
                     switch (arg.charAt(0)) {
-                        case 'p': case 'P': // Nearest player
+                        case 'p': case 'r': // One player
                             if (!paramClass.equals(CorePlayer.class)) {
                                 invalidArg = true;
                                 break;
                             }
                             break;
-                        case 'r': case 'R': // Random player
-                            if (!paramClass.equals(CorePlayer.class)) {
-                                invalidArg = true;
-                                break;
-                            }
-                            break;
-                        case 'a': case 'A': // All players
-                            if (!paramClass.equals(List.class)) {
-                                invalidArg = true;
-                                break;
-                            }
-                            break;
-                        case 'e': case 'E': // All entities
+                        case 'a': case 'e': // Lots of entities
                             if (!paramClass.equals(List.class)) {
                                 invalidArg = true;
                                 break;
@@ -766,19 +750,20 @@ public class CommandTemplate extends Command {
                     continue;
                 }
                 if (paramClass.equals(OfflinePlayer.class)) {
-                    invalidArg = ((obj = Bukkit.getOfflinePlayer(arg)) == null);
                     ai++;
                     continue;
                 }
                 if (paramClass.equals(Integer.class)) {
                     invalidArg = ((obj = toInt(arg)) == null);
-                    invalidArg = !isNumInbounds(cs, ((Integer) obj).doubleValue(), param.getAnnotation(NumberArg.class));
+                    if (!invalidArg)
+                        invalidArg = !isNumInbounds(cs, ((Integer) obj).doubleValue(), param.getAnnotation(NumberArg.class));
                     ai++;
                     continue;
                 }
                 if (paramClass.equals(Double.class)) {
                     invalidArg = ((obj = toDouble(arg)) == null);
-                    invalidArg = !isNumInbounds(cs, (Double) obj, param.getAnnotation(NumberArg.class));
+                    if (!invalidArg)
+                        invalidArg = !isNumInbounds(cs, (Double) obj, param.getAnnotation(NumberArg.class));
                     ai++;
                     continue;
                 }
@@ -817,10 +802,10 @@ public class CommandTemplate extends Command {
                 if (currParam.getType().equals(String.class)) {
                     if (currParam.isAnnotationPresent(LiteralArg.class)) {
                         String literal = ((LiteralArg) currParam.getAnnotation(LiteralArg.class)).value();
-                        addOption(options, literal, lastArg, false);
+                        addOption(options, literal, lastArg);
                     } else if (currParam.isAnnotationPresent(OptionArg.class)) {
                         for (String option : getOptions(((OptionArg) currParam.getAnnotation(OptionArg.class)).listName(), cp)) {
-                            addOption(options, option, lastArg, false);
+                            addOption(options, option, lastArg);
                         }
                     }
                 } else if (currParam.getType().equals(CorePlayer.class) ||
@@ -833,18 +818,18 @@ public class CommandTemplate extends Command {
                                 && cp2.getName().equalsIgnoreCase(cp.getName())) {
                             
                         }
-                        addOption(options, cp2.getName(), lastArg, false);
+                        addOption(options, cp2.getName(), lastArg);
                     }
                     if (cpa == null || cpa.allowSelf()) {
-                        addOption(options, "@p", lastArg, false);
-                        addOption(options, "@s", lastArg, false);
+                        addOption(options, "@p", lastArg);
+                        addOption(options, "@s", lastArg);
                     }
                 } else if (currParam.getType().equals(List.class)) {
-                    addOption(options, "@a", lastArg, false);
-                    addOption(options, "@e", lastArg, false);
+                    addOption(options, "@a", lastArg);
+                    addOption(options, "@e", lastArg);
                 }
                 if (optionSelected) {
-                    String args2[] = new String[args.length + 1];
+                    String[] args2 = new String[args.length + 1];
                     System.arraycopy(args, 0, args2, 0, args.length);
                     args2[args.length] = "";
                     options.clear();
@@ -860,26 +845,19 @@ public class CommandTemplate extends Command {
     
     private boolean optionSelected;
     
-    private void addOption(List<String> options, String option, String arg, boolean forceLower) {
+    private void addOption(List<String> options, String option, String arg) {
         if (option.equalsIgnoreCase(arg)
                 || (option.contains(":") && option.split(":")[1].equalsIgnoreCase(arg))) {
             options.clear();
             optionSelected = true;
         } else if (option.toUpperCase().startsWith(arg.toUpperCase())
                 || (option.contains(":") && option.toUpperCase().split(":")[1].startsWith(arg.toUpperCase()))) {
-            if (forceLower) {
-                options.add(option.toLowerCase());
-            } else {
-                options.add(option);
-            }
+            options.add(option);
         }
     }
 
     public void addAlias(String alias) {
         List<String> aliases = this.getAliases();
-        if (aliases == null) {
-            aliases = new ArrayList<>();
-        }
         aliases.add(alias);
         this.setAliases(aliases);
     }

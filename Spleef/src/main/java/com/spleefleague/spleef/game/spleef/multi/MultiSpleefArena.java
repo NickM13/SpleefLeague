@@ -29,7 +29,7 @@ public class MultiSpleefArena extends SpleefArena {
                 .setName(mainColor + "Multispleef")
                 .setDescription("Fight your dominance in this free-for-all edition of Spleef.")
                 .setDisplayItem(Material.SHEARS, 238)
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), Spleef.getInstance().getPlayers().get(cp)));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), cp));
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

@@ -7,10 +7,10 @@
 package com.spleefleague.spleef.game;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.annotation.DBLoad;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.CoreUtils;
@@ -202,7 +202,8 @@ public class Shovel extends VendorItem {
     public static Set<String> getShovelTypes() {
         return CoreUtils.enumToSet(ShovelType.class);
     }
-    
+
+    @DBField
     private ShovelType shovelType;
     
     public Shovel() {
@@ -223,11 +224,6 @@ public class Shovel extends VendorItem {
         super.load(doc);
         this.identifier = String.valueOf(damage);
         addVendorItem(this);
-    }
-    
-    @DBLoad(fieldname="type")
-    public void loadType(String str) {
-        shovelType = ShovelType.valueOf(str);
     }
     
     public boolean isDefault() {

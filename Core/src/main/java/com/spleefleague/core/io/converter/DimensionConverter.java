@@ -6,8 +6,8 @@
 
 package com.spleefleague.core.io.converter;
 
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.Point;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
 import java.util.List;
 import org.bson.Document;
 import org.bukkit.Location;

@@ -9,19 +9,16 @@ package com.spleefleague.spleef.player;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBLoad;
-import com.spleefleague.core.annotation.DBSave;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBSave;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.database.DBPlayer;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.spleef.power.Power;
 import com.spleefleague.spleef.game.Shovel;
-import com.spleefleague.spleef.game.SpleefBattle;
-import com.spleefleague.spleef.game.splegg.classic.SpleggGun;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,16 +32,12 @@ import org.bukkit.Bukkit;
 /**
  * @author NickM13
  */
-public class SpleefPlayer extends DBPlayer<SpleefBattle> {
+public class SpleefPlayer extends DBPlayer {
     
     private static final Integer BASE_RATING = 1000;
-    
-    // TODO: activePowers
+
     protected Shovel activeShovel;
     protected Set<Integer> shovels = new HashSet<>();
-    
-    protected SpleggGun activeSpleggGun;
-    protected Set<Integer> spleggGuns = new HashSet<>();
     
     //@DBField
     protected Integer[] activePowers = new Integer[4];
@@ -54,13 +47,18 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
     public SpleefPlayer() {
         super();
         activeShovel = Shovel.getDefault();
-        activeSpleggGun = SpleggGun.getDefault();
         for (int i = 0; i < 4; i++) {
             activePowers[i] = Power.getDefaultPower(i).getDamage();
         }
     }
-    
-    @DBLoad(fieldname="activeShovel")
+
+    @Override
+    public void init() { }
+
+    @Override
+    public void close() { }
+
+    @DBLoad(fieldName="activeShovel")
     private void loadActiveShovel(Integer id) {
         Bukkit.getScheduler().runTaskAsynchronously(Spleef.getInstance(), () -> {
             Shovel shovel;
@@ -76,27 +74,16 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
                 }
                 cp = Core.getInstance().getPlayers().get(this);
             }
-            cp.setSelectedItem(shovel.getType(), shovel.getIdentifier());
+            if (shovel != null)
+                cp.setSelectedItem(shovel.getType(), shovel.getIdentifier());
         });
     }
-    @DBSave(fieldname="activeShovel")
+    @DBSave(fieldName="activeShovel")
     private Integer saveActiveShovel() {
         return activeShovel.getDamage();
     }
     
-    @DBLoad(fieldname="activeSpleggGun")
-    private void loadActiveSpleggGun(Integer id) {
-        SpleggGun gun;
-        if ((gun = SpleggGun.getSpleggGun(id)) == null)
-            gun = SpleggGun.getDefault();
-        setActiveSpleggGun(gun.getDamage());
-    }
-    @DBSave(fieldname="activeSpleggGun")
-    private Integer saveActiveSpleggGun() {
-        return activeSpleggGun.getDamage();
-    }
-    
-    @DBLoad(fieldname="activePowers")
+    @DBLoad(fieldName="activePowers")
     private void loadActivePowers(List<Integer> powers) {
         if (powers == null) return;
         for (int i = 0; i < Math.min(4, powers.size()); i++) {
@@ -104,12 +91,12 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
         }
     }
     
-    @DBSave(fieldname="activePowers")
+    @DBSave(fieldName="activePowers")
     private List<Integer> saveActivePowers() {
         return Lists.newArrayList(activePowers);
     }
     
-    @DBLoad(fieldname="ratings")
+    @DBLoad(fieldName="ratings")
     private void loadRatings(List<Object> ratings) {
         if (ratings == null) return;
         Document d;
@@ -118,7 +105,7 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
             this.ratings.put(ArenaMode.getArenaMode(d.get("mode", String.class)), d.get("rating", Integer.class));
         }
     }
-    @DBSave(fieldname="ratings")
+    @DBSave(fieldName="ratings")
     private List<Document> saveRatings() {
         if (ratings.isEmpty()) return null;
         
@@ -150,26 +137,15 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
         ratings.put(mode, getRating(mode) + amt);
     }
     
-    @DBLoad(fieldname="shovels")
-    private void loadShovels(List list) {
+    @DBLoad(fieldName="shovels")
+    private void loadShovels(List<Integer> list) {
         if (list == null) return;
-        shovels = Sets.newHashSet((List<Integer>)list);
+        shovels = Sets.newHashSet(list);
     }
-    @DBSave(fieldname="shovels")
+    @DBSave(fieldName="shovels")
     private List<Integer> saveShovels() {
-        if (shovels == null) return Collections.EMPTY_LIST;
+        if (shovels == null) return new ArrayList<>();
         return Lists.newArrayList(shovels);
-    }
-    
-    @DBLoad(fieldname="spleggGuns")
-    private void loadSpleggGuns(List list) {
-        if (list == null) return;
-        spleggGuns = Sets.newHashSet((List<Integer>)list);
-    }
-    @DBSave(fieldname="spleggGuns")
-    private List<Integer> saveSpleggGuns() {
-        if (spleggGuns == null) return Collections.EMPTY_LIST;
-        return Lists.newArrayList(spleggGuns);
     }
     
     public int addShovel(int id) {
@@ -202,7 +178,6 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
         Shovel shovel;
         if ((shovel = Shovel.getShovel(id)) != null) {
             if (shovels.contains(id) || (shovel.isDefault())) {
-                //Core.getInstance().sendMessage(this, "Shovel set to " + shovel.getDisplayName());
                 activeShovel = shovel;
                 Bukkit.getScheduler().runTaskAsynchronously(Spleef.getInstance(), () -> {
                     CorePlayer cp = Core.getInstance().getPlayers().get(this);
@@ -216,11 +191,7 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
                     }
                     cp.setSelectedItem(shovel.getType(), shovel.getIdentifier());
                 });
-            } else {
-                //Core.getInstance().sendMessage(this, shovel.getDisplayName() + Chat.DEFAULT + " is not unlocked");
             }
-        } else {
-            //Core.getInstance().sendMessage(this, "Shovel does not exist");
         }
     }
     public Shovel getActiveShovel() {
@@ -230,56 +201,6 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
         Shovel shovel;
         if ((shovel = Shovel.getShovel(id)) != null) {
             return shovels.contains(id) || shovel.isDefault();
-        }
-        return false;
-    }
-    
-    public void addSpleggGun(int id) {
-        if (spleggGuns.contains(id)) {
-            Core.getInstance().sendMessage(this, "You already have that splegg gun!");
-        } else if (SpleggGun.getSpleggGun(id).isDefault()) {
-            Core.getInstance().sendMessage(this, "That splegg gun is a default!");
-        } else {
-            if (SpleggGun.getSpleggGun(id) != null) {
-                spleggGuns.add(id);
-                Core.getInstance().sendMessage(this, "You have collected the " + SpleggGun.getSpleggGun(id).getDisplayName() + Chat.DEFAULT + "!");
-            } else {
-                Core.getInstance().sendMessage(this, "Shovel doesn't exist!");
-            }
-        }
-    }
-    public void setActiveSpleggGun(int id) {
-        SpleggGun gun;
-        if ((gun = SpleggGun.getSpleggGun(id)) != null) {
-            if (spleggGuns.contains(id) || (gun.isDefault())) {
-                //Core.getInstance().sendMessage(this, "Splegg Gun set to " + shovel.getDisplayName());
-                activeSpleggGun = gun;
-            } else {
-                //Core.getInstance().sendMessage(this, shovel.getDisplayName() + Chat.DEFAULT + " is not unlocked");
-            }
-        } else {
-            //Core.getInstance().sendMessage(this, "Gun does not exist");
-        }
-        Bukkit.getScheduler().runTaskAsynchronously(Spleef.getInstance(), () -> {
-            CorePlayer cp = Core.getInstance().getPlayers().get(this);
-            while (cp == null) {
-                try {
-                    Thread.sleep(500L);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(SpleefPlayer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                cp = Core.getInstance().getPlayers().get(this);
-            }
-            cp.setSelectedItem(gun.getType(), gun.getIdentifier());
-        });
-    }
-    public SpleggGun getActiveSpleggGun() {
-        return activeSpleggGun;
-    }
-    public boolean hasSpleggGun(int id) {
-        SpleggGun gun;
-        if ((gun = SpleggGun.getSpleggGun(id)) != null) {
-            return spleggGuns.contains(id) || gun.isDefault();
         }
         return false;
     }
@@ -299,10 +220,9 @@ public class SpleefPlayer extends DBPlayer<SpleefBattle> {
         }
         return powers;
     }
-    
-    
-    
+
     @Override
+    @Deprecated
     public void printStats(DBPlayer dbp) {
         for (Map.Entry<ArenaMode, Integer> rating : ratings.entrySet()) {
             dbp.getPlayer().sendMessage(Chat.DEFAULT + "[" + Chat.GAMEMODE + rating.getKey().getDisplayName() + Chat.DEFAULT + "]: " +

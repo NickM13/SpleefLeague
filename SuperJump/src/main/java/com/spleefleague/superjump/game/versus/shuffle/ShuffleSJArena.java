@@ -6,9 +6,8 @@
 
 package com.spleefleague.superjump.game.versus.shuffle;
 
-import com.spleefleague.core.annotation.DBField;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.Arena;
-import static com.spleefleague.core.game.Arena.getArenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.superjump.SuperJump;
@@ -43,8 +42,7 @@ public class ShuffleSJArena extends VersusSJArena {
     public ShuffleSJArena() {
         mode = SJMode.SHUFFLE.getArenaMode();
     }
-    
-    @Override
+
     public int getDifficulty() {
         return difficulty.difficulty;
     }
@@ -64,7 +62,7 @@ public class ShuffleSJArena extends VersusSJArena {
         getArenas(SJMode.SHUFFLE.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
-                .setDisplayItem(Material.DIAMOND_AXE, 16 + arena.getDifficulty())
+                .setDisplayItem(Material.DIAMOND_AXE, 16 + ((ShuffleSJArena) arena).getDifficulty())
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.SHUFFLE.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
         
         SuperJump.getInstance().getSJMenuItem().getLinkedContainer().addMenuItem(menuItem, x, y);
