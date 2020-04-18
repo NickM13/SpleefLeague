@@ -8,10 +8,8 @@ package com.spleefleague.superjump.game;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.Battle;
 import com.spleefleague.core.game.BattlePlayer;
-import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
@@ -39,11 +37,11 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     
     protected long timeLastLap;
     
-    public SJBattle(List<DBPlayer> players, A arena) {
+    public SJBattle(List<CorePlayer> players, A arena) {
         super(SuperJump.getInstance(), players, arena, SJBattlePlayer.class);
         this.gameMode = GameMode.ADVENTURE;
         goals.addAll(arena.getGoals());
-        this.gameWorld.showSpectators(false);
+        this.gameWorld.setShowSpectators(false);
         timeLastLap = 0;
     }
 
@@ -63,7 +61,7 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
 
     @Override
-    protected void saveBattlerStats(DBPlayer dbPlayer) {
+    protected void saveBattlerStats(CorePlayer corePlayer) {
 
     }
 
@@ -88,9 +86,8 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
     
     @Override
-    public void requestEndGame(DBPlayer sjp) {
-        if (!battlers.containsKey(sjp)) return;
-        CorePlayer cp = Core.getInstance().getPlayers().get(sjp);
+    public void requestEndGame(CorePlayer cp) {
+        if (!battlers.containsKey(cp)) return;
         if (battlers.size() == 1) {
             endBattle();
         } else {
@@ -107,12 +104,12 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
 
     @Override
-    protected void resetPlayer(DBPlayer dbPlayer) {
+    protected void resetPlayer(CorePlayer dbPlayer) {
 
     }
 
     @Override
-    protected void leaveBattler(DBPlayer dbPlayer) {
+    protected void leaveBattler(CorePlayer dbPlayer) {
 
     }
 
@@ -122,23 +119,23 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
 
     @Override
-    protected void joinBattler(DBPlayer dbPlayer) {
+    protected void joinBattler(CorePlayer dbPlayer) {
 
     }
 
     @Override
-    protected void setupBattleInventory(DBPlayer dbPlayer) {
+    protected void setupBattleInventory(CorePlayer dbPlayer) {
 
     }
 
     @Override
-    protected void failBattler(DBPlayer dbPlayer) {
+    protected void failBattler(CorePlayer dbPlayer) {
 
     }
 
-    protected boolean isInGoal(DBPlayer sjp) {
+    protected boolean isInGoal(CorePlayer cp) {
         for (Dimension goal : goals) {
-            if (goal.isContained(new Point(sjp.getPlayer().getLocation()))) {
+            if (goal.isContained(new Point(cp.getPlayer().getLocation()))) {
                 return true;
             }
         }
@@ -151,7 +148,7 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
         timeLastLap = System.currentTimeMillis();
     }
     
-    protected void winPlayer(DBPlayer sjp) {
+    protected void winPlayer(CorePlayer cp) {
         
     }
 

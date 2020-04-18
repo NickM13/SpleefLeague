@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus;
+package com.spleefleague.core.menu.menus.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
@@ -24,8 +24,14 @@ public class HeldItemMenu {
     
     public static VendorItem getDefault() {
         return DEFAULT_HELD_ITEM;
-    } 
+    }
     
+    /**
+     * Gets the menu item for this menu, if it doesn't exist
+     * already then initialize it
+     *
+     * @return Inventory Menu Item
+     */
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             menuItem = InventoryMenuAPI.createItem()

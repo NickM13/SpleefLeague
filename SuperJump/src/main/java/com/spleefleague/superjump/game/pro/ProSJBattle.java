@@ -6,7 +6,7 @@
 
 package com.spleefleague.superjump.game.pro;
 
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
@@ -29,7 +29,7 @@ public class ProSJBattle extends SJBattle<ProSJArena> {
     protected Point nextJumpPoint;
     protected int forwardVision = 1;
 
-    public ProSJBattle(List<DBPlayer> players, ProSJArena arena) {
+    public ProSJBattle(List<CorePlayer> players, ProSJArena arena) {
         super(players, arena);
     }
     
@@ -50,7 +50,7 @@ public class ProSJBattle extends SJBattle<ProSJArena> {
     }
     
     @Override
-    protected void winPlayer(DBPlayer dbp) {
+    protected void winPlayer(CorePlayer cp) {
         //resetPlayers();
         //gameWorld.clear();
         //fillField();

@@ -8,7 +8,8 @@ package com.spleefleague.superjump.game.conquest;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJBattle;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import java.util.List;
@@ -18,13 +19,13 @@ import java.util.List;
  */
 public class ConquestSJBattle extends SJBattle<ConquestSJArena> {
 
-    public ConquestSJBattle(List<DBPlayer> players, ConquestSJArena arena) {
+    public ConquestSJBattle(List<CorePlayer> players, ConquestSJArena arena) {
         super(players, arena);
     }
     
     @Override
-    protected void winPlayer(DBPlayer dbp) {
-        SuperJumpPlayer sjp = (SuperJumpPlayer) dbp;
+    protected void winPlayer(CorePlayer cp) {
+        SuperJumpPlayer sjp = SuperJump.getInstance().getPlayers().get(cp);
         double time = getRoundTime();
         switch (sjp.getConquestStats().tryNewTime(arena, time)) {
             case NEW:

@@ -13,7 +13,7 @@ import org.bukkit.Location;
 /**
  * @author NickM13
  */
-public class Checkpoint implements DBVariable<Document> {
+public class Checkpoint extends DBVariable<Document> {
     
     protected String warp;
     

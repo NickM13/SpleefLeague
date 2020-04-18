@@ -15,7 +15,7 @@ import org.bukkit.World;
 /**
  * @author NickM13
  */
-public class Position implements DBVariable<List> {
+public class Position extends DBVariable<List> {
     
     /**
      * For database usage, requires list of 5 numbers

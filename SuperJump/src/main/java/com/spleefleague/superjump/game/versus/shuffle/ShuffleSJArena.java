@@ -63,7 +63,7 @@ public class ShuffleSJArena extends VersusSJArena {
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(Material.DIAMOND_AXE, 16 + ((ShuffleSJArena) arena).getDifficulty())
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.SHUFFLE.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.SHUFFLE.getArenaMode(), cp, arena))));
         
         SuperJump.getInstance().getSJMenuItem().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

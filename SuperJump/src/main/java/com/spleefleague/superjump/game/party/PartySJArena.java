@@ -41,13 +41,13 @@ public class PartySJArena extends SJArena {
         mapMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PARTY.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PARTY.getArenaMode(), cp)));
         
         getArenas(SJMode.PARTY.getArenaMode()).forEach((String s, Arena arena) -> mapMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PARTY.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PARTY.getArenaMode(), cp, arena))));
         
         spleefMenu.getLinkedContainer().addMenuItem(mapMenuItem, 0);
         

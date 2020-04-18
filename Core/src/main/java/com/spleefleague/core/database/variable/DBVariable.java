@@ -13,9 +13,9 @@ package com.spleefleague.core.database.variable;
  * @author NickM13
  * @param <T>
  */
-public interface DBVariable<T> {
+public abstract class DBVariable<T> {
 
-    void load(T doc);
-    T save();
+    public abstract void load(T doc);
+    public abstract T save();
     
 }

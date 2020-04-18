@@ -10,5 +10,5 @@ package com.spleefleague.core.queue;
  * @author NickM13
  */
 public interface QueueContainer {
-    public void checkQueue();
+    void checkQueue();
 }

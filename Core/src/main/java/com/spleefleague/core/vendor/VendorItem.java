@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.vendor;
 
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.chat.Chat;
@@ -92,11 +93,11 @@ public class VendorItem extends DBEntity {
     /**
      * For creating a temporary vendor item
      * Used for Held Item hotbar menu item
-     * @param identifier
-     * @param material
-     * @param damage
-     * @param name
-     * @param description
+     * @param identifier Identifier
+     * @param material Material
+     * @param damage Damage Value
+     * @param name Display Name
+     * @param description Description
      */
     public VendorItem(String identifier, Material material, Integer damage, String name, String description) {
         this.identifier = identifier;
@@ -173,35 +174,35 @@ public class VendorItem extends DBEntity {
     public ItemStack getItem() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof Damageable) {
-            ((Damageable) itemMeta).setDamage(damage);
+        if (itemMeta != null) {
+            if (itemMeta instanceof Damageable) {
+                ((Damageable) itemMeta).setDamage(damage);
+            }
+            itemMeta.addEnchant(Enchantment.DIG_SPEED, 5, true);
+            itemMeta.setUnbreakable(true);
+            itemMeta.addItemFlags(ItemFlag.values());
+            itemMeta.setDisplayName(name);
+            itemMeta.setLore(ChatUtils.wrapDescription(description));
+            itemStack.setItemMeta(itemMeta);
         }
-        itemMeta.addEnchant(Enchantment.DIG_SPEED, 5, true);
-        itemMeta.setUnbreakable(true);
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemMeta.setDisplayName(name);
-        itemMeta.setLore(Chat.wrapDescription(description));
-        itemStack.setItemMeta(itemMeta);
         return itemStack;
     }
     
     public ItemStack getVendorItem() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta instanceof Damageable) {
-            ((Damageable) itemMeta).setDamage(damage);
+        if (itemMeta != null) {
+            if (itemMeta instanceof Damageable) {
+                ((Damageable) itemMeta).setDamage(damage);
+            }
+            itemMeta.addEnchant(Enchantment.DIG_SPEED, 5, true);
+            itemMeta.setUnbreakable(true);
+            itemMeta.addItemFlags(ItemFlag.values());
+            itemMeta.setDisplayName(name);
+            itemMeta.setLore(ChatUtils.wrapDescription(getVendorDescription()));
+            itemStack.setItemMeta(itemMeta);
         }
-        itemMeta.addEnchant(Enchantment.DIG_SPEED, 5, true);
-        itemMeta.setUnbreakable(true);
-        itemMeta.addItemFlags(ItemFlag.values());
-        itemMeta.setDisplayName(name);
-        itemMeta.setLore(Chat.wrapDescription(getVendorDescription()));
-        itemStack.setItemMeta(itemMeta);
         return itemStack;
-    }
-    
-    public void activate(CorePlayer cp) {
-        
     }
     
 }

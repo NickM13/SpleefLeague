@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.player.cosmetics;
+package com.spleefleague.core.player.collectible.armor;
 
-import com.spleefleague.core.chat.Chat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+
+import com.spleefleague.core.chat.ChatUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -69,7 +69,7 @@ public class CosmeticArmor {
         if (itemMeta instanceof Damageable)
             ((Damageable)itemMeta).setDamage(damage);
         itemMeta.setDisplayName(name);
-        itemMeta.setLore(Chat.wrapDescription(desc));
+        itemMeta.setLore(ChatUtils.wrapDescription(desc));
         itemMeta.setUnbreakable(true);
         itemMeta.addItemFlags(ItemFlag.values());
         itemStack.setItemMeta(itemMeta);

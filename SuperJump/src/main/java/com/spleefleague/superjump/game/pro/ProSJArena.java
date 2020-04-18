@@ -36,15 +36,13 @@ public class ProSJArena extends SJArena {
         menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), cp)));
         
         getArenas(SJMode.PRO.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
-        
-        menuItem.getLinkedContainer().addMenuItem(menuItem, 0);
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), cp, arena))));
         
         SuperJump.getInstance().getSJMenuItem().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

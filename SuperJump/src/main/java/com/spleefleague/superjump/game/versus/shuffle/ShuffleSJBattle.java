@@ -7,14 +7,9 @@
 package com.spleefleague.superjump.game.versus.shuffle;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.game.versus.VersusSJBattle;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 
 import java.util.List;
 
@@ -23,7 +18,7 @@ import java.util.List;
  */
 public class ShuffleSJBattle extends VersusSJBattle<ShuffleSJArena> {
 
-    public ShuffleSJBattle(List<DBPlayer> players, ShuffleSJArena arena) {
+    public ShuffleSJBattle(List<CorePlayer> players, ShuffleSJArena arena) {
         super(players, arena);
         timeLastLap = 0;
     }
@@ -39,7 +34,7 @@ public class ShuffleSJBattle extends VersusSJBattle<ShuffleSJArena> {
     }
     
     @Override
-    protected void winPlayer(DBPlayer dbp) {
+    protected void winPlayer(CorePlayer cp) {
         gameWorld.clear();
         fillField();
         doCountdown();
@@ -54,7 +49,7 @@ public class ShuffleSJBattle extends VersusSJBattle<ShuffleSJArena> {
         
         timeLastLap = System.currentTimeMillis();
         
-        Core.getInstance().sendMessage("Shuffle match complete: " + dbp.getDisplayName() + " won! grats I think");
+        Core.getInstance().sendMessage("Shuffle match complete: " + cp.getDisplayName() + " won! grats I think");
         
         endBattle();
     }

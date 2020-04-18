@@ -28,8 +28,8 @@ public class TicketCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void ticketOpen(CorePlayer sender,
-            @LiteralArg(value="open") String l,
-            @HelperArg(value="<message>") String msg) {
+            @LiteralArg("open") String l,
+            @HelperArg("<message>") String msg) {
         if ((Tickets.getOpenTicket(sender) == null)) {
             Tickets.openTicket(sender, msg);
         } else {
@@ -39,7 +39,7 @@ public class TicketCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void ticketView(CorePlayer sender,
-            @LiteralArg(value="view") String l) {
+            @LiteralArg("view") String l) {
         Ticket ticket = Tickets.getOpenTicket(sender);
         if (ticket != null && ticket.isOpen()) {
             // Display ticket
@@ -58,7 +58,7 @@ public class TicketCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void ticketClose(CorePlayer sender,
-            @LiteralArg(value="close") String l) {
+            @LiteralArg("close") String l) {
         Ticket ticket = Tickets.getOpenTicket(sender);
         if (ticket != null) {
             ticket.close(sender);
@@ -69,7 +69,7 @@ public class TicketCommand extends CommandTemplate {
     
     @CommandAnnotation(minRank="MODERATOR")
     public void ticketCloseOther(CorePlayer sender,
-            @LiteralArg(value="close") String l,
+            @LiteralArg("close") String l,
             CorePlayer cp) {
         Ticket ticket = Tickets.getOpenTicket(cp);
         if (ticket != null) {

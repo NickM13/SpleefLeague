@@ -28,9 +28,9 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
-import com.spleefleague.core.menu.menus.HeldItemMenu;
+import com.spleefleague.core.menu.menus.main.HeldItemMenu;
 import com.spleefleague.core.player.party.Party;
-import com.spleefleague.core.player.cosmetics.CosmeticArmor;
+import com.spleefleague.core.player.collectible.armor.CosmeticArmor;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.request.Request;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
@@ -64,8 +64,8 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 /**
- * CorePlayer is an instance of DBPlayer that maintains various options and statss
- * unrelated to gamemodes, such as afk, ranking, and environment keys
+ * CorePlayer is an instance of DBPlayer that maintains various options and stats
+ * unrelated to game modes, such as afk, ranking, and environment keys
  *
  * @author NickM13
  */
@@ -77,39 +77,26 @@ public class CorePlayer extends DBPlayer {
     
     @DBField(serializer=LocationConverter.class)
     private Location lastLocation;
-    @DBField
-    private Checkpoint checkpoint;
+    @DBField private Checkpoint checkpoint;
 
-    @DBField
-    private PermRank permRank;
-    @DBField
-    private List<TempRank> tempRanks;
+    @DBField private PermRank permRank;
+    @DBField private List<TempRank> tempRanks;
     
-    @DBField
-    protected Map<String, Integer> scores = new HashMap<>();
+    @DBField protected Map<String, Integer> scores = new HashMap<>();
     
-    @DBField
-    private Boolean vanished;
+    @DBField private Boolean vanished;
     
-    @DBField
-    private Integer coins;
-    @DBField
-    private Set<String> keys = new HashSet<>();
+    @DBField private Integer coins;
+    @DBField private final Set<String> keys = new HashSet<>();
     
     // Non-afk time
-    @DBField
-    private Long playTime;
-    @DBField
-    private Long afkTime;
+    @DBField private Long playTime;
+    @DBField private Long afkTime;
     
     private Map<Integer, Request> requests = new HashMap<>();
 
-    // Options
-    @DBField
-    private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    
-    @DBField
-    private CorePlayerOptions options;
+    @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
+    @DBField private CorePlayerOptions options;
     
     /**
      * Non-database variables
@@ -422,8 +409,7 @@ public class CorePlayer extends DBPlayer {
      * e.g lets you shoot snowballs with a Splegg Gun active
      */
     public void activateHeldItem() {
-        if (heldItem != null)
-            heldItem.activate(this);
+    
     }
 
     /**
