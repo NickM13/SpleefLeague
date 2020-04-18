@@ -6,4 +6,5 @@ out/
 *.classpath
 *.project
 *.bat
-Splegg/replacejar.xml
+*.xml
+!pom.xml
