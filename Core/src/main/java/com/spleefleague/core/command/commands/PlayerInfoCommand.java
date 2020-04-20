@@ -15,7 +15,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.TimeUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+
 import org.bson.Document;
 import org.bukkit.OfflinePlayer;
 
@@ -66,8 +66,10 @@ public class PlayerInfoCommand extends CommandTemplate {
                 Chat.DEFAULT + getIp(cp));
         strings.add(Chat.BRACE + "Shared accounts: " +
                 Chat.DEFAULT + getSharedAccounts(cp));
-        strings.add(Chat.BRACE + "Total non-afk time: " +
+        strings.add(Chat.BRACE + "Total online time: " +
                 Chat.DEFAULT + getOnlineTime(cp));
+        strings.add(Chat.BRACE + "Total active time: " +
+                Chat.DEFAULT + getActiveTime(cp));
         
         String mergeString = "";
         Iterator<String> sit = strings.iterator();
@@ -93,16 +95,16 @@ public class PlayerInfoCommand extends CommandTemplate {
         String state = "";
         
         if (!cp.isOnline()) {
-            Infraction inf = Infraction.getMostRecent(cp.getUniqueId(), Lists.newArrayList(Infraction.Type.values()));
-            if (inf == null) {
+            Infraction infraction = Infraction.getMostRecent(cp.getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
+            if (infraction == null) {
                 state = "Offline";
             } else {
-                switch (inf.getType()) {
+                switch (infraction.getType()) {
                     case BAN:
                         state = "Permanent Ban";
                         break;
                     case TEMPBAN:
-                        state = "Temporary Ban";
+                        state = "Banned for " + infraction.getRemainingTimeString();
                         break;
                     default:
                         state = "Offline";
@@ -121,8 +123,8 @@ public class PlayerInfoCommand extends CommandTemplate {
     }
     
     private String getIp(CorePlayer cp) {
-        Document doc = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId()).append("type", "JOIN")).sort(new Document("date", -1)).first();
-        
+        Document doc = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString()).append("type", "JOIN")).sort(new Document("date", -1)).first();
+        if (doc == null) return "None Found";
         return doc.get("ip", String.class);
     }
     
@@ -136,7 +138,7 @@ public class PlayerInfoCommand extends CommandTemplate {
         while (cursor.hasNext()) {
             Document doc = cursor.next();
             if (doc.get("type", String.class).equalsIgnoreCase("JOIN")) {
-                if (cp.getUniqueId().equals(doc.get("uuid", UUID.class))) {
+                if (cp.getUniqueId().toString().equals(doc.get("uuid", String.class))) {
                     ips.add(doc.get("ip", String.class));
                 }
             }
@@ -162,14 +164,12 @@ public class PlayerInfoCommand extends CommandTemplate {
     }
     
     private String getOnlineTime(CorePlayer cp) {
-        return TimeUtils.timeToString(cp.getPlayTime());
-        /*
         String onlineTime = "";
         long onlineTimeTotal = 0;
         long lastJoin = -1;
-        
-        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUuid())).sort(new Document("date", 1)).iterator();
-        
+    
+        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString())).sort(new Document("date", 1)).iterator();
+    
         while (cursor.hasNext()) {
             Document doc = cursor.next();
             long time = doc.get("date", Date.class).getTime();
@@ -185,18 +185,21 @@ public class PlayerInfoCommand extends CommandTemplate {
                 default: break;
             }
         }
-        
+    
         onlineTime = TimeUtils.timeToString(onlineTimeTotal);
-        
+    
         return onlineTime;
-        */
+    }
+    
+    private String getActiveTime(CorePlayer cp) {
+        return TimeUtils.timeToString(cp.getPlayTime());
     }
     
     private String getLastSeen(CorePlayer cp) {
         String lastSeen = "";
         long lastConnection = -1;
         
-        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId())).sort(new Document("date", 1)).iterator();
+        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString())).sort(new Document("date", 1)).iterator();
         
         while (cursor.hasNext()) {
             Document doc = cursor.next();

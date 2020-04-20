@@ -11,6 +11,7 @@ import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.Leaderboard;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJArena;
 import com.spleefleague.superjump.game.SJMode;
@@ -49,12 +50,12 @@ public class EndlessSJArena extends SJArena {
         Leaderboard.init(EndlessSJArena.EndlessLeaderboard.DAILY.getName(),
                 Leaderboard.LeaderboardStyle.DAILY,
                 "SJ Endless Daily",
-                InventoryMenuAPI.createCustomItem(Material.DARK_OAK_SIGN),
+                InventoryMenuUtils.createCustomItem(Material.DARK_OAK_SIGN),
                 "Endless Daily Description");
         Leaderboard.init(EndlessSJArena.EndlessLeaderboard.BEST.getName(),
                 Leaderboard.LeaderboardStyle.ALLTIME,
                 "SJ Endless Alltime",
-                InventoryMenuAPI.createCustomItem(Material.DARK_OAK_SIGN),
+                InventoryMenuUtils.createCustomItem(Material.DARK_OAK_SIGN),
                 "Endless Alltime Description");
     }
     

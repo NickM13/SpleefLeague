@@ -3,6 +3,8 @@ package com.spleefleague.splegg;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.splegg.commands.SpleggCommand;
@@ -58,18 +60,18 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
                 .setDescription("Imagine the following description included the word egg in it somewhere.\n\nA competitive gamemode in which you must knock your opponent into the water while avoiding a similar fate.\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!")
                 .setDisplayItem(Material.EGG)
                 .createLinkedContainer("Splegg Menu");
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 0, 2);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 1, 3);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 2, 2);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("TeamSplegg"), 3, 3);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 0, 2);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 1, 3);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 2, 2);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("TeamSplegg"), 3, 3);
         ClassicSpleggArena.createMenu(4, 2);
         MultiSpleggArena.createMenu(5, 3);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 6, 2);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 7, 3);
-        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 8, 2);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 6, 2);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 7, 3);
+        spleggMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 8, 2);
         spleggMenuItem.getLinkedContainer().addStaticItem(SpleggGun.createMenu(), 4, 4);
-
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU).getLinkedContainer().addMenuItem(spleggMenuItem, 5, 3);
+    
+        SLMainHotbar.getItemHotbar().getLinkedContainer().addMenuItem(spleggMenuItem, 5, 3);
     }
 
     protected void initCommands() {

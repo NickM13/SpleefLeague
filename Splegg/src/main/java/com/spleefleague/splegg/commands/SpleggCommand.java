@@ -11,11 +11,9 @@ import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
-import com.spleefleague.splegg.player.SpleggPlayer;
 
 import javax.annotation.Nullable;
 

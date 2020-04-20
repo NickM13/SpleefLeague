@@ -86,12 +86,12 @@ public abstract class Battle<A extends Arena> {
      * Start a battle (round 0)
      */
     public final void startBattle() {
+        startedTime = System.currentTimeMillis();
+        ongoing = true;
         setupBaseSettings();
         setupBattlers();
         sendStartMessage();
         startRound();
-        ongoing = true;
-        startedTime = System.currentTimeMillis();
     }
 
     /**
@@ -132,6 +132,7 @@ public abstract class Battle<A extends Arena> {
      * @param bp BattlePlayer
      */
     protected final void spawnBattler(BattlePlayer bp) {
+        bp.getCorePlayer().refreshHotbar();
         bp.getCorePlayer().setGameMode(gameMode);
         bp.getPlayer().setWalkSpeed(0.2f);
         bp.respawn();
@@ -167,7 +168,6 @@ public abstract class Battle<A extends Arena> {
                 battlers.put(cp2, bp);
                 sortedBattlers.add(bp);
                 spawnBattler(bp);
-                setupBattleInventory(cp2);
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
@@ -310,13 +310,6 @@ public abstract class Battle<A extends Arena> {
     }
 
     /**
-     * Clears the player's inventory for battle related items
-     *
-     * @param cp CorePlayer
-     */
-    protected abstract void setupBattleInventory(CorePlayer cp);
-
-    /**
      * Moderator cancel for battles
      */
     public void cancel() {
@@ -435,19 +428,12 @@ public abstract class Battle<A extends Arena> {
     public void requestPlayTo(CorePlayer cp, int playTo) { }
 
     /**
-     * Resets player
-     *
-     * @param cp CorePlayer
-     */
-    protected abstract void resetPlayer(CorePlayer cp);
-
-    /**
      * Reset all battlers
      */
     protected final void resetBattlers() {
         remainingPlayers = battlers.size();
-        for (CorePlayer cp : battlers.keySet()) {
-            resetPlayer(cp);
+        for (BattlePlayer bp : battlers.values()) {
+            spawnBattler(bp);
         }
     }
 

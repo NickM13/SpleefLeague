@@ -99,7 +99,7 @@ public class DBEntity {
      *
      * @param doc Document
      */
-    public void load(Document doc) {
+    public final void load(Document doc) {
         if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
         Class<?> clazz = this.getClass();
         while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
@@ -180,6 +180,14 @@ public class DBEntity {
             }
             clazz = clazz.getSuperclass();
         }
+        afterLoad();
+    }
+    
+    /**
+     * Called after load to further initialize anything
+     */
+    public void afterLoad() {
+    
     }
     
 }

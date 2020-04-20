@@ -1,7 +1,5 @@
 package com.spleefleague.core.vendor;
 
-import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.database.annotation.DBSave;
@@ -23,10 +21,6 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -93,17 +87,17 @@ public class Vendor extends DBEntity {
      * Sets the VendorItem of a slot in the vendor's shop
      *
      * @param slot Slot Number
-     * @param item Vendor Item
+     * @param vendorable Vendor Item
      */
-    public void setItem(int slot, VendorItem item) {
-        items.put(slot, new SimpleVendorItem(item.getType(), item.getIdentifier()));
+    public void setItem(int slot, Vendorable vendorable) {
+        items.put(slot, new SimpleVendorItem(vendorable.getType(), vendorable.getIdentifier()));
     }
     
     /**
      * Saves the current Vendor to the database
      */
     public void quicksave() {
-        VendorManager.save(this);
+        Vendors.save(this);
     }
     
     /**
@@ -140,7 +134,7 @@ public class Vendor extends DBEntity {
         }
         for (Entity entity : entitySet) {
             addEntity(entity);
-            VendorManager.setupEntityVendor(this, entity);
+            Vendors.setupEntityVendor(this, entity);
         }
     }
     
@@ -164,9 +158,9 @@ public class Vendor extends DBEntity {
                     items.clear();
                     for (Map.Entry<Integer, InventoryMenuItem> item : invItems.entrySet()) {
                         ItemStack itemStack = item.getValue().createItem(cp);
-                        VendorItem vi = VendorItem.getVendorItem(itemStack);
-                        if (vi != null) {
-                            SimpleVendorItem svi = new SimpleVendorItem(vi.getType(), vi.getIdentifier());
+                        Vendorable vendorable = Vendorables.get(itemStack);
+                        if (vendorable != null) {
+                            SimpleVendorItem svi = new SimpleVendorItem(vendorable.getType(), vendorable.getIdentifier());
                             items.put(item.getKey(), svi);
                         } else {
                             cp.sendMessage("Item is not a valid vendor item: " + itemStack.getItemMeta().getDisplayName());
@@ -177,12 +171,9 @@ public class Vendor extends DBEntity {
                 .setOpenAction((container, cp2) -> {
                     container.clearSorted();
                     for (Map.Entry<Integer, SimpleVendorItem> item : items.entrySet()) {
-                        VendorItem vendorItem = VendorItem.getVendorItem(item.getValue().type, item.getValue().id);
-                        if (vendorItem != null) {
-                            container.addMenuItem(InventoryMenuAPI.createItem()
-                                    .setName(vendorItem.getDisplayName())
-                                    .setDescription(vendorItem.getVendorDescription())
-                                    .setDisplayItem(vendorItem.getItem()), item.getKey());
+                        Vendorable vendorable = Vendorables.get(item.getValue().type, item.getValue().id);
+                        if (vendorable != null) {
+                            container.addMenuItem(vendorable.getVendorMenuItem(), item.getKey());
                         }
                     }
                 })
@@ -202,21 +193,9 @@ public class Vendor extends DBEntity {
                 .setTitle(getDisplayName());
         
         for (Map.Entry<Integer, SimpleVendorItem> item : items.entrySet()) {
-            VendorItem vendorItem = VendorItem.getVendorItem(item.getValue().type, item.getValue().id);
-            if (vendorItem != null) {
-                menu.addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(vendorItem.getDisplayName())
-                        .setDescription(vendorItem.getVendorDescription())
-                        .setDisplayItem(vendorItem.getItem())
-                        .setAction(cp2 -> {
-                            if (vendorItem.isUnlocked(cp)) {
-                                Core.getInstance().sendMessage(cp, "You already own that!");
-                            } else if (vendorItem.isPurchaseable(cp)) {
-                                vendorItem.purchase(cp);
-                            } else {
-                                Core.getInstance().sendMessage(cp, "You can't buy that!");
-                            }
-                        }), item.getKey());
+            Vendorable vendorable = Vendorables.get(item.getValue().type, item.getValue().id);
+            if (vendorable != null) {
+                menu.addMenuItem(vendorable.getVendorMenuItem(), item.getKey());
             } else {
                 menu.addMenuItem(InventoryMenuAPI.createItem()
                         .setName("Unknown Item")

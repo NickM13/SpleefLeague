@@ -4,12 +4,13 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus.main;
+package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Leaderboard;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.Map;
@@ -56,7 +57,7 @@ public class LeaderboardMenu {
                                                 CorePlayer cp3 = Core.getInstance().getPlayers().getOffline(uuid);
                                                 container2.addMenuItem(InventoryMenuAPI.createItem()
                                                         .setName(p -> cp3.getDisplayName() + " #" + lb.getValue().getPlaceOf(uuid))
-                                                        .setDisplayItem(p -> InventoryMenuAPI.createCustomSkull(cp3.getUniqueId()))
+                                                        .setDisplayItem(p -> InventoryMenuUtils.createCustomSkull(cp3.getUniqueId()))
                                                         .setCloseOnAction(false));
                                                 j++;
                                             }

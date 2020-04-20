@@ -11,6 +11,8 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.superjump.commands.*;
@@ -80,19 +82,19 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
         
         InventoryMenuContainer container = superJumpMenuItem.getLinkedContainer();
         
-        container.addMenuItem(InventoryMenuAPI.createLockedMenuItem("Party"), 0, 2);
-        container.addMenuItem(InventoryMenuAPI.createLockedMenuItem("Tetronimo"), 1, 3);
+        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Party"), 0, 2);
+        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Tetronimo"), 1, 3);
         ShuffleSJArena.createMenu(2, 2);
         ConquestSJArena.createMenu(3, 3);
         EndlessSJArena.createMenu(4, 2);
         ClassicSJArena.createMenu(5, 3);
         ProSJArena.createMenu(6, 2);
-        container.addMenuItem(InventoryMenuAPI.createLockedMenuItem("Memory"), 7, 3);
-        container.addMenuItem(InventoryMenuAPI.createLockedMenuItem("Practice"), 8, 2);
+        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Memory"), 7, 3);
+        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Practice"), 8, 2);
         //superJumpMenu.addMenuItem(PartySJArena.createMenu(), 5);
         //superJumpMenu.addMenuItem(PracticeSJArena.createMenu(), 6);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU).getLinkedContainer().addMenuItem(superJumpMenuItem, 3, 3);
+    
+        SLMainHotbar.getItemHotbar().getLinkedContainer().addMenuItem(superJumpMenuItem, 3, 3);
     }
     
     private void initLeaderboards() {

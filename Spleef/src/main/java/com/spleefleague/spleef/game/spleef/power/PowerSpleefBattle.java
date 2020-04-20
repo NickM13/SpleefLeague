@@ -32,7 +32,7 @@ public class PowerSpleefBattle extends SpleefBattle {
             bp.getPlayer().getInventory().setItem(1, sp.getActivePower(1).getItem());
             bp.getPlayer().getInventory().setItem(2, sp.getActivePower(2).getItem());
             bp.getPlayer().getInventory().setItem(3, sp.getActivePower(3).getItem());
-            bp.getPlayer().getInventory().setItem(4, sp.getActiveShovel().getItem());
+            //bp.getPlayer().getInventory().setItem(4, sp.getActiveShovel().createItem());
             bp.getPlayer().getInventory().setHeldItemSlot(4);
         }
     }
@@ -103,11 +103,6 @@ public class PowerSpleefBattle extends SpleefBattle {
             //sp.getActivePower(0).activate(sp);
         }
         */
-    }
-
-    @Override
-    protected void resetPlayer(CorePlayer cp) {
-
     }
 
 }

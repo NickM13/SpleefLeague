@@ -124,11 +124,6 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
 
     @Override
-    protected void setupBattleInventory(CorePlayer dbPlayer) {
-
-    }
-
-    @Override
     protected void failBattler(CorePlayer dbPlayer) {
 
     }

@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
@@ -25,16 +25,6 @@ public class InvSeeCommand extends CommandTemplate {
     @CommandAnnotation
     public void invsee(CorePlayer sender, CorePlayer cp) {
         sender.invsee(cp);
-        /*
-        This is more of an invcopy
-        if (args.length > 0) {
-            CorePlayer target = Core.getInstance().getPlayer(args[0]);
-            cp.invsee(target);
-        } else {
-            // Reverts the inventory (TODO: Find better name for function)
-            cp.loadPregameState();
-        }
-        */
     }
 
 }

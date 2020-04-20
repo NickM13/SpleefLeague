@@ -8,16 +8,13 @@ package com.spleefleague.core.listener;
 
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
-import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.spleefleague.core.vendor.Vendor;
-import com.spleefleague.core.vendor.VendorManager;
+import com.spleefleague.core.vendor.Vendors;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -183,7 +180,7 @@ public class EnvironmentListener implements Listener {
                 if (!damageableMobs.contains(event.getEntityType()))
                     event.setCancelled(true);
             } else {
-                VendorManager.punchEvent(event);
+                Vendors.punchEvent(event);
             }
         } else if (!event.getEntityType().equals(EntityType.PLAYER) && !damageableMobs.contains(event.getEntityType())) {
             event.setCancelled(true);
@@ -207,7 +204,7 @@ public class EnvironmentListener implements Listener {
             }
         }
         if (event.getHand() == EquipmentSlot.HAND) {
-            VendorManager.interactEvent(event);
+            Vendors.interactEvent(event);
         }
     }
 

@@ -29,21 +29,21 @@ public class ConquestSJBattle extends SJBattle<ConquestSJArena> {
         double time = getRoundTime();
         switch (sjp.getConquestStats().tryNewTime(arena, time)) {
             case NEW:
-                Core.getInstance().sendMessage(sjp, "You've set a new score for "
+                Core.getInstance().sendMessage(sjp.getPlayer(), "You've set a new score for "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time
                         + Chat.DEFAULT + ")");
                 break;
             case BEAT:
-                Core.getInstance().sendMessage(sjp, "You beat your previous score on "
+                Core.getInstance().sendMessage(sjp.getPlayer(), "You beat your previous score on "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time
                         + Chat.DEFAULT + ")");
                 break;
             case NONE:
-                Core.getInstance().sendMessage(sjp, "You did not set any records on "
+                Core.getInstance().sendMessage(sjp.getPlayer(), "You did not set any records on "
                         + Chat.GAMEMAP + arena.getDisplayName()
                         + Chat.DEFAULT + "! ("
                         + Chat.TIME + time

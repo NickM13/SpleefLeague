@@ -116,7 +116,8 @@ public class Infraction {
         for (Type type : types) {
             infraction = getActive(uniqueId, type);
             if (recent == null
-                    || infraction.time > recent.time) {
+                    || (infraction != null
+                    && infraction.time > recent.time)) {
                 recent = infraction;
             }
         }

@@ -139,12 +139,16 @@ public abstract class SpleefBattleTeamed extends SpleefBattle {
     @Override
     protected void setupBattlers() {
         int i = 0;
+        // TODO: This no longer works, need to use hotbar items (see Shovel.java init() for example)
+        // TODO: Move team based battles to Core, could be shared with Splegg and SJ
+        /*
         for (BattlePlayer bp : battlers.values()) {
             bp.getPlayer().getInventory().setHelmet(createColoredArmor(Material.LEATHER_HELMET, playerTeamMap.get(bp.getCorePlayer()).getTeamName().getColor()));
             bp.getPlayer().getInventory().setChestplate(createColoredArmor(Material.LEATHER_CHESTPLATE, playerTeamMap.get(bp.getCorePlayer()).getTeamName().getColor()));
             bp.getPlayer().getInventory().setLeggings(createColoredArmor(Material.LEATHER_LEGGINGS, playerTeamMap.get(bp.getCorePlayer()).getTeamName().getColor()));
             bp.getPlayer().getInventory().setBoots(createColoredArmor(Material.LEATHER_BOOTS, playerTeamMap.get(bp.getCorePlayer()).getTeamName().getColor()));
         }
+        */
     }
     
     @Override

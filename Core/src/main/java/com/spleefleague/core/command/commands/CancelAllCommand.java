@@ -11,8 +11,8 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.game.Battle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
-import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.player.rank.Rank;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +29,7 @@ public class CancelAllCommand extends CommandTemplate {
     
     /**
      * Moderatively cancels all battles
-     * TODO: Better way to do this (:
+     * TODO: Find better way to do this
      * 
      * @param sender Core Player
      */

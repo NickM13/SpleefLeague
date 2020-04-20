@@ -13,7 +13,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.io.converter.LocationConverter;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;

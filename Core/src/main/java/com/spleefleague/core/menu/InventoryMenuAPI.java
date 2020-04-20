@@ -33,90 +33,39 @@ import org.bukkit.potion.PotionType;
  */
 public class InventoryMenuAPI {
     
-    private static final ItemStack LOCKED_ICON = createCustomItem(Material.DIAMOND_AXE, 12);
-    
-    public static InventoryMenuItem createLockedMenuItem() {
-        return createLockedMenuItem("Locked");
-    }
-    public static InventoryMenuItem createLockedMenuItem(String name) {
-        return InventoryMenuAPI.createItem()
-                .setName(name)
-                .setDisplayItem(LOCKED_ICON)
-                .setCloseOnAction(false);
-    }
-    public static ItemStack getLockedIcon() {
-        return LOCKED_ICON;
-    }
-    public static ItemStack createCustomItem(Material displayItem) {
-        ItemStack itemStack = new ItemStack(displayItem);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta != null) {
-            itemMeta.setUnbreakable(true);
-            itemMeta.addItemFlags(ItemFlag.values());
-            itemStack.setItemMeta(itemMeta);
-        }
-        return itemStack;
-    }
-    public static ItemStack createCustomItem(Material displayItem, int damage) {
-        ItemStack itemStack = new ItemStack(displayItem);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta != null) {
-            if (itemMeta instanceof Damageable) {
-                ((Damageable) itemMeta).setDamage(damage);
-            }
-            itemMeta.setUnbreakable(true);
-            itemMeta.addItemFlags(ItemFlag.values());
-            itemStack.setItemMeta(itemMeta);
-        }
-        return itemStack;
-    }
-    public static ItemStack createCustomItem(String name, Material displayItem, int damage) {
-        ItemStack item = createCustomItem(displayItem, damage);
-        if (item.getItemMeta() != null)
-            item.getItemMeta().setDisplayName(name);
-        return item;
-    }
-    
-    public static ItemStack createCustomPotion(PotionType pt) {
-        ItemStack item = new ItemStack(Material.POTION);
-        PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-        potionMeta.setBasePotionData(new PotionData(pt));
-        item.setItemMeta(potionMeta);
-        return item;
-    }
-    
-    public static ItemStack createCustomSkull(String playerName) {
-        OfflinePlayer op = Bukkit.getOfflinePlayer(playerName);
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullmeta = (SkullMeta)skull.getItemMeta();
-        skullmeta.setOwningPlayer(op);
-        skull.setItemMeta(skullmeta);
-        return skull;
-    }
-    
-    public static ItemStack createCustomSkull(UUID uuid) {
-        OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullmeta = (SkullMeta)skull.getItemMeta();
-        skullmeta.setOwningPlayer(op);
-        skull.setItemMeta(skullmeta);
-        return skull;
-    }
-    
     public static InventoryMenuContainer createContainer() {
         return new InventoryMenuContainer();
     }
     
+    /**
+     * Creates an InventoryMenuEditor
+     *
+     * @return New InventoryMenuEditor
+     */
     public static InventoryMenuEditor createEditor() {
         return new InventoryMenuEditor();
     }
     
+    /**
+     * Creates a base InventoryMenuItem
+     *
+     * @return New InventoryMenuItem
+     */
     public static InventoryMenuItem createItem() {
         return new InventoryMenuItem();
     }
     
-    public static InventoryMenuItemHotbar createItemHotbar(int slot, String identifier) {
-        return new InventoryMenuItemHotbar(slot, identifier);
+    /**
+     * Creates and registers a new Hotbar item with a permanent slot TODO: should it be permanent?
+     * and an identifier which is stored in the "hotbar" nbt
+     * accessed by InventoryMenuItemHotbar::getHotbarTag
+     *
+     * @param slot Slot Number
+     * @param hotbarTag "hotbar" NBT String
+     * @return New InventoryMenuItemHotbar
+     */
+    public static InventoryMenuItemHotbar createItemHotbar(int slot, String hotbarTag) {
+        return new InventoryMenuItemHotbar(slot, hotbarTag);
     }
     
     public static InventoryMenuItemOption createItemOption(Function<CorePlayer, Integer> selectedFun) {
@@ -124,62 +73,33 @@ public class InventoryMenuAPI {
                 .setSelected(selectedFun);
     }
     
-    public static boolean isHotbarItem(ItemStack item) {
-        return item != null && InventoryMenuItemHotbar.getHotbarTag(item) != null;
-    }
-    
+    /**
+     * Returns a collection of all hotbar items
+     *
+     * @return
+     */
     public static Collection<InventoryMenuItemHotbar> getHotbarItems() {
-        return hotbarItems.values();
+        return InventoryMenuItemHotbar.getHotbarItems().values();
     }
     
-    public enum InvMenuType {
-        SLMENU(0),
-        HELD(8);
-        
-        int slot;
-        
-        InvMenuType(int slot) {
-            this.slot = slot;
-        }
-        
-        public int getSlot() {
-            return slot;
-        }
-        
-        public InventoryMenuItemHotbar create() {
-            return createItemHotbar(slot, name().toLowerCase());
-        }
+    /**
+     * @param item ItemStack
+     * @return Whether item is a registered Hotbar Item
+     */
+    public static boolean isHotbarItem(ItemStack item) {
+        if (item == null) return false;
+        return InventoryMenuItemHotbar.isHotbarItem(item);
     }
     
-    private static Map<String, InventoryMenuItemHotbar> hotbarItems = new HashMap<>();
-    
-    public static InventoryMenuItemHotbar getHotbarItem(InvMenuType type) {
-        return hotbarItems.get(type.name().toLowerCase());
-    }
+    /**
+     * Returns the Hotbar menu item by the hotbar nbt tag, or
+     * null if it isn't a Hotbar item
+     *
+     * @param item ItemStack
+     * @return InventoryMenuItemHotbar
+     */
     public static InventoryMenuItemHotbar getHotbarItem(ItemStack item) {
-        String hotbarName;
-        if ((hotbarName = InventoryMenuItemHotbar.getHotbarTag(item)) != null) {
-            return hotbarItems.get(hotbarName);
-        }
-        return null;
-    }
-    public static String getHotbarTag(ItemStack item) {
-        return InventoryMenuItemHotbar.getHotbarTag(item);
-    }
-    
-    public static void init() {
-        hotbarItems.put(InvMenuType.SLMENU.name().toLowerCase(), (InventoryMenuItemHotbar) InvMenuType.SLMENU.create()
-                .setName(ChatColor.RESET + "" + Chat.PLUGIN_PREFIX + "" + ChatColor.BOLD + "SpleefLeague Menu")
-                .setDisplayItem(new ItemStack(Material.COMPASS))
-                .setAction(cp -> { cp.setInventoryMenuItem(hotbarItems.get(InvMenuType.SLMENU.name().toLowerCase())); })
-                .createLinkedContainer("SpleefLeague Menu"));
-        
-        hotbarItems.put(InvMenuType.HELD.name().toLowerCase(), (InventoryMenuItemHotbar) InvMenuType.HELD.create()
-                .setName(cp -> cp.getHeldItem().getDisplayName())
-                .setDisplayItem(cp -> cp.getHeldItem().getItem())
-                .setDescription(cp -> cp.getHeldItem().getDescription())
-                .setVisibility(CorePlayer::hasSelectedHeldItem)
-                .setAction(CorePlayer::activateHeldItem));
+        return InventoryMenuItemHotbar.getHotbarItem(item);
     }
     
 }

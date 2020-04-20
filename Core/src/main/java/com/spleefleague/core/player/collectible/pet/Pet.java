@@ -6,12 +6,16 @@
 
 package com.spleefleague.core.player.collectible.pet;
 
+import com.mongodb.client.MongoCollection;
+import com.spleefleague.core.Core;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.spleefleague.core.player.collectible.key.Key;
+import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
+import org.bson.Document;
+import org.bukkit.entity.EntityType;
 
 /**
  * PETS PETS PEPREPSTS SERKLRJSPKLHEL:KWJHYALIUUEWYAOIURYGHALOWSEI*U
@@ -19,27 +23,53 @@ import java.util.UUID;
  * @author NickM13
  */
 public class Pet extends Collectible {
-
+    
+    private static MongoCollection<Document> petCol;
+    
+    public static void init() {
+        Vendorable.registerVendorableType(Pet.class);
+        
+        petCol = Core.getInstance().getPluginDB().getCollection("Pets");
+        petCol.find().iterator().forEachRemaining(doc -> {
+            Pet petItem = new Pet();
+            petItem.load(doc);
+        });
+    }
+    
+    @DBField private EntityType entityType;
+    
     public Pet() {
-        super("PET");
+        super();
+    }
+    
+    public void afterLoad() {
+        super.afterLoad();
+    }
+    
+    public EntityType getEntityType() {
+        return entityType;
     }
     
     /**
      * Called when a player clicks on this collectible on
      * their collections menu
+     *
+     * @param cp Core Player
      */
     @Override
-    public void onEnable() {
-    
+    public void onEnable(CorePlayer cp) {
+        cp.sendMessage("Fantastic!");
     }
     
     /**
      * Called when another collectible of the same type has
      * been enabled
+     *
+     * @param cp Core Player
      */
     @Override
-    public void onDisable() {
-    
+    public void onDisable(CorePlayer cp) {
+        cp.sendMessage("Goodbye :(");
     }
     
     /**
@@ -50,7 +80,8 @@ public class Pet extends Collectible {
      * @return Availability
      */
     @Override
-    public boolean isAvailable(CorePlayer cp) {
+    public boolean isAvailableToPurchase(CorePlayer cp) {
         return false;
     }
+    
 }

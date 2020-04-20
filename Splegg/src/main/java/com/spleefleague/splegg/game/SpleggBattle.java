@@ -34,16 +34,12 @@ public abstract class SpleggBattle extends Battle<SpleggArena> {
     }
 
     @Override
-    protected void setupBattleInventory(CorePlayer cp) {
-        cp.getPlayer().getInventory().addItem(Splegg.getInstance().getPlayers().get(cp).getActiveSpleggGun().getItem());
-    }
-
-    @Override
     public void onRightClick(CorePlayer cp) {
         if (cp.getBattleState().equals(BattleState.BATTLER) && isRoundStarted() &&
                 cp.getPlayer().getInventory().getItemInMainHand().getType().equals(SPLEGGER_TOOL) &&
                 cp.getPlayer().getCooldown(SPLEGGER_TOOL) <= 0) {
-            FakeProjectile projectile = Splegg.getInstance().getPlayers().get(cp).getActiveSpleggGun().getProjectile();
+            // TODO: Rewrite this
+            FakeProjectile projectile = ((SpleggGun) cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault())).getProjectile();
             cp.getPlayer().setCooldown(SPLEGGER_TOOL, 20 / projectile.fireRate);
             gameWorld.shootProjectile(cp, projectile);
         }

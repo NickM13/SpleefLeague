@@ -22,29 +22,28 @@ import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.menu.*;
+import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
-import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuItemHotbar;
-import com.spleefleague.core.menu.menus.main.HeldItemMenu;
+import com.spleefleague.core.menu.hotbars.main.HeldItemMenu;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.collectible.armor.CosmeticArmor;
+import com.spleefleague.core.player.rank.PermRank;
+import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.TempRank;
 import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.core.request.Request;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.util.variable.TpCoord;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.vendor.KeyItem;
-import com.spleefleague.core.vendor.VendorItem;
+
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.*;
 import javax.annotation.Nullable;
 
-import com.spleefleague.core.world.build.BuildWorld;
+import com.spleefleague.core.world.FakeWorld;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -83,20 +82,16 @@ public class CorePlayer extends DBPlayer {
     @DBField private List<TempRank> tempRanks;
     
     @DBField protected Map<String, Integer> scores = new HashMap<>();
-    
     @DBField private Boolean vanished;
-    
     @DBField private Integer coins;
-    @DBField private final Set<String> keys = new HashSet<>();
     
     // Non-afk time
     @DBField private Long playTime;
     @DBField private Long afkTime;
-    
-    private Map<Integer, Request> requests = new HashMap<>();
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
     @DBField private CorePlayerOptions options;
+    @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
     
     /**
      * Non-database variables
@@ -119,21 +114,20 @@ public class CorePlayer extends DBPlayer {
     // Last action millis
     private long lastAction;
     private boolean afk;
-    
-    private VendorItem heldItem = null;
-    private Map<String, String> selectedItems = new HashMap<>();
-    
-    private final Set<CosmeticArmor> activeCosmetics = new HashSet<>();
+    private boolean afkWarned;
     
     private Player replyPlayer = null;
 
     private PermissionAttachment permissions;
     
-    private BuildWorld buildWorld;
+    private LinkedHashSet<FakeWorld> fakeWorlds;
     private Battle<?> battle;
     private BattleState battleState;
-    private PregameState pregameState;
-
+    private final PregameState pregameState;
+    
+    /**
+     * Constructor for CorePlayer
+     */
     public CorePlayer() {
         super();
         this.chatChannel = ChatChannel.getDefaultChannel();
@@ -149,7 +143,8 @@ public class CorePlayer extends DBPlayer {
         this.afkTime = 0L;
         this.lastAction = System.currentTimeMillis();
         this.afk = false;
-        this.buildWorld = null;
+        this.afkWarned = false;
+        this.fakeWorlds = new LinkedHashSet<>();
         this.battle = null;
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
@@ -161,6 +156,16 @@ public class CorePlayer extends DBPlayer {
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
     }
+    
+    /**
+     * Runs when a player who has never joined before logs in
+     * This function always runs before init()
+     */
+    @Override
+    public void newPlayer(Player player) {
+        super.newPlayer(player);
+        permRank.setRank(Rank.getDefaultRank());
+    }
 
     /**
      * CorePlayer::init is run when a player comes online
@@ -171,6 +176,8 @@ public class CorePlayer extends DBPlayer {
         setRank(permRank.getRank());
         updateArmor();
         PersonalScoreboard.initPlayerScoreboard(this);
+        collectibles.setOwner(this);
+        refreshHotbar();
     }
 
     /**
@@ -181,26 +188,6 @@ public class CorePlayer extends DBPlayer {
      */
     public CorePlayerOptions getOptions() {
         return options;
-    }
-    
-    @DBSave(fieldName ="heldItem")
-    protected Document saveHeldItem() {
-        if (heldItem == null) {
-            return null;
-        }
-        return new Document("type", heldItem.getType()).append("identifier", heldItem.getIdentifier());
-    }
-    
-    @DBLoad(fieldName ="heldItem")
-    protected void loadHeldItem(Document doc) {
-        if (doc != null) {
-            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                VendorItem vendorItem = VendorItem.getVendorItem(doc.get("type", String.class), doc.get("identifier", String.class));
-                if (vendorItem != null)
-                    this.heldItem = vendorItem;
-                refreshHotbar();
-            }, 20L);
-        }
     }
 
     /**
@@ -269,9 +256,10 @@ public class CorePlayer extends DBPlayer {
     public void checkAfk() {
         if (lastAction + AFK_TIMEOUT < System.currentTimeMillis()) {
             setAfk(true);
-        } else if (lastAction + AFK_WARNING < System.currentTimeMillis()
+        } else if (!afkWarned && lastAction + AFK_WARNING < System.currentTimeMillis()
                 && getRank().equals(Rank.DEFAULT)) {
             Core.getInstance().sendMessage(this, "You will be kicked for AFK in 30 seconds!");
+            afkWarned = true;
         }
     }
 
@@ -279,16 +267,12 @@ public class CorePlayer extends DBPlayer {
      * @return Was AFK
      */
     public boolean setLastAction() {
-        if (this.afk) {
-            setAfk(false);
-            afkTime += System.currentTimeMillis() - lastAction;
-            lastAction = System.currentTimeMillis();
-            return true;
-        } else {
-            playTime += System.currentTimeMillis() - lastAction;
-            lastAction = System.currentTimeMillis();
-        }
-        return false;
+        boolean wasAfk = this.afk;
+        if (this.afk) setAfk(false);
+        afkTime += System.currentTimeMillis() - lastAction;
+        lastAction = System.currentTimeMillis();
+        afkWarned = false;
+        return wasAfk;
     }
 
     /**
@@ -299,18 +283,13 @@ public class CorePlayer extends DBPlayer {
      */
     public void setAfk(boolean state) {
         if (afk != state) {
-            if (state) {
-                if (getRank().equals(Rank.DEFAULT)) {
-                    getPlayer().kickPlayer("Kicked for AFK!");
-                    return;
-                } else {
-                    getPlayer().getInventory().setItemInOffHand(InventoryMenuAPI.createCustomItem("AFK", Material.DIAMOND_HOE, 253));
-                }
-            } else {
-                getPlayer().getInventory().setItemInOffHand(null);
-            }
             afk = state;
+            if (afk && getRank().equals(Rank.DEFAULT)) {
+                getPlayer().kickPlayer("Kicked for AFK!");
+                return;
+            }
             Core.getInstance().sendMessage(this, "You are " + (afk ? "now afk" : "no longer afk"));
+            refreshHotbar();
         }
     }
     public boolean isAfk() {
@@ -332,76 +311,14 @@ public class CorePlayer extends DBPlayer {
         }
         return 0;
     }
-
+    
     /**
-     * @param type Type of Item (SHOVEL/GUN/KEY e t c)
-     * @param id Id # of the item
-     */
-    public void setSelectedItem(String type, String id) {
-        if (selectedItems.containsKey(type) &&
-                heldItem == VendorItem.getVendorItem(type, selectedItems.get(type))) {
-            heldItem = VendorItem.getVendorItem(type, id);
-        }
-        selectedItems.put(type, id);
-        refreshHotbar();
-    }
-    public Map<String, String> getSelectedItems() {
-        return selectedItems;
-    }
-
-    /**
-     * Adds a key to a player's key collection
+     * Get the collectibles object owned by the player
      *
-     * @param key KeyItem
+     * @return Collectibles
      */
-    public void addKey(KeyItem key) {
-        keys.add(key.getIdentifier());
-        Core.getInstance().sendMessage(this, "You have received " + key.getDisplayName());
-    }
-
-    /**
-     * Removes a key from a player's key collection
-     *
-     * @param key KeyItem
-     */
-    public void removeKey(KeyItem key) {
-        keys.remove(key.getIdentifier());
-        Core.getInstance().sendMessage(this, "You have lost " + key.getDisplayName());
-    }
-
-    /**
-     * Returns all keys that a player has collected
-     *
-     * @return Set of KeyNames
-     */
-    public Set<String> getKeys() {
-        return keys;
-    }
-
-    /**
-     * @return Whether the player has a selected held item
-     */
-    public boolean hasSelectedHeldItem() {
-        return heldItem != null;
-    }
-
-    /**
-     * Sets the held item of a player
-     *
-     * @param item VendorItem
-     */
-    public void setHeldItem(VendorItem item) {
-        heldItem = item;
-        refreshHotbar();
-    }
-
-    /**
-     * @return VendorItem that the player is holding
-     */
-    public VendorItem getHeldItem() {
-        if (heldItem == null)
-            return HeldItemMenu.getDefault();
-        return heldItem;
+    public CorePlayerCollectibles getCollectibles() {
+        return collectibles;
     }
 
     /**
@@ -476,16 +393,6 @@ public class CorePlayer extends DBPlayer {
     }
 
     /**
-     * Runs when a player who has never joined before logs in
-     * This function always runs before init()
-     */
-    @Override
-    public void newPlayer(Player player) {
-        super.newPlayer(player);
-        permRank.setRank(Rank.getDefaultRank());
-    }
-
-    /**
      * Calling this function sets the player's URL timeout to 0
      *
      * @return Whether player can send a URL
@@ -542,21 +449,15 @@ public class CorePlayer extends DBPlayer {
         legs = inventory.getLeggings();
         boots = inventory.getBoots();
         
+        /*
         activeCosmetics.clear();
         
         CosmeticArmor cosmetic;
-        if (helm != null && (cosmetic = CosmeticArmor.getArmor(helm)) != null) {
-            activeCosmetics.add(cosmetic);
-        }
-        if (chest != null && (cosmetic = CosmeticArmor.getArmor(chest)) != null) {
-            activeCosmetics.add(cosmetic);
-        }
-        if (legs != null && (cosmetic = CosmeticArmor.getArmor(legs)) != null) {
-            activeCosmetics.add(cosmetic);
-        }
-        if (boots != null && (cosmetic = CosmeticArmor.getArmor(boots)) != null) {
-            activeCosmetics.add(cosmetic);
-        }
+        if (helm != null && (cosmetic = CosmeticArmor.getArmor(helm)) != null) activeCosmetics.add(cosmetic);
+        if (chest != null && (cosmetic = CosmeticArmor.getArmor(chest)) != null) activeCosmetics.add(cosmetic);
+        if (legs != null && (cosmetic = CosmeticArmor.getArmor(legs)) != null) activeCosmetics.add(cosmetic);
+        if (boots != null && (cosmetic = CosmeticArmor.getArmor(boots)) != null) activeCosmetics.add(cosmetic);
+        */
     }
 
     /**
@@ -564,9 +465,11 @@ public class CorePlayer extends DBPlayer {
      */
     public void updateArmorEffects() {
         if (!isInBattle()) {
+            /*
             for (CosmeticArmor armor : activeCosmetics) {
                 getPlayer().addPotionEffect(new PotionEffect(armor.getEffectType(), 39, armor.getAmplitude(), true, false));
             }
+             */
         }
     }
 
@@ -575,9 +478,9 @@ public class CorePlayer extends DBPlayer {
      */
     public ItemStack getSkull() {
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullmeta = (SkullMeta)skull.getItemMeta();
-        skullmeta.setOwningPlayer(getPlayer());
-        skull.setItemMeta(skullmeta);
+        SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
+        if (skullMeta != null) skullMeta.setOwningPlayer(getPlayer());
+        skull.setItemMeta(skullMeta);
         return skull;
     }
 
@@ -887,15 +790,12 @@ public class CorePlayer extends DBPlayer {
     }
 
     /**
-     * Clears player's inventory and fills it with base hotbar items
+     * If the player is not in creative mode, clears inventory
+     * and fills it with base hotbar items
      */
     public void refreshHotbar() {
         if (getGameMode().equals(GameMode.CREATIVE)) return;
-        getPlayer().getInventory().clear();
-        for (InventoryMenuItemHotbar item : InventoryMenuAPI.getHotbarItems()) {
-            if (item.isVisible(this))
-                getPlayer().getInventory().setItem(item.getSlot(), item.createItem(this));
-        }
+        InventoryMenuItemHotbar.fillHotbar(this);
     }
 
     /**
@@ -1154,8 +1054,26 @@ public class CorePlayer extends DBPlayer {
         return !isInBattle() && !isAfk();
     }
     
-    public final void joinBuildWorld(BuildWorld buildWorld) {
-        buildWorld.addPlayer(this);
+    /**
+     * Whether a player is in a fake world or not
+     * Main purpose is to keep hotbar items from disappearing upon afk
+     *
+     * @return In Global World
+     */
+    public final boolean isInGlobal() {
+       return !isInBattle();
+    }
+    
+    public final LinkedHashSet<FakeWorld> getFakeWorlds() {
+        return fakeWorlds;
+    }
+    
+    public final void joinFakeWorld(FakeWorld fakeWorld) {
+        fakeWorlds.add(fakeWorld);
+    }
+    
+    public final void leaveFakeWorld(FakeWorld fakeWorld) {
+        fakeWorlds.remove(fakeWorld);
     }
     
     /**

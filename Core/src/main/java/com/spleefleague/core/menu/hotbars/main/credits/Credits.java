@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus.main.credits;
+package com.spleefleague.core.menu.hotbars.main.credits;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;

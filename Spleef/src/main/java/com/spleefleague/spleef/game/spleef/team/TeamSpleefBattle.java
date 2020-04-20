@@ -26,11 +26,6 @@ public class TeamSpleefBattle extends SpleefBattleTeamed {
     }
 
     @Override
-    protected void resetPlayer(CorePlayer dbPlayer) {
-
-    }
-
-    @Override
     protected void endRound(BattlePlayer winner) {
 
     }

@@ -8,7 +8,7 @@ package com.spleefleague.core.player.scoreboard;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
