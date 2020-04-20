@@ -42,13 +42,9 @@ public class Shovel extends Holdable {
                 .setName(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getName())
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
                 .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDescription())
-                .setAction(cp -> cp.sendMessage("hehe"))
-                .setAvailability(cp -> {
-                    System.out.println("Shovel.java 48 Checking shovel item");
-                    return cp.isInBattle()
-                            && cp.getBattleState() == BattleState.BATTLER
-                            && cp.getBattle() instanceof SpleefBattle;
-                });
+                .setAvailability(cp -> cp.isInBattle()
+                        && cp.getBattleState() == BattleState.BATTLER
+                        && cp.getBattle() instanceof SpleefBattle);
     }
     
     public static void save(Shovel shovel) {
@@ -106,9 +102,10 @@ public class Shovel extends Holdable {
             if (shovel.getShovelType().equals(shovelType)) {
                 InventoryMenuItem smi = InventoryMenuAPI.createItem()
                         .setName(cp -> shovel.isUnlocked(cp) ? shovel.getName() : "Locked")
-                        .setDisplayItem(cp -> shovel.isUnlocked(cp) ? shovel.createItem() : InventoryMenuUtils.getLockedIcon())
+                        .setDisplayItem(cp -> shovel.isUnlocked(cp) ? shovel.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
                         .setDescription(cp -> shovel.isUnlocked(cp) ? shovel.getDescription() : "")
                         .setAction(cp -> {
+                            cp.getPlayer().getInventory().addItem(shovel.getDisplayItem());
                             if (shovel.isUnlocked(cp))
                                 cp.getCollectibles().activate(shovel);
                         })

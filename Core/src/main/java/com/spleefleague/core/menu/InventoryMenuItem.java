@@ -172,15 +172,13 @@ public class InventoryMenuItem {
     }
     
     public ItemStack createItem(CorePlayer cp) {
-        ItemStack item = displayItemFun.apply(cp);
-        if (item != null) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
-                meta.setLore(getWrappedDescription(cp));
-                meta.addItemFlags(ItemFlag.values());
-                item.setItemMeta(meta);
-            }
+        ItemStack item = displayItemFun.apply(cp).clone();
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
+            meta.setLore(getWrappedDescription(cp));
+            meta.addItemFlags(ItemFlag.values());
+            item.setItemMeta(meta);
         }
         return item;
     }

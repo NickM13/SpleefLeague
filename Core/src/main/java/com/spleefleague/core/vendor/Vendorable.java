@@ -22,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -61,6 +62,16 @@ public abstract class Vendorable extends DBEntity {
         return "Invalid";
     }
     
+    public static Set<String> getTypeNames() {
+        return REGISTERED_TYPES.keySet();
+    }
+    
+    /**
+     * Get the Vendorable class that this type is instantiated from
+     *
+     * @param type Type
+     * @return Class<? extends Vendorable>
+     */
     public static Class<? extends Vendorable> getClassFromType(String type) {
         return REGISTERED_TYPES.get(type);
     }
@@ -85,6 +96,7 @@ public abstract class Vendorable extends DBEntity {
     public Vendorable() {
         this.type = getTypeName(getClass());
         this.nbts = new Document();
+        this.coinCost = 0;
         vendorMenuItem = InventoryMenuAPI.createItem()
                 .setAction(this::attemptPurchase);
     }
@@ -92,7 +104,7 @@ public abstract class Vendorable extends DBEntity {
     @Override
     public void afterLoad() {
         Vendorables.register(this);
-        displayItem = createItem();
+        updateDisplayItem();
     }
     
     /**
@@ -173,7 +185,7 @@ public abstract class Vendorable extends DBEntity {
         displayItem = createItem();
         vendorMenuItem
                 .setName(name)
-                .setDisplayItem(material)
+                .setDisplayItem(displayItem)
                 .setDescription(getDescriptionVendor());
     }
     
@@ -243,7 +255,6 @@ public abstract class Vendorable extends DBEntity {
                     System.out.println("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:230");
                 }
             }
-            itemMeta.addEnchant(Enchantment.DIG_SPEED, 5, true);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(name);

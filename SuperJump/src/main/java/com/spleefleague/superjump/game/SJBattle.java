@@ -104,11 +104,6 @@ public class SJBattle<A extends SJArena> extends Battle<A> {
     }
 
     @Override
-    protected void resetPlayer(CorePlayer dbPlayer) {
-
-    }
-
-    @Override
     protected void leaveBattler(CorePlayer dbPlayer) {
 
     }

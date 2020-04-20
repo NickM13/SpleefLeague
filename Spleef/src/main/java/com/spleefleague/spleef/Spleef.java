@@ -41,7 +41,7 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     public void init() {
         instance = this;
 
-        setPluginDB("SuperSpleef");
+        setPluginDB("Spleef");
         
         // Initialize commands
         initCommands();

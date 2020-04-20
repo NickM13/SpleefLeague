@@ -1,6 +1,8 @@
 package com.spleefleague.core.vendor;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,6 +18,15 @@ import java.util.TreeMap;
  */
 public class Vendorables {
     
+    // <<Type, <Identifier, Vendorable>>
+    private static final Map<String, Map<String, Vendorable>> VENDORABLE_MAP = new TreeMap<>();
+    
+    /**
+     * Get the nbt tag under ventype
+     *
+     * @param itemStack ItemStack
+     * @return String
+     */
     public static String getTypeNbt(ItemStack itemStack) {
         if (itemStack != null) {
             ItemMeta itemMeta = itemStack.getItemMeta();
@@ -26,6 +37,12 @@ public class Vendorables {
         return "";
     }
     
+    /**
+     * Get the nbt tag under vendentifier
+     *
+     * @param itemStack ItemStack
+     * @return String
+     */
     public static String getIdentifierNbt(ItemStack itemStack) {
         if (itemStack != null) {
             ItemMeta itemMeta = itemStack.getItemMeta();
@@ -35,9 +52,6 @@ public class Vendorables {
         }
         return "";
     }
-    
-    // <<Type, <Identifier, Vendorable>>
-    private static final Map<String, Map<String, Vendorable>> VENDORABLE_MAP = new TreeMap<>();
     
     public static void register(Vendorable vendorable) {
         if (!VENDORABLE_MAP.containsKey(vendorable.getType()))

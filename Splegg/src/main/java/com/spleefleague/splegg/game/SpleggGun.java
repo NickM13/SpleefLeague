@@ -15,6 +15,7 @@ import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
+import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.FakeProjectile;
 import com.spleefleague.splegg.Splegg;
@@ -34,6 +35,8 @@ public class SpleggGun extends Holdable {
     private static final Map<Integer, SpleggGun> spleggGuns = new TreeMap<>();
     
     public static void init() {
+        Vendorable.registerVendorableType(SpleggGun.class);
+        
         MongoCollection<Document> collection = Splegg.getInstance().getPluginDB().getCollection("SpleggGuns");
         collection.find().iterator().forEachRemaining(doc -> {
             SpleggGun spleggGun = new SpleggGun();

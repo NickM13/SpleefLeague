@@ -72,11 +72,6 @@ public class MultiSpleggBattle extends SpleggBattle {
     }
 
     @Override
-    protected void resetPlayer(CorePlayer cp) {
-
-    }
-
-    @Override
     protected void leaveBattler(CorePlayer cp) {
 
     }
