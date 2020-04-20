@@ -10,13 +10,18 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.vendor.Vendor;
 
 import java.util.Iterator;
+import java.util.Map;
 
+import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.vendor.Vendors;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.menu.InventoryMenuAPI;
@@ -80,27 +85,24 @@ public class VendorCommand extends CommandTemplate {
             @LiteralArg(value="items") String l) {
         InventoryMenuContainer menu = InventoryMenuAPI.createContainer()
                 .setTitle("Vendor Items!");
-        /*
-        for (String type : Vendorable.getItemTypes()) {
+        
+        System.out.println(Vendorable.getTypeNames().size());
+        for (String type : Vendorable.getTypeNames()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItem()
                     .setName(type)
                     .setDisplayItem(Material.CHEST);
             InventoryMenuContainer typeMenu = typeItem
                     .getLinkedContainer()
                     .setTitle(type);
-            for (VendorItem item : VendorItem.getItems(type).values()) {
-                typeMenu.addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(item.getDisplayName())
-                        .setDescription(item.getVendorDescription())
-                        .setDisplayItem(item.getItem())
-                        .setAction(cp -> {
-                            cp.getPlayer().getInventory().addItem(item.getItem());
-                        })
-                        .setCloseOnAction(false));
+            Map<String, Vendorable> vendorableMap = Vendorables.getAll(type);
+            if (vendorableMap != null) {
+                for (Vendorable item : vendorableMap.values()) {
+                    typeMenu.addMenuItem(item.getVendorMenuItem());
+                }
             }
             menu.addMenuItem(typeItem);
         }
-         */
+        
         sender.setInventoryMenuContainer(menu);
     }
     

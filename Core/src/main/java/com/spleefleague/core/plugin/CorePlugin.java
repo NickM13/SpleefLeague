@@ -62,8 +62,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
 
     /**
      * Initialize plugin and online players (for /reloads)
-     *
-     * Don't override this!  Use init()
      */
     @Override
     public final void onEnable() {
@@ -73,11 +71,40 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         plugins.add(this);
     }
     protected abstract void init();
+    
+    /**
+     * Connect to the Mongo database based on the mongo.cfg file
+     * that should be in the server's folder
+     */
+    public static void initMongo() {
+        System.out.println("Initializing Mongo");
+        try {
+            Logger mongoLogger = Logger.getLogger("org.mongodb.driver.cluster");
+            mongoLogger.setLevel(Level.SEVERE);
+            
+            Properties mongoProps = new Properties();
+            String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
+            FileInputStream file = new FileInputStream(mongoPath);
+            mongoProps.load(file);
+            file.close();
+            
+            String mongoPrefix = mongoProps.getProperty("prefix", "mongodb://");
+            String credentials = mongoProps.getProperty("credentials", "");
+            if (!credentials.isEmpty()) credentials = credentials.concat("@");
+            String host = mongoProps.getProperty("host", "localhost:27017") + "/";
+            String defaultauthdb = mongoProps.getProperty("defaultauthdb", "admin") + "?";
+            String options = mongoProps.getProperty("options", "");
+            MongoClientURI uri = new MongoClientURI(mongoPrefix + credentials + host + defaultauthdb + options);
+            mongoClient = new MongoClient(uri);
+        } catch (IOException e) {
+            System.out.println("Catching!");
+            mongoClient = new MongoClient(new MongoClientURI("mongodb://localhost:27017/"));
+            Core.getInstance().getLogger().log(Level.WARNING, "mongo.cfg not found, using localhost");
+        }
+    }
 
     /**
-     * Terminates BattleManagers
-     *
-     * Don't override this!  Use close()
+     * Disables the plugin and some common managers
      */
     @Override
     public final void onDisable() {
@@ -198,31 +225,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             return true;
         }
         return false;
-    }
-    
-    /**
-     * Connect to the Mongo database based on the mongo.cfg file
-     * that should be in the server's folder
-     */
-    public static void initMongo() {
-        try {
-            Properties mongoProps = new Properties();
-            String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
-            FileInputStream file = new FileInputStream(mongoPath);
-            mongoProps.load(file);
-            file.close();
-            
-            String mongoPrefix = mongoProps.getProperty("prefix");
-            String credentials = mongoProps.getProperty("credentials", "");
-            if (!credentials.isEmpty()) credentials = credentials.concat("@");
-            String host = mongoProps.getProperty("host", "localhost:27017") + "/";
-            String defaultauthdb = mongoProps.getProperty("defaultauthdb", "admin") + "?";
-            String options = mongoProps.getProperty("options", "");
-            MongoClientURI uri = new MongoClientURI(mongoPrefix + credentials + host + defaultauthdb + options);
-            mongoClient = new MongoClient(uri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
     
     /**

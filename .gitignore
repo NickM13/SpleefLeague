@@ -4,3 +4,4 @@ out/
 *.iml
 *.xml
 *.bat
+!pom.xml
