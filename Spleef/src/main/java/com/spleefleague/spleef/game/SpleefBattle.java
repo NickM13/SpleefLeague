@@ -63,9 +63,6 @@ public abstract class SpleefBattle extends Battle<SpleefArena> {
         super(Spleef.getInstance(), players, arena, battlePlayerClass);
     }
 
-    protected void startRound() {
-    }
-
     protected void sortBattlers() {
         sortedBattlers.clear();
         for (BattlePlayer bp : battlers.values()) {
@@ -89,12 +86,6 @@ public abstract class SpleefBattle extends Battle<SpleefArena> {
     
     @Override
     public abstract void updateScoreboard();
-
-    @Override
-    protected void setupBattleInventory(CorePlayer cp) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
-        cp.getPlayer().getInventory().addItem(sp.getActiveShovel().getItem());
-    }
     
     protected void setupBattlers() {
         seenScores = 0;

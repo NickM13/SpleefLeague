@@ -7,39 +7,48 @@
 package com.spleefleague.spleef.game;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.core.vendor.VendorItem;
+import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.player.SpleefPlayer;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import org.bson.Document;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 
 /**
  * @author NickM13
  */
-public class Shovel extends VendorItem {
+public class Shovel extends Holdable {
     
-    private static final Map<Integer, Shovel> shovels = new HashMap<>();
     private static MongoCollection<Document> shovelCollection;
     
     public static void init() {
+        Vendorable.registerVendorableType(Shovel.class);
+        
         shovelCollection = Spleef.getInstance().getPluginDB().getCollection("Shovels");
         shovelCollection.find().iterator().forEachRemaining(doc -> {
             Shovel shovel = new Shovel();
             shovel.load(doc);
-            shovels.put(shovel.getDamage(), shovel);
         });
+        
+        InventoryMenuAPI.createItemHotbar(0, "shovelHotbarItem")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getName())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDescription())
+                .setAction(cp -> cp.sendMessage("hehe"))
+                .setAvailability(cp -> {
+                    System.out.println("Shovel.java 48 Checking shovel item");
+                    return cp.isInBattle()
+                            && cp.getBattleState() == BattleState.BATTLER
+                            && cp.getBattle() instanceof SpleefBattle;
+                });
     }
     
     public static void save(Shovel shovel) {
@@ -57,48 +66,27 @@ public class Shovel extends VendorItem {
         }
     }
     
-    public static boolean isShovel(ItemStack item) {
-        if (item != null && item.getType().equals(Material.DIAMOND_SHOVEL)) {
-            int id = ((Damageable) item.getItemMeta()).getDamage();
-            return (shovels.containsKey(id));
-        }
-        return false;
-    }
-    
-    public static boolean createShovel(int id) {
-        if (shovels.containsKey(id)) return false;
-        Shovel shovel = new Shovel(id);
-        shovels.put(id, shovel);
+    public static boolean createShovel(int damage) {
+        String id = "" + damage;
+        if (Vendorables.getAll(Shovel.class).containsKey(id)) return false;
+        Shovel shovel = new Shovel(damage);
         Shovel.save(shovel);
-        VendorItem.addVendorItem(shovel);
+        Vendorables.register(shovel);
         return true;
     }
     
-    public static boolean destroyShovel(int damage) {
-        if (shovels.containsKey(damage)) {
-            VendorItem.removeVendorItem(shovels.get(damage));
-            shovels.remove(damage);
+    public static void destroyShovel(int damage) {
+        if (Vendorables.getAll(Shovel.class).containsKey("" + damage)) {
+            Vendorables.unregister(Shovel.class.getSimpleName(), "" + damage);
             Shovel.unsave(damage);
-            return true;
-        } else {
-            return false;
         }
-    }
-    
-    public static Shovel getShovel(int damage) {
-        return shovels.get(damage);
-    }
-    public static String getShovelName(int damage) {
-        if (shovels.containsKey(damage)) {
-            return shovels.get(damage).getDisplayName() + Chat.DEFAULT;
-        }
-        return "" + damage;
     }
     
     public static Shovel getDefault() {
-        for (Shovel s : shovels.values()) {
-            if (s.isDefault()) {
-                return s;
+        for (Vendorable vendorable : Vendorables.getAll(Shovel.class).values()) {
+            Shovel shovel = (Shovel) vendorable;
+            if (shovel.isDefault()) {
+                return shovel;
             }
         }
         return null;
@@ -106,37 +94,23 @@ public class Shovel extends VendorItem {
     
     private static InventoryMenuItem createActiveShovelMenuItem() {
         return InventoryMenuAPI.createItem()
-                .setName(cp -> {
-                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveShovel().getDisplayName();
-                }).setDescription(cp -> {
-                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveShovel().getDescription();
-                }).setDisplayItem(cp -> {
-                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveShovel().getItem();
-                }).setCloseOnAction(false);
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
+                .setCloseOnAction(false);
     }
     
     public static InventoryMenuItem createMenuTyped(InventoryMenuItem menuItem, ShovelType shovelType) {
-        for (Shovel shovel : shovels.values()) {
+        for (Vendorable vendorable : Vendorables.getAll(Shovel.class).values()) {
+            Shovel shovel = (Shovel) vendorable;
             if (shovel.getShovelType().equals(shovelType)) {
                 InventoryMenuItem smi = InventoryMenuAPI.createItem()
-                        .setName(cp -> {
-                            SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                            return sp.hasShovel(shovel.getDamage()) ? shovel.getDisplayName() : "Locked";
-                        })
-                        .setDisplayItem(cp -> {
-                            SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                            return sp.hasShovel(shovel.getDamage()) ? shovel.getItem() : InventoryMenuAPI.getLockedIcon();
-                        })
-                        .setDescription(cp -> {
-                            SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                            return sp.hasShovel(shovel.getDamage()) ? shovel.getDescription() : "";
-                        })
+                        .setName(cp -> shovel.isUnlocked(cp) ? shovel.getName() : "Locked")
+                        .setDisplayItem(cp -> shovel.isUnlocked(cp) ? shovel.createItem() : InventoryMenuUtils.getLockedIcon())
+                        .setDescription(cp -> shovel.isUnlocked(cp) ? shovel.getDescription() : "")
                         .setAction(cp -> {
-                            SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                            sp.setActiveShovel(shovel.damage);
+                            if (shovel.isUnlocked(cp))
+                                cp.getCollectibles().activate(shovel);
                         })
                         .setCloseOnAction(false);
                 menuItem.getLinkedContainer().addMenuItem(smi);
@@ -150,10 +124,7 @@ public class Shovel extends VendorItem {
         InventoryMenuItem shovelMenu = InventoryMenuAPI.createItem()
                 .setName("Shovels")
                 .setDescription("Set your active shovel")
-                .setDisplayItem(cp -> {
-                        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp.getPlayer());
-                        return sp.getActiveShovel().getItem();
-                        })
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
                 .createLinkedContainer("Active Shovel");
         shovelMenu.getLinkedContainer()
                 .addStaticItem(createActiveShovelMenuItem(), 4, 4);
@@ -191,7 +162,7 @@ public class Shovel extends VendorItem {
         return shovelMenu;
     }
     
-    private enum ShovelType {
+    protected enum ShovelType {
         DEFAULT,
         HIDDEN,
         EVENT,
@@ -203,27 +174,29 @@ public class Shovel extends VendorItem {
         return CoreUtils.enumToSet(ShovelType.class);
     }
 
-    @DBField
-    private ShovelType shovelType;
+    @DBField private Integer damage;
+    @DBField(fieldName="type") private ShovelType shovelType;
     
     public Shovel() {
-        super("shovel");
+        super(false);
         this.material = Material.DIAMOND_SHOVEL;
         this.shovelType = ShovelType.DEFAULT;
     }
+    
     public Shovel(int damage) {
-        super("shovel");
+        super(false);
         this.material = Material.DIAMOND_SHOVEL;
         this.shovelType = ShovelType.DEFAULT;
         this.damage = damage;
+        this.setDamageNbt(damage);
         this.identifier = String.valueOf(damage);
     }
     
     @Override
-    public void load(Document doc) {
-        super.load(doc);
+    public void afterLoad() {
         this.identifier = String.valueOf(damage);
-        addVendorItem(this);
+        this.setDamageNbt(damage);
+        super.afterLoad();
     }
     
     public boolean isDefault() {
@@ -236,21 +209,22 @@ public class Shovel extends VendorItem {
         return shovelType;
     }
     
-    @Override
-    public boolean isUnlocked(CorePlayer cp) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
-        return (sp.hasShovel(getDamage()) || isDefault());
+    public int getDamage() {
+        return damage;
     }
-    @Override
-    public boolean isPurchaseable(CorePlayer cp) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
-        return cp.getCoins() >= getCoinCost();
+    
+    public boolean isUnlocked(CorePlayer corePlayer) {
+        return isDefault() || corePlayer.getCollectibles().contains(this);
     }
+    
     @Override
-    public void purchase(CorePlayer cp) {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
-        sp.addShovel(getDamage());
-        cp.addCoins(-getCoinCost());
+    public boolean isAvailableToPurchase(CorePlayer corePlayer) {
+        return true;
+    }
+    
+    @Override
+    public void onRightClick(CorePlayer corePlayer) {
+    
     }
     
 }

@@ -9,7 +9,10 @@ package com.spleefleague.core.plugin;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.game.Battle;
@@ -19,6 +22,8 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.database.variable.DBPlayer;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.spleefleague.core.world.build.BuildWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -195,21 +201,27 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     }
     
     /**
-     * Connect to the Mongo database
+     * Connect to the Mongo database based on the mongo.cfg file
+     * that should be in the server's folder
      */
     public static void initMongo() {
-        // Disable mongodb logging
-        System.setProperty("DEBUG.MONGO", "false");
-        System.setProperty("DB.TRACE", "false");
-        Logger.getLogger("org.mongodb").setLevel(Level.OFF);
         try {
-            // Test server connection driver, from MongoDB Atlas (free)
-            // TODO: Change this when updating to live server !!
-            MongoClientURI uri = new MongoClientURI(
-                    "mongodb://nickm13:MeadNick0313@spleefleague-shard-00-00-foua3.mongodb.net:27017,spleefleague-shard-00-01-foua3.mongodb.net:27017,spleefleague-shard-00-02-foua3.mongodb.net:27017/test?ssl=true&replicaSet=SpleefLeague-shard-0&authSource=admin&retryWrites=true&w=majority");
+            Properties mongoProps = new Properties();
+            String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
+            FileInputStream file = new FileInputStream(mongoPath);
+            mongoProps.load(file);
+            file.close();
+            
+            String mongoPrefix = mongoProps.getProperty("prefix");
+            String credentials = mongoProps.getProperty("credentials", "");
+            if (!credentials.isEmpty()) credentials = credentials.concat("@");
+            String host = mongoProps.getProperty("host", "localhost:27017") + "/";
+            String defaultauthdb = mongoProps.getProperty("defaultauthdb", "admin") + "?";
+            String options = mongoProps.getProperty("options", "");
+            MongoClientURI uri = new MongoClientURI(mongoPrefix + credentials + host + defaultauthdb + options);
             mongoClient = new MongoClient(uri);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     

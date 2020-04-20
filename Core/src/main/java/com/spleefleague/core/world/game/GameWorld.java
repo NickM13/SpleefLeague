@@ -101,27 +101,14 @@ public class GameWorld extends FakeWorld {
                 .runTaskTimer(Core.getInstance(),
                         this::updateFutureBlocks, 0L, 2L);
         
-        addPacketAdapter(new PacketAdapter(Core.getInstance(),
-                PacketType.Play.Server.SPAWN_ENTITY,
-                PacketType.Play.Server.MAP_CHUNK) {
+        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
-                if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY) {
-                    Entity entity = packet.getEntityModifier(event).read(0);
-                    if (projectiles.containsKey(entity.getEntityId()) &&
-                            !getPlayerMap().containsKey(event.getPlayer().getUniqueId())) {
-                        event.setCancelled(true);
-                    }
-                } else if (playerMap.containsKey(event.getPlayer().getUniqueId())) {
-                    if (event.getPacketType() == PacketType.Play.Server.MAP_CHUNK) {
-                        ChunkCoord coord = new ChunkCoord(event.getPacket().getIntegers().read(0), event.getPacket().getIntegers().read(1));
-                        if (fakeChunks.containsKey(coord)) {
-                            Bukkit.getServer().getScheduler().runTaskLater(Core.getInstance(), () ->
-                                    fakeChunks.get(coord).forEach((pos) ->
-                                            updateBlock(pos)), 1L);
-                        }
-                    }
+                Entity entity = packet.getEntityModifier(event).read(0);
+                if (projectiles.containsKey(entity.getEntityId()) &&
+                        !getPlayerMap().containsKey(event.getPlayer().getUniqueId())) {
+                    event.setCancelled(true);
                 }
             }
         });
@@ -143,7 +130,7 @@ public class GameWorld extends FakeWorld {
      */
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        if (!fakeBlocks.containsKey(pos)) return true;
+        if (!fakeBlocks.containsKey(pos)) return false;
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (edittable
                 && breakables.contains(fakeBlocks.get(pos).getBlockData().getMaterial())
@@ -167,7 +154,7 @@ public class GameWorld extends FakeWorld {
      * @return Cancel Event
      */
     @Override
-    protected boolean onItemUse(CorePlayer cp) {
+    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition) {
         return true;
     }
 

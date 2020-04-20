@@ -129,9 +129,4 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
         super.endBattle();
     }
 
-    @Override
-    protected void resetPlayer(CorePlayer cp) {
-
-    }
-
 }

@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13

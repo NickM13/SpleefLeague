@@ -146,8 +146,11 @@ public class Chat {
     }
 
     public static void sendMessageToPlayer(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp.isOnline()) {
+            System.out.println("Debugging, remove me Chat.java:150");
+            System.out.println("Sending message " + msg + " to player " + cp.getDisplayName());
             cp.getPlayer().sendMessage(chatColors.get("DEFAULT") + msg);
+        }
     }
 
     public static void sendMessageToPlayerSuccess(CorePlayer cp, String msg) {

@@ -12,11 +12,10 @@ import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
 import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
-import com.spleefleague.spleef.player.SpleefPlayer;
 import javax.annotation.Nullable;
 
 /**

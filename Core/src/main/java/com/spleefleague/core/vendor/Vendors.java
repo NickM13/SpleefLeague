@@ -21,7 +21,7 @@ import java.util.*;
  * @author NickM13
  * @since 4/18/2020
  */
-public class VendorManager {
+public class Vendors {
     
     private static MongoCollection<Document> vendorCollection;
     private static final Map<String, Vendor> vendors = new HashMap<>();

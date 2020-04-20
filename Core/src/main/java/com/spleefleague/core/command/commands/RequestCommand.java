@@ -10,7 +10,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.request.RequestManager;
 
 /**

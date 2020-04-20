@@ -65,11 +65,6 @@ public abstract class SpleefBattleDynamic extends SpleefBattle {
     }
 
     @Override
-    protected void resetPlayer(CorePlayer cp) {
-
-    }
-
-    @Override
     public void updateField() {
 
     }

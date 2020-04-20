@@ -11,7 +11,7 @@ import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 

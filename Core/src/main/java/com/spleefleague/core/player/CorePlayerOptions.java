@@ -17,6 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import org.bukkit.Material;
 
 /**
@@ -30,23 +32,13 @@ public class CorePlayerOptions extends DBEntity {
     
     protected static Map<String, PlayerOptions> optionMap;
     
-    protected class PostGamePlacement extends PlayerOptions {
-        
-        public PostGamePlacement() {
-            addOption("Spawn", InventoryMenuAPI.createCustomItem(Material.ACACIA_PLANKS));
-            addOption("Last Location", InventoryMenuAPI.createCustomItem(Material.DARK_OAK_BOAT));
-            addOption("Arena", InventoryMenuAPI.createCustomItem(Material.GRAY_DYE));
-        }
-        
-    }
-    
     public static void init() {
         optionMap = new HashMap<>();
         
         PlayerOptions postGameWarp = new PlayerOptions();
-        postGameWarp.addOption("Spawn", InventoryMenuAPI.createCustomItem(Material.ACACIA_PLANKS));
-        postGameWarp.addOption("Last Location", InventoryMenuAPI.createCustomItem(Material.DARK_OAK_BOAT));
-        postGameWarp.addOption("Arena", InventoryMenuAPI.createCustomItem(Material.GRAY_DYE));
+        postGameWarp.addOption("Spawn", InventoryMenuUtils.createCustomItem(Material.ACACIA_PLANKS));
+        postGameWarp.addOption("Last Location", InventoryMenuUtils.createCustomItem(Material.DARK_OAK_BOAT));
+        postGameWarp.addOption("Arena", InventoryMenuUtils.createCustomItem(Material.GRAY_DYE));
         optionMap.put(CPOptions.POST_GAME_WARP.name(), postGameWarp);
     }
     

@@ -9,7 +9,7 @@ package com.spleefleague.core.chat;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.function.Function;

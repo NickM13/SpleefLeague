@@ -37,7 +37,7 @@ public class BuildWorld extends FakeWorld {
         addBuildTool(new SelectTool());
     }
     private static void addBuildTool(BuildTool buildTool) {
-        BUILD_TOOLS.put(buildTool.getHotbarItem().getHotbarIdentifier(), buildTool);
+        BUILD_TOOLS.put(buildTool.getHotbarItem().getHotbarTag(), buildTool);
     }
     
     /**
@@ -122,12 +122,14 @@ public class BuildWorld extends FakeWorld {
      * @return Cancel Event
      */
     @Override
-    protected boolean onItemUse(CorePlayer cp) {
+    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition) {
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
+        /*
         String hotbarTag = InventoryMenuAPI.getHotbarTag(heldItem);
         if (BUILD_TOOLS.containsKey(hotbarTag)) {
             BUILD_TOOLS.get(hotbarTag).use(cp, this);
         }
+        */
         return true;
     }
     

@@ -7,18 +7,21 @@
 package com.spleefleague.splegg.game;
 
 import com.mongodb.client.MongoCollection;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.vendor.VendorItem;
+import com.spleefleague.core.player.collectible.Holdable;
+import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.FakeProjectile;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.player.SpleggPlayer;
 import org.bson.Document;
 import org.bukkit.Material;
-import org.bukkit.entity.Snowball;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Egg;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -26,10 +29,9 @@ import java.util.TreeMap;
 /**
  * @author NickM13
  */
-public class SpleggGun extends VendorItem {
+public class SpleggGun extends Holdable {
     
     private static final Map<Integer, SpleggGun> spleggGuns = new TreeMap<>();
-    private static ItemStack LOCKED_ICON;
     
     public static void init() {
         MongoCollection<Document> collection = Splegg.getInstance().getPluginDB().getCollection("SpleggGuns");
@@ -39,7 +41,16 @@ public class SpleggGun extends VendorItem {
             spleggGuns.put(spleggGun.getDamage(), spleggGun);
         });
         
-        LOCKED_ICON = InventoryMenuAPI.createCustomItem(Material.DIAMOND_AXE, 12);
+        InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItem")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+                .setAction(cp -> cp.sendMessage("hehe"))
+                .setAvailability(cp -> {
+                    return cp.isInBattle()
+                            && cp.getBattleState() == BattleState.BATTLER
+                            && cp.getBattle() instanceof SpleggBattle;
+                });
     }
     
     public static SpleggGun getSpleggGun(int id) {
@@ -55,45 +66,28 @@ public class SpleggGun extends VendorItem {
     
     private static InventoryMenuItem createActiveSpleggGunMenuItem() {
         return InventoryMenuAPI.createItem()
-                .setName(cp -> {
-                    SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveSpleggGun().getDisplayName();
-                }).setDescription(cp -> {
-                    SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveSpleggGun().getDescription();
-                }).setDisplayItem(cp -> {
-                    SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveSpleggGun().getItem();
-                }).setCloseOnAction(false);
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+                .setCloseOnAction(false);
     }
     
     public static InventoryMenuItem createMenu() {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("Splegg Guns")
                 .setDescription("Set your active splegg gun")
-                .setDisplayItem(cp -> {
-                    SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                    return sp.getActiveSpleggGun().getItem();
-                }).createLinkedContainer("Active Splegg Gun");
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+                .createLinkedContainer("Active Splegg Gun");
         menuItem.getLinkedContainer().addStaticItem(createActiveSpleggGunMenuItem(), 4, 4);
         
         for (SpleggGun spleggGun : spleggGuns.values()) {
             InventoryMenuItem smi = InventoryMenuAPI.createItem()
-                    .setName(cp -> {
-                        SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                        return sp.hasSpleggGun(spleggGun.getDamage()) ? spleggGun.getDisplayName() : "Locked";
-                    })
-                    .setDisplayItem(cp -> {
-                        SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                        return sp.hasSpleggGun(spleggGun.getDamage()) ? spleggGun.getItem() : LOCKED_ICON;
-                    })
-                    .setDescription(cp -> {
-                        SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                        return sp.hasSpleggGun(spleggGun.getDamage()) ? spleggGun.getDescription() : "";
-                    })
+                    .setName(cp -> spleggGun.isAvailable(cp) ? spleggGun.getName() : "Locked")
+                    .setDisplayItem(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
+                    .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")
                     .setAction(cp -> {
-                        SpleggPlayer sp = Splegg.getInstance().getPlayers().get(cp.getPlayer());
-                        sp.setActiveSpleggGun(spleggGun.damage);
+                        if (spleggGun.isAvailable(cp))
+                            cp.getCollectibles().activate(spleggGun);
                     })
                     .setCloseOnAction(false);
                 menuItem.getLinkedContainer().addMenuItem(smi);
@@ -102,11 +96,29 @@ public class SpleggGun extends VendorItem {
         return menuItem;
     }
     
-    private FakeProjectile projectile;
+    @DBField private Integer damage;
+    @DBField private FakeProjectile projectile;
     
     public SpleggGun() {
-        super("splegg");
+        super(false);
         this.material = Material.DIAMOND_SHOVEL;
+    }
+    
+    @Override
+    public void afterLoad() {
+        this.identifier = String.valueOf(damage);
+        this.setDamageNbt(damage);
+        super.afterLoad();
+    }
+    
+    @Override
+    public boolean isAvailableToPurchase(CorePlayer corePlayer) {
+        return false;
+    }
+    
+    @Override
+    public void onRightClick(CorePlayer corePlayer) {
+        corePlayer.getPlayer().launchProjectile(Egg.class);
     }
     
     @DBLoad(fieldName="projectile")
@@ -119,20 +131,16 @@ public class SpleggGun extends VendorItem {
         return true;
     }
     
-    @Override
-    public void load(Document doc) {
-        super.load(doc);
-        this.identifier = String.valueOf(damage);
-        addVendorItem(this);
-    }
-    
     public FakeProjectile getProjectile() {
         return projectile;
     }
     
-    @Override
-    public void activate(CorePlayer cp) {
-        cp.getPlayer().launchProjectile(Snowball.class);
+    public int getDamage() {
+        return damage;
+    }
+    
+    public boolean isAvailable(CorePlayer cp) {
+        return isDefault() || cp.getCollectibles().contains(this);
     }
     
 }

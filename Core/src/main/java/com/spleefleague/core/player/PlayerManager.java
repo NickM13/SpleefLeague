@@ -7,6 +7,7 @@
 package com.spleefleague.core.player;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.database.variable.DBPlayer;
@@ -220,8 +221,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     private void save(P player) {
         try {
-            Document doc = player.save();
-            playerCol.updateOne(new Document("uuid", doc.get("uuid")), doc, new UpdateOptions().upsert(true));
+            playerCol.deleteMany(new Document("uuid", player.getUniqueId().toString()));
+            playerCol.insertOne(player.save(), new InsertOneOptions().bypassDocumentValidation(true));
         } catch (NoClassDefFoundError e) {
             System.out.println("Jar files updated, unable to save player " + player.getName());
         }

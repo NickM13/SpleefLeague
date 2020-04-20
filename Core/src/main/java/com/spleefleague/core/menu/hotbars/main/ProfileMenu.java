@@ -4,10 +4,11 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus.main;
+package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 
 /**
  * @author NickM13
@@ -26,7 +27,7 @@ public class ProfileMenu {
         if (menuItem == null) {
             menuItem = InventoryMenuAPI.createItem()
                     .setName("Profile")
-                    .setDisplayItem(cp -> InventoryMenuAPI.createCustomSkull(cp.getName()))
+                    .setDisplayItem(cp -> InventoryMenuUtils.createCustomSkull(cp.getName()))
                     .setDescription("View statistics on your player character")
                     .createLinkedContainer("Profile");
         }

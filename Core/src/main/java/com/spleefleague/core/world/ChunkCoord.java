@@ -1,5 +1,8 @@
 package com.spleefleague.core.world;
 
+
+import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
+
 /**
  * Chunk Coordinates for finding which chunks have
  * fake blocks in them for quicker updating
@@ -32,4 +35,9 @@ public class ChunkCoord {
         hash = 29 * hash + this.z;
         return hash;
     }
+    
+    public ChunkCoordIntPair toChunkCoordIntPair() {
+        return new ChunkCoordIntPair(x, z);
+    }
+    
 }

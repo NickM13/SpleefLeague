@@ -11,18 +11,16 @@ import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.vendor.Vendor;
-import com.spleefleague.core.vendor.VendorItem;
+
 import java.util.Iterator;
 
-import com.spleefleague.core.vendor.VendorManager;
-import org.bukkit.Material;
+import com.spleefleague.core.vendor.Vendors;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
-import com.spleefleague.core.menu.InventoryMenuItem;
 
 /**
  * @author NickM13
@@ -32,8 +30,7 @@ public class VendorCommand extends CommandTemplate {
     public VendorCommand() {
         super(VendorCommand.class, "vendor", Rank.DEVELOPER);
         setUsage("/vendor");
-        setOptions("vendors", (cp) -> VendorManager.getVendors().keySet());
-        setOptions("itemTypes", (cp) -> VendorItem.getItemTypes());
+        setOptions("vendors", (cp) -> Vendors.getVendors().keySet());
     }
     
     @CommandAnnotation
@@ -46,7 +43,7 @@ public class VendorCommand extends CommandTemplate {
             @LiteralArg(value="create") String l,
             @HelperArg(value="<vendor>") String vendor,
             @HelperArg(value="<displayName>") String displayName) {
-        VendorManager.createVendor(vendor, displayName);
+        Vendors.createVendor(vendor, displayName);
     }
     
     @CommandAnnotation
@@ -54,21 +51,21 @@ public class VendorCommand extends CommandTemplate {
             @LiteralArg(value="rename") String l,
             @OptionArg(listName="vendors") String vendor,
             @HelperArg(value="<displayName>") String displayName) {
-        VendorManager.getVendor(vendor).setDisplayName(displayName);
+        Vendors.getVendor(vendor).setDisplayName(displayName);
     }
     
     @CommandAnnotation
     public void vendorEdit(CorePlayer sender,
             @LiteralArg(value="edit") String l,
             @OptionArg(listName="vendors") String vendor) {
-        VendorManager.getVendor(vendor).edit(sender);
+        Vendors.getVendor(vendor).edit(sender);
     }
     
     @CommandAnnotation
     public void vendorList(CorePlayer sender,
             @LiteralArg(value="list") String l) {
         String vendorlist = "";
-        Iterator<String> vit = VendorManager.getVendors().keySet().iterator();
+        Iterator<String> vit = Vendors.getVendors().keySet().iterator();
         while (vit.hasNext()) {
             vendorlist += vit.next();
             if (vit.hasNext()) {
@@ -83,7 +80,8 @@ public class VendorCommand extends CommandTemplate {
             @LiteralArg(value="items") String l) {
         InventoryMenuContainer menu = InventoryMenuAPI.createContainer()
                 .setTitle("Vendor Items!");
-        for (String type : VendorItem.getItemTypes()) {
+        /*
+        for (String type : Vendorable.getItemTypes()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItem()
                     .setName(type)
                     .setDisplayItem(Material.CHEST);
@@ -102,6 +100,7 @@ public class VendorCommand extends CommandTemplate {
             }
             menu.addMenuItem(typeItem);
         }
+         */
         sender.setInventoryMenuContainer(menu);
     }
     
@@ -110,7 +109,7 @@ public class VendorCommand extends CommandTemplate {
             @LiteralArg(value="open") String l,
             CorePlayer cp,
             @OptionArg(listName="vendors") String name) {
-        Vendor vendor = VendorManager.getVendor(name);
+        Vendor vendor = Vendors.getVendor(name);
         if (vendor != null) {
             vendor.openShop(cp);
         }
@@ -120,20 +119,20 @@ public class VendorCommand extends CommandTemplate {
     public void vendorSet(CorePlayer sender,
             @LiteralArg(value="set") String l,
             @OptionArg(listName="vendors") String name) {
-        VendorManager.setPlayerVendor(sender, name);
+        Vendors.setPlayerVendor(sender, name);
     }
     
     @CommandAnnotation
     public void vendorUnset(CorePlayer sender,
             @LiteralArg(value="unset") String l) {
-        VendorManager.unsetPlayerVendor(sender);
+        Vendors.unsetPlayerVendor(sender);
     }
     
     @CommandAnnotation
     public void vendorDelete(CorePlayer sender,
             @LiteralArg(value="delete") String l,
             @OptionArg(listName="vendors") String name) {
-        VendorManager.deleteVendor(VendorManager.getVendor(name));
+        Vendors.deleteVendor(Vendors.getVendor(name));
     }
 
 }

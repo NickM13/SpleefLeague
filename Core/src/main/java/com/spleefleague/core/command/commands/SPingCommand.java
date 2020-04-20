@@ -12,10 +12,8 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 
 import java.util.Comparator;
 import java.util.List;

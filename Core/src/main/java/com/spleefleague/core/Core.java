@@ -15,31 +15,34 @@ import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.menu.menus.main.credits.Credits;
+import com.spleefleague.core.menu.hotbars.AfkHotbar;
+import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
+import com.spleefleague.core.menu.hotbars.SLMainHotbar;
+import com.spleefleague.core.menu.hotbars.main.credits.Credits;
 import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.menu.menus.main.*;
+import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.listener.*;
-import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerOptions;
 import com.spleefleague.core.player.PlayerManager;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.queue.QueueRunnable;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.vendor.KeyItem;
+import com.spleefleague.core.player.collectible.key.Key;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.spleefleague.core.vendor.VendorManager;
+import com.spleefleague.core.vendor.Vendors;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -78,7 +81,7 @@ public class Core extends CorePlugin<CorePlayer> {
         instance = this;
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
-
+    
         CorePlugin.initMongo();
         setPluginDB("SpleefLeague");
 
@@ -87,11 +90,11 @@ public class Core extends CorePlugin<CorePlayer> {
         Chat.init();
         Warp.init();
         Infraction.init();
-        KeyItem.init();
-        VendorManager.init();
+        Collectible.init();
+        Vendors.init();
         Tickets.init();
-        InventoryMenuAPI.init();
         CorePlayerOptions.init();
+        FakeWorld.init();
 
         // Initialize listeners
         initListeners();
@@ -103,7 +106,7 @@ public class Core extends CorePlugin<CorePlayer> {
         // Initialize various things
         initQueues();
         initCommands();
-        initMenu();
+        initMenus();
         initTabList();
 
         Leaderboard.init();
@@ -131,8 +134,8 @@ public class Core extends CorePlugin<CorePlayer> {
         BuildWorld.close();
         Warp.close();
         Infraction.close();
-        KeyItem.close();
-        VendorManager.close();
+        Key.close();
+        Vendors.close();
         Tickets.close();
         Leaderboard.close();
         CorePlugin.closeMongo();
@@ -180,6 +183,15 @@ public class Core extends CorePlugin<CorePlayer> {
 
         commandManager.flushRegisters();
     }
+    
+    /**
+     * Initialize menus
+     */
+    private void initMenus() {
+        AfkHotbar.init();
+        SLMainHotbar.init();
+        HeldItemHotbar.init();
+    }
 
     /**
      * Hide/show players based on in-game state and
@@ -193,57 +205,21 @@ public class Core extends CorePlugin<CorePlayer> {
         } else {
             cp.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
         }
+        // TODO: Probably better way to do this, trying to avoid as much spigot as possible
         // See and become visible to all players outside of games
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getAll()) {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle()) {
                     cp.getPlayer().showPlayer(this, cp2.getPlayer());
-                    if (!cp.isVanished()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
-                    else                   cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    if (!cp.isVanished())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
                     cp.getPlayer().hidePlayer(this, cp2.getPlayer());
                     cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 }
             }
         }
-    }
-
-    /**
-     * Initialize base menu items
-     */
-    public void initMenu() {
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(HatMenu.getItem(), 0, 2);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(ProfileMenu.getItem(), 1, 2);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(HeldItemMenu.getItem(), 0, 3);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(LeaderboardMenu.getItem(), 7, 2);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(OptionsMenu.getItem(), 7, 3);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(DonorMenu.getItem(), 8, 2);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(CreditsMenu.getItem(), 8, 3);
-        
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU)
-                .getLinkedContainer()
-                .addMenuItem(ModerativeMenu.getItem(), 8, 1);
     }
 
     /**
@@ -306,7 +282,7 @@ public class Core extends CorePlugin<CorePlayer> {
     public static void sendPacket(CorePlayer cp, PacketContainer packet) {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
-                protocolManager.sendServerPacket(cp.getPlayer(), packet);
+                if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
             } catch (InvocationTargetException ex) {
                 Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
             }

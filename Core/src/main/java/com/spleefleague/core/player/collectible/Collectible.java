@@ -1,7 +1,15 @@
 package com.spleefleague.core.player.collectible;
 
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.key.Key;
+import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.vendor.Vendorable;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Collectible items are vendorable items that when
@@ -14,21 +22,30 @@ import com.spleefleague.core.vendor.Vendorable;
  */
 public abstract class Collectible extends Vendorable {
     
-    public Collectible(String type) {
-        super(type);
+    public static void init() {
+        Key.init();
+        Pet.init();
+    }
+    
+    public Collectible() {
+        super();
     }
     
     /**
      * Called when a player clicks on this collectible on
      * their collections menu
+     *
+     * @param cp Core Player
      */
-    public abstract void onEnable();
+    public abstract void onEnable(CorePlayer cp);
     
     /**
      * Called when another collectible of the same type has
      * been enabled
+     *
+     * @param cp Core Player
      */
-    public abstract void onDisable();
+    public abstract void onDisable(CorePlayer cp);
     
     /**
      * Whether an item is available for purchasing for things
@@ -38,7 +55,7 @@ public abstract class Collectible extends Vendorable {
      * @return Availability
      */
     @Override
-    public abstract boolean isAvailable(CorePlayer cp);
+    public abstract boolean isAvailableToPurchase(CorePlayer cp);
     
     /**
      * Called when a player successfully purchases this item from the vendor

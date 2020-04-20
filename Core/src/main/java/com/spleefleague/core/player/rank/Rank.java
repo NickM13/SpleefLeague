@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.player;
+package com.spleefleague.core.player.rank;
 
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;

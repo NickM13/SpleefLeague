@@ -11,7 +11,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

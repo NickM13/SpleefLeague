@@ -5,17 +5,17 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
+import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.game.GameWorld;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.World;
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
+import net.minecraft.server.v1_15_R1.PacketPlayInUseItem;
+import net.minecraft.server.v1_15_R1.PacketPlayOutMapChunk;
+import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -27,9 +27,125 @@ import java.util.logging.Logger;
  * @since 4/16/2020
  */
 public abstract class FakeWorld {
+    
+    private final static List<PacketAdapter> packetAdapters = new ArrayList<>();
 
+    public static void init() {
+        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_DIG) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                BlockPosition pos = event.getPacket().getBlockPositionModifier().read(0);
+                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                    event.setCancelled(fakeWorld.onBlockPunch(cp, pos));
+                }
+            }
+        });
+        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_PLACE) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                System.out.println("Block Place Event");
+                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                    event.setCancelled(true);
+                    break;
+                }
+            }
+        });
+        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.USE_ITEM) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                PacketPlayInUseItem packetPlayInUseItem = (PacketPlayInUseItem) event.getPacket().getHandle();
+                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                net.minecraft.server.v1_15_R1.BlockPosition nmsBlockPosition = packetPlayInUseItem.c().getBlockPosition();
+                BlockPosition blockPosition = new BlockPosition(nmsBlockPosition.getX(), nmsBlockPosition.getY(), nmsBlockPosition.getZ());
+                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                    if (fakeWorld.onItemUse(cp, blockPosition)) {
+                        event.setCancelled(true);
+                        break;
+                    }
+                }
+            }
+        });
+        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.MAP_CHUNK) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                ChunkCoord chunkCoord = new ChunkCoord(event.getPacket().getIntegers().read(0), event.getPacket().getIntegers().read(1));
+                Map<BlockPosition, FakeBlock> fakeBlocks = new HashMap<>();
+                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                    Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
+                    if (fakeChunk != null) {
+                        for (BlockPosition blockPosition : fakeChunk) {
+                            FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(blockPosition);
+                            if (!fakeBlocks.containsKey(blockPosition) && !fakeBlock.getBlockData().getMaterial().isAir()) {
+                                fakeBlocks.put(blockPosition, fakeBlock);
+                            }
+                        }
+                    }
+                }
+                if (fakeBlocks.size() > 0) {
+                    for (Map.Entry<BlockPosition, FakeBlock> fakeBlock : fakeBlocks.entrySet()) {
+                        PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
+                        packetContainer.getBlockPositionModifier().write(0, fakeBlock.getKey());
+                        packetContainer.getBlockData().write(0, WrappedBlockData.createData(fakeBlock.getValue().getBlockData().getMaterial()));
+                        Core.sendPacket(cp, packetContainer);
+                    }
+                    /*
+                    MultiBlockChangeInfo[] mbci = new MultiBlockChangeInfo[fakeBlocks.size()];
+                    int i = 0;
+                    for (FakeBlock fakeBlock : fakeBlocks.values()) {
+                        short location = (short) (((((fakeBlock.getBlockPosition().getX() & 15) << 4) + (fakeBlock.getBlockPosition().getZ() & 15)) << 8) + fakeBlock.getBlockPosition().getY());
+                        mbci[i] = new MultiBlockChangeInfo(location,
+                                WrappedBlockData.createData(fakeBlock.getBlockData().getMaterial()),
+                                chunkCoord.toChunkCoordIntPair());
+                        i++;
+                    }
+                    PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
+                    packetContainer.getChunkCoordIntPairs().write(0, chunkCoord.toChunkCoordIntPair());
+                    packetContainer.getMultiBlockChangeInfoArrays().write(0, mbci);
+                    System.out.println(packetContainer);
+                    Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Core.sendPacket(cp, packetContainer), 60L);
+                    */
+                }
+                /*
+                net.minecraft.server.v1_15_R1.Chunk chunk = (net.minecraft.server.v1_15_R1.Chunk) event.getPlayer().getWorld().getChunkAt(new Location(event.getPlayer().getWorld(), chunkCoord.x * 16, 0, chunkCoord.z * 16));
+                Map<BlockPosition, FakeBlock> fakeBlocks = new HashMap<>();
+                int totalBlocks = event.getPacket().getIntegers().read(3);
+                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                    Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
+                    if (fakeChunk != null) {
+                        for (BlockPosition blockPosition : fakeChunk) {
+                            FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(blockPosition);
+                            if (!fakeBlock.getBlockData().getMaterial().isAir()) {
+                                if (!fakeBlocks.containsKey(blockPosition)
+                                        && blockPosition.toLocation(cp.getPlayer().getWorld()).getBlock().isEmpty()) {
+                                    totalBlocks++;
+                                }
+                                fakeBlocks.put(blockPosition, fakeBlock);
+                            }
+                        }
+                    }
+                }
+                if (fakeBlocks.size() > 0) {
+                    PacketPlayOutMapChunk packetPlayOutMapChunk = new PacketPlayOutMapChunk(chunk, totalBlocks);
+                    event.setPacket(new PacketContainer(packetPlayOutMapChunk));
+                }
+                */
+            }
+        });
+    }
+    
+    public static void close() {
+        packetAdapters.forEach(Core.getProtocolManager()::removePacketListener);
+    }
+    
+    protected static final void addPacketAdapter(PacketAdapter packetAdapter) {
+        Core.getProtocolManager().addPacketListener(packetAdapter);
+        packetAdapters.add(packetAdapter);
+    }
+    
     private final World world;
-    private final List<PacketAdapter> packetAdapters;
     private final Class<? extends FakeWorldPlayer> fakePlayerClass;
     protected final Map<UUID, FakeWorldPlayer> playerMap;
     protected final Map<BlockPosition, FakeBlock> fakeBlocks;
@@ -38,36 +154,9 @@ public abstract class FakeWorld {
     protected FakeWorld(World world, Class<? extends FakeWorldPlayer> fakePlayerClass) {
         this.world = world;
         this.fakePlayerClass = fakePlayerClass;
-        packetAdapters = new ArrayList<>();
         playerMap = new HashMap<>();
         fakeBlocks = new HashMap<>();
         fakeChunks = new HashMap<>();
-
-        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_DIG) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                BlockPosition pos = event.getPacket().getBlockPositionModifier().read(0);
-                if (playerMap.containsKey(event.getPlayer().getUniqueId())) {
-                    event.setCancelled(onBlockPunch(Core.getInstance().getPlayers().get(event.getPlayer()), pos));
-                }
-            }
-        });
-        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_PLACE) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                if (playerMap.containsKey(event.getPlayer().getUniqueId())) {
-                    event.setCancelled(onItemUse(Core.getInstance().getPlayers().get(event.getPlayer())));
-                }
-            }
-        });
-        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.USE_ITEM) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                if (playerMap.containsKey(event.getPlayer().getUniqueId())) {
-                    event.setCancelled(onItemUse(Core.getInstance().getPlayers().get(event.getPlayer())));
-                }
-            }
-        });
     }
 
     /**
@@ -88,18 +177,14 @@ public abstract class FakeWorld {
     public void destroy() {
         Iterator<FakeWorldPlayer> fwpit = playerMap.values().iterator();
         while (fwpit.hasNext()) {
-            clearPlayer(fwpit.next().getCorePlayer());
+            FakeWorldPlayer fwp = fwpit.next();
+            clearPlayer(fwp.getCorePlayer());
+            fwp.getCorePlayer().leaveFakeWorld(this);
             fwpit.remove();
         }
         fakeBlocks.clear();
         fakeChunks.clear();
         playerMap.clear();
-        packetAdapters.forEach(packetAdapter -> { Core.getProtocolManager().removePacketListener(packetAdapter); });
-    }
-
-    protected final void addPacketAdapter(PacketAdapter packetAdapter) {
-        Core.getProtocolManager().addPacketListener(packetAdapter);
-        packetAdapters.add(packetAdapter);
     }
 
     public final Map<UUID, FakeWorldPlayer> getPlayerMap() {
@@ -114,8 +199,12 @@ public abstract class FakeWorld {
         return fakeBlocks;
     }
 
+    public final Set<BlockPosition> getFakeChunk(ChunkCoord chunkCoord) {
+        return fakeChunks.get(chunkCoord);
+    }
+    
     protected abstract boolean onBlockPunch(CorePlayer cp, BlockPosition pos);
-    protected abstract boolean onItemUse(CorePlayer cp);
+    protected abstract boolean onItemUse(CorePlayer cp, BlockPosition pos);
 
     /**
      * Hide/show players whether they're in this fake world or not
@@ -143,6 +232,7 @@ public abstract class FakeWorld {
      * @param cp Core Player
      */
     public void addPlayer(CorePlayer cp) {
+        cp.joinFakeWorld(this);
         try {
             playerMap.put(cp.getUniqueId(), fakePlayerClass.getConstructor(CorePlayer.class).newInstance(cp));
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -185,6 +275,7 @@ public abstract class FakeWorld {
      */
     public boolean removePlayer(CorePlayer cp) {
         if (playerMap.containsKey(cp.getUniqueId())) {
+            cp.leaveFakeWorld(this);
             clearPlayer(cp);
             playerMap.remove(cp.getUniqueId());
             return true;
@@ -301,8 +392,8 @@ public abstract class FakeWorld {
      */
     public void updateBlock(BlockPosition pos) {
         WrappedBlockData wbd;
-        FakeBlock fb;
-        if ((fb = fakeBlocks.get(pos)) != null) {
+        FakeBlock fb = fakeBlocks.get(pos);
+        if (fb != null) {
             wbd = WrappedBlockData.createData(fb.getBlockData());
             PacketContainer fakeBlockPacket = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
             fakeBlockPacket.getBlockPositionModifier().write(0, pos);
@@ -316,6 +407,30 @@ public abstract class FakeWorld {
             }
         }
     }
+    
+    /**
+     * Updates all of the fakeblocks in the chunk
+     *
+     * @param chunkCoord Chunk Coordinates
+     */
+    /*
+    public void loadChunk(ChunkCoord chunkCoord, CorePlayer cp) {
+        if (!fakeChunks.containsKey(chunkCoord)) return;
+        Set<BlockPosition> blockPositions = fakeChunks.get(chunkCoord);
+        
+        PacketContainer multiBlockPacket = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
+        multiBlockPacket.getChunkCoordIntPairs().write(0, chunkCoord.toChunkCoordIntPair());
+        MultiBlockChangeInfo[] mbci = new MultiBlockChangeInfo[blockPositions.size()];
+        int i = 0;
+        for (BlockPosition blockPos : blockPositions) {
+            mbci[i] = new MultiBlockChangeInfo(blockPos.toLocation(getWorld()), WrappedBlockData.createData(fakeBlocks.get(blockPos).getBlockData().getMaterial()));
+            i++;
+        }
+        multiBlockPacket.getMultiBlockChangeInfoArrays().write(0, mbci);
+        Bukkit.getServer().getScheduler().runTaskLater(Core.getInstance(), () ->
+        Core.sendPacket(cp, multiBlockPacket), 5L);
+    }
+    */
 
     /**
      * Sends a fake block packet of all blocks in the fakeblock

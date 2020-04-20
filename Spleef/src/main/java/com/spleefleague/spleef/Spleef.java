@@ -9,6 +9,8 @@ package com.spleefleague.spleef;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.spleef.commands.*;
@@ -87,18 +89,19 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)
                 .createLinkedContainer("Spleef Menu");
         
-        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 0, 2);
-        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Bow Spleef"), 1, 3);
+        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 0, 2);
+        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Bow Spleef"), 1, 3);
         BananaSpleefArena.createMenu(2, 2);
         TeamSpleefArena.createMenu(3, 3);
         ClassicSpleefArena.createMenu(4, 2);
         MultiSpleefArena.createMenu(5, 3);
         PowerSpleefArena.createMenu(6, 2);
-        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 7, 3);
-        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createLockedMenuItem("Other"), 8, 2);
-        spleefMenuItem.getLinkedContainer().addStaticItem(Shovel.createMenu(), 4, 4);
+        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 7, 3);
+        spleefMenuItem.getLinkedContainer().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Other"), 8, 2);
         
-        InventoryMenuAPI.getHotbarItem(InventoryMenuAPI.InvMenuType.SLMENU).getLinkedContainer().addMenuItem(spleefMenuItem, 4, 2);
+        spleefMenuItem.getLinkedContainer().addStaticItem(Shovel.createMenu(), 4, 4);
+    
+        SLMainHotbar.getItemHotbar().getLinkedContainer().addMenuItem(spleefMenuItem, 4, 2);
     }
     
     public void initCommands() {

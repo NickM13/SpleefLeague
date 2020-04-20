@@ -12,7 +12,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.game.conquest.ConquestPack;
@@ -67,7 +67,7 @@ public class SuperJumpCommand extends CommandTemplate {
     @CommandAnnotation
     public void sjEndless(CorePlayer sender, @LiteralArg(value="endless") String l, @Nullable Integer level) {
         if (level != null) {
-            SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(sender);
+            SuperJumpPlayer sjp = SuperJump.getInstance().getPlayers().get(sender);
             sjp.getEndlessStats().setLevel(level);
         }
         SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getArenaMode(), sender);

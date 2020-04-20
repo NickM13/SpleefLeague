@@ -4,11 +4,12 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.menus.main;
+package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -18,7 +19,7 @@ import org.bukkit.potion.PotionType;
 /**
  * @author NickM13
  */
-public class ModerativeMenu {
+public class ModeratorMenu {
     
     private static InventoryMenuItem menuItem = null;
     
@@ -51,7 +52,7 @@ public class ModerativeMenu {
             menuItem.getLinkedContainer()
                     .addMenuItem(InventoryMenuAPI.createItem()
                             .setName("Night Vision")
-                            .setDisplayItem(InventoryMenuAPI.createCustomPotion(PotionType.NIGHT_VISION))
+                            .setDisplayItem(InventoryMenuUtils.createCustomPotion(PotionType.NIGHT_VISION))
                             .setAction(cp -> cp.getPlayer().addPotionEffect(PotionEffectType.NIGHT_VISION.createEffect(Integer.MAX_VALUE, 0)))
                             .setCloseOnAction(false));
             

@@ -1,4 +1,4 @@
-package com.spleefleague.core.player;
+package com.spleefleague.core.player.rank;
 
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.database.annotation.DBSave;

@@ -16,9 +16,8 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
-import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.player.rank.Rank;
+
 import java.time.Instant;
 import java.util.Date;
 import org.bson.Document;

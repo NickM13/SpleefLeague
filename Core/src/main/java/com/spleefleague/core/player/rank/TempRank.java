@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.player;
+package com.spleefleague.core.player.rank;
 
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;

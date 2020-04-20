@@ -17,7 +17,7 @@ import org.bson.Document;
 /**
  * @author NickM13
  */
-public class ConquestStats implements DBVariable<List<Document>> {
+public class ConquestStats extends DBVariable<List<Document>> {
     
     public static class ConquestScore {
         double bestTime;

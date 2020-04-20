@@ -10,7 +10,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.RaycastResult;
 import java.util.List;

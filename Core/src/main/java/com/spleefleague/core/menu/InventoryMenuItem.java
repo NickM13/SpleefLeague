@@ -10,7 +10,7 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -84,7 +84,7 @@ public class InventoryMenuItem {
         return this;
     }
     public InventoryMenuItem setDisplayItem(Material material, int damage) {
-        this.displayItemFun = (cp) -> InventoryMenuAPI.createCustomItem(material, damage);
+        this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, damage);
         return this;
     }
     public InventoryMenuItem setDisplayItem(ItemStack displayItem) {
@@ -173,12 +173,14 @@ public class InventoryMenuItem {
     
     public ItemStack createItem(CorePlayer cp) {
         ItemStack item = displayItemFun.apply(cp);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
-            meta.setLore(getWrappedDescription(cp));
-            meta.addItemFlags(ItemFlag.values());
-            item.setItemMeta(meta);
+        if (item != null) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
+                meta.setLore(getWrappedDescription(cp));
+                meta.addItemFlags(ItemFlag.values());
+                item.setItemMeta(meta);
+            }
         }
         return item;
     }

@@ -15,7 +15,7 @@ import org.bson.Document;
 /**
  * @author NickM13
  */
-public class EndlessStats implements DBVariable<Document> {
+public class EndlessStats extends DBVariable<Document> {
     // Days since epoch time
     private Integer day;
     
