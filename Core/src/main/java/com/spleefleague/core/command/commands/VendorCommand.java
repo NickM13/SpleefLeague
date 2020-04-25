@@ -67,14 +67,15 @@ public class VendorCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
+    @Deprecated
     public void vendorList(CorePlayer sender,
             @LiteralArg(value="list") String l) {
-        String vendorlist = "";
+        StringBuilder vendorlist = new StringBuilder();
         Iterator<String> vit = Vendors.getVendors().keySet().iterator();
         while (vit.hasNext()) {
-            vendorlist += vit.next();
+            vendorlist.append(vit.next());
             if (vit.hasNext()) {
-                vendorlist += ", ";
+                vendorlist.append(", ");
             }
         }
         success(sender, "List of Vendors: " + vendorlist);
@@ -86,7 +87,6 @@ public class VendorCommand extends CommandTemplate {
         InventoryMenuContainer menu = InventoryMenuAPI.createContainer()
                 .setTitle("Vendor Items!");
         
-        System.out.println(Vendorable.getTypeNames().size());
         for (String type : Vendorable.getTypeNames()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItem()
                     .setName(type)
@@ -97,7 +97,12 @@ public class VendorCommand extends CommandTemplate {
             Map<String, Vendorable> vendorableMap = Vendorables.getAll(type);
             if (vendorableMap != null) {
                 for (Vendorable item : vendorableMap.values()) {
-                    typeMenu.addMenuItem(item.getVendorMenuItem());
+                    typeMenu.addMenuItem(InventoryMenuAPI.createItem()
+                            .setDisplayItem(item.getDisplayItem())
+                            .setName(item.getName())
+                            .setDescription(item.getDescriptionVendor())
+                            .setAction(cp -> cp.getPlayer().getInventory().addItem(item.getDisplayItem()))
+                            .setCloseOnAction(false));
                 }
             }
             menu.addMenuItem(typeItem);
@@ -114,6 +119,9 @@ public class VendorCommand extends CommandTemplate {
         Vendor vendor = Vendors.getVendor(name);
         if (vendor != null) {
             vendor.openShop(cp);
+            success(sender, "Opened vendor " + name + " for player " + cp.getDisplayName());
+        } else {
+            error(sender, "Unknown vendor " + name);
         }
     }
     
@@ -121,20 +129,29 @@ public class VendorCommand extends CommandTemplate {
     public void vendorSet(CorePlayer sender,
             @LiteralArg(value="set") String l,
             @OptionArg(listName="vendors") String name) {
-        Vendors.setPlayerVendor(sender, name);
+        if (Vendors.setPlayerVendor(sender, name)) {
+            success(sender, "Punch an entity to set it's vendor to " + name);
+        } else {
+            error(sender, "Unknown entity " + name);
+        }
     }
     
     @CommandAnnotation
     public void vendorUnset(CorePlayer sender,
             @LiteralArg(value="unset") String l) {
         Vendors.unsetPlayerVendor(sender);
+        success(sender, "Punch a vendor to clear it");
     }
     
     @CommandAnnotation
     public void vendorDelete(CorePlayer sender,
             @LiteralArg(value="delete") String l,
             @OptionArg(listName="vendors") String name) {
-        Vendors.deleteVendor(Vendors.getVendor(name));
+        if (Vendors.deleteVendor(Vendors.getVendor(name))) {
+            success(sender, "Deleted vendor " + name);
+        } else {
+            error(sender, "Unknown vendor " + name);
+        }
     }
 
 }

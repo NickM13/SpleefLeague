@@ -3,11 +3,14 @@ package com.spleefleague.core.player;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.database.variable.DBVariable;
+import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import org.bson.Document;
+import org.bukkit.Material;
 
 import java.util.*;
 
@@ -54,10 +57,17 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     /**
      * Collectibles are saved to documents within a document
      * example:
-     * collectibles: {
+     * active: {
+     *     "Pet": "Monkey",
+     *     "Shovel": "15"
+     * }
+     * held: {
+     *     "Shovel": "15"
+     * }
+     * collection: {
      *     {
-     *         type: "Pet"
-     *         collection: {
+     *         "type": "Pet"
+     *         "collection": {
      *             {
      *                 identifier: "Monkey",
      *                 info: InfoDoc
@@ -69,8 +79,8 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      *         }
      *     },
      *     {
-     *         type: "Shovel"
-     *         collection: {
+     *         "type": "Shovel"
+     *         "collection": {
      *             {
      *                 identifier: "15",
      *                 info: InfoDoc
@@ -142,6 +152,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     public void add(Collectible collectible) {
+        if (collectible == null) return;
         if (!collectibles.containsKey(collectible.getType())) {
             collectibles.put(collectible.getType(), new TreeMap<>());
         }
@@ -163,6 +174,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     public void remove(Collectible collectible) {
+        if (collectible == null) return;
         if (collectibles.containsKey(collectible.getType())) {
             collectibles.get(collectible.getType()).remove(collectible.getIdentifier());
         }
@@ -179,6 +191,10 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     public Collectible getActive(Class<? extends Collectible> clazz) {
         if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz))) return null;
         return (Collectible) Vendorables.get(Vendorable.getTypeName(clazz), activeCollectibles.get(Vendorable.getTypeName(clazz)));
+    }
+    
+    public boolean hasActive(Class<? extends Collectible> clazz) {
+        return activeCollectibles.containsKey(Vendorable.getTypeName(clazz));
     }
     
     /**
@@ -201,12 +217,13 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      *
      * @return List of Holdables
      */
+    @SuppressWarnings("unchecked")
     public List<Holdable> getAllHoldables() {
         List<Holdable> holdableList = new ArrayList<>();
         
         for (Map.Entry<String, Map<String, CollectibleInfo>> collectibleEntry : collectibles.entrySet()) {
             Class<? extends Vendorable> collectibleClass = Vendorable.getClassFromType(collectibleEntry.getKey());
-            if (Holdable.class.isAssignableFrom(collectibleClass)) {
+            if (collectibleClass != null && Holdable.class.isAssignableFrom(collectibleClass)) {
                 // TODO: Probably safer way to do this than finding the first and checking for showAll
                 Holdable firstHoldable = (Holdable) Vendorables.get(collectibleEntry.getKey(), collectibleEntry.getValue().keySet().iterator().next());
                 Holdable holdCollectible;
@@ -235,6 +252,22 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         }
         
         return holdableList;
+    }
+    
+    public <T extends Collectible> List<T> getAll(Class<T> clazz) {
+        List<T> collectibleList = new ArrayList<>();
+    
+        Map<String, CollectibleInfo> collectibleMap = this.collectibles.get(Vendorable.getTypeName(clazz));
+        if (collectibleMap != null) {
+            for (Map.Entry<String, CollectibleInfo> entry : collectibleMap.entrySet()) {
+                T collectible = Vendorables.get(clazz, entry.getKey());
+                if (collectible != null) {
+                    collectibleList.add(collectible);
+                }
+            }
+        }
+        
+        return collectibleList;
     }
     
     
@@ -272,11 +305,24 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      *
      * @param collectible Collectible
      */
-    public void activate(Collectible collectible) {
+    public void setActiveItem(Collectible collectible) {
         Collectible current = getActive(collectible.getClass());
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
         activeCollectibles.put(collectible.getType(), collectible.getIdentifier());
+        owner.refreshHotbar();
+    }
+    
+    public void removeActiveItem(Class<? extends Collectible> clazz) {
+        String type = Vendorable.getTypeName(clazz);
+        if (activeCollectibles.containsKey(type)) {
+            Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
+            if (collectible != null) {
+                collectible.onDisable(owner);
+            }
+            activeCollectibles.remove(type);
+            owner.refreshHotbar();
+        }
     }
     
     /**
@@ -284,9 +330,50 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      *
      * @param collectible Collectible
      */
-    public void deactivate(Collectible collectible) {
-        collectible.onDisable(owner);
-        activeCollectibles.put(collectible.getType(), "");
+    protected void deactivate(Collectible collectible) {
+        if (activeCollectibles.containsKey(collectible.getType())
+                && activeCollectibles.get(collectible.getType()).equalsIgnoreCase(collectible.getIdentifier())) {
+            collectible.onDisable(owner);
+            activeCollectibles.remove(collectible.getType());
+        }
+    }
+    
+    /**
+     * Creates an Inventory Menu Container with all available collectibles of a type, including
+     * an item at the start that allows for disabling the cosmetic if possible
+     *
+     * @param clazz Class
+     * @param container Menu Container
+     * @param canHaveNone Disable Item Shown
+     */
+    public static void createCollectibleContainer(Class<? extends Collectible> clazz, InventoryMenuContainer container, boolean canHaveNone) {
+        container.setOpenAction((container2, cp1) -> {
+                container2.clearUnsorted();
+                if (canHaveNone) {
+                    container2.addMenuItem(InventoryMenuAPI.createItem()
+                            .setName("None")
+                            .setDescription("")
+                            .setDisplayItem(Material.BAKED_POTATO)
+                            .setAction(cp -> cp.getCollectibles().removeActiveItem(clazz))
+                            .setCloseOnAction(false));
+                }
+            
+                for (Collectible collectible : cp1.getCollectibles().getAll(clazz)) {
+                    container2.addMenuItem(InventoryMenuAPI.createItem()
+                            .setName(collectible.getName())
+                            .setDescription(collectible.getDescription())
+                            .setDisplayItem(collectible.getDisplayItem())
+                            .setAction(cp2 -> cp2.getCollectibles().setActiveItem(collectible))
+                            .setCloseOnAction(false));
+                }
+            });
+    
+        container.addStaticItem(InventoryMenuAPI.createItem()
+                .setName("Selected Collectible")
+                .setDescription(cp -> cp.getCollectibles().getActive(clazz).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActive(clazz).getDisplayItem())
+                .setVisibility(cp -> cp.getCollectibles().hasActive(clazz)),
+                4, 4);
     }
     
 }

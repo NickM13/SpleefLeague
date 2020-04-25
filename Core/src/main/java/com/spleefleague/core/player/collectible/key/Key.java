@@ -7,10 +7,8 @@
 package com.spleefleague.core.player.collectible.key;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.UpdateOptions;
 import com.spleefleague.core.Core;
 
-import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
@@ -42,19 +40,17 @@ public class Key extends Holdable {
         });
     }
     
-    /*
-    public static Key createKeyItem(String name, Integer damage, String displayName) {
-        if (!keyItems.containsKey(name)) {
-            Key ki = new Key(damage, name, displayName);
-            keyItems.put(name, ki);
-            ki.saveKeyItem();
+    public static Key createKeyItem(String identifier, String name, Integer damage) {
+        Key key;
+        if ((key = Vendorables.get(Key.class, identifier)) != null) {
+            return key;
         }
-        return keyItems.get(name);
+        key = new Key(identifier, name, damage);
+        Vendorables.register(key);
+        return key;
     }
-    */
     
     private static final Material DEFAULT_KEY_MAT = Material.DIAMOND_AXE;
-    @DBField private Integer damage;
     
     /**
      * Constructor for DB loading
@@ -66,25 +62,23 @@ public class Key extends Holdable {
     /**
      * Constructor for use with /key create
      *
-     * @param damage Damage
      * @param identifier Identifier String
      * @param name Display Name
+     * @param damage Damage
      */
-    public Key(Integer damage, String identifier, String name) {
+    public Key(String identifier, String name, Integer damage) {
         super(true);
         this.identifier = identifier;
         this.name = name;
         this.description = "";
         this.material = DEFAULT_KEY_MAT;
-        this.damage = damage;
         this.setDamageNbt(damage);
         this.coinCost = 0;
+        updateDisplayItem();
     }
     
     @Override
     public void afterLoad() {
-        this.identifier = String.valueOf(damage);
-        this.setDamageNbt(damage);
         super.afterLoad();
     }
     

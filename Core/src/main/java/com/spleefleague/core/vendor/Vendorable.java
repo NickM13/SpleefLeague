@@ -7,11 +7,13 @@ import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -113,7 +115,7 @@ public abstract class Vendorable extends DBEntity {
      *
      * @return Type Name
      */
-    public String getType() {
+    public final String getType() {
         return type;
     }
     
@@ -122,17 +124,37 @@ public abstract class Vendorable extends DBEntity {
      *
      * @return Identifier String
      */
-    public String getIdentifier() {
+    public final String getIdentifier() {
         return identifier;
     }
     
     /**
-     * Get the display name of this vendor item item
+     * Sets the identifying String of this vendorable
+     *
+     * @param identifier Identifier String
+     */
+    public final void setIdentifier(String identifier) {
+        this.identifier = identifier;
+        updateDisplayItem();
+    }
+    
+    /**
+     * Get the display name of this vendorable's item
      *
      * @return Display Name
      */
-    public String getName() {
+    public final String getName() {
         return name;
+    }
+    
+    /**
+     * Sets the display name of this vendorable's item
+     *
+     * @param name Display Name
+     */
+    public final void setName(String name) {
+        this.name = name;
+        updateDisplayItem();
     }
     
     /**
@@ -140,8 +162,18 @@ public abstract class Vendorable extends DBEntity {
      *
      * @return Description
      */
-    public String getDescription() {
+    public final String getDescription() {
         return description;
+    }
+    
+    /**
+     * Set the Description string for this item
+     *
+     * @param description Description
+     */
+    public final void setDescription(String description) {
+        this.description = description;
+        updateDisplayItem();
     }
     
     /**
@@ -160,12 +192,17 @@ public abstract class Vendorable extends DBEntity {
      *
      * @return Display Material
      */
-    public Material getMaterial() {
+    public final Material getMaterial() {
         return material;
     }
     
-    protected void setDamageNbt(int damage) {
+    public final void setDamageNbt(int damage) {
         nbts.append("Damage", damage);
+        updateDisplayItem();
+    }
+    
+    public final Integer getDamageNbt() {
+        return nbts.get("Damage", Integer.class);
     }
     
     /**
@@ -175,6 +212,16 @@ public abstract class Vendorable extends DBEntity {
      */
     public final int getCoinCost() {
         return coinCost;
+    }
+    
+    /**
+     * Sets the coin cost for this vendorable item
+     *
+     * @param coinCost Coin Cost
+     */
+    public final void setCoinCost(int coinCost) {
+        this.coinCost = coinCost;
+        updateDisplayItem();
     }
     
     /**
@@ -238,6 +285,27 @@ public abstract class Vendorable extends DBEntity {
      */
     public final ItemStack getDisplayItem() { return displayItem; }
     
+    /**
+     * https://www.spigotmc.org/threads/hiding-the-glow-effect-from-an-itemstack.157564/#post-1673944
+     * Removes the enchanted glow from an item
+     *
+     * @param itemStack Item Stack
+     * @return Item Stack without enchanted glow
+     */
+    private ItemStack hideGlow(ItemStack itemStack) {
+        net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound tag = null;
+        if (nmsStack.hasTag()) {
+            tag = nmsStack.getTag();
+            if (tag != null) {
+                tag.remove("Enchantments");
+                nmsStack.setTag(tag);
+                return CraftItemStack.asCraftMirror(nmsStack);
+            }
+        }
+        return itemStack;
+    }
+    
     protected final ItemStack createItem() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -252,9 +320,10 @@ public abstract class Vendorable extends DBEntity {
                         ((SkullMeta) itemMeta).setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString((String) nbt.getValue())));
                     }
                 } else {
-                    System.out.println("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:230");
+                    System.out.println("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324");
                 }
             }
+            itemMeta.addEnchant(Enchantment.DIG_SPEED, 50, true);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(name);
@@ -269,7 +338,18 @@ public abstract class Vendorable extends DBEntity {
                     type != null ? type : "");
             itemStack.setItemMeta(itemMeta);
         }
-        return itemStack;
+        return hideGlow(itemStack);
+    }
+    
+    /**
+     * Returns whether the passed Vendorable has the same type
+     * and identifier as this
+     *
+     * @param vendorable Vendorable
+     * @return Soft Equal
+     */
+    public boolean equalsSoft(Vendorable vendorable) {
+        return vendorable.getType().equalsIgnoreCase(getType()) && vendorable.getIdentifier().equalsIgnoreCase(getIdentifier());
     }
     
 }

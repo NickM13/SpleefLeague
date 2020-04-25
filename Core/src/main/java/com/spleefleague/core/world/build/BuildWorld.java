@@ -1,11 +1,8 @@
 package com.spleefleague.core.world.build;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeWorld;
-import com.spleefleague.core.world.build.tool.BreakTool;
-import com.spleefleague.core.world.build.tool.PlaceTool;
 import com.spleefleague.core.world.build.tool.SelectTool;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -32,10 +29,9 @@ public class BuildWorld extends FakeWorld {
      * Initialize build tools
      */
     public static void init() {
-        addBuildTool(new BreakTool());
-        addBuildTool(new PlaceTool());
         addBuildTool(new SelectTool());
     }
+    
     private static void addBuildTool(BuildTool buildTool) {
         BUILD_TOOLS.put(buildTool.getHotbarItem().getHotbarTag(), buildTool);
     }
@@ -87,14 +83,10 @@ public class BuildWorld extends FakeWorld {
 
     public BuildWorld(World world, CorePlayer owner, Set<Material> buildMaterials) {
         super(world, BuildWorldPlayer.class);
-        initBuildTools();
         this.buildMaterials = buildMaterials;
         this.owner = owner;
         addPlayer(owner);
         BUILD_WORLDS.add(this);
-    }
-    
-    private void initBuildTools() {
     }
     
     public final CorePlayer getOwner() {
@@ -112,7 +104,7 @@ public class BuildWorld extends FakeWorld {
      */
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        return breakBlock(pos);
+        return breakBlock(pos, cp);
     }
     
     /**
@@ -122,14 +114,11 @@ public class BuildWorld extends FakeWorld {
      * @return Cancel Event
      */
     @Override
-    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition) {
+    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition, BlockPosition blockRelative) {
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
-        /*
-        String hotbarTag = InventoryMenuAPI.getHotbarTag(heldItem);
-        if (BUILD_TOOLS.containsKey(hotbarTag)) {
-            BUILD_TOOLS.get(hotbarTag).use(cp, this);
+        if (buildMaterials.contains(heldItem.getType())) {
+            placeBlock(blockRelative, heldItem.getType(), cp);
         }
-        */
         return true;
     }
     
@@ -141,13 +130,9 @@ public class BuildWorld extends FakeWorld {
     @Override
     public void addPlayer(CorePlayer cp) {
         super.addPlayer(cp);
-        cp.setGameMode(GameMode.ADVENTURE);
-        cp.getPlayer().setAllowFlight(true);
+        cp.setGameMode(GameMode.CREATIVE);
         cp.getPlayer().getInventory().clear();
-        ((BuildWorldPlayer) getPlayerMap().get(cp.getUniqueId())).setSelectedMaterial(buildMaterials.iterator().next());
-        BUILD_TOOLS.forEach((name, buildTool) -> {
-            cp.getPlayer().getInventory().setItem(buildTool.getHotbarItem().getSlot(), buildTool.getHotbarItem().createItem(cp));
-        });
+        cp.refreshHotbar();
         PLAYER_BUILD_WORLDS.put(cp.getUniqueId(), this);
     }
     

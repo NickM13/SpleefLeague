@@ -3,11 +3,9 @@ package com.spleefleague.core.menu.hotbars;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
-import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -19,7 +17,7 @@ public class AfkHotbar {
     
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(40, "afkitem")
-                .setName(ChatColor.RESET + "" + Chat.PLUGIN_PREFIX + "" + ChatColor.BOLD + "AFK")
+                .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "AFK")
                 .setDescription("You're AFK!")
                 .setDisplayItem(Material.DIAMOND_HOE, 253)
                 .setAction(cp -> { cp.setInventoryMenuItem(getItemHotbar()); })

@@ -5,16 +5,15 @@
  */
 package com.spleefleague.core.chat;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import java.util.ArrayList;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.function.BiConsumer;
 
 import com.spleefleague.core.request.PlayerRequest;
 import com.spleefleague.core.request.RequestManager;
-import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 
 /**
@@ -30,7 +29,7 @@ public class Chat {
             ERROR = ChatColor.RED + "",
             BROADCAST = ChatColor.LIGHT_PURPLE + "",
             BRACKET = ChatColor.GRAY + "",
-            BRACE = ChatColor.DARK_GRAY + "",
+            TAG_BRACE = ChatColor.DARK_GRAY + "",
             RANK = ChatColor.GRAY + "",
             GAMEMODE = ChatColor.GREEN + "",
             GAMEMAP = ChatColor.RED + "",
@@ -41,7 +40,7 @@ public class Chat {
             ELO = ChatColor.AQUA + "",
             PLAYER_NAME = ChatColor.YELLOW + "",
             PLAYER_CHAT = ChatColor.WHITE + "",
-            PLUGIN_PREFIX = ChatColor.GOLD + "",
+            TAG = ChatColor.GOLD + "",
             TICKET_PREFIX = ChatColor.GOLD + "",
             TICKET_ISSUE = ChatColor.GREEN + "",
             SCOREBOARD_DEFAULT = ChatColor.WHITE + "";
@@ -144,13 +143,23 @@ public class Chat {
     public static void sendTitle(CorePlayer cp, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
+    
+    /**
+     * Converts any ChatColor.RESET's into a "Get Last Color"
+     *
+     * 
+     */
+    private static void resetableColorize(String msg) {
+        String lastColor = Chat.DEFAULT;
+        Iterator<Integer> it = msg.chars().iterator();
+        while (it.hasNext()) {
+        
+        }
+    }
 
     public static void sendMessageToPlayer(CorePlayer cp, String msg) {
-        if (cp.isOnline()) {
-            System.out.println("Debugging, remove me Chat.java:150");
-            System.out.println("Sending message " + msg + " to player " + cp.getDisplayName());
+        if (cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("DEFAULT") + msg);
-        }
     }
 
     public static void sendMessageToPlayerSuccess(CorePlayer cp, String msg) {
@@ -173,7 +182,7 @@ public class Chat {
             cp.getPlayer().sendMessage(chatColors.get("INFO") + msg);
     }
     
-    public static void sendRequest(String message, CorePlayer sender, CorePlayer receiver, BiConsumer<CorePlayer, CorePlayer> action) {
+    public static void sendRequest(String message, CorePlayer receiver, CorePlayer sender, BiConsumer<CorePlayer, CorePlayer> action) {
         RequestManager.sendRequest(Core.getChatPrefix(), message, receiver, sender.getName(), new PlayerRequest(action));
     }
     

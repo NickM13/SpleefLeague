@@ -35,7 +35,7 @@ public class StatsCommand extends CommandTemplate {
             return;
         }
         CorePlayer cp = Core.getInstance().getPlayers().get(target.getUniqueId());
-        sender.sendMessage(ChatUtils.centerTitle(Chat.BRACE + "[ " + cp.getDisplayName() + "'s Ranked Stats" + Chat.BRACE + " ]"));
+        sender.sendMessage(ChatUtils.centerTitle(Chat.TAG_BRACE + "[ " + cp.getDisplayName() + "'s Ranked Stats" + Chat.TAG_BRACE + " ]"));
         CorePlugin.getAllPlugins().forEach(plugin -> {
             DBPlayer dbp = plugin.getPlayers().get(target.getUniqueId());
             

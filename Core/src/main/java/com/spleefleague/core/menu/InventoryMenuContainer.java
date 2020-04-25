@@ -7,7 +7,6 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.ArrayList;
@@ -265,7 +264,8 @@ public class InventoryMenuContainer {
     }
     
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
-        if (e.getClickedInventory().getType() == InventoryType.PLAYER) {
+        if (e.getClickedInventory() == null
+                || e.getClickedInventory().getType() == InventoryType.PLAYER) {
             e.setCancelled(true);
         }
         else if (e.getClickedInventory().getType() == InventoryType.CHEST) {

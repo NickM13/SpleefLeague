@@ -9,21 +9,17 @@ package com.spleefleague.spleef.game;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.Battle;
 import com.spleefleague.core.game.BattlePlayer;
-import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.spleef.SpleefBattlePlayer;
-import com.spleefleague.spleef.player.SpleefPlayer;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -123,7 +119,7 @@ public abstract class SpleefBattle extends Battle<SpleefArena> {
 
     @Override
     protected void saveBattlerStats(CorePlayer cp) {
-
+    
     }
 
     /**

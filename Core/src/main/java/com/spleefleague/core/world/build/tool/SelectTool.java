@@ -17,25 +17,27 @@ public class SelectTool extends BuildTool {
     
     public SelectTool() {
         super((InventoryMenuItemHotbar) InventoryMenuAPI
-                .createItemHotbar(0, "BUILD_TOOL_SELECT")
-                .setName("Select Material")
-                .setDisplayItem(cp -> { return new ItemStack(((BuildWorldPlayer) BuildWorld.getPlayerBuildWorld(cp).getPlayerMap()).getSelectedMaterialDisplay()); })
+                .createItemHotbar(8, "BUILD_TOOL_PLACEABLES")
+                .setName("Available Blocks")
+                .setDisplayItem(Material.LEATHER)
                 .setDescription("Nick was here")
-                .createLinkedContainer("Select Material Menu"));
+                .createLinkedContainer("Available Blocks"));
+        getHotbarItem()
+                .setAction(cp -> { cp.setInventoryMenuContainer(getHotbarItem().getLinkedContainer()); });
         getHotbarItem().getLinkedContainer().setOpenAction((container, cp) -> {
             container.clearUnsorted();
             BuildWorld buildWorld = BuildWorld.getPlayerBuildWorld(cp);
             BuildWorldPlayer bwp = (BuildWorldPlayer) buildWorld.getPlayerMap().get(cp.getUniqueId());
             for (Material mat : buildWorld.getBuildMaterials()) {
                 ItemStack itemStack = new ItemStack(mat);
-                container.addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(itemStack.getItemMeta().getDisplayName())
-                        .setDescription("Sets build material to this")
-                        .setDisplayItem(mat)
-                        .setAction(cp2 -> {
-                            cp2.sendMessage("Material set!");
-                            bwp.setSelectedMaterial(mat);
-                        }));
+                if (itemStack.getItemMeta() != null) {
+                    container.addMenuItem(InventoryMenuAPI.createItem()
+                            .setName(itemStack.getItemMeta().getDisplayName())
+                            .setDescription("Click to Receive")
+                            .setDisplayItem(mat)
+                            .setAction(cp2 -> cp2.getPlayer().getInventory().addItem(itemStack))
+                            .setCloseOnAction(false));
+                }
             }
         });
     }

@@ -11,7 +11,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.plugin.CorePlugin;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -108,9 +108,9 @@ public class PlayerQueue {
             if (players.get(id).arena == arena) {
                 Core.getInstance().sendMessage(cp, "You are already in queue for " +
                         Chat.GAMEMODE + this.name +
-                        Chat.BRACE + " (" +
+                        Chat.TAG_BRACE + " (" +
                         Chat.GAMEMAP + arena.getDisplayName() +
-                        Chat.BRACE + ")");
+                        Chat.TAG_BRACE + ")");
             } else {
                 if (players.get(id).arena != null)
                     players.get(id).arena.decrementQueues();
@@ -118,17 +118,17 @@ public class PlayerQueue {
                 players.get(id).arena.incrementQueues();
                 Core.getInstance().sendMessage(cp, "You have joined the queue for " +
                         Chat.GAMEMODE + this.name +
-                        Chat.BRACE + " (" +
+                        Chat.TAG_BRACE + " (" +
                         Chat.GAMEMAP + arena.getDisplayName() +
-                        Chat.BRACE + ")");
+                        Chat.TAG_BRACE + ")");
             }
             return false;
         }
         Core.getInstance().sendMessage(cp, "You have joined the queue for " +
                 Chat.GAMEMODE + this.name +
-                Chat.BRACE + " (" +
+                Chat.TAG_BRACE + " (" +
                 Chat.GAMEMAP + arena.getDisplayName() +
-                Chat.BRACE + ")");
+                Chat.TAG_BRACE + ")");
         players.add(new QueuePlayer(cp, arena));
         arena.incrementQueues();
         checkQueue();

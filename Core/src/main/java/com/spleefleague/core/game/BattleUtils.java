@@ -78,7 +78,7 @@ public class BattleUtils {
         for (Location loc : locs) {
             List<BlockPosition> blockPositions = getDomeBlocks(loc);
             for (BlockPosition bp : blockPositions) {
-                gameWorld.breakBlock(bp);
+                gameWorld.breakBlock(bp, null);
             }
         }
     }

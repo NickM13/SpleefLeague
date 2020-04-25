@@ -9,7 +9,9 @@ package com.spleefleague.spleef.game;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.game.battle.BattleStatic;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.spleef.SpleefBattlePlayer;
 
 import java.util.List;
@@ -17,12 +19,12 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public abstract class SpleefBattleStatic extends SpleefBattle {
+public abstract class SpleefBattleStatic extends BattleStatic {
 
     public SpleefBattleStatic(List<CorePlayer> players,
                               SpleefArena arena,
                               Class<? extends BattlePlayer> battlePlayerClass) {
-        super(players, arena, battlePlayerClass);
+        super(Spleef.getInstance(), players, arena, battlePlayerClass);
     }
 
     @Override

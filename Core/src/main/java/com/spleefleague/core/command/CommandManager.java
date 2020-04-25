@@ -36,7 +36,7 @@ public class CommandManager {
     
     public void flushRegisters() {
         for (CommandTemplate ct : commandsToRegister) {
-            commandMap.register("sl", ct);
+            commandMap.register(ct.getContainer(), ct);
         }
         commandsToRegister.clear();
     }

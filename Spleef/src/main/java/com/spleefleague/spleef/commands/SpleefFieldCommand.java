@@ -18,14 +18,8 @@ public class SpleefFieldCommand extends CommandTemplate {
 
     public SpleefFieldCommand() {
         super(SpleefFieldCommand.class, "spleeffield", Rank.DEVELOPER);
-        setUsage("ehh idk");
         setDescription("Yea yea Ill get to this");
         setOptions("fields", cp -> Field.getFieldNames());
-    }
-
-    @CommandAnnotation
-    public void spleefField(CorePlayer sender) {
-        success(sender, "Spleef Field woooo!");
     }
     
     @CommandAnnotation

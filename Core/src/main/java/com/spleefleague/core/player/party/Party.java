@@ -8,25 +8,48 @@ package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatGroup;
+import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Material;
 
 /**
  * @author NickM13
  */
 public class Party {
     
-    private CorePlayer owner;
-    private final Set<CorePlayer> players = new LinkedHashSet<>();
-    private final ChatGroup chatGroup = new ChatGroup();
-    private boolean disbanded = false;
+    private static final InventoryMenuItemHotbar partyListItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(3, "party")
+            .setName("Party List")
+            .setDescription("Open a list of all the current players in your party")
+            .setDisplayItem(Material.JUNGLE_BOAT)
+            .setAvailability(CorePlayer::isInParty)
+            .setLinkedContainer(InventoryMenuAPI.createContainer()
+                    .setTitle("Party List")
+                    .setOpenAction((container, cp) -> {
+                        container.clearUnsorted();
+                        Party party = cp.getParty();
+                        if (party != null) {
+                            party.getPlayers().forEach(cp2 -> container.addMenuItem(InventoryMenuAPI.createItem()
+                                    .setName(cp2.getDisplayName())
+                                    .setDescription(party.getOwner().equals(cp2) ? "Owner" : "")
+                                    .setDisplayItem(cp2.getSkull())));
+                        }
+                    }));
     
     public static Party createParty(CorePlayer cp) {
         return new Party(cp);
     }
+    
+    private CorePlayer owner;
+    private final Set<CorePlayer> players = new LinkedHashSet<>();
+    private final ChatGroup chatGroup = new ChatGroup();
+    private boolean disbanded = false;
     
     public ChatGroup getChatGroup() {
         return chatGroup;
@@ -125,6 +148,12 @@ public class Party {
             Core.getInstance().sendMessage(cp, "You have left the party");
             chatGroup.sendMessage(cp.getDisplayName() + " has left the party");
         }
+    }
+    
+    public void openPartyList(CorePlayer cp) {
+        InventoryMenuContainer menuContainer = InventoryMenuAPI.createContainer()
+                .setTitle("Party List");
+        
     }
     
 }

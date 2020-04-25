@@ -36,6 +36,11 @@ public class ChunkCoord {
         return hash;
     }
     
+    @Override
+    public String toString() {
+        return x + "," + z;
+    }
+    
     public ChunkCoordIntPair toChunkCoordIntPair() {
         return new ChunkCoordIntPair(x, z);
     }

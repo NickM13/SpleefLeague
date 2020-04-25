@@ -9,12 +9,11 @@ package com.spleefleague.core.game.manager;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,15 +22,14 @@ import java.util.List;
  * Battle is started on server start and never stops
  * 
  * @author NickM13
- * @param <B>
  */
-public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extends BattleManager<B> {
+public class BattleManagerBonanza extends BattleManager {
     
-    public BattleManagerMultiBonanza(ArenaMode mode) {
+    public BattleManagerBonanza(ArenaMode mode) {
         super(mode);
     }
     
-    public Battle<? extends Arena> getMainBattle() {
+    public Battle getMainBattle() {
         if (battles.isEmpty()) return null;
         return battles.get(0);
     }
@@ -46,7 +44,7 @@ public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extend
     public int queuePlayer(CorePlayer cp) {
         if (getMainBattle() == null)
             startFirstAvailable();
-        Battle<? extends Arena> battle = getMainBattle();
+        Battle battle = getMainBattle();
         if (battle != null) {
             if (cp.isInBattle()) {
                 return 2;
@@ -64,7 +62,19 @@ public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extend
             return 1;
         }
     }
-
+    
+    /**
+     * Empty because Bonanza only has one available map
+     */
+    @Override
+    public int queuePlayer(CorePlayer cp, Arena arena) { return 1; }
+    
+    /**
+     * Empty because Bonanza doesn't technically have a queue
+     */
+    @Override
+    public void checkQueue() { }
+    
     /**
      * Starts a battle on a random arena
      */
@@ -78,7 +88,7 @@ public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extend
      * @param battle Battle
      * @param cp CorePlayer
      */
-    private void addBattlePlayer(Battle<? extends Arena> battle, CorePlayer cp) {
+    private void addBattlePlayer(Battle battle, CorePlayer cp) {
         if (cp.getParty() != null) cp.getParty().leave(cp);
         Core.getInstance().unqueuePlayerGlobally(cp);
         battle.addBattler(cp);
@@ -91,7 +101,7 @@ public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extend
     @Override
     public void startMatch(List<CorePlayer> players, String name) {
         Arena arena = Arena.getByName(name, mode);
-        Battle<?> sb = null;
+        Battle battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -109,11 +119,11 @@ public class BattleManagerMultiBonanza<B extends Battle<? extends Arena>> extend
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
 
-                sb = battleClass
+                battle = battleClass
                         .getDeclaredConstructor(List.class, mode.getArenaClass())
                         .newInstance(players, arena);
-                sb.startBattle();
-                battles.add(sb);
+                battle.startBattle();
+                battles.add(battle);
             }
         } catch (Exception e) {
             e.printStackTrace();

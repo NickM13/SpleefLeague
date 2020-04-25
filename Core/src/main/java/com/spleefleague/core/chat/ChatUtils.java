@@ -48,8 +48,9 @@ public class ChatUtils {
     
     private static ArrayList<String> wrapDesc(String message) {
         ArrayList<String> msgs = new ArrayList<>();
-        String line = "", word = "";
-        
+        StringBuilder line = new StringBuilder();
+        StringBuilder word = new StringBuilder();
+    
         int msgPxSize = 0;
         boolean prevCode = false;
         boolean isBold = false;
@@ -58,10 +59,10 @@ public class ChatUtils {
         for (char c : message.toCharArray()) {
             if (c == '§') {
                 prevCode = true;
-            } else if (prevCode == true) {
+            } else if (prevCode) {
                 prevCode = false;
                 isBold = (c == 'l' || c == 'L');
-                word += "§" + c;
+                word.append("§").append(c);
                 prevColor = ChatColor.getByChar(c) + "";
             } else {
                 DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
@@ -69,25 +70,25 @@ public class ChatUtils {
                 if (msgPxSize + change > DESC_WIDTH) {
                     msgPxSize = 0;
                     if (line.length() < 2) {
-                        line += word;
-                        word = "";
+                        line.append(word);
+                        word = new StringBuilder();
                     }
                     msgs.add(prevColor + line);
-                    line = "";
+                    line = new StringBuilder();
                 }
                 msgPxSize += change;
                 if (c == ' ') {
-                    line += word + " ";
-                    word = "";
+                    line.append(word).append(" ");
+                    word = new StringBuilder();
                 } else {
-                    word += c;
+                    word.append(c);
                 }
             }
         }
-        if (!word.isEmpty()) {
-            line += word;
+        if (word.length() > 0) {
+            line.append(word);
         }
-        if (!line.isEmpty()) {
+        if (line.length() > 0) {
             msgs.add(prevColor + line);
         }
         if (msgs.isEmpty()) {
@@ -105,16 +106,6 @@ public class ChatUtils {
         
         for (String m : messageSplit)
             msgs.addAll(wrapDesc(m));
-        
-        return msgs;
-    }
-    
-    public static ArrayList<String> wrapDescription(ArrayList<String> messages) {
-        ArrayList<String> msgs = new ArrayList<>();
-        
-        for (String m : messages) {
-            msgs.addAll(wrapDescription(m));
-        }
         
         return msgs;
     }

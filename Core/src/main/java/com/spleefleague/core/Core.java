@@ -34,7 +34,6 @@ import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.queue.QueueRunnable;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.player.collectible.key.Key;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -111,19 +110,16 @@ public class Core extends CorePlugin<CorePlayer> {
 
         Leaderboard.init();
 
-        Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (CorePlayer cp : getPlayers().getAll()) {
-                cp.updateArmorEffects();
-            }
-        }, 0L, 15L);
-
+        // TODO: Move this
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (CorePlayer cp : getPlayers().getAll()) {
                 cp.checkAfk();
+                cp.checkBiome();
                 cp.checkTempRanks();
+                cp.checkGlobalSpectate();
             }
             RequestManager.checkTimeouts();
-        }, 0L, 60L);
+        }, 0L, 100L);
     }
     
     /**
@@ -134,15 +130,15 @@ public class Core extends CorePlugin<CorePlayer> {
         BuildWorld.close();
         Warp.close();
         Infraction.close();
-        Key.close();
+        Collectible.close();
         Vendors.close();
         Tickets.close();
         Leaderboard.close();
-        CorePlugin.closeMongo();
         qrunnable.close();
         playerManager.close();
         running = false;
         ProtocolLibrary.getPlugin().onDisable();
+        CorePlugin.closeMongo();
     }
 
     public static Core getInstance() {
@@ -175,9 +171,10 @@ public class Core extends CorePlugin<CorePlayer> {
         
         subTypes.forEach(st -> {
             try {
-                addCommand(st.newInstance());
-            } catch (InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                addCommand(st.getConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException
+                    | NoSuchMethodException | InvocationTargetException exception) {
+                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, exception);
             }
         });
 
@@ -253,12 +250,6 @@ public class Core extends CorePlugin<CorePlayer> {
                                 pe.setCancelled(true);
                             }
                             break;
-                        case UPDATE_DISPLAY_NAME:
-                            break;
-                        case UPDATE_GAME_MODE:
-                            break;
-                        case UPDATE_LATENCY:
-                            break;
                         default: break;
                     }
                 }
@@ -272,7 +263,23 @@ public class Core extends CorePlugin<CorePlayer> {
     public static ProtocolManager getProtocolManager() {
         return protocolManager;
     }
-
+    
+    /**
+     * Sends a packet to a single player
+     *
+     * @param p Player
+     * @param packet Packet Container
+     */
+    public static void sendPacket(Player p, PacketContainer packet) {
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+            try {
+                protocolManager.sendServerPacket(p, packet);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }, 1L);
+    }
+    
     /**
      * Sends a packet to a single player
      *
@@ -290,18 +297,6 @@ public class Core extends CorePlugin<CorePlayer> {
     }
 
     /**
-     * Sends a packet to a list of players
-     *
-     * @param players Core Player List
-     * @param packet Packet Container
-     */
-    public static void sendPacket(List<CorePlayer> players, PacketContainer packet) {
-        for (CorePlayer cp : players) {
-            sendPacket(cp, packet);
-        }
-    }
-
-    /**
      * Sends a packet to all online players
      *
      * @param packet Packet Container
@@ -309,34 +304,6 @@ public class Core extends CorePlugin<CorePlayer> {
     public static void sendPacketAll(PacketContainer packet) {
         for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
             sendPacket(cp, packet);
-        }
-    }
-
-    /**
-     * Sends a packet to all online players except for dbp
-     *
-     * @param cp Core Player
-     * @param packet Packet Container
-     */
-    public static void sendPacketAllExcept(CorePlayer cp, PacketContainer packet) {
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
-            if (!cp.equals(cp2)) {
-                sendPacket(cp2, packet);
-            }
-        }
-    }
-
-    /**
-     * Sends a packet to all online players except for dbplayers
-     *
-     * @param players Core Player List
-     * @param packet Packet Container
-     */
-    public static void sendPacketAllExcept(List<CorePlayer> players, PacketContainer packet) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
-            if (!players.contains(cp)) {
-                sendPacket(cp, packet);
-            }
         }
     }
 
@@ -358,15 +325,6 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public void addQueue(PlayerQueue queue) {
         queueManager.addQueue(queue);
-    }
-
-    /**
-     * Remove a queue from the Queue Manager
-     *
-     * @param queue Player Queue
-     */
-    public void removeQueue(PlayerQueue queue) {
-        queueManager.removeQueue(queue);
     }
 
     /**
@@ -423,7 +381,8 @@ public class Core extends CorePlugin<CorePlayer> {
         List<CorePlayer> cpList = new ArrayList<>();
 
         for (CorePlayer cp1 : playerManager.getAll()) {
-            if (loc.getWorld().equals(cp1.getLocation().getWorld())
+            if (loc.getWorld() != null
+                    && loc.getWorld().equals(cp1.getLocation().getWorld())
                     && loc.distance(cp1.getLocation()) >= minDist
                     && loc.distance(cp1.getLocation()) <= maxDist) {
                 boolean inserted = false;
@@ -464,7 +423,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @return Chat Prefix
      */
     public static String getChatPrefix() {
-        return Chat.BRACE + "[" + Chat.PLUGIN_PREFIX + "SpleefLeague" + Chat.BRACE + "] " + Chat.DEFAULT;
+        return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
     }
 
     /**
@@ -544,6 +503,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param reason Reason
      */
     public void tempban(String sender, OfflinePlayer target, long millis, String reason) {
+        if (target == null) return;
         Infraction infraction = new Infraction();
         infraction.setUuid(target.getUniqueId())
                 .setPunisher(sender)
@@ -553,8 +513,11 @@ public class Core extends CorePlugin<CorePlayer> {
         Infraction.create(infraction);
 
         if (target.isOnline()) {
-            ((Player) target).getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-            ((Player) target).kickPlayer("TempBan for " + infraction.getRemainingTimeString() + ": " + reason + "!");
+            Player player = (Player) target;
+            if (player.getLocation().getWorld() != null) {
+                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
+                player.kickPlayer("TempBan for " + infraction.getRemainingTimeString() + ": " + reason + "!");
+            }
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
                 "TempBanned player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
@@ -575,10 +538,11 @@ public class Core extends CorePlugin<CorePlayer> {
                 .setDuration(0)
                 .setReason(reason);
         Infraction.create(infraction);
-
-        if (target.isOnline()) {
-            ((Player) target).getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-            ((Player) target).kickPlayer("Banned: " + reason + "!");
+    
+        Player player = (Player) target;
+        if (player.getLocation().getWorld() != null) {
+            player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
+            player.kickPlayer("Banned: " + reason + "!");
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Banned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
@@ -619,8 +583,11 @@ public class Core extends CorePlugin<CorePlayer> {
         Infraction.create(infraction);
         
         if (target.isOnline()) {
-            ((Player) target).getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-            ((Player) target).kickPlayer("Kicked: " + reason + "!");
+            Player player = (Player) target;
+            if (player.getLocation().getWorld() != null) {
+                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
+                player.kickPlayer("Kicked: " + reason + "!");
+            }
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Kicked player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
@@ -678,27 +645,18 @@ public class Core extends CorePlugin<CorePlayer> {
     }
 
     /**
-     * Send an invalid command format message to player
-     *
-     * @param cp Core Player
-     * @param msg Message
-     */
-    public void sendMessageInvalid(CorePlayer cp, String msg) {
-        Chat.sendMessageToPlayerInvalid(cp, getChatPrefix() + msg);
-    }
-
-    /**
-     * Send player to a ChatChannel
+     * Doesn't use default chat prefix
+     * <br>Send message to a ChatChannel
      *
      * @param cc Chat Channel
      * @param msg Message
      */
     public void sendMessage(ChatChannel cc, String msg) {
-        Chat.sendMessage(cc, getChatPrefix() + msg);
+        Chat.sendMessage(cc, msg);
     }
 
     /**
-     * Send player to a ChatGroup
+     * Send message to a ChatGroup
      *
      * @param cg Chat Group
      * @param msg Message

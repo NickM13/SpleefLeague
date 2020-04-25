@@ -140,7 +140,7 @@ public class GameWorld extends FakeWorld {
                     fwp.getPlayer().playSound(new Location(getWorld(), pos.getX(), pos.getY(), pos.getZ()), fakeBlocks.get(pos).getBreakSound(), 1, 1);
                 }
             }
-            breakBlock(pos);
+            breakBlock(pos, cp);
         } else {
             updateBlock(pos);
         }
@@ -151,10 +151,12 @@ public class GameWorld extends FakeWorld {
      * On player item use
      *
      * @param cp Core Player
+     * @param blockPosition Click Block
+     * @param blockRelative Placed Block
      * @return Cancel Event
      */
     @Override
-    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition) {
+    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition, BlockPosition blockRelative) {
         return true;
     }
 
@@ -168,7 +170,7 @@ public class GameWorld extends FakeWorld {
                 if (fakeBlocks.containsKey(rr.blockPos)) {
                     FakeBlock fb = fakeBlocks.get(rr.blockPos);
                     if (!fb.getBlockData().getMaterial().equals(Material.AIR)) {
-                        breakBlock(rr.blockPos, projectile.getProjectile().power);
+                        breakBlocks(rr.blockPos, projectile.getProjectile().power);
                         projectile.bounce();
                         if (!projectile.hasBounces()) {
                             projectile.getEntity().remove();
@@ -291,7 +293,7 @@ public class GameWorld extends FakeWorld {
 
     public boolean chipBlock(BlockPosition pos, int amount) {
         FakeBlock fb = fakeBlocks.get(pos);
-        breakBlock(pos);
+        breakBlock(pos, null);
         /*
         if (fakeBlocks.containsKey(pos)
                 && (fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.SNOW)

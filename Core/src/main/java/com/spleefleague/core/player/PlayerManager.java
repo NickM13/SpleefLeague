@@ -221,7 +221,9 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     private void save(P player) {
         try {
-            playerCol.deleteMany(new Document("uuid", player.getUniqueId().toString()));
+            if (playerCol.find(new Document("uuid", player.getUniqueId().toString())).first() != null) {
+                playerCol.deleteMany(new Document("uuid", player.getUniqueId().toString()));
+            }
             playerCol.insertOne(player.save(), new InsertOneOptions().bypassDocumentValidation(true));
         } catch (NoClassDefFoundError e) {
             System.out.println("Jar files updated, unable to save player " + player.getName());

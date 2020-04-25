@@ -6,16 +6,13 @@
 
 package com.spleefleague.core.plugin;
 
-import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
@@ -27,12 +24,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import com.spleefleague.core.world.build.BuildWorld;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -56,17 +48,17 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     // Map of all players in the database and their UUIDs (loaded as they connect)
     protected PlayerManager<P> playerManager;
     
-    protected Map<ArenaMode, BattleManager<?>> battleManagers = new HashMap<>();
+    protected Map<ArenaMode, BattleManager> battleManagers = new HashMap<>();
     
     protected boolean running = false;
 
     /**
-     * Initialize plugin and online players (for /reloads)
+     * Initialize plugin (and online players for /reload)
      */
     @Override
     public final void onEnable() {
         init();
-        playerManager.initOnline();
+        if (playerManager != null) playerManager.initOnline();
         running = true;
         plugins.add(this);
     }
@@ -77,7 +69,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * that should be in the server's folder
      */
     public static void initMongo() {
-        System.out.println("Initializing Mongo");
         try {
             Logger mongoLogger = Logger.getLogger("org.mongodb.driver.cluster");
             mongoLogger.setLevel(Level.SEVERE);
@@ -85,6 +76,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             Properties mongoProps = new Properties();
             String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
             FileInputStream file = new FileInputStream(mongoPath);
+            
             mongoProps.load(file);
             file.close();
             
@@ -97,7 +89,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             MongoClientURI uri = new MongoClientURI(mongoPrefix + credentials + host + defaultauthdb + options);
             mongoClient = new MongoClient(uri);
         } catch (IOException e) {
-            System.out.println("Catching!");
             mongoClient = new MongoClient(new MongoClientURI("mongodb://localhost:27017/"));
             Core.getInstance().getLogger().log(Level.WARNING, "mongo.cfg not found, using localhost");
         }
@@ -108,25 +99,51 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     @Override
     public final void onDisable() {
-        close();
-        for (BattleManager<?> bm : battleManagers.values()) {
+        for (BattleManager bm : battleManagers.values()) {
             bm.close();
         }
         battleManagers.clear();
         plugins.remove(this);
+        close();
     }
     protected abstract void close();
     
+    /**
+     * Add a battle manager to the registry
+     *
+     * @param mode Arena Mode
+     */
     public final void addBattleManager(ArenaMode mode) {
         battleManagers.put(mode, BattleManager.createManager(mode));
     }
-    public final BattleManager<?> getBattleManager(ArenaMode mode) {
+    
+    /**
+     * Get the battle manager for an arena mode from the registry
+     *
+     * @param mode Arena Mode
+     * @return Battle Manager
+     */
+    public final BattleManager getBattleManager(ArenaMode mode) {
         return battleManagers.get(mode);
     }
-
+    
+    /**
+     * Queue a player for a battle
+     *
+     * @param mode Arena Mode
+     * @param cp Core Player
+     */
     public final void queuePlayer(ArenaMode mode, CorePlayer cp) {
         battleManagers.get(mode).queuePlayer(cp);
     }
+    
+    /**
+     * Queue a player for a specific arena
+     *
+     * @param mode Arena Mode
+     * @param cp Core Player
+     * @param arena Arena
+     */
     public final void queuePlayer(ArenaMode mode, CorePlayer cp, Arena arena) {
         battleManagers.get(mode).queuePlayer(cp, arena);
     }
@@ -206,7 +223,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public static void unspectatePlayer(CorePlayer spectator) {
         if (spectator.getBattleState().equals(BattleState.SPECTATOR)) {
-            Battle<?> battle = spectator.getBattle();
+            Battle battle = spectator.getBattle();
             battle.removeSpectator(spectator);
         }
     }
@@ -233,6 +250,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * through the windows xcopy command (test reasons)
      */
     public static void closeMongo() {
+        if (mongoClient == null) return;
         try {
             mongoClient.close();
         } catch (NoClassDefFoundError e) {

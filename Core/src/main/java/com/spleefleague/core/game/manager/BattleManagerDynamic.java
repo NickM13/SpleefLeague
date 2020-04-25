@@ -7,10 +7,9 @@
 package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.queue.PlayerQueue;
@@ -18,20 +17,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BattleManagerTeam is a BattleManager that manages battles of 
+ * BattleManagerTeam is a BattleManager that manages battles of
+ * any number of players, and once it has begun players can't
+ * enter the battle but if a player leaves it does not stop
  * 
  * @author NickM13
- * @param <B>
  */
-public class BattleManagerMultiDynamic<B extends Battle<? extends Arena>> extends BattleManager<B> {
+public class BattleManagerDynamic extends BattleManager {
     
-    protected static Long DELAY_TIME = 1 * 1000L;
+    protected static Long DELAY_START_TIME = 1000L;
     
     protected PlayerQueue queue;
     
     protected Long delayedStart = null;
     
-    public BattleManagerMultiDynamic(ArenaMode mode) {
+    public BattleManagerDynamic(ArenaMode mode) {
         super(mode);
         
         queue = new PlayerQueue();
@@ -102,7 +102,7 @@ public class BattleManagerMultiDynamic<B extends Battle<? extends Arena>> extend
         } else {
             if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
                 Core.getInstance().sendMessage("A " + this.mode.getDisplayName() + " game will be beginning soon!");
-                delayedStart = System.currentTimeMillis() + DELAY_TIME;
+                delayedStart = System.currentTimeMillis() + DELAY_START_TIME;
             }
         }
     }
@@ -111,7 +111,7 @@ public class BattleManagerMultiDynamic<B extends Battle<? extends Arena>> extend
     public void startMatch(List<CorePlayer> players, String name) {
         Arena arena = Arena.getByName(name, mode);
         if (arena == null) return;
-        Battle<?> sb;
+        Battle battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -127,11 +127,11 @@ public class BattleManagerMultiDynamic<B extends Battle<? extends Arena>> extend
                 for (CorePlayer cp : players) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
-                sb = battleClass
+                battle = battleClass
                         .getDeclaredConstructor(List.class, mode.getArenaClass())
                         .newInstance(players, arena);
-                sb.startBattle();
-                battles.add(sb);
+                battle.startBattle();
+                battles.add(battle);
             }
         } catch (Exception e) {
             System.out.println("A battle failed to begin on arena " + arena.getDisplayName());

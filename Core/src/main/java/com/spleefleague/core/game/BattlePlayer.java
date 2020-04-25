@@ -1,7 +1,6 @@
 package com.spleefleague.core.game;
 
-import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.entity.Player;
 
@@ -14,11 +13,11 @@ import org.bukkit.entity.Player;
  */
 public abstract class BattlePlayer {
 
-    private CorePlayer cp;
-    private Battle<?> battle;
+    private final CorePlayer cp;
+    private final Battle battle;
     private boolean fallen;
 
-    public BattlePlayer(CorePlayer cp, Battle<?> battle) {
+    public BattlePlayer(CorePlayer cp, Battle battle) {
         this.cp = cp;
         this.battle = battle;
         init();
@@ -47,7 +46,7 @@ public abstract class BattlePlayer {
     /**
      * @return Battle
      */
-    public Battle<?> getBattle() {
+    public Battle getBattle() {
         return battle;
     }
 

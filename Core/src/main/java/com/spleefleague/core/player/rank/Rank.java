@@ -12,10 +12,8 @@ import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.database.variable.DBEntity;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -103,6 +101,18 @@ public class Rank extends DBEntity {
     public boolean hasPermission(Rank rank) {
         return (this == rank ||
                 this.getLadder() >= rank.getLadder());
+    }
+    public boolean hasPermission(Rank rank, List<Rank> additional) {
+        if (hasPermission(rank)) {
+            return true;
+        } else {
+            for (Rank r : additional) {
+                if (this == r) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     public boolean hasAdditionalRank(String ranks) {
         String[] rankArray = ranks.split(",");

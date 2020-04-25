@@ -17,6 +17,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
@@ -68,9 +69,14 @@ public class MenuListener implements Listener {
         if (e.getClickedInventory() == null) return;
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getWhoClicked().getName());
         
-        if (cp.getInventoryMenuContainer() != null) {
+        if (cp.getInventoryMenuContainer() != null
+                && e.getClickedInventory().getType() != InventoryType.PLAYER) {
             cp.getInventoryMenuContainer().onInventoryInteract(e, cp);
         } else if (e.getCurrentItem() != null && !cp.canBuild()) {
+            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(e.getCurrentItem());
+            if (menu != null) {
+                menu.callAction(cp);
+            }
             e.setCancelled(true);
         }
     }

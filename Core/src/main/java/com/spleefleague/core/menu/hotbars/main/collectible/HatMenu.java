@@ -4,10 +4,16 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.menu.hotbars.main;
+package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.player.CorePlayerCollectibles;
+import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.hat.Hat;
+import com.spleefleague.core.player.collectible.pet.Pet;
+import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.Material;
 
 /**
@@ -21,8 +27,9 @@ public class HatMenu {
         menuItem = InventoryMenuAPI.createItem()
                 .setName("Hats")
                 .setDisplayItem(Material.LEATHER_HELMET)
-                .setDescription("Pick a hat, any hat!")
-                .setAction(cp -> { cp.sendMessage("Imagine this opened a menu with lots of pretty hats!"); });
+                .setDescription("Pick a hat, any hat!");
+    
+        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedContainer(), true);
     }
     
     /**

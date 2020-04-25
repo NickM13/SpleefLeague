@@ -48,7 +48,6 @@ public class SpleggGun extends Holdable {
                 .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getName())
                 .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDescription())
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
-                .setAction(cp -> cp.sendMessage("hehe"))
                 .setAvailability(cp -> {
                     return cp.isInBattle()
                             && cp.getBattleState() == BattleState.BATTLER
@@ -90,7 +89,7 @@ public class SpleggGun extends Holdable {
                     .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")
                     .setAction(cp -> {
                         if (spleggGun.isAvailable(cp))
-                            cp.getCollectibles().activate(spleggGun);
+                            cp.getCollectibles().setActiveItem(spleggGun);
                     })
                     .setCloseOnAction(false);
                 menuItem.getLinkedContainer().addMenuItem(smi);

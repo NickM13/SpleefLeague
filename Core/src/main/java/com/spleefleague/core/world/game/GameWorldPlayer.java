@@ -1,8 +1,6 @@
 package com.spleefleague.core.world.game;
 
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.FakeWorldPlayer;
 
 /**

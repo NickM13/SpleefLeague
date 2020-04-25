@@ -49,6 +49,7 @@ public class Arena extends DBEntity {
      * ARENAS contains every loaded arena
      */
     private static final Map<ArenaMode, Map<String, Arena>> ARENAS = new HashMap<>();
+    private static final Set<Arena> GLOBAL_ARENAS = new HashSet<>();
     
     @DBField
     protected String creator;
@@ -78,7 +79,11 @@ public class Arena extends DBEntity {
     protected Location spectatorSpawn = null;
     
     // Border is used for boundaries of match
-    protected List<Dimension> border = new ArrayList<>();
+    protected List<Dimension> borders = new ArrayList<>();
+    private static final int SPECTATOR_EXPAND = 20;
+    protected List<Dimension> spectatorBorders = new ArrayList<>();
+    private static final int GLOBAL_SPECTATOR_EXPAND = 40;
+    protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
     
     // Fake worlds are for spleef and superjump, real worlds allow for
     // projectiles to interact with blocks
@@ -89,14 +94,18 @@ public class Arena extends DBEntity {
     private void loadBorder(Document doc) {
         Dimension dim = new Dimension();
         dim.load(doc);
-        border.add(dim);
+        borders.add(dim);
+        spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
+        globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
     }
     @DBLoad(fieldName ="border")
     private void loadBorders(List<Document> docs) {
         docs.forEach(doc -> {
             Dimension dim = new Dimension();
             dim.load(doc);
-            border.add(dim);
+            borders.add(dim);
+            spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
+            globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
         });
     }
 
@@ -151,14 +160,32 @@ public class Arena extends DBEntity {
     public int getTeamSize() {
         return teamSize;
     }
-
+    
     /**
      * Get the borders of this arena
      *
      * @return Dimension List
      */
     public List<Dimension> getBorders() {
-        return border;
+        return borders;
+    }
+    
+    /**
+     * Get the borders for spectators of this arena
+     *
+     * @return Dimension List
+     */
+    public List<Dimension> getSpectatorBorders() {
+        return spectatorBorders;
+    }
+    
+    /**
+     * Get the area that players will begin auto spectating nearby
+     *
+     * @return Dimension List
+     */
+    public List<Dimension> getGlobalSpectatorBorders() {
+        return globalSpectatorBorders;
     }
 
     @DBLoad(fieldName ="world")
@@ -358,6 +385,10 @@ public class Arena extends DBEntity {
         return spectatorSpawn;
     }
 
+    public static Set<Arena> getGlobalArenas() {
+        return GLOBAL_ARENAS;
+    }
+    
     /**
      * Get all arenas for a specific mode that are available
      *
@@ -444,26 +475,6 @@ public class Arena extends DBEntity {
     }
 
     /**
-     * Load arena into ARENAS list from document
-     *
-     * @param arenaDoc Document
-     * @param mode Arena Mode
-     * @return Success
-     */
-    protected static boolean loadArena(Document arenaDoc, ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        try {
-            Arena arena = mode.getArenaClass().getDeclaredConstructor().newInstance();
-            arena.load(arenaDoc);
-            ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
-            return true;
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
-            Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }
-
-    /**
      * Load arenas into ARENAS list from an iterator of docs
      *
      * @param itArena Document Iterator
@@ -481,35 +492,10 @@ public class Arena extends DBEntity {
                 arena.load(adoc);
                 arena.getMode().addRequiredTeamSize(arena.getTeamSize());
                 ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
+                GLOBAL_ARENAS.add(arena);
                 successCounter++;
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
                 Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return successCounter;
-    }
-
-    /**
-     * Load arenas into ARENAS list from a list of docs
-     *
-     * @param arenaDocs List of Documents
-     * @param mode Arena Mode
-     * @return Num of successes
-     */
-    protected static int loadArenas(List<Document> arenaDocs, ArenaMode mode) {
-        if (mode == null || mode.getArenaClass() == null) return 0;
-        int successCounter = 0;
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        for (Document adoc : arenaDocs) {
-            try {
-                Arena arena = mode.getArenaClass().getDeclaredConstructor().newInstance();
-                arena.load(adoc);
-                arena.getMode().addRequiredTeamSize(arena.getTeamSize());
-                ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
-                successCounter++;
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
-                Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
             }
         }
         return successCounter;

@@ -6,19 +6,13 @@
 
 package com.spleefleague.core.database.variable;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.PregameState;
-import com.spleefleague.core.plugin.CorePlugin;
+
 import java.util.UUID;
-import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * Database Player
@@ -107,7 +101,7 @@ public abstract class DBPlayer extends DBEntity {
      * @return Online state
      */
     public final boolean isOnline() {
-        return online;
+        return online && getPlayer() != null;
     }
 
     /**
@@ -116,7 +110,7 @@ public abstract class DBPlayer extends DBEntity {
      * @deprecated Use inventory menus instead
      */
     @Deprecated
-    public void printStats(DBPlayer dbp) {}
+    public abstract void printStats(DBPlayer dbp);
 
     /**
      * Get the elo of a player in a certain mode

@@ -6,10 +6,12 @@
 
 package com.spleefleague.spleef.game;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.spleef.Spleef;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.bukkit.Material;
 
 /**
  * @author NickM13
@@ -34,6 +37,19 @@ public class SpleefField extends DBEntity {
             Dimension dim = new Dimension();
             dim.load(d);
             areas.add(dim);
+        }
+        fillGlobalWorld();
+    }
+    
+    public void fillGlobalWorld() {
+        for (Dimension area : areas) {
+            for (int x = (int) area.getLow().x; x <= area.getHigh().x; x++) {
+                for (int y = (int) area.getLow().y; y <= area.getHigh().y; y++) {
+                    for (int z = (int) area.getLow().z; z <= area.getHigh().z; z++) {
+                        FakeWorld.getGlobalFakeWorld().setBlock(new BlockPosition(x, y, z), Material.SNOW_BLOCK.createBlockData());
+                    }
+                }
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
 import org.bukkit.Material;
 
@@ -19,9 +20,12 @@ public class CollectiblesMenu {
                 .setDescription("Collection of Collectibles!")
                 .setDisplayItem(Material.CHEST)
                 .createLinkedContainer("Collectibles Menu");
+    
+        menuItem.getLinkedContainer()
+                .addMenuItem(PetMenu.getItem(), 5, 2);
         
         menuItem.getLinkedContainer()
-                .addMenuItem(PetMenu.getItem(), 4, 2);
+                .addMenuItem(HatMenu.getItem(), 3, 2);
     }
     
     /**

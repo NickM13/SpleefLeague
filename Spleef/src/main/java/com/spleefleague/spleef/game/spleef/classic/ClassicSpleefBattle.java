@@ -11,9 +11,10 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.game.BattlePlayer;
 import com.spleefleague.core.game.BattleUtils;
+import com.spleefleague.core.game.battle.BattleStatic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
-import com.spleefleague.spleef.game.SpleefBattleStatic;
+import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.spleef.SpleefBattlePlayer;
 
 import java.util.List;
@@ -21,11 +22,11 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public class ClassicSpleefBattle extends SpleefBattleStatic {
+public class ClassicSpleefBattle extends BattleStatic {
     
     public ClassicSpleefBattle(List<CorePlayer> players,
                                ClassicSpleefArena arena) {
-        super(players, arena, ClassicSpleefBattlePlayer.class);
+        super(Spleef.getInstance(), players, arena, ClassicSpleefBattlePlayer.class);
     }
 
     @Override
@@ -39,7 +40,6 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
         Core.getInstance().sendMessage("Wait, that shouldn't be possible...");
     }
 
-    @Override
     protected void applyEloChange(BattlePlayer winner) {
         int avgRating = 0;
         int eloChange = 0;
@@ -73,10 +73,12 @@ public class ClassicSpleefBattle extends SpleefBattleStatic {
         chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString() + "     " + Chat.SCORE + "Score");
         //chatGroup.setTeamDisplayName("PlayTo", "PlayTo: " + playToPoints);
         
+        /*
         for (int i = 0; i < sortedBattlers.size() && i < seenScores; i++) {
             SpleefBattlePlayer sbp = (SpleefBattlePlayer) sortedBattlers.get(i);
             chatGroup.setTeamDisplayName("PLACE" + i, Chat.PLAYER_NAME + sbp.getCorePlayer().getName() + ": " + sbp.getPoints());
         }
+         */
     }
 
     @Override

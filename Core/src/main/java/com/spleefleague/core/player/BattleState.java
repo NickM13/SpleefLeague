@@ -14,6 +14,7 @@ public enum BattleState {
     NONE,
     BATTLER,
     SPECTATOR,
-    REFEREE
+    REFEREE,
+    SPECTATOR_GLOBAL
     
 }

@@ -105,9 +105,8 @@ public class Shovel extends Holdable {
                         .setDisplayItem(cp -> shovel.isUnlocked(cp) ? shovel.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
                         .setDescription(cp -> shovel.isUnlocked(cp) ? shovel.getDescription() : "")
                         .setAction(cp -> {
-                            cp.getPlayer().getInventory().addItem(shovel.getDisplayItem());
                             if (shovel.isUnlocked(cp))
-                                cp.getCollectibles().activate(shovel);
+                                cp.getCollectibles().setActiveItem(shovel);
                         })
                         .setCloseOnAction(false);
                 menuItem.getLinkedContainer().addMenuItem(smi);

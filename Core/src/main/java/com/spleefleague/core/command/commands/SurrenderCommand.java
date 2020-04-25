@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.error.CoreError;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
@@ -24,7 +25,10 @@ public class SurrenderCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void surrender(CorePlayer sender) {
-        if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
+        if (!sender.isInBattle() || sender.getBattleState() != BattleState.BATTLER) {
+            error(sender, CoreError.NOT_INGAME);
+            return;
+        }
         sender.getBattle().surrender(sender);
     }
     

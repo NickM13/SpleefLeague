@@ -5,7 +5,6 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.hotbars.main.*;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.collectible.Collectible;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -20,15 +19,14 @@ public class SLMainHotbar {
     
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(0, "mainmenu")
-                .setName(ChatColor.RESET + "" + Chat.PLUGIN_PREFIX + "" + ChatColor.BOLD + "SpleefLeague Menu")
+                .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "SpleefLeague Menu")
                 .setDisplayItem(new ItemStack(Material.COMPASS))
-                .setAction(cp -> { cp.setInventoryMenuItem(getItemHotbar()); })
                 .setAvailability(CorePlayer::isInGlobal)
                 .createLinkedContainer("SpleefLeague Menu");
     
-        // Hats
+        // Collectibles
         menuItem.getLinkedContainer()
-                .addMenuItem(HatMenu.getItem(), 0, 2);
+                .addMenuItem(CollectiblesMenu.getItem(), 0, 2);
     
         // Profile
         menuItem.getLinkedContainer()
@@ -37,10 +35,6 @@ public class SLMainHotbar {
         // Held Item Selection
         menuItem.getLinkedContainer()
                 .addMenuItem(HeldItemMenu.getItem(), 0, 3);
-    
-        // Held Item Selection
-        menuItem.getLinkedContainer()
-                .addMenuItem(CollectiblesMenu.getItem(), 1, 3);
     
         // Leaderboards
         menuItem.getLinkedContainer()

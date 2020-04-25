@@ -7,8 +7,6 @@
 package com.spleefleague.core.player;
 
 import com.google.common.collect.Sets;
-import com.spleefleague.core.Core;
-import com.spleefleague.core.database.variable.DBPlayer;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.bukkit.GameMode;

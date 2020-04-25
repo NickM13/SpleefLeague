@@ -43,10 +43,11 @@ import org.bukkit.craftbukkit.v1_15_R1.command.CraftBlockCommandSender;
  */
 public class CommandTemplate extends Command {
     
-    protected Class<? extends CommandTemplate> commandClass;
+    private final Class<? extends CommandTemplate> commandClass;
     private final Map<String, Function<CorePlayer, Set<String>>> optionsMap;
     
-    protected static Set<String> allPermissions = new HashSet<>();
+    private final static Set<String> allPermissions = new HashSet<>();
+    private String container;
     
     public static Set<String> getAllPermissions() {
         return allPermissions;
@@ -63,7 +64,16 @@ public class CommandTemplate extends Command {
         for (Rank ar : additionalRanks) {
             ar.addExclusivePermission(perm);
         }
+        container = "sl";
         Core.getInstance().addCommand(this);
+    }
+    
+    protected void setContainer(String container) {
+        this.container = container;
+    }
+    
+    public String getContainer() {
+        return container;
     }
     
     protected void setOptions(String name, Function<CorePlayer, Set<String>> options) {
@@ -98,16 +108,17 @@ public class CommandTemplate extends Command {
         return false;
     }
     
-    private class Boundary {
+    private static class Boundary {
         double min = 0, max = -1;
     }
+    
     private Boundary getBounds(String str) {
         Boundary b = new Boundary();
         
         if (str.contains("..")) {
-            if (str.substring(0, 2).equals("..")) {
+            if (str.startsWith("..")) {
                 b.max = Double.parseDouble(str.substring(2));
-            } else if (str.substring(str.length() - 2, str.length()).equals("..")) {
+            } else if (str.startsWith("..", str.length() - 2)) {
                 b.min = Double.parseDouble(str.substring(0, str.length() - 2));
             } else {
                 String[] vs = str.split("[.][.]");
@@ -490,7 +501,7 @@ public class CommandTemplate extends Command {
                                         invalidArg = true;
                                         break;
                                     }
-                                    obj = (Player) Bukkit.getOnlinePlayers().toArray()[random.nextInt(Bukkit.getOnlinePlayers().size())];
+                                    obj = Bukkit.getOnlinePlayers().toArray()[random.nextInt(Bukkit.getOnlinePlayers().size())];
                                     params.add(Core.getInstance().getPlayers().get((Player) obj));
                                     break;
                                 case 'a': // All online players
@@ -524,7 +535,7 @@ public class CommandTemplate extends Command {
                                         params.add(cp);
                                     } else if (cs instanceof BlockCommandSender &&
                                             paramClass.equals(BlockCommandSender.class)) {
-                                        params.add((BlockCommandSender)cs);
+                                        params.add(cs);
                                     } else if (paramClass.equals(CorePlayer.class)) {
                                         params.add(cs);
                                     } else {
@@ -580,23 +591,35 @@ public class CommandTemplate extends Command {
                     // Last resort, just pass string
                     if (paramClass.equals(String.class)) {
                         if (param.isAnnotationPresent(LiteralArg.class)) {
-                            if (!((LiteralArg) param.getAnnotation(LiteralArg.class)).value().equalsIgnoreCase(arg)) {
+                            if (!param.getAnnotation(LiteralArg.class).value().equalsIgnoreCase(arg)) {
                                 invalidArg = true;
                                 continue;
                             }
                         } else if (param.isAnnotationPresent(OptionArg.class)) {
-                            if (((OptionArg) param.getAnnotation(OptionArg.class)).force()) {
+                            if (param.getAnnotation(OptionArg.class).force()) {
                                 invalidArg = true;
-                                Set<String> options2 = this.getOptions(((OptionArg) param.getAnnotation(OptionArg.class)).listName(), cp);
+                                String possibleMatch = null;
+                                Set<String> options2 = this.getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
                                 for (String o : options2) {
                                     if (o.equalsIgnoreCase(arg)
                                             || o.contains(":") && o.split(":")[1].equalsIgnoreCase(arg)) {
                                         arg = o;
                                         invalidArg = false;
                                         break;
+                                    } else if (possibleMatch == null
+                                            && (o.toLowerCase().startsWith(arg.toLowerCase())
+                                            || o.contains(":") && o.split(":")[1].toLowerCase().startsWith(arg.toLowerCase()))) {
+                                        possibleMatch = o;
                                     }
                                 }
-                                if (invalidArg) continue;
+                                if (invalidArg) {
+                                    if (possibleMatch != null) {
+                                        arg = possibleMatch;
+                                        invalidArg = false;
+                                    } else {
+                                        continue;
+                                    }
+                                }
                             }
                         }
                         params.add(arg);
@@ -662,7 +685,7 @@ public class CommandTemplate extends Command {
         
         for (Method method : commandClass.getDeclaredMethods()) {
             if (!method.isAnnotationPresent(CommandAnnotation.class) ||
-                    ((CommandAnnotation) method.getAnnotation(CommandAnnotation.class)).hidden()) continue;
+                    method.getAnnotation(CommandAnnotation.class).hidden()) continue;
             
             int paramSize = 0;
             
@@ -770,21 +793,31 @@ public class CommandTemplate extends Command {
                 // Last resort, just pass string
                 if (paramClass.equals(String.class)) {
                     if (param.isAnnotationPresent(LiteralArg.class)) {
-                        if (!((LiteralArg) param.getAnnotation(LiteralArg.class)).value().equalsIgnoreCase(arg)) {
+                        if (!param.getAnnotation(LiteralArg.class).value().equalsIgnoreCase(arg)) {
                             invalidArg = true;
                             continue;
                         }
                     } else if (param.isAnnotationPresent(OptionArg.class)) {
-                        if (((OptionArg) param.getAnnotation(OptionArg.class)).force()) {
+                        if (param.getAnnotation(OptionArg.class).force()) {
                             invalidArg = true;
-                            Set<String> optionSet = getOptions(((OptionArg) param.getAnnotation(OptionArg.class)).listName(), cp);
+                            Set<String> optionSet = getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
+                            String possibleMatch = null;
                             for (String o : optionSet) {
                                 if (/*o.toUpperCase().startsWith(arg.toUpperCase()) || */o.equalsIgnoreCase(arg)) {
                                     invalidArg = false;
                                     break;
+                                } else if (possibleMatch == null
+                                        && (o.toLowerCase().startsWith(arg.toLowerCase())
+                                        || o.contains(":") && o.split(":")[1].toLowerCase().startsWith(arg.toLowerCase()))) {
+                                    possibleMatch = o;
                                 }
                             }
-                            if (invalidArg) continue;
+                            if (invalidArg) {
+                                if (possibleMatch != null) {
+                                    invalidArg = false;
+                                }
+                                continue;
+                            }
                         }
                     }
                     ai++;
@@ -797,21 +830,21 @@ public class CommandTemplate extends Command {
                 Parameter currParam = method.getParameters()[args.length];
                 if (currParam.isAnnotationPresent(HelperArg.class) &&
                         lastArg.isEmpty()) {
-                    options.add(((HelperArg) currParam.getAnnotation(HelperArg.class)).value());
+                    options.add(currParam.getAnnotation(HelperArg.class).value());
                 }
                 if (currParam.getType().equals(String.class)) {
                     if (currParam.isAnnotationPresent(LiteralArg.class)) {
-                        String literal = ((LiteralArg) currParam.getAnnotation(LiteralArg.class)).value();
+                        String literal = currParam.getAnnotation(LiteralArg.class).value();
                         addOption(options, literal, lastArg);
                     } else if (currParam.isAnnotationPresent(OptionArg.class)) {
-                        for (String option : getOptions(((OptionArg) currParam.getAnnotation(OptionArg.class)).listName(), cp)) {
+                        for (String option : getOptions(currParam.getAnnotation(OptionArg.class).listName(), cp)) {
                             addOption(options, option, lastArg);
                         }
                     }
                 } else if (currParam.getType().equals(CorePlayer.class) ||
                         currParam.getType().equals(Player.class) ||
                         currParam.getType().equals(OfflinePlayer.class)) {
-                    CorePlayerArg cpa = (CorePlayerArg) currParam.getType().getAnnotation(CorePlayerArg.class);
+                    CorePlayerArg cpa = currParam.getType().getAnnotation(CorePlayerArg.class);
                     for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
                         if (cp != null && cpa != null
                                 && !cpa.allowSelf()

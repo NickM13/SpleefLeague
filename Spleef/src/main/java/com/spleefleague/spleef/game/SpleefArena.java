@@ -72,13 +72,14 @@ public class SpleefArena extends Arena {
                 new Document("$unwind", new Document("path", "$spleefMode")),
                 new Document("$group", new Document("_id", "$spleefMode").append("arenas", new Document("$addToSet", "$$ROOT")))
         )).iterator();
-        while(arenaTypes.hasNext()) {
+        while (arenaTypes.hasNext()) {
             Document arenas = arenaTypes.next();
             List<Document> arenaInstances = arenas.get("arenas", List.class);
+            Iterator<Document> arenaIt = arenaInstances.iterator();
             try {
                 ArenaMode mode = SpleefMode.valueOf(arenas.get("_id", String.class)).getArenaMode();
                 int amount = 0;
-                amount = loadArenas(arenaInstances, mode);
+                amount = loadArenas(arenaIt, mode);
                 if (amount > 0) System.out.println("Loaded " + amount + " " + mode.getDisplayName() + " arenas.");
             } catch(IllegalArgumentException e) {
                 System.err.println(arenas.get("_id") + " is not a valid spleef mode.");

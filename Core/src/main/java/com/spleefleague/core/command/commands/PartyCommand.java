@@ -84,7 +84,7 @@ public class PartyCommand extends CommandTemplate {
         Party party = sender.getParty();
         if (party.isOwner(sender)) {
             if (receiver.getParty() == null) {
-                success(sender, "You send a party invite to " + receiver.getDisplayName());
+                success(sender, "You sent a party invite to " + receiver.getDisplayName());
                 Chat.sendRequest(sender.getDisplayName() + " has invited you to a party!", receiver, sender, (r, s) -> {
                     s.getParty().add(r);
                 });

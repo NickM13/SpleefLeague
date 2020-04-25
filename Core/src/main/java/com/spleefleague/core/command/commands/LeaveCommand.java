@@ -28,9 +28,10 @@ public class LeaveCommand extends CommandTemplate {
     public void leave(CorePlayer sender) {
         if (sender.isInBattle()) {
             sender.getBattle().leavePlayer(sender);
-        } else {
-            Core.getInstance().unqueuePlayerGlobally(sender);
+        } else if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");
+        } else {
+            error(sender, "You aren't in any queues!");
         }
     }
     

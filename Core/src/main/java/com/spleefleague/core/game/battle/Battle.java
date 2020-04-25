@@ -4,11 +4,15 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.game;
+package com.spleefleague.core.game.battle;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatGroup;
+import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -19,10 +23,14 @@ import com.spleefleague.core.world.game.GameWorld;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Level;
 
+import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 /**
@@ -30,9 +38,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
  * is played in and a set of players (battlers, spectators)
  *
  * @author NickM13
- * @param <A>
  */
-public abstract class Battle<A extends Arena> {
+public abstract class Battle {
 
     protected CorePlugin<?> plugin;
     
@@ -42,13 +49,14 @@ public abstract class Battle<A extends Arena> {
     protected ChatGroup chatGroup;
     
     // Arena to play battle on
-    protected final A arena;
+    protected final Arena arena;
 
     private final Class<? extends BattlePlayer> battlePlayerClass;
     
     // Some values of Arena that can be modified without changing the arena
     protected List<Dimension> borders = new ArrayList<>();
     protected List<Dimension> spectatorBorders = new ArrayList<>();
+    protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
     protected List<Location> spawns = new ArrayList<>();
 
     // Collections for players
@@ -67,15 +75,13 @@ public abstract class Battle<A extends Arena> {
     protected static final int COUNTDOWN = 3;
     protected int countdown = 0;
 
-    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, A arena, Class<? extends BattlePlayer> battlePlayerClass) {
+    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<? extends BattlePlayer> battlePlayerClass) {
         this.plugin = plugin;
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
-        this.arena.incrementMatches();
-        for (Dimension border : arena.getBorders()) {
-            this.borders.add(border);
-            this.spectatorBorders.add(border.expand(20));
-        }
+        this.borders.addAll(arena.getBorders());
+        this.spectatorBorders.addAll(arena.getSpectatorBorders());
+        this.globalSpectatorBorders.addAll(arena.getGlobalSpectatorBorders());
         spawns.addAll(arena.getSpawns());
         this.gameWorld = arena.createGameWorld();
         this.chatGroup = new ChatGroup();
@@ -86,6 +92,8 @@ public abstract class Battle<A extends Arena> {
      * Start a battle (round 0)
      */
     public final void startBattle() {
+        arena.incrementMatches();
+        arena.getMode().addBattle(this);
         startedTime = System.currentTimeMillis();
         ongoing = true;
         setupBaseSettings();
@@ -135,6 +143,10 @@ public abstract class Battle<A extends Arena> {
         bp.getCorePlayer().refreshHotbar();
         bp.getCorePlayer().setGameMode(gameMode);
         bp.getPlayer().setWalkSpeed(0.2f);
+        EntityPlayer entityPlayer = ((CraftPlayer) bp.getPlayer()).getHandle();
+        NBTTagCompound tag = new NBTTagCompound();
+        entityPlayer.c(tag);
+        
         bp.respawn();
     }
 
@@ -170,7 +182,7 @@ public abstract class Battle<A extends Arena> {
                 spawnBattler(bp);
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            Core.getInstance().getLogger().log(Level.WARNING, "Failed to create new instance of a battle player " + battlePlayerClass);
         }
     }
 
@@ -220,10 +232,27 @@ public abstract class Battle<A extends Arena> {
      * Check if a player is within the spectators bounding boxes of the arena
      *
      * @param cp Core Player
-     * @return In Spectator Bounds
+     * @return In Spectator Border
      */
     private boolean isInSpectatorBorder(CorePlayer cp) {
         for (Dimension border : spectatorBorders) {
+            if (border.isContained(new Point(cp.getPlayer().getLocation()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check if a player is within the global spectator bounding boxes,
+     * used to see whether a player should be removed from a battle or
+     * for public use added to one
+     *
+     * @param cp Core Player
+     * @return In Border
+     */
+    public boolean isInGlobalSpectatorBorder(CorePlayer cp) {
+        for (Dimension border : globalSpectatorBorders) {
             if (border.isContained(new Point(cp.getPlayer().getLocation()))) {
                 return true;
             }
@@ -283,9 +312,12 @@ public abstract class Battle<A extends Arena> {
                     e.setTo(getClosestBattler(cp).getPlayer().getLocation());
                 }
             }
-        } else if (cp.getBattleState() == BattleState.SPECTATOR) {
+        } else if (cp.getBattleState() == BattleState.SPECTATOR || cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
             if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasTpBackSpectators() && (isInBorder(cp)/* || !isInArea(p)*/)) {
                 cp.getPlayer().teleport(arena.getSpectatorSpawn());
+            }
+            if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL && !isInGlobalSpectatorBorder(cp)) {
+                removeSpectator(cp);
             }
         }
     }
@@ -353,7 +385,21 @@ public abstract class Battle<A extends Arena> {
         }
         return false;
     }
-
+    
+    /**
+     * End a round with a determined winner
+     *
+     * @param winner Winner
+     */
+    protected abstract void endRound(BattlePlayer winner);
+    
+    /**
+     * End a battle with a determined winner
+     *
+     * @param winner Winner
+     */
+    protected abstract void endBattle(BattlePlayer winner);
+    
     /**
      * Ends a battle, removes all players, destroys game world
      */
@@ -363,6 +409,7 @@ public abstract class Battle<A extends Arena> {
             removePlayer(cp);
         }
         arena.decrementMatches();
+        arena.getMode().removeBattle(this);
         gameWorld.destroy();
         ongoing = false;
     }
@@ -379,14 +426,14 @@ public abstract class Battle<A extends Arena> {
      *
      * @param cp CorePlayer
      */
-    public void surrender(CorePlayer cp) { }
+    public abstract void surrender(CorePlayer cp);
 
     /**
      * Called when a player requests the game to end (/endgame)
      *
      * @param cp CorePlayer
      */
-    public void requestEndGame(CorePlayer cp) { }
+    public abstract void requestEndGame(CorePlayer cp);
 
     /**
      * Called when a player requests to pause the game with specified
@@ -395,21 +442,21 @@ public abstract class Battle<A extends Arena> {
      * @param cp CorePlayer
      * @param timeout Seconds
      */
-    public void requestPause(CorePlayer cp, int timeout) { }
+    public abstract void requestPause(CorePlayer cp, int timeout);
 
     /**
      * Called when a player requests to pause the game (/pause)
      *
      * @param cp CorePlayer
      */
-    public void requestPause(CorePlayer cp) { }
+    public abstract void requestPause(CorePlayer cp);
 
     /**
      * Called when a player requests to reset the field (/reset)
      *
      * @param cp CorePlayer
      */
-    public void requestReset(CorePlayer cp) { }
+    public abstract void requestReset(CorePlayer cp);
 
     /**
      * Called when a player requests to change the
@@ -417,7 +464,7 @@ public abstract class Battle<A extends Arena> {
      *
      * @param cp CorePlayer
      */
-    public void requestPlayTo(CorePlayer cp) { }
+    public abstract void requestPlayTo(CorePlayer cp);
 
     /**
      * Called when a player requests to change the
@@ -425,7 +472,7 @@ public abstract class Battle<A extends Arena> {
      *
      * @param cp CorePlayer
      */
-    public void requestPlayTo(CorePlayer cp, int playTo) { }
+    public abstract void requestPlayTo(CorePlayer cp, int playTo);
 
     /**
      * Reset all battlers
@@ -456,6 +503,17 @@ public abstract class Battle<A extends Arena> {
             }
         }
     }
+    
+    /**
+     * Adds a global spectator to the battle when they enter
+     * the global spectator boundaries of the arena, which is
+     * a spectator who isn't teleport away at the end of the battle
+     */
+    public void addGlobalSpectator(CorePlayer cp) {
+        if (addPlayer(cp, BattleState.SPECTATOR_GLOBAL)) {
+            spectators.add(cp);
+        }
+    }
 
     /**
      * When the battler teleports there is a bug with
@@ -477,8 +535,17 @@ public abstract class Battle<A extends Arena> {
         if (!spectators.contains(cp)) return;
         if (removePlayer(cp)) {
             spectators.remove(cp);
-            if (cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR))
+            if (cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR)) {
                 cp.getPlayer().setSpectatorTarget(null);
+            }
+        }
+    }
+    
+    public void removeGlobalSpectator(CorePlayer cp) {
+        if (!spectators.contains(cp)) return;
+        if (removePlayer(cp)) {
+            spectators.remove(cp);
+            cp.checkGlobalSpectate();
         }
     }
 
@@ -505,7 +572,10 @@ public abstract class Battle<A extends Arena> {
                     removeSpectator(cp);
                     break;
                 case REFEREE:
-
+                    
+                    break;
+                case SPECTATOR_GLOBAL:
+                    removeGlobalSpectator(cp);
                     break;
                 default: break;
             }
@@ -611,7 +681,7 @@ public abstract class Battle<A extends Arena> {
     /**
      * @return Arena
      */
-    public A getArena() {
+    public Arena getArena() {
         return arena;
     }
 

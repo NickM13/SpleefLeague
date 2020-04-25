@@ -12,6 +12,7 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.bukkit.Material;
@@ -116,16 +117,15 @@ public class InventoryMenuItem {
         if (linkedContainer == null) createLinkedContainer("");
         return linkedContainer;
     }
-    public InventoryMenuContainer setLinkedContainer(InventoryMenuContainer container) {
+    public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {
         linkedContainer = container;
         if (parentContainer != null)
             linkedContainer.setParentContainer(parentContainer);
-        return linkedContainer;
+        return this;
     }
     public InventoryMenuItem createLinkedContainer(String title) {
-        InventoryMenuContainer container = InventoryMenuAPI.createContainer();
-        container.setTitle(title);
-        setLinkedContainer(container);
+        setLinkedContainer(InventoryMenuAPI.createContainer()
+                .setTitle(title));
         return this;
     }
     
@@ -187,7 +187,7 @@ public class InventoryMenuItem {
         return closeOnAction;
     }
     public void callAction(CorePlayer cp) {
-        if (action != null) action.accept(cp);
+        if (action != null && isAvailable(cp)) action.accept(cp);
     }
     
 }

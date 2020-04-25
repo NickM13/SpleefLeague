@@ -16,7 +16,7 @@ import java.util.Set;
 public class FieldBuilder {
 
     private static Map<CorePlayer, FieldBuilder> builderMap = new HashMap<>();
-    private static final Set<Material> buildMaterials = Sets.newHashSet(Material.GRASS_BLOCK);
+    private static final Set<Material> buildMaterials = Sets.newHashSet(Material.SNOW_BLOCK);
 
     public static void createField(CorePlayer cp, String fieldName) {
         Field.createField(fieldName);

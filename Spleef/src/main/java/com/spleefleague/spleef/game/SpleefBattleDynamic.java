@@ -38,7 +38,7 @@ public abstract class SpleefBattleDynamic extends SpleefBattle {
      * ELO change is 20 if players are the same rank
      * exponentially increasing/decreasing between (5, 40)
      *
-     * @param winner
+     * @param winner Battle Player
      */
     @Override
     protected void applyEloChange(BattlePlayer winner) {
