@@ -2,6 +2,7 @@ package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -43,12 +44,18 @@ public class Vendors {
      * Clear the database and save all vendors
      */
     public static void close() {
-        vendorCollection.deleteMany(new Document());
-        List<Document> docs = new ArrayList<>();
-        vendors.values().forEach(v -> docs.add(v.save()));
-        vendorCollection.deleteMany(new Document());
-        if (!docs.isEmpty())
-            vendorCollection.insertMany(docs);
+        try {
+            if (vendorCollection.find().first() != null) {
+                vendorCollection.deleteMany(new Document());
+            }
+            List<Document> docs = new ArrayList<>();
+            vendors.values().forEach(v -> docs.add(v.save()));
+            if (!docs.isEmpty()) {
+                vendorCollection.insertMany(docs);
+            }
+        } catch (IllegalAccessError | NoClassDefFoundError ignored) {
+        
+        }
     }
     
     /**

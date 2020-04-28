@@ -7,21 +7,13 @@
 package com.spleefleague.spleef.player;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.vendor.Vendorables;
-import com.spleefleague.spleef.game.Shovel;
-import com.spleefleague.spleef.game.spleef.power.Power;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.spleefleague.spleef.game.battle.power.Power;
 
-import org.bson.Document;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author NickM13
@@ -32,8 +24,6 @@ public class SpleefPlayer extends DBPlayer {
     
     //@DBField
     protected Integer[] activePowers = new Integer[4];
-    
-    protected Map<ArenaMode, Integer> ratings = new HashMap<>();
     
     public SpleefPlayer() {
         super();
@@ -61,47 +51,6 @@ public class SpleefPlayer extends DBPlayer {
         return Lists.newArrayList(activePowers);
     }
     
-    @DBLoad(fieldName="ratings")
-    private void loadRatings(List<Object> ratings) {
-        if (ratings == null) return;
-        Document d;
-        for (Object o : ratings) {
-            d = (Document) o;
-            this.ratings.put(ArenaMode.getArenaMode(d.get("mode", String.class)), d.get("rating", Integer.class));
-        }
-    }
-    @DBSave(fieldName="ratings")
-    private List<Document> saveRatings() {
-        if (ratings.isEmpty()) return null;
-        
-        List<Document> list = new ArrayList<>();
-        
-        for (Map.Entry<ArenaMode, Integer> rating : ratings.entrySet()) {
-            list.add(new Document("mode", rating.getKey().getName()).append("rating", rating.getValue()));
-        }
-        
-        return list;
-    }
-    public String getDisplayElo(ArenaMode mode) {
-        return (Chat.BRACE + "(" +
-                Chat.ELO + getRating(mode) +
-                Chat.BRACE + ")");
-    }
-    public int getRating(ArenaMode mode) {
-        if (!ratings.containsKey(mode)) ratings.put(mode, BASE_RATING);
-        return ratings.get(mode);
-    }
-    public void setRating(ArenaMode mode, int amt) {
-        ratings.put(mode, amt);
-    }
-    public void addRating(ArenaMode mode, int amt) {
-        Core.getInstance().sendMessage(getPlayer(), "You have " +
-                (amt > 0 ? "gained " : "lost ") +
-                Chat.ELO + Math.abs(amt) +
-                Chat.DEFAULT + " elo");
-        ratings.put(mode, getRating(mode) + amt);
-    }
-    
     public void setActivePower(int slot, int powerId) {
         activePowers[slot] = powerId;
     }
@@ -116,15 +65,6 @@ public class SpleefPlayer extends DBPlayer {
             powers.add(Power.getPower(i, activePowers[i]));
         }
         return powers;
-    }
-
-    @Override
-    @Deprecated
-    public void printStats(DBPlayer dbp) {
-        for (Map.Entry<ArenaMode, Integer> rating : ratings.entrySet()) {
-            dbp.getPlayer().sendMessage(Chat.DEFAULT + "[" + Chat.GAMEMODE + rating.getKey().getDisplayName() + Chat.DEFAULT + "]: " +
-                    Chat.ELO + rating.getValue());
-        }
     }
     
 }

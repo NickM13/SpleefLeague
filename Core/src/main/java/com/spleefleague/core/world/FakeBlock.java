@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.world;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
 import net.minecraft.server.v1_15_R1.SoundEffectType;
 import org.bukkit.Material;
@@ -59,28 +58,20 @@ public class FakeBlock {
         for (Material material : Material.values()) {
             if (material.isBlock()) {
                 List<Sound> sounds = getSounds(material);
-                breakSoundMap.put(material, sounds.get(0));
-                placeSoundMap.put(material, sounds.get(1));
+                if (sounds != null) {
+                    breakSoundMap.put(material, sounds.get(0));
+                    placeSoundMap.put(material, sounds.get(1));
+                }
             }
         }
     }
-    
-    private final BlockPosition blockPosition;
+
     private final BlockData blockData;
     
-    public FakeBlock(BlockPosition blockPosition, BlockData blockData) {
-        this.blockPosition = blockPosition;
+    public FakeBlock(BlockData blockData) {
         this.blockData = blockData;
     }
-    
-    public ChunkCoord getChunkCoord() {
-        return new ChunkCoord((int) Math.floor(blockPosition.getX() / 16.f), (int) Math.floor(blockPosition.getZ() / 16.f));
-    }
-    
-    public BlockPosition getBlockPosition() {
-        return blockPosition;
-    }
-    
+
     public BlockData getBlockData() {
         return blockData;
     }

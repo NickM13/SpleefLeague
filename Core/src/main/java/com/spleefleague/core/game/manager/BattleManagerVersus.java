@@ -80,7 +80,7 @@ public class BattleManagerVersus extends BattleManager {
     @Override
     public void startMatch(List<CorePlayer> players, String name) {
         Arena arena = Arena.getByName(name, mode);
-        Battle battle;
+        Battle<?, ?> battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {

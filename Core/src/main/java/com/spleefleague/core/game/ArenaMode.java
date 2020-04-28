@@ -25,9 +25,9 @@ public class ArenaMode {
     public enum TeamStyle {
         SOLO,
         TEAM,
-        MULTI_STATIC,
-        MULTI_DYNAMIC,
-        MULTI_BANANA
+        VERSUS,
+        DYNAMIC,
+        BONANZA
     }
     
     protected static Map<String, ArenaMode> arenaModes = new HashMap<>();
@@ -39,8 +39,8 @@ public class ArenaMode {
     protected final Set<Integer> requiredTeamSizes;
     protected final boolean joinOngoing;
     protected final Class<? extends Arena> arenaClass;
-    protected final Class<? extends Battle> battleClass;
-    protected final Set<Battle> ongoingBattles = new HashSet<>();
+    protected final Class<? extends Battle<?, ?>> battleClass;
+    protected final Set<Battle<?, ?>> ongoingBattles = new HashSet<>();
 
     // TODO: Rework this, constructor is enormongo
     protected ArenaMode(String name,
@@ -50,7 +50,7 @@ public class ArenaMode {
             TeamStyle teamStyle,
             boolean joinOngoing,
             Class<? extends Arena> arenaClass,
-            Class<? extends Battle> battleClass) {
+            Class<? extends Battle<?, ?>> battleClass) {
         this.name = name;
         this.displayName = displayName;
         this.requiredTeams = requiredTeams;
@@ -69,7 +69,7 @@ public class ArenaMode {
             TeamStyle teamStyle,
             boolean joinOngoing,
             Class<? extends Arena> arenaClass,
-            Class<? extends Battle> battleClass) {
+            Class<? extends Battle<?, ?>> battleClass) {
         arenaModes.put(name, new ArenaMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, arenaClass, battleClass));
     }
     
@@ -81,15 +81,15 @@ public class ArenaMode {
         return arenaModes.values();
     }
     
-    public Set<Battle> getOngoingBattles() {
+    public Set<Battle<?, ?>> getOngoingBattles() {
         return ongoingBattles;
     }
     
-    public void addBattle(Battle battle) {
+    public void addBattle(Battle<?, ?> battle) {
         this.ongoingBattles.add(battle);
     }
     
-    public void removeBattle(Battle battle) {
+    public void removeBattle(Battle<?, ?> battle) {
         this.ongoingBattles.remove(battle);
     }
     
@@ -138,7 +138,7 @@ public class ArenaMode {
         return arenaClass;
     }
     
-    public Class<? extends Battle> getBattleClass() {
+    public Class<? extends Battle<?, ?>> getBattleClass() {
         return battleClass;
     }
     

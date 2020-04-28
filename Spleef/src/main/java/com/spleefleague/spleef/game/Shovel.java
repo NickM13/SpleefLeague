@@ -10,6 +10,7 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
@@ -19,8 +20,16 @@ import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.spleef.Spleef;
 import java.util.Set;
+
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
+import net.minecraft.server.v1_15_R1.NBTTagList;
+import net.minecraft.server.v1_15_R1.NBTTagString;
 import org.bson.Document;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * @author NickM13
@@ -40,11 +49,11 @@ public class Shovel extends Holdable {
         
         InventoryMenuAPI.createItemHotbar(0, "shovelHotbarItem")
                 .setName(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getName())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getGameItem())
                 .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDescription())
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle() instanceof SpleefBattle);
+                        && cp.getBattle().getPlugin() instanceof Spleef);
     }
     
     public static void save(Shovel shovel) {
@@ -217,10 +226,36 @@ public class Shovel extends Holdable {
     public boolean isAvailableToPurchase(CorePlayer corePlayer) {
         return true;
     }
-    
+
+    /**
+     * This is for the Held Item Collectible right click action, NOT ingame!
+     *
+     * @param corePlayer Core Player
+     */
     @Override
     public void onRightClick(CorePlayer corePlayer) {
-    
+
+    }
+
+    /**
+     * Creates a shovel item that can only break snow while in adventure mode
+     *
+     * @return Shovel ItemStack
+     */
+    public ItemStack getGameItem() {
+        net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getDisplayItem());
+        NBTTagCompound tagCompound = nmsItemStack.hasTag() ? nmsItemStack.getTag() : new NBTTagCompound();
+        NBTTagList tagList = new NBTTagList();
+        tagList.add(NBTTagString.a("minecraft:snow"));
+        tagList.add(NBTTagString.a("minecraft:snow_block"));
+        tagCompound.set("CanDestroy", tagList);
+        nmsItemStack.setTag(tagCompound);
+
+        ItemStack itemStack = CraftItemStack.asBukkitCopy(nmsItemStack);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) itemMeta.addEnchant(Enchantment.DIG_SPEED, 4, true);
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
     }
     
 }

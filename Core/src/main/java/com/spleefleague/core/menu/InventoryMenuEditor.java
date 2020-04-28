@@ -57,7 +57,7 @@ public class InventoryMenuEditor extends InventoryMenuContainer {
         if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.CHEST) {
             InventoryMenuContainer menu = cp.getInventoryMenuContainer();
             InventoryMenuItem clicked = menu.getMenuItem(cp, e.getSlot());
-            if (e.getSlot() < MENU_COUNT) {
+            if (e.getSlot() < pageItemTotal) {
                 InventoryMenuItem prevItem = this.getMenuItem(cp, e.getSlot());
                 if (clicked != null) {
                     removeMenuItem(cp.getPage(), e.getSlot());
@@ -69,7 +69,7 @@ public class InventoryMenuEditor extends InventoryMenuContainer {
                             .setName(meta != null ? meta.getDisplayName() : "")
                             .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
                             .setDisplayItem(e.getCursor()),
-                            cp.getPage() * InventoryMenuContainer.MENU_COUNT + e.getSlot());
+                            cp.getPage() * pageItemTotal + e.getSlot());
                 }
                 cp.getPlayer().setItemOnCursor(prevItem == null ? null : prevItem.createItem(cp));
                 saveFun.accept(sortedItems);

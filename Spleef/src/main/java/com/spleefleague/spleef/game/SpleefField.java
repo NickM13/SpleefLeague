@@ -42,6 +42,7 @@ public class SpleefField extends DBEntity {
     }
     
     public void fillGlobalWorld() {
+        /*
         for (Dimension area : areas) {
             for (int x = (int) area.getLow().x; x <= area.getHigh().x; x++) {
                 for (int y = (int) area.getLow().y; y <= area.getHigh().y; y++) {
@@ -51,6 +52,7 @@ public class SpleefField extends DBEntity {
                 }
             }
         }
+         */
     }
 
     public List<Dimension> getAreas() {
@@ -64,10 +66,10 @@ public class SpleefField extends DBEntity {
     public static void init() {
         MongoCursor<Document> cursor = Spleef.getInstance().getPluginDB().getCollection("Fields").find().iterator();
         while (cursor.hasNext()) {
-            Document d = cursor.next();
+            Document doc = cursor.next();
             try {
                 SpleefField field = new SpleefField();
-                field.load(d);
+                field.load(doc);
                 FIELDS.put(field.getId(), field);
             } catch(Exception e) {
                 e.printStackTrace();

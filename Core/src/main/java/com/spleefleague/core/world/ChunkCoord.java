@@ -1,6 +1,7 @@
 package com.spleefleague.core.world;
 
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
 
 /**
@@ -11,6 +12,10 @@ import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
  * @since 4/16/2020
  */
 public class ChunkCoord {
+
+    public static ChunkCoord fromBlockPos(BlockPosition pos) {
+        return new ChunkCoord(pos.getX() >> 4, pos.getZ() >> 4);
+    }
 
     public int x, z;
 

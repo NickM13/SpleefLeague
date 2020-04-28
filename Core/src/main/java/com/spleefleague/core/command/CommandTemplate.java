@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.command;
 
+import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
@@ -64,7 +65,7 @@ public class CommandTemplate extends Command {
         for (Rank ar : additionalRanks) {
             ar.addExclusivePermission(perm);
         }
-        container = "sl";
+        container = "core";
         Core.getInstance().addCommand(this);
     }
     
@@ -80,8 +81,8 @@ public class CommandTemplate extends Command {
         optionsMap.put(name, options);
     }
     
-    protected Set<String> getOptions(String name, CorePlayer cp) {
-        return optionsMap.get(name).apply(cp);
+    protected TreeSet<String> getOptions(String name, CorePlayer cp) {
+        return Sets.newTreeSet(optionsMap.get(name).apply(cp));
     }
     
     private Integer toInt(String str) {
@@ -705,7 +706,7 @@ public class CommandTemplate extends Command {
                 continue;
             }
 
-            Object obj = null;
+            Object obj;
 
             boolean invalidArg = false;
 
@@ -727,7 +728,6 @@ public class CommandTemplate extends Command {
 
                     // Target selector arguments
 
-                    List<Entity> entities;
                     switch (arg.charAt(0)) {
                         case 'p': case 'r': // One player
                             if (!paramClass.equals(CorePlayer.class)) {
@@ -755,7 +755,7 @@ public class CommandTemplate extends Command {
                     continue;
                 }
                 if (paramClass.equals(TpCoord.class)) {
-                    invalidArg = ((obj = TpCoord.create(arg)) == null);
+                    invalidArg = (TpCoord.create(arg) == null);
                     ai++;
                     continue;
                 }
@@ -768,7 +768,7 @@ public class CommandTemplate extends Command {
                     continue;
                 }
                 if (paramClass.equals(Player.class)) {
-                    invalidArg = ((obj = Bukkit.getPlayer(arg)) == null);
+                    invalidArg = (Bukkit.getPlayer(arg) == null);
                     ai++;
                     continue;
                 }
@@ -800,7 +800,7 @@ public class CommandTemplate extends Command {
                     } else if (param.isAnnotationPresent(OptionArg.class)) {
                         if (param.getAnnotation(OptionArg.class).force()) {
                             invalidArg = true;
-                            Set<String> optionSet = getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
+                            TreeSet<String> optionSet = getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
                             String possibleMatch = null;
                             for (String o : optionSet) {
                                 if (/*o.toUpperCase().startsWith(arg.toUpperCase()) || */o.equalsIgnoreCase(arg)) {
@@ -844,14 +844,15 @@ public class CommandTemplate extends Command {
                 } else if (currParam.getType().equals(CorePlayer.class) ||
                         currParam.getType().equals(Player.class) ||
                         currParam.getType().equals(OfflinePlayer.class)) {
-                    CorePlayerArg cpa = currParam.getType().getAnnotation(CorePlayerArg.class);
+                    CorePlayerArg cpa = currParam.getAnnotation(CorePlayerArg.class);
                     for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
-                        if (cp != null && cpa != null
-                                && !cpa.allowSelf()
-                                && cp2.getName().equalsIgnoreCase(cp.getName())) {
-                            
+                        if (cp != null && cpa != null && !cpa.allowSelf()) {
+                            if (!cp.getName().equalsIgnoreCase(cp2.getName())) {
+                                addOption(options, cp2.getName(), lastArg);
+                            }
+                        } else {
+                            addOption(options, cp2.getName(), lastArg);
                         }
-                        addOption(options, cp2.getName(), lastArg);
                     }
                     if (cpa == null || cpa.allowSelf()) {
                         addOption(options, "@p", lastArg);

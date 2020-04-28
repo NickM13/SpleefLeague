@@ -24,9 +24,20 @@ public class CancelCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
-    public void cancel(CorePlayer sender, CorePlayer cp) {
-        if (cp.getBattle() != null) {
-            cp.getBattle().cancel();
+    public void cancel(CorePlayer sender) {
+        if (sender.isInBattle()) {
+            sender.getBattle().cancel();
+            success(sender, "Match cancelled");
+        } else {
+            error(sender, CoreError.NOT_INGAME);
+        }
+    }
+    
+    @CommandAnnotation
+    public void cancel(CorePlayer sender,
+            CorePlayer target) {
+        if (target.isInBattle()) {
+            target.getBattle().cancel();
             success(sender, "Match cancelled");
         } else {
             error(sender, CoreError.OTHER_NOT_INGAME);

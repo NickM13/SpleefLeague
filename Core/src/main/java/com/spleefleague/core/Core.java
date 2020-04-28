@@ -15,6 +15,7 @@ import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.game.Leaderboards;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
@@ -108,7 +109,7 @@ public class Core extends CorePlugin<CorePlayer> {
         initMenus();
         initTabList();
 
-        Leaderboard.init();
+        Leaderboards.init();
 
         // TODO: Move this
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -133,7 +134,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Collectible.close();
         Vendors.close();
         Tickets.close();
-        Leaderboard.close();
+        Leaderboards.close();
         qrunnable.close();
         playerManager.close();
         running = false;
@@ -422,7 +423,8 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * @return Chat Prefix
      */
-    public static String getChatPrefix() {
+    @Override
+    public String getChatPrefix() {
         return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
     }
 
@@ -613,56 +615,6 @@ public class Core extends CorePlugin<CorePlayer> {
             sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Warned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Send a message to the global channel
-     *
-     * @param msg Message
-     */
-    public void sendMessage(String msg) {
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg);
-    }
-
-    /**
-     * Send a message to a specific player
-     *
-     * @param cp Core Player
-     * @param msg Message
-     */
-    public void sendMessage(CorePlayer cp, String msg) {
-        Chat.sendMessageToPlayer(cp, getChatPrefix() + msg);
-    }
-
-    /**
-     * Send a message to a CommandSender (Block, Console, etc)
-     *
-     * @param cs CommandSender
-     * @param msg Message
-     */
-    public void sendMessage(CommandSender cs, String msg) {
-        cs.sendMessage(getChatPrefix() + msg);
-    }
-
-    /**
-     * Doesn't use default chat prefix
-     * <br>Send message to a ChatChannel
-     *
-     * @param cc Chat Channel
-     * @param msg Message
-     */
-    public void sendMessage(ChatChannel cc, String msg) {
-        Chat.sendMessage(cc, msg);
-    }
-
-    /**
-     * Send message to a ChatGroup
-     *
-     * @param cg Chat Group
-     * @param msg Message
-     */
-    public void sendMessage(ChatGroup cg, String msg) {
-        cg.sendMessage(getChatPrefix() + msg);
     }
 
     /**

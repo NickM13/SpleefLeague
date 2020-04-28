@@ -28,8 +28,8 @@ public class HatMenu {
                 .setName("Hats")
                 .setDisplayItem(Material.LEATHER_HELMET)
                 .setDescription("Pick a hat, any hat!");
-    
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedContainer(), true);
+
+        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.createLinkedContainer("Hats").getLinkedContainer(), true);
     }
     
     /**

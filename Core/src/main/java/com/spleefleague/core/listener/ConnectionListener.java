@@ -14,6 +14,7 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -37,17 +38,27 @@ public class ConnectionListener implements Listener {
     
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event) {
-        Infraction infraction = Infraction.getMostRecent(event.getPlayer().getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
-        Infraction reasoning = Infraction.getMostRecent(event.getPlayer().getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN, Infraction.Type.WARNING));
+        Infraction infraction = Infraction.getMostRecent(event.getPlayer().getUniqueId(),
+                Lists.newArrayList(Infraction.Type.BAN,
+                        Infraction.Type.TEMPBAN,
+                        Infraction.Type.UNBAN));
+        Infraction reasoning = Infraction.getMostRecent(event.getPlayer().getUniqueId(),
+                Lists.newArrayList(Infraction.Type.BAN,
+                        Infraction.Type.TEMPBAN,
+                        Infraction.Type.UNBAN,
+                        Infraction.Type.WARNING));
         
         if (infraction != null) {
             switch (infraction.getType()) {
                 case BAN:
-                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are banned!" + "\n" + reasoning.getReason());
+                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are banned!"
+                            + "\n" + reasoning.getReason());
                     return;
                 case TEMPBAN:
                     if (!infraction.isExpired()) {
-                        event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are temporarily banned! " + infraction.getRemainingTimeString() + "\n" + reasoning.getReason());
+                        event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are temporarily banned! "
+                                + infraction.getRemainingTimeString()
+                                + "\n" + reasoning.getReason());
                     }
                     return;
             }
@@ -103,14 +114,20 @@ public class ConnectionListener implements Listener {
         }
     }
     
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
+        if (event == null) {
+            CoreLogger.logWarning("PlayerResourcePackStatusEvent was null! ConnectionListener.java");
+            return;
+        }
         switch (event.getStatus()) {
             case DECLINED:
-                Core.getInstance().sendMessage(event.getPlayer(), "It's suggested that you use the resource pack provided by this server!");
+                Core.getInstance().sendMessage(event.getPlayer(), "It's suggested that you use the resource pack " +
+                        "provided by this server!");
                 break;
             case FAILED_DOWNLOAD:
-                Core.getInstance().sendMessage(event.getPlayer(), "Issue loading server resource pack, try relogging!");
+                Core.getInstance().sendMessage(event.getPlayer(), "Issue loading server resource pack, try logging " +
+                        "out and back in!");
                 break;
         }
     }

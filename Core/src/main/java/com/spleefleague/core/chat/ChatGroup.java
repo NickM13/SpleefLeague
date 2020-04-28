@@ -36,15 +36,23 @@ public class ChatGroup {
     }
     
     private final Set<CorePlayer> players = new HashSet<>();
+    private final String chatTag;
     
     private String scoreboardName = "empty";
     private final Map<String, SimpleScore> scores = new HashMap<>();
     private final List<String> sortedScores = new ArrayList<>();
+    private int rightSideBuffer = 0;
     
-    public ChatGroup() {
-        addTeam("lastslotempty", Strings.repeat(' ', 30));
+    public ChatGroup(String chatTag) {
+        //addTeam("lastslotempty", Strings.repeat(' ', 30));
+        this.chatTag = chatTag;
     }
     
+    /**
+     * Sets the name displayed at the top of the scoreboard
+     *
+     * @param name Scoreboard Name
+     */
     public void setScoreboardName(String name) {
         scoreboardName = name;
         for (CorePlayer cp : players) {
@@ -54,11 +62,22 @@ public class ChatGroup {
     }
     
     /**
+     * Sets the number of pixels to the right second text is shown
+     *
+     * @param buffer Pixel Count
+     * @see ChatGroup::setTeamDisplayName(String, String, String)
+     */
+    public void setRightSideBuffer(int buffer) {
+        rightSideBuffer = buffer;
+    }
+    
+    /**
      * Scoreboard identifier names ChatColor strings to prevent them
      * from showing up in the scoreboards
      * 
      * <Name, Colorized>
      */
+    private int nextNameIndex = 0;
     private final Map<String, String> nameIdHash = new HashMap<>();
     private String idToStr(int id) {
         StringBuilder str = new StringBuilder();
@@ -85,6 +104,7 @@ public class ChatGroup {
         }
         return str.toString();
     }
+    
     /**
      * Adds a line at the bottom of the scoreboard, name is used to refer
      * to the team but is converted to an unreadable string of ChatColors
@@ -94,12 +114,20 @@ public class ChatGroup {
      * @param displayName Display Name
      */
     public void addTeam(String name, String displayName) {
-        String str = idToStr(nameIdHash.size() + 16);
+        String str = idToStr(nextNameIndex + 16);
+        nextNameIndex++;
         nameIdHash.put(name, str);
         SimpleScore ss = new SimpleScore(str, 0);
         ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
         scores.put(name, ss);
         sortedScores.add(name);
+        
+        int i = sortedScores.size() - 1;
+        for (String sscore : sortedScores) {
+            scores.get(sscore).score = i;
+            i--;
+        }
+        
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             Team team = ps.getScoreboard().getTeam(ss.name);
@@ -111,11 +139,38 @@ public class ChatGroup {
             team.setDisplayName(ss.displayName);
             team.setPrefix(ss.displayName);
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-            int i = sortedScores.size() - 1;
             for (String sscore : sortedScores) {
-                scores.get(sscore).score = i;
-                ps.getObjective().getScore(scores.get(sscore).name).setScore(i);
-                i--;
+                ps.getObjective().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
+            }
+        }
+    }
+    
+    public void removeTeam(String name) {
+        String str = nameIdHash.remove(name);
+        if (str == null) return;
+        scores.remove(name);
+        for (int i = 0; i < sortedScores.size(); i++) {
+            if (sortedScores.get(i).equalsIgnoreCase(name)) {
+                sortedScores.remove(i);
+                break;
+            }
+        }
+    
+        int i = sortedScores.size() - 1;
+        for (String sscore : sortedScores) {
+            scores.get(sscore).score = i;
+            i--;
+        }
+        
+        for (CorePlayer cp : players) {
+            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
+            Team team = ps.getScoreboard().getTeam(str);
+            if (team != null) {
+                team.unregister();
+                ps.getScoreboard().resetScores(str);
+            }
+            for (String sscore : sortedScores) {
+                ps.getObjective().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
             }
         }
     }
@@ -123,13 +178,36 @@ public class ChatGroup {
     /**
      * Sets the displayed name of a team, sent to all
      * players in the ChatGroup
-     * 
+     *
      * @param name Name
      * @param displayName Display Name
      */
     public void setTeamDisplayName(String name, String displayName) {
         SimpleScore ss = scores.get(name);
         ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
+        for (CorePlayer cp : players) {
+            PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
+            
+            Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
+            if (team == null) continue;
+            team.setPrefix(ss.displayName);
+        }
+    }
+    
+    /**
+     * Sets the displayed name of a team, sent to all
+     * players in the ChatGroup
+     *
+     * @param name Name
+     * @param displayLeft Shown text on Left
+     * @param displayRight Shown text on Right
+     */
+    public void setTeamDisplayName(String name, String displayLeft, String displayRight) {
+        SimpleScore ss = scores.get(name);
+        StringBuilder displayName = new StringBuilder(Chat.SCOREBOARD_DEFAULT + displayLeft);
+        ChatUtils.appendSpacesTo(displayName, rightSideBuffer);
+        displayName.append(displayRight);
+        ss.displayName = displayName.toString();
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             
@@ -234,7 +312,7 @@ public class ChatGroup {
      */
     public void sendMessage(String msg) {
         for (CorePlayer cp : players) {
-            Chat.sendMessageToPlayer(cp, msg);
+            Chat.sendMessageToPlayer(cp, chatTag + msg);
         }
     }
     

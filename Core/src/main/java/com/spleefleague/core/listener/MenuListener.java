@@ -26,58 +26,59 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
  */
 public class MenuListener implements Listener {
     
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerInteract(PlayerInteractEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         
-        if ((e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK))
-                && e.getItem() != null) {
-            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(e.getItem());
+        if ((event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+                && event.getItem() != null) {
+            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getItem());
             if (menu != null) {
                 menu.callAction(cp);
+                event.setCancelled(true);
             }
         }
     }
     
     @EventHandler
-    public void onSwapHandItems(PlayerSwapHandItemsEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
+    public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         if (!cp.canBuild()) {
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
     
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer().getName());
+    public void onInventoryClose(InventoryCloseEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getName());
         if (cp != null) {
             cp.setInventoryMenuContainer(null);
         }
     }
     
     @EventHandler
-    public void onInventoryDrag(InventoryDragEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getWhoClicked().getName());
+    public void onInventoryDrag(InventoryDragEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
         
         if (cp.getInventoryMenuContainer() != null) {
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
     
     @EventHandler
-    public void onInventoryInteract(InventoryClickEvent e) {
-        if (e.getClickedInventory() == null) return;
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getWhoClicked().getName());
+    public void onInventoryInteract(InventoryClickEvent event) {
+        if (event.getClickedInventory() == null) return;
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
         
         if (cp.getInventoryMenuContainer() != null
-                && e.getClickedInventory().getType() != InventoryType.PLAYER) {
-            cp.getInventoryMenuContainer().onInventoryInteract(e, cp);
-        } else if (e.getCurrentItem() != null && !cp.canBuild()) {
-            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(e.getCurrentItem());
+                && event.getClickedInventory().getType() != InventoryType.PLAYER) {
+            cp.getInventoryMenuContainer().onInventoryInteract(event, cp);
+        } else if (event.getCurrentItem() != null && !cp.canBuild()) {
+            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getCurrentItem());
             if (menu != null) {
                 menu.callAction(cp);
             }
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
     

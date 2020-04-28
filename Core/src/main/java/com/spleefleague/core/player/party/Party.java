@@ -48,7 +48,7 @@ public class Party {
     
     private CorePlayer owner;
     private final Set<CorePlayer> players = new LinkedHashSet<>();
-    private final ChatGroup chatGroup = new ChatGroup();
+    private final ChatGroup chatGroup = new ChatGroup("");
     private boolean disbanded = false;
     
     public ChatGroup getChatGroup() {

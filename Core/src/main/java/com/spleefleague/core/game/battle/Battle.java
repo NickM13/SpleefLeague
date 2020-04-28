@@ -11,8 +11,8 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.BattlePlayer;
 import com.spleefleague.core.game.BattleUtils;
+import com.spleefleague.core.game.request.BattleRequest;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -33,13 +33,15 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.event.player.PlayerMoveEvent;
 
+import javax.annotation.Nullable;
+
 /**
  * A Battle is an object that contains an arena that the game
  * is played in and a set of players (battlers, spectators)
  *
  * @author NickM13
  */
-public abstract class Battle {
+public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
 
     protected CorePlugin<?> plugin;
     
@@ -49,9 +51,9 @@ public abstract class Battle {
     protected ChatGroup chatGroup;
     
     // Arena to play battle on
-    protected final Arena arena;
+    protected final A arena;
 
-    private final Class<? extends BattlePlayer> battlePlayerClass;
+    private final Class<BP> battlePlayerClass;
     
     // Some values of Arena that can be modified without changing the arena
     protected List<Dimension> borders = new ArrayList<>();
@@ -62,8 +64,10 @@ public abstract class Battle {
     // Collections for players
     protected final Set<CorePlayer> players = new HashSet<>();
     protected final Set<CorePlayer> spectators = new HashSet<>();
-    protected final Map<CorePlayer, BattlePlayer> battlers = new HashMap<>();
-    protected final List<BattlePlayer> sortedBattlers = new ArrayList<>();
+    protected final Map<CorePlayer, BP> battlers = new HashMap<>();
+    protected final List<BP> sortedBattlers = new ArrayList<>();
+    
+    private final Map<String, BattleRequest> battleRequests = new HashMap<>();
     
     // Ongoing battle stats
     protected boolean ongoing;
@@ -75,7 +79,7 @@ public abstract class Battle {
     protected static final int COUNTDOWN = 3;
     protected int countdown = 0;
 
-    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<? extends BattlePlayer> battlePlayerClass) {
+    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, A arena, Class<BP> battlePlayerClass) {
         this.plugin = plugin;
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
@@ -84,44 +88,61 @@ public abstract class Battle {
         this.globalSpectatorBorders.addAll(arena.getGlobalSpectatorBorders());
         spawns.addAll(arena.getSpawns());
         this.gameWorld = arena.createGameWorld();
-        this.chatGroup = new ChatGroup();
+        this.chatGroup = new ChatGroup(plugin.getChatPrefix());
         players.forEach(this::addBattler);
     }
 
     /**
-     * Start a battle (round 0)
+     * Start a battle
      */
     public final void startBattle() {
         arena.incrementMatches();
         arena.getMode().addBattle(this);
         startedTime = System.currentTimeMillis();
         ongoing = true;
+        setupBattleRequests();
         setupBaseSettings();
+        setupScoreboard();
         setupBattlers();
         sendStartMessage();
         startRound();
     }
+    
+    /**
+     * Called in startBattle()<br>
+     * Initializes all valid battle requests for a battle
+     */
+    protected abstract void setupBattleRequests();
 
     /**
-     * Initialize base battle settings such as GameWorld tools and Scoreboard values
+     * Called in startBattle()<br>
+     * Initialize base battle settings such as GameWorld tools
      */
     protected abstract void setupBaseSettings();
+    
+    /**
+     * Called in startBattle()<br>
+     * Initialize scoreboard
+     */
+    protected abstract void setupScoreboard();
 
     /**
-     * Initialize the players, called in startBattle()
+     * Called in startBattle()<br>
+     * Initialize battler attributes such as spawn location
      */
     protected abstract void setupBattlers();
 
     /**
+     * Called in startBattle()<br>
      * Send a message on the start of a battle
      */
     protected abstract void sendStartMessage();
 
     /**
      * Start a round
-     * Generally would reset field and players
+     * <br>Resets the field and its players, also used in Reset Request
      */
-    protected void startRound() {
+    public void startRound() {
         if (!ongoing) return;
         gameWorld.clearProjectiles();
         fillField();
@@ -129,6 +150,14 @@ public abstract class Battle {
         startCountdown();
         resetBattlers();
         updateScoreboard();
+    }
+    
+    /**
+     * Set the GameMode of a battle (TODO: Is this always Adventure?)
+     * @param gameMode GameMode
+     */
+    public final void setGameMode(org.bukkit.GameMode gameMode) {
+        this.gameMode = gameMode;
     }
 
     protected abstract void fillField();
@@ -139,7 +168,7 @@ public abstract class Battle {
      *
      * @param bp BattlePlayer
      */
-    protected final void spawnBattler(BattlePlayer bp) {
+    protected final void spawnBattler(BP bp) {
         bp.getCorePlayer().refreshHotbar();
         bp.getCorePlayer().setGameMode(gameMode);
         bp.getPlayer().setWalkSpeed(0.2f);
@@ -173,16 +202,17 @@ public abstract class Battle {
                 toBattlefy.add(cp);
             }
             for (CorePlayer cp2 : toBattlefy) {
-                Constructor<? extends BattlePlayer> c = battlePlayerClass.getDeclaredConstructor(CorePlayer.class, Battle.class);
+                Constructor<BP> c = battlePlayerClass.getDeclaredConstructor(CorePlayer.class, Battle.class);
                 c.setAccessible(true);
-                BattlePlayer bp = c.newInstance(cp2, this);
+                BP bp = c.newInstance(cp2, this);
+                bp.setSpawn(getSpawn(battlers.size()));
                 addPlayer(cp2, BattleState.BATTLER);
                 battlers.put(cp2, bp);
                 sortedBattlers.add(bp);
                 spawnBattler(bp);
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            Core.getInstance().getLogger().log(Level.WARNING, "Failed to create new instance of a battle player " + battlePlayerClass);
+            Core.getInstance().getLogger().log(Level.SEVERE, "Battle.java: Failed to create new instance of a battle player " + battlePlayerClass);
         }
     }
 
@@ -193,7 +223,7 @@ public abstract class Battle {
     protected abstract void saveBattlerStats(CorePlayer cp);
 
     /**
-     * Removes a battler from the battle
+     * Removes a battler from the battle without any further checking
      *
      * @param cp Battler Core Player
      */
@@ -264,17 +294,17 @@ public abstract class Battle {
      * Returns the closest battler (non-fallen) to the player
      * If no players are alive, returns null
      *
-     * @param cp CorePlayer
+     * @param cp Core Player
      * @return Closest Alive Player (null if none)
      */
-    protected final CorePlayer getClosestBattler(CorePlayer cp) {
-        CorePlayer closest = null;
+    protected final BP getClosestBattler(CorePlayer cp) {
+        BP closest = null;
         double closeDist = 0, dist;
-        for (BattlePlayer bp2 : battlers.values()) {
+        for (BP bp2 : battlers.values()) {
             if (!cp.equals(bp2.getCorePlayer()) && !bp2.isFallen()) {
                 dist = cp.getPlayer().getLocation().distance(bp2.getPlayer().getLocation());
                 if (closest == null || dist < closeDist) {
-                    closest = bp2.getCorePlayer();
+                    closest = bp2;
                     closeDist = dist;
                 }
             }
@@ -293,7 +323,7 @@ public abstract class Battle {
      */
     public final void onMove(CorePlayer cp, PlayerMoveEvent e) {
         if (cp.getBattleState() == BattleState.BATTLER) {
-            BattlePlayer bp = battlers.get(cp);
+            BP bp = battlers.get(cp);
             if (!bp.isFallen()) {
                 if (!isRoundStarted()) {
                     if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
@@ -348,6 +378,15 @@ public abstract class Battle {
         chatGroup.sendMessage("Your match was cancelled by a moderator");
         endBattle();
     }
+    
+    /**
+     * Returns the chat group of this battle
+     *
+     * @return Chat Group
+     */
+    public ChatGroup getChatGroup() {
+        return chatGroup;
+    }
 
     /**
      * Adds a player to the battle
@@ -391,14 +430,14 @@ public abstract class Battle {
      *
      * @param winner Winner
      */
-    protected abstract void endRound(BattlePlayer winner);
+    protected abstract void endRound(BP winner);
     
     /**
      * End a battle with a determined winner
      *
      * @param winner Winner
      */
-    protected abstract void endBattle(BattlePlayer winner);
+    protected abstract void endBattle(BP winner);
     
     /**
      * Ends a battle, removes all players, destroys game world
@@ -427,7 +466,58 @@ public abstract class Battle {
      * @param cp CorePlayer
      */
     public abstract void surrender(CorePlayer cp);
-
+    
+    protected void addBattleRequest(BattleRequest battleRequest) {
+        battleRequests.put(battleRequest.getRequestName(), battleRequest);
+    }
+    
+    public Set<String> getAvailableRequests(CorePlayer cp) {
+        Set<String> availableRequests = new HashSet<>();
+        if (battlers.containsKey(cp)) {
+            availableRequests.addAll(battleRequests.keySet());
+        } else {
+            battleRequests.values().forEach(request -> {
+                if (!request.isBattlerRequest()) {
+                    availableRequests.add(request.getRequestName());
+                }
+            });
+        }
+        return availableRequests;
+    }
+    
+    /**
+     * @param cp Requesting Core Player
+     * @param requestType BattleRequest Type Name
+     * @param requestValue Requested Value
+     */
+    public void onRequest(CorePlayer cp, String requestType, @Nullable String requestValue) {
+        if (battleRequests.containsKey(requestType)) {
+            BattleRequest battleRequest = battleRequests.get(requestType);
+            if (!battleRequest.isBattlerRequest() || battlers.containsKey(cp)) {
+                if (battleRequest.isRequesting(cp)) {
+                    battleRequest.removeRequester(cp);
+                    return;
+                }
+                if (battleRequest.isOngoing()) {
+                    if (requestValue == null) {
+                        battleRequest.addRequester(cp,
+                                battleRequest.isBattlerRequest() ? battlers.size() : players.size());
+                    } else {
+                        Core.getInstance().sendMessage(cp, "Someone is already requesting this!");
+                    }
+                } else {
+                    battleRequest.startRequest(cp,
+                            battleRequest.isBattlerRequest() ? battlers.size() : players.size(),
+                            requestValue);
+                }
+            } else {
+                Core.getInstance().sendMessage(cp, "You don't work here!");
+            }
+        } else {
+            Core.getInstance().sendMessage(cp, "Can't request that here!");
+        }
+    }
+    
     /**
      * Called when a player requests the game to end (/endgame)
      *
@@ -479,7 +569,7 @@ public abstract class Battle {
      */
     protected final void resetBattlers() {
         remainingPlayers = battlers.size();
-        for (BattlePlayer bp : battlers.values()) {
+        for (BP bp : battlers.values()) {
             spawnBattler(bp);
         }
     }
@@ -516,17 +606,6 @@ public abstract class Battle {
     }
 
     /**
-     * When the battler teleports there is a bug with
-     * spigot that causes players to not follow and remain
-     * glitched in place, this fixes it
-     *
-     * @param target Player to fix spectators of
-     */
-    public void fixSpectators(CorePlayer target) {
-        gameWorld.fixSpectators(target);
-    }
-
-    /**
      * Remove spectator from the battle
      *
      * @param cp CorePlayer
@@ -550,7 +629,7 @@ public abstract class Battle {
     }
 
     /**
-     * Called when a battler wants to leave (/leave, /ff)
+     * Called after a battler leaves the battle (/leave, /ff)
      *
      * @param cp Battler CorePlayer
      */
@@ -565,7 +644,6 @@ public abstract class Battle {
         if (players.contains(cp)) {
             switch (cp.getBattleState()) {
                 case BATTLER:
-                    removeBattler(cp);
                     leaveBattler(cp);
                     break;
                 case SPECTATOR:
@@ -681,7 +759,7 @@ public abstract class Battle {
     /**
      * @return Arena
      */
-    public Arena getArena() {
+    public A getArena() {
         return arena;
     }
 

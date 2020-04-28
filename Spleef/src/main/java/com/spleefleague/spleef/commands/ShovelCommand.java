@@ -33,6 +33,7 @@ public class ShovelCommand extends CommandTemplate {
         super(ShovelCommand.class, "shovel", Rank.DEVELOPER);
         setUsage("/shovel");
         setOptions("shovelTypes", (cp) -> Shovel.getShovelTypes());
+        setContainer("spleef");
     }
     
     @CommandAnnotation
@@ -63,7 +64,7 @@ public class ShovelCommand extends CommandTemplate {
             @LiteralArg(value="destroy") String l,
             @HelperArg(value="<damage>") Integer id) {
         if (Vendorables.get(Shovel.class, "" + id) != null) {
-            RequestManager.sendRequest(Core.getChatPrefix(), "Do you want to destroy shovel " + id + "?", sender, "shoveldestroy", new ConsoleRequest((r, s) -> {
+            RequestManager.sendRequest("", "Do you want to destroy shovel " + id + "?", sender, "shoveldestroy", new ConsoleRequest((r, s) -> {
                 Shovel.destroyShovel(id);
             }));
         } else {

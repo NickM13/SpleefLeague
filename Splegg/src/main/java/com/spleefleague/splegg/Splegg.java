@@ -1,6 +1,7 @@
 package com.spleefleague.splegg;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
@@ -36,7 +37,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
 
         SpleggMode.init();
         addBattleManager(SpleggMode.CLASSIC.getArenaMode());
-        addBattleManager(SpleggMode.MULTI.getArenaMode());
+        //addBattleManager(SpleggMode.MULTI.getArenaMode());
         initMenu();
         initCommands();
     }
@@ -45,7 +46,14 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     protected void close() {
 
     }
-
+    
+    /**
+     * @return Chat Prefix
+     */
+    public String getChatPrefix() {
+        return Chat.TAG_BRACE + "[" + Chat.TAG + "Splegg" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    }
+    
     public static Splegg getInstance() {
         return instance;
     }

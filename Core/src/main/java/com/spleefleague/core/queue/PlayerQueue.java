@@ -24,7 +24,7 @@ public class PlayerQueue {
     private String name;
     private QueueContainer owner;
     
-    private class QueuePlayer {
+    private static class QueuePlayer {
         CorePlayer cp;
         Arena arena;
         
@@ -69,7 +69,7 @@ public class PlayerQueue {
     }
     
     private int findPlayer(CorePlayer cp) {
-        // Probably rework this at some point?
+        // TODO: Probably rework this at some point?
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).cp.getPlayer().getName().equals(cp.getPlayer().getName())) {
                 return i;
@@ -154,15 +154,14 @@ public class PlayerQueue {
         }
     }
     
-    private Arena lastParam = null;
+    private String lastParam = "";
     public String getLastArenaName() {
-        if (lastParam == null) return "";
-        return lastParam.getName();
+        return lastParam;
     }
     public CorePlayer getPlayerFirst() {
         return players.get(0).cp;
     }
-    private boolean matchAfter(int partySize, Arena arena, int start, int remaining, ArrayList<QueuePlayer> list) {
+    private boolean matchAfter(int partySize, StringBuilder arenaName, int start, int remaining, ArrayList<QueuePlayer> list) {
         if (remaining <= 0) {
             return true;
         }
@@ -176,23 +175,24 @@ public class PlayerQueue {
             if (teamQueue && (party == null || party.getPlayers().size() != partySize)) {
                 continue;
             }
-            if (arena == null || qp.arena == null) {
+            if (arenaName.toString().equals("") || qp.arena == null) {
                 if (qp.arena != null) {
-                    Arena _arena = qp.arena;
+                    StringBuilder _arena = new StringBuilder(qp.arena.getName());
                     list.add(qp);
                     if (matchAfter(partySize, _arena, pit.nextIndex(), remaining-1, list)) {
-                        arena = _arena;
+                        arenaName.delete(0, arenaName.length());
+                        arenaName.append(_arena);
                         return true;
                     }
                     return false;
                 } else {
                     list.add(qp);
-                    return matchAfter(partySize, arena, pit.nextIndex(), remaining-1, list);
+                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining-1, list);
                 }
             } else {
-                if (arena.equals(qp.arena)) {
+                if (arenaName.toString().equalsIgnoreCase(qp.arena.getName())) {
                     list.add(qp);
-                    return matchAfter(partySize, arena, pit.nextIndex(), remaining-1, list);
+                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining-1, list);
                 }
             }
         }
@@ -207,19 +207,19 @@ public class PlayerQueue {
             QueuePlayer qp = pit.next();
             qplayers.clear();
             qplayers.add(qp);
-            Arena arena = qp.arena;
+            StringBuilder arenaName = new StringBuilder(qp.arena == null ? "" : qp.arena.getName());
             CorePlayer cp1 = qp.cp;
             Party party = cp1.getParty();
             if (teamQueue && party != null && party.getPlayers().size() == teamSize) {
-                if (matchAfter(teamSize, arena, pit.nextIndex(), count-1, qplayers)) {
+                if (matchAfter(teamSize, arenaName, pit.nextIndex(), count-1, qplayers)) {
                     qplayers.forEach(qp2 -> cps.add(qp2.cp));
-                    lastParam = arena;
+                    lastParam = arenaName.toString();
                     return cps;
                 }
             } else {
-                if (matchAfter(0, arena, pit.nextIndex(), count-1, qplayers)) {
+                if (matchAfter(0, arenaName, pit.nextIndex(), count-1, qplayers)) {
                     qplayers.forEach(qp2 -> cps.add(qp2.cp));
-                    lastParam = arena;
+                    lastParam = arenaName.toString();
                     return cps;
                 }
             }

@@ -19,7 +19,6 @@ import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.Checkpoint;
 import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.io.converter.LocationConverter;
@@ -75,7 +74,6 @@ public class CorePlayer extends DBPlayer {
     @DBField private PermRank permRank;
     @DBField private List<TempRank> tempRanks;
     
-    @DBField protected Map<String, Integer> scores = new HashMap<>();
     @DBField private Boolean vanished;
     @DBField private Integer coins;
     
@@ -84,8 +82,9 @@ public class CorePlayer extends DBPlayer {
     @DBField private Long afkTime;
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    @DBField private CorePlayerOptions options;
-    @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
+    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerStats ratings = new CorePlayerStats();
     
     /**
      * Non-database variables
@@ -114,8 +113,8 @@ public class CorePlayer extends DBPlayer {
 
     private PermissionAttachment permissions;
     
-    private LinkedHashSet<FakeWorld> fakeWorlds;
-    private Battle battle;
+    private final LinkedHashSet<FakeWorld<?>> fakeWorlds = new LinkedHashSet<>();
+    private Battle<?, ?> battle;
     private BattleState battleState;
     private final PregameState pregameState;
     private GlobalBiome globalBiome;
@@ -130,7 +129,6 @@ public class CorePlayer extends DBPlayer {
         this.checkpoint = null;
         this.permRank = new PermRank();
         this.tempRanks = new ArrayList<>();
-        this.options = new CorePlayerOptions();
         this.vanished = false;
         this.party = null;
         this.coins = 0;
@@ -139,7 +137,6 @@ public class CorePlayer extends DBPlayer {
         this.lastAction = System.currentTimeMillis();
         this.afk = false;
         this.afkWarned = false;
-        this.fakeWorlds = new LinkedHashSet<>();
         this.battle = null;
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
@@ -172,6 +169,7 @@ public class CorePlayer extends DBPlayer {
         setRank(permRank.getRank());
         PersonalScoreboard.initPlayerScoreboard(this);
         collectibles.setOwner(this);
+        ratings.setOwner(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
@@ -182,7 +180,8 @@ public class CorePlayer extends DBPlayer {
      */
     @Override
     public void close() {
-        for (FakeWorld fakeWorld : fakeWorlds) {
+        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+        for (FakeWorld<?> fakeWorld : fakeWorldList) {
             fakeWorld.removePlayer(this);
         }
         Core.getInstance().unqueuePlayerGlobally(this);
@@ -222,32 +221,15 @@ public class CorePlayer extends DBPlayer {
         this.gameMode = gameMode.name();
         getPlayer().setGameMode(gameMode);
     }
-
+    
     /**
-     * Print all saved elo stats of a player
-     *
-     * @param dbp DBPlayer
-     * @deprecated Use inventory menus instead
+     * Get all Ratings of a Core Player
+     * 
+     * @return Core Player Ratings
+     * @see CorePlayerStats
      */
-    @Deprecated
-    @Override
-    public void printStats(DBPlayer dbp) {
-
-    }
-
-    @Override
-    public int getRating(ArenaMode mode) {
-        return 0;
-    }
-
-    @Override
-    public void addRating(ArenaMode mode, int rating) {
-
-    }
-
-    @Override
-    public String getDisplayElo(ArenaMode mode) {
-        return null;
+    public CorePlayerStats getRatings() {
+        return ratings;
     }
 
     public org.bukkit.GameMode getGameMode() {
@@ -288,8 +270,12 @@ public class CorePlayer extends DBPlayer {
      */
     public boolean setLastAction() {
         boolean wasAfk = this.afk;
-        if (this.afk) setAfk(false);
-        afkTime += System.currentTimeMillis() - lastAction;
+        if (this.afk) {
+            setAfk(false);
+            afkTime += System.currentTimeMillis() - lastAction;
+        } else {
+            playTime += System.currentTimeMillis() - lastAction;
+        }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
         return wasAfk;
@@ -622,7 +608,6 @@ public class CorePlayer extends DBPlayer {
         if (tempRanks.isEmpty()) return;
         Iterator<TempRank> it = tempRanks.iterator();
         while (it.hasNext()) {
-            TempRank tr = it.next();
             it.remove();
         }
         updateRank();
@@ -656,7 +641,7 @@ public class CorePlayer extends DBPlayer {
     public void checkGlobalSpectate() {
         if (isInGlobal()) {
             for (ArenaMode arenaMode : ArenaMode.getAllArenaModes()) {
-                for (Battle battle : arenaMode.getOngoingBattles()) {
+                for (Battle<?, ?> battle : arenaMode.getOngoingBattles()) {
                     if (battle.isInGlobalSpectatorBorder(this)) {
                         battle.addGlobalSpectator(this);
                         return;
@@ -666,48 +651,6 @@ public class CorePlayer extends DBPlayer {
         }
     }
     
-    /**
-     * @param name ScoreName
-     * @return Whether score exists
-     */
-    public boolean hasScore(String name) {
-        return scores.containsKey(name);
-    }
-
-    /**
-     * Returns score of a player (Can refer to elo, points, time, ...)
-     *
-     * @param name ScoreName
-     * @return Score
-     */
-    public Integer getScore(String name) {
-        if (!scores.containsKey(name)) return 0;
-        return scores.get(name);
-    }
-
-    /**
-     * Sets score
-     *
-     * @param name ScoreName
-     * @param score Score
-     */
-    public void setScore(String name, int score) {
-        scores.put(name, score);
-    }
-
-    /**
-     * Sets score if the new value is higher than the old
-     *
-     * @param name ScoreName
-     * @param score Score
-     */
-    public void checkScore(String name, int score) {
-        if (scores.containsKey(name) &&
-                scores.get(name) < score) {
-            scores.put(name, score);
-        }
-    }
-
     /**
      * Returns player's location, or if they're offline their lastLocation (/back)
      * Not really that useful for offline players atm
@@ -1080,15 +1023,22 @@ public class CorePlayer extends DBPlayer {
        return !isInBattle() && !isInBuildWorld();
     }
     
-    public final LinkedHashSet<FakeWorld> getFakeWorlds() {
-        return fakeWorlds;
+    /**
+     * Returns a reversed list of the FakeWorlds for prioritizing interactions
+     *
+     * @return Sorted FakeWorld List
+     */
+    public final Iterator<FakeWorld<?>> getFakeWorlds() {
+        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+        Collections.reverse(fakeWorldList);
+        return fakeWorldList.iterator();
     }
     
-    public final void joinFakeWorld(FakeWorld fakeWorld) {
+    public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.add(fakeWorld);
     }
     
-    public final void leaveFakeWorld(FakeWorld fakeWorld) {
+    public final void leaveFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.remove(fakeWorld);
     }
     
@@ -1098,7 +1048,7 @@ public class CorePlayer extends DBPlayer {
      * @param battle Battle
      * @param battleState Battle State
      */
-    public final void joinBattle(Battle battle, BattleState battleState) {
+    public final void joinBattle(Battle<?, ?> battle, BattleState battleState) {
         this.battle = battle;
         this.battleState = battleState;
         if (battleState != BattleState.SPECTATOR_GLOBAL) {
@@ -1136,7 +1086,7 @@ public class CorePlayer extends DBPlayer {
      *
      * @return Battle
      */
-    public final Battle getBattle() {
+    public final Battle<?, ?> getBattle() {
         return battle;
     }
     
@@ -1155,12 +1105,16 @@ public class CorePlayer extends DBPlayer {
      * @return In Build World
      */
     public final boolean isInBuildWorld() {
-        for (FakeWorld fakeWorld : fakeWorlds) {
-            if (fakeWorld instanceof BuildWorld) {
-                return true;
-            }
-        }
-        return false;
+        return BuildWorld.getPlayerBuildWorld(this) != null;
+    }
+    
+    /**
+     * Returns a player's Build World if they are in one
+     *
+     * @return Build World
+     */
+    public final BuildWorld getBuildWorld() {
+        return BuildWorld.getPlayerBuildWorld(this);
     }
     
     /**

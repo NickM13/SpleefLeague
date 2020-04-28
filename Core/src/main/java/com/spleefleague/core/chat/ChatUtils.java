@@ -15,22 +15,7 @@ public class ChatUtils {
     public static String centerText(String message, int centerPos) {
         StringBuilder centered = new StringBuilder();
         
-        int msgPxSize = 0;
-        boolean prevCode = false;
-        boolean isBold = false;
-        
-        for (char c : message.toCharArray()) {
-            if (c == '§') {
-                prevCode = true;
-            } else if (prevCode == true) {
-                prevCode = false;
-                isBold = (c == 'l' || c == 'L');
-            } else {
-                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-                int change = (isBold ? dFI.getBoldLength() : dFI.getLength()) + 1;
-                msgPxSize += change;
-            }
-        }
+        int msgPxSize = getPixelCount(message);
         
         int whitePxSize = (centerPos * 2 - msgPxSize);
         int spaceCount = whitePxSize / 2 / (DefaultFontInfo.SPACE.getLength() + 1);
@@ -42,6 +27,41 @@ public class ChatUtils {
     }
     public static String centerTitle(String message) {
         return centerText(message, DefaultFontInfo.SPACE.getLength() * 27);
+    }
+    
+    /**
+     * Add spaces to string until desired pixel count is reached
+     */
+    public static void appendSpacesTo(StringBuilder strBuilder, int toPixel) {
+        int pixelCount = getPixelCount(strBuilder.toString());
+        int spaceCount = (toPixel - pixelCount) / (DefaultFontInfo.SPACE.getLength() + 1);
+        strBuilder.append(Strings.repeat(' ', spaceCount));
+    }
+    
+    /**
+     * Returns total pixel count of a message horizontally
+     *
+     * @param message Message
+     * @return Pixel Count
+     */
+    public static int getPixelCount(String message) {
+        int pixelCount = 0;
+        boolean prevCode = false;
+        boolean isBold = false;
+    
+        for (char c : message.toCharArray()) {
+            if (c == '§') {
+                prevCode = true;
+            } else if (prevCode) {
+                prevCode = false;
+                isBold = (c == 'l' || c == 'L');
+            } else {
+                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
+                int change = (isBold ? dFI.getBoldLength() : dFI.getLength()) + 1;
+                pixelCount += change;
+            }
+        }
+        return pixelCount;
     }
     
     private static final int DESC_WIDTH = 180;

@@ -35,7 +35,7 @@ import org.bukkit.util.Vector;
 /**
  * @author NickM13
  */
-public class GameWorld extends FakeWorld {
+public class GameWorld extends FakeWorld<GameWorldPlayer> {
 
     /**
      * Blocks that are added after a delay
@@ -130,7 +130,7 @@ public class GameWorld extends FakeWorld {
      */
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        if (!fakeBlocks.containsKey(pos)) return false;
+        if (!fakeBlocks.containsKey(pos) || fakeBlocks.get(pos).getBlockData().getMaterial().isAir()) return false;
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (edittable
                 && breakables.contains(fakeBlocks.get(pos).getBlockData().getMaterial())
@@ -255,7 +255,9 @@ public class GameWorld extends FakeWorld {
                 GameProjectile gp = new GameProjectile(e, projectileType);
                 projectiles.put(e.getEntityId(), gp);
             };
-            Entity entity = getWorld().spawn(handLocation, projectileType.entityType.getEntityClass(), (Consumer) consumer);
+            Entity entity = getWorld().spawn(handLocation,
+                    projectileType.entityType.getEntityClass(),
+                    (Consumer) consumer);
             projectiles.get(entity.getEntityId()).setShooter(cp.getPlayer());
             Random rand = new Random();
             entity.setVelocity(cp.getPlayer().getLocation()
@@ -351,7 +353,7 @@ public class GameWorld extends FakeWorld {
             setBlock(pos, blockData);
         } else {
             closest += random.nextInt(3);
-            futureBlocks.put(pos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(pos, blockData)));
+            futureBlocks.put(pos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(blockData)));
         }
     }
 

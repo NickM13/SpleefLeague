@@ -102,9 +102,6 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (cp.getBattleState() == BattleState.BATTLER) {
-            cp.getBattle().fixSpectators(cp);
-        }
     }
     
 }

@@ -4,17 +4,15 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -285,27 +283,6 @@ public abstract class Vendorable extends DBEntity {
      */
     public final ItemStack getDisplayItem() { return displayItem; }
     
-    /**
-     * https://www.spigotmc.org/threads/hiding-the-glow-effect-from-an-itemstack.157564/#post-1673944
-     * Removes the enchanted glow from an item
-     *
-     * @param itemStack Item Stack
-     * @return Item Stack without enchanted glow
-     */
-    private ItemStack hideGlow(ItemStack itemStack) {
-        net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound tag = null;
-        if (nmsStack.hasTag()) {
-            tag = nmsStack.getTag();
-            if (tag != null) {
-                tag.remove("Enchantments");
-                nmsStack.setTag(tag);
-                return CraftItemStack.asCraftMirror(nmsStack);
-            }
-        }
-        return itemStack;
-    }
-    
     protected final ItemStack createItem() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -320,10 +297,9 @@ public abstract class Vendorable extends DBEntity {
                         ((SkullMeta) itemMeta).setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString((String) nbt.getValue())));
                     }
                 } else {
-                    System.out.println("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324");
+                    CoreLogger.logError("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324");
                 }
             }
-            itemMeta.addEnchant(Enchantment.DIG_SPEED, 50, true);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(name);
@@ -338,7 +314,7 @@ public abstract class Vendorable extends DBEntity {
                     type != null ? type : "");
             itemStack.setItemMeta(itemMeta);
         }
-        return hideGlow(itemStack);
+        return itemStack;
     }
     
     /**

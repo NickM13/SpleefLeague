@@ -19,6 +19,7 @@ public class BalanceCommand extends CommandTemplate {
     
     public BalanceCommand() {
         super(BalanceCommand.class, "balance", Rank.MODERATOR);
+        addAlias("bal");
         setUsage("/balance");
         setDescription("Shows how many coins you have");
     }

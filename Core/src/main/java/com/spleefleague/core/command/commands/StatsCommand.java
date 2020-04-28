@@ -11,6 +11,7 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -36,11 +37,7 @@ public class StatsCommand extends CommandTemplate {
         }
         CorePlayer cp = Core.getInstance().getPlayers().get(target.getUniqueId());
         sender.sendMessage(ChatUtils.centerTitle(Chat.TAG_BRACE + "[ " + cp.getDisplayName() + "'s Ranked Stats" + Chat.TAG_BRACE + " ]"));
-        CorePlugin.getAllPlugins().forEach(plugin -> {
-            DBPlayer dbp = plugin.getPlayers().get(target.getUniqueId());
-            
-            dbp.printStats(sender);
-        });
+        error(sender, CoreError.SETUP);
     }
     
     @CommandAnnotation

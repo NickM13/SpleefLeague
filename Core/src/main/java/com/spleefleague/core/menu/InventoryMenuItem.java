@@ -51,6 +51,10 @@ public class InventoryMenuItem {
         action = null;
         linkedContainer = null;
     }
+
+    public String toString(CorePlayer cp) {
+        return nameFun.apply(cp);
+    }
     
     public InventoryMenuItem setName(String name) {
         this.nameFun = (cp) -> name;
@@ -71,11 +75,11 @@ public class InventoryMenuItem {
     }
     public InventoryMenuItem setDescription(List<String> lore) {
         this.descriptionFun = cp -> {
-            String description = "";
+            StringBuilder description = new StringBuilder();
             for (String line : lore) {
-                description += line;
+                description.append(line);
             }
-            return description;
+            return description.toString();
         };
         return this;
     }
@@ -109,12 +113,12 @@ public class InventoryMenuItem {
     public boolean hasLinkedContainer() {
         return linkedContainer != null;
     }
+
     /**
-     * Returns linked container, creates one if doesn't exist
-     * @return 
+     * Returns currently linked container
+     * @return Menu Container
      */
     public InventoryMenuContainer getLinkedContainer() {
-        if (linkedContainer == null) createLinkedContainer("");
         return linkedContainer;
     }
     public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {

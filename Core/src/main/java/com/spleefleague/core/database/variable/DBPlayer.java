@@ -104,42 +104,4 @@ public abstract class DBPlayer extends DBEntity {
         return online && getPlayer() != null;
     }
 
-    /**
-     * Print all saved elo stats of a player
-     *
-     * @deprecated Use inventory menus instead
-     */
-    @Deprecated
-    public abstract void printStats(DBPlayer dbp);
-
-    /**
-     * Get the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @return Elo
-     */
-    public abstract int getRating(ArenaMode arenaMode);
-
-    /**
-     * Change the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @param rating Elo Change
-     */
-    public abstract void addRating(ArenaMode arenaMode, int rating);
-
-    /**
-     * Get a formatted String of the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @return Elo as a formatted String
-     */
-    public abstract String getDisplayElo(ArenaMode arenaMode);
-
 }

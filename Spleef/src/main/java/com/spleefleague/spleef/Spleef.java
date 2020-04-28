@@ -7,6 +7,7 @@
 package com.spleefleague.spleef;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
@@ -19,12 +20,12 @@ import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefField;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import com.spleefleague.spleef.game.SpleefMode;
-import com.spleefleague.spleef.game.spleef.banana.BananaSpleefArena;
-import com.spleefleague.spleef.game.spleef.classic.ClassicSpleefArena;
-import com.spleefleague.spleef.game.spleef.multi.MultiSpleefArena;
-import com.spleefleague.spleef.game.spleef.power.Power;
-import com.spleefleague.spleef.game.spleef.power.PowerSpleefArena;
-import com.spleefleague.spleef.game.spleef.team.TeamSpleefArena;
+import com.spleefleague.spleef.game.battle.banana.BananaSpleefArena;
+import com.spleefleague.spleef.game.battle.classic.ClassicSpleefArena;
+import com.spleefleague.spleef.game.battle.multi.MultiSpleefArena;
+import com.spleefleague.spleef.game.battle.power.Power;
+import com.spleefleague.spleef.game.battle.power.PowerSpleefArena;
+import com.spleefleague.spleef.game.battle.team.TeamSpleefArena;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
@@ -107,9 +108,15 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     public void initCommands() {
         Core.getInstance().addCommand(new ShovelCommand());
         Core.getInstance().addCommand(new SpleefCommand());
-        Core.getInstance().addCommand(new SpleefFieldCommand());
         
         Core.getInstance().flushCommands();
+    }
+    
+    /**
+     * @return Chat Prefix
+     */
+    public String getChatPrefix() {
+        return Chat.TAG_BRACE + "[" + Chat.TAG + "Spleef" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
     }
     
 }

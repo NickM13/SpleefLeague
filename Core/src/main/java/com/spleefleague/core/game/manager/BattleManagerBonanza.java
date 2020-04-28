@@ -10,6 +10,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BattleManagerMultiBonanza is a BattleManager that maintains
+ * BattleManagerBonanza is a BattleManager that maintains
  * a single battle with an un-capped amount of players
  * Battle is started on server start and never stops
  * 
@@ -29,7 +30,7 @@ public class BattleManagerBonanza extends BattleManager {
         super(mode);
     }
     
-    public Battle getMainBattle() {
+    public Battle<?, ?> getMainBattle() {
         if (battles.isEmpty()) return null;
         return battles.get(0);
     }
@@ -44,7 +45,7 @@ public class BattleManagerBonanza extends BattleManager {
     public int queuePlayer(CorePlayer cp) {
         if (getMainBattle() == null)
             startFirstAvailable();
-        Battle battle = getMainBattle();
+        Battle<?, ?> battle = getMainBattle();
         if (battle != null) {
             if (cp.isInBattle()) {
                 return 2;
@@ -88,7 +89,7 @@ public class BattleManagerBonanza extends BattleManager {
      * @param battle Battle
      * @param cp CorePlayer
      */
-    private void addBattlePlayer(Battle battle, CorePlayer cp) {
+    private void addBattlePlayer(Battle<?, ?> battle, CorePlayer cp) {
         if (cp.getParty() != null) cp.getParty().leave(cp);
         Core.getInstance().unqueuePlayerGlobally(cp);
         battle.addBattler(cp);
@@ -101,7 +102,7 @@ public class BattleManagerBonanza extends BattleManager {
     @Override
     public void startMatch(List<CorePlayer> players, String name) {
         Arena arena = Arena.getByName(name, mode);
-        Battle battle;
+        Battle<?, ?> battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -126,7 +127,7 @@ public class BattleManagerBonanza extends BattleManager {
                 battles.add(battle);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            CoreLogger.logError("Unable to create battle " + e.getStackTrace()[0]);
         }
     }
     

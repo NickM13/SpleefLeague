@@ -7,10 +7,10 @@
 package com.spleefleague.core.util;
 
 import com.google.common.collect.Sets;
+import com.spleefleague.core.player.CorePlayer;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -58,6 +58,23 @@ public class CoreUtils {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public static String mergePlayerNames(Collection<CorePlayer> players) {
+        StringBuilder formatted = new StringBuilder();
+        Iterator<CorePlayer> cpit = players.iterator();
+        while (cpit.hasNext()) {
+            CorePlayer cp = cpit.next();
+            if (formatted.length() > 0) {
+                if (!cpit.hasNext()) {
+                    formatted.append(" and ");
+                } else {
+                    formatted.append(", ");
+                }
+            }
+            formatted.append(cp.getDisplayName());
+        }
+        return formatted.toString();
     }
     
 }

@@ -5,6 +5,8 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.pet.Pet;
+import com.spleefleague.core.vendor.Vendorable;
 import org.bson.Document;
 
 /**
@@ -19,6 +21,8 @@ public class Hat extends Collectible {
      * Load hats from the SpleefLeague:Hats collection
      */
     public static void init() {
+        Vendorable.registerVendorableType(Hat.class);
+        
         hatCol = Core.getInstance().getPluginDB().getCollection("Hats");
         
         for (Document doc : hatCol.find()) {

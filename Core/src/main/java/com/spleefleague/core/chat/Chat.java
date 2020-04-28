@@ -183,7 +183,7 @@ public class Chat {
     }
     
     public static void sendRequest(String message, CorePlayer receiver, CorePlayer sender, BiConsumer<CorePlayer, CorePlayer> action) {
-        RequestManager.sendRequest(Core.getChatPrefix(), message, receiver, sender.getName(), new PlayerRequest(action));
+        RequestManager.sendRequest("", message, receiver, sender.getName(), new PlayerRequest(action));
     }
     
 }

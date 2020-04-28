@@ -14,7 +14,7 @@ import org.bukkit.World;
  * @author NickM13
  * @since 4/21/2020
  */
-public class GlobalWorld extends FakeWorld {
+public class GlobalWorld extends FakeWorld<GlobalWorldPlayer> {
 
     public static void init() {
         GlobalBiome.init();

@@ -5,18 +5,23 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.core.util.PacketUtils;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
 import net.minecraft.server.v1_15_R1.EnumDirection;
 import net.minecraft.server.v1_15_R1.PacketPlayInUseItem;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
@@ -26,7 +31,7 @@ import java.util.logging.Logger;
  * @author NickM13
  * @since 4/16/2020
  */
-public abstract class FakeWorld {
+public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     
     private final static Map<UUID, ChunkCoord> loadedChunks = new HashMap<>();
     private final static List<PacketAdapter> packetAdapters = new ArrayList<>();
@@ -40,11 +45,37 @@ public abstract class FakeWorld {
         addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_DIG) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
-                BlockPosition pos = event.getPacket().getBlockPositionModifier().read(0);
-                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
-                    if (fakeWorld.onBlockPunch(cp, pos)) {
-                        event.setCancelled(true);
+                // TODO: Set up way to find out if block was instantly broken or not
+                EnumWrappers.PlayerDigType digType = event.getPacket().getPlayerDigTypes().read(0);
+                if (digType == EnumWrappers.PlayerDigType.START_DESTROY_BLOCK) {
+                    BlockPosition pos = event.getPacket().getBlockPositionModifier().read(0);
+                    CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                    Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                    while (fit.hasNext()) {
+                        FakeWorld<?> fakeWorld = fit.next();
+                        FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(pos);
+                        if (fakeBlock != null
+                                && !fakeBlock.getBlockData().getMaterial().isAir()) {
+                            if (fakeWorld.onBlockPunch(cp, pos)) {
+                                event.setCancelled(true);
+                                break;
+                            }
+                        }
+                    }
+                } else if (digType == EnumWrappers.PlayerDigType.STOP_DESTROY_BLOCK) {
+                    BlockPosition pos = event.getPacket().getBlockPositionModifier().read(0);
+                    CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                    Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                    while (fit.hasNext()) {
+                        FakeWorld<?> fakeWorld = fit.next();
+                        FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(pos);
+                        if (fakeBlock != null
+                                && !fakeBlock.getBlockData().getMaterial().isAir()) {
+                            if (fakeWorld.onBlockPunch(cp, pos)) {
+                                event.setCancelled(true);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -53,7 +84,9 @@ public abstract class FakeWorld {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                while (fit.hasNext()) {
+                    FakeWorld<?> fakeWorld = fit.next();
                     //event.setCancelled(true);
                     break;
                 }
@@ -68,11 +101,15 @@ public abstract class FakeWorld {
                 BlockPosition blockPosition = new BlockPosition(nmsBlockPosition.getX(), nmsBlockPosition.getY(), nmsBlockPosition.getZ());
                 EnumDirection direction = packetPlayInUseItem.c().getDirection();
                 BlockPosition blockRelative = blockPosition.add(new BlockPosition(direction.getAdjacentX(), direction.getAdjacentY(), direction.getAdjacentZ()));
-                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                while (fit.hasNext()) {
+                    FakeWorld<?> fakeWorld = fit.next();
                     if (fakeWorld.onItemUse(cp, blockPosition, blockRelative)) {
                         event.setCancelled(true);
                         boolean fixed = false;
-                        for (FakeWorld fakeWorld2 : cp.getFakeWorlds()) {
+                        Iterator<FakeWorld<?>> fit2 = cp.getFakeWorlds();
+                        while (fit2.hasNext()) {
+                            FakeWorld<?> fakeWorld2 = fit2.next();
                             if (fakeWorld2.updateBlock(blockRelative)) {
                                 fixed = true;
                                 break;
@@ -99,7 +136,9 @@ public abstract class FakeWorld {
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
                 ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
                 Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
-                for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+                Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                while (fit.hasNext()) {
+                    FakeWorld<?> fakeWorld = fit.next();
                     Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
                     if (fakeChunk != null) {
                         for (BlockPosition blockPosition : fakeChunk) {
@@ -138,12 +177,12 @@ public abstract class FakeWorld {
     }
     
     private final World world;
-    private final Class<? extends FakeWorldPlayer> fakePlayerClass;
-    protected final Map<UUID, FakeWorldPlayer> playerMap;
+    private final Class<FWP> fakePlayerClass;
+    protected final Map<UUID, FWP> playerMap;
     protected final Map<BlockPosition, FakeBlock> fakeBlocks;
     protected final Map<ChunkCoord, Set<BlockPosition>> fakeChunks;
 
-    protected FakeWorld(World world, Class<? extends FakeWorldPlayer> fakePlayerClass) {
+    protected FakeWorld(World world, Class<FWP> fakePlayerClass) {
         this.world = world;
         this.fakePlayerClass = fakePlayerClass;
         playerMap = new HashMap<>();
@@ -155,10 +194,10 @@ public abstract class FakeWorld {
      * Clears all blocks from the FakeWorld without removing players
      */
     public final void clear() {
-        for (FakeBlock fb : fakeBlocks.values()) {
-            setBlock(fb.getBlockPosition(), Material.AIR.createBlockData(), true);
+        Map<BlockPosition, FakeBlock> fakeBlocks2 = new HashMap<>(fakeBlocks);
+        for (Map.Entry<BlockPosition, FakeBlock> entry : fakeBlocks2.entrySet()) {
+            removeBlock(entry.getKey());
         }
-        updateAll();
         fakeBlocks.clear();
         fakeChunks.clear();
     }
@@ -167,9 +206,9 @@ public abstract class FakeWorld {
      * Stops tasks and packet adapters and removes players from the world
      */
     public void destroy() {
-        Iterator<FakeWorldPlayer> fwpit = playerMap.values().iterator();
+        Iterator<FWP> fwpit = playerMap.values().iterator();
         while (fwpit.hasNext()) {
-            FakeWorldPlayer fwp = fwpit.next();
+            FWP fwp = fwpit.next();
             clearPlayer(fwp.getCorePlayer());
             fwp.getCorePlayer().leaveFakeWorld(this);
             fwpit.remove();
@@ -179,7 +218,7 @@ public abstract class FakeWorld {
         playerMap.clear();
     }
 
-    public final Map<UUID, FakeWorldPlayer> getPlayerMap() {
+    public final Map<UUID, FWP> getPlayerMap() {
         return playerMap;
     }
 
@@ -237,7 +276,7 @@ public abstract class FakeWorld {
         try {
             playerMap.put(cp.getUniqueId(), fakePlayerClass.getConstructor(CorePlayer.class).newInstance(cp));
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            CoreLogger.logError("FakeWorld.java Unable to create player from class " + fakePlayerClass);
         }
         // TODO: Do we need this line?
         //dbp.getPlayer().setCollidable(false);
@@ -255,7 +294,9 @@ public abstract class FakeWorld {
         WrappedBlockData wbd;
         for (Map.Entry<BlockPosition, FakeBlock> fb : fakeBlocks.entrySet()) {
             boolean success = false;
-            for (FakeWorld fakeWorld : cp.getFakeWorlds()) {
+            Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+            while (fit.hasNext()) {
+                FakeWorld<?> fakeWorld = fit.next();
                 if (fakeWorld.updateBlock(fb.getKey(), cp)) {
                     success = true;
                 }
@@ -322,9 +363,9 @@ public abstract class FakeWorld {
      * @param ignoreUpdate Should Send Packet
      */
     public void setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
-        FakeBlock fb = new FakeBlock(pos, blockData);
+        ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
+        FakeBlock fb = new FakeBlock(blockData);
         fakeBlocks.put(pos, fb);
-        ChunkCoord coord = fb.getChunkCoord();
         if (!fakeChunks.containsKey(coord)) {
             fakeChunks.put(coord, new HashSet<>());
         }
@@ -333,19 +374,32 @@ public abstract class FakeWorld {
     }
 
     /**
+     * Removes a block from the FakeWorld
+     *
+     * @param pos Block Position
+     */
+    public void removeBlock(BlockPosition pos) {
+        ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
+        if (fakeBlocks.remove(pos) != null) {
+            fakeChunks.get(coord).remove(pos);
+            if (fakeChunks.get(coord).isEmpty()) {
+                fakeChunks.remove(coord);
+            }
+            for (FWP fwp : getPlayerMap().values()) {
+                fwp.getPlayer().sendBlockChange(pos.toLocation(getWorld()), pos.toLocation(getWorld()).getBlock().getBlockData());
+            }
+        }
+    }
+
+    /**
      * Fill fake blocks with a set of fake blocks
      * and push an updateAll call
      *
      * @param blocks Fake Blocks
      */
-    public void setBlocks(Set<FakeBlock> blocks) {
-        ChunkCoord coord;
-        for (FakeBlock fb : blocks) {
-            fakeBlocks.put(fb.getBlockPosition(), fb);
-            coord = fb.getChunkCoord();
-            if (!fakeChunks.containsKey(coord))
-                fakeChunks.put(coord, new HashSet<>());
-            fakeChunks.get(coord).add(fb.getBlockPosition());
+    public void setBlocks(BlockPosition origin, Map<BlockPosition, FakeBlock> blocks) {
+        for (Map.Entry<BlockPosition, FakeBlock> entry : blocks.entrySet()) {
+            setBlock(entry.getKey().add(origin), entry.getValue().getBlockData(), true);
         }
         updateAll();
     }
@@ -388,7 +442,7 @@ public abstract class FakeWorld {
                 if (cp != null && !cp.equals(fwp.getCorePlayer()))
                     fwp.getPlayer().playSound(pos.toLocation(world), fakeBlocks.get(pos).getBreakSound(), 1, 1);
             });
-            setBlock(pos, Material.AIR.createBlockData(), false);
+            removeBlock(pos);
             return true;
         } else {
             updateBlock(pos);
@@ -433,7 +487,7 @@ public abstract class FakeWorld {
             PacketContainer fakeBlockPacket = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
             fakeBlockPacket.getBlockPositionModifier().write(0, pos);
             fakeBlockPacket.getBlockData().write(0, wbd);
-            for (FakeWorldPlayer fwp : getPlayerMap().values()) {
+            for (FWP fwp : getPlayerMap().values()) {
                 try {
                     Core.getProtocolManager().sendServerPacket(fwp.getPlayer(), fakeBlockPacket);
                 } catch (InvocationTargetException ex) {

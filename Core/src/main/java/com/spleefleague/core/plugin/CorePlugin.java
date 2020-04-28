@@ -10,6 +10,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.game.battle.Battle;
@@ -25,6 +28,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -256,6 +260,58 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         } catch (NoClassDefFoundError e) {
             System.out.println("Jar files updated, unable to close MongoDB");
         }
+    }
+    
+    public abstract String getChatPrefix();
+    
+    /**
+     * Send a message to the global channel
+     *
+     * @param msg Message
+     */
+    public final void sendMessage(String msg) {
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg);
+    }
+    
+    /**
+     * Send a message to a specific player
+     *
+     * @param cp Core Player
+     * @param msg Message
+     */
+    public final void sendMessage(CorePlayer cp, String msg) {
+        Chat.sendMessageToPlayer(cp, getChatPrefix() + msg);
+    }
+    
+    /**
+     * Send a message to a CommandSender (Block, Console, etc)
+     *
+     * @param cs CommandSender
+     * @param msg Message
+     */
+    public final void sendMessage(CommandSender cs, String msg) {
+        cs.sendMessage(getChatPrefix() + msg);
+    }
+    
+    /**
+     * Doesn't use default chat prefix
+     * <br>Send message to a ChatChannel
+     *
+     * @param cc Chat Channel
+     * @param msg Message
+     */
+    public final void sendMessage(ChatChannel cc, String msg) {
+        Chat.sendMessage(cc, getChatPrefix() + msg);
+    }
+    
+    /**
+     * Send message to a ChatGroup
+     *
+     * @param cg Chat Group
+     * @param msg Message
+     */
+    public final void sendMessage(ChatGroup cg, String msg) {
+        cg.sendMessage(getChatPrefix() + msg);
     }
     
 }

@@ -40,28 +40,4 @@ public class SpleggPlayer extends DBPlayer {
 
     }
 
-    /**
-     * @param dbPlayer DBPlayer
-     * @deprecated
-     */
-    @Override
-    public void printStats(DBPlayer dbPlayer) {
-
-    }
-
-    @Override
-    public int getRating(ArenaMode arenaMode) {
-        return 0;
-    }
-
-    @Override
-    public void addRating(ArenaMode arenaMode, int i) {
-
-    }
-
-    @Override
-    public String getDisplayElo(ArenaMode arenaMode) {
-        return null;
-    }
-
 }

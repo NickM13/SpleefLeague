@@ -182,15 +182,14 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     /**
-     * Returns the current active collectibles item of a type, or
-     * null if there is none
+     * Returns the current active collectibles item of a type, or null if there is none
      *
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
-    public Collectible getActive(Class<? extends Collectible> clazz) {
+    public <T extends Collectible> T getActive(Class<T> clazz) {
         if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz))) return null;
-        return (Collectible) Vendorables.get(Vendorable.getTypeName(clazz), activeCollectibles.get(Vendorable.getTypeName(clazz)));
+        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getTypeName(clazz)));
     }
     
     public boolean hasActive(Class<? extends Collectible> clazz) {
@@ -198,16 +197,15 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     /**
-     * Returns the current active collectibles item of a type, or
-     * default if there is none or the active collectible is no longer
-     * available
+     * Returns the current active collectibles item of a type, or default if there is none or the active collectible
+     * is no longer available
      *
      * @param clazz Collectible Class
      * @param defaultCollectible Default Collectible
      * @return NonNull Collectible
      */
-    public Collectible getActiveOrDefault(Class<? extends Collectible> clazz, Collectible defaultCollectible) {
-        Collectible collectible = getActive(clazz);
+    public <T extends Collectible> T getActiveOrDefault(Class<T> clazz, T defaultCollectible) {
+        T collectible = getActive(clazz);
         if (collectible == null) return defaultCollectible;
         return collectible;
     }

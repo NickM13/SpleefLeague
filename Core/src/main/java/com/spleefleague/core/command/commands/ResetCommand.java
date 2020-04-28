@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.error.CoreError;
+import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
@@ -24,7 +25,7 @@ public class ResetCommand extends CommandTemplate {
     @CommandAnnotation
     public void reset(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
-        sender.getBattle().requestReset(sender);
+        sender.getBattle().onRequest(sender, "reset", null);
     }
 
 }

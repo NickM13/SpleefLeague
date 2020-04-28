@@ -42,7 +42,8 @@ public class OptionsMenu {
             InventoryMenuItem chatOptionsItem = InventoryMenuAPI.createItem()
                     .setName("Chat Channels")
                     .setDisplayItem(new ItemStack(Material.WRITABLE_BOOK))
-                    .setDescription("Toggle Chat Channels");
+                    .setDescription("Toggle Chat Channels")
+                    .createLinkedContainer("Chat Channels");
 
             for (ChatChannel.Channel channel : ChatChannel.Channel.values()) {
                 chatOptionsItem.getLinkedContainer()
