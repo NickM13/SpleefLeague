@@ -82,12 +82,12 @@ public class ChatChannel {
             case BRACKET:
                 message += Chat.BRACKET + "<";
                 if (sender.getRank().getDisplayNameUnformatted().length() > 0) {
-                    message += Chat.BRACE + "[" + sender.getRank().getDisplayName() + Chat.BRACE + "] ";
+                    message += Chat.TAG_BRACE + "[" + sender.getRank().getDisplayName() + Chat.TAG_BRACE + "] ";
                 }
                 message += sender.getDisplayName() + Chat.BRACKET + "> ";
                 break;
             case COLON:
-                message += Chat.BRACE + "[" + color + name + Chat.BRACE + "] ";
+                message += Chat.TAG_BRACE + "[" + color + name + Chat.TAG_BRACE + "] ";
                 message += sender.getDisplayName() + Chat.BRACKET + ": ";
                 break;
             default: break;

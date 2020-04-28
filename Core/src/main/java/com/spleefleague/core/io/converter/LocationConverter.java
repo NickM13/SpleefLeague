@@ -14,6 +14,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 /**
+ * Converts a document to a Location object and vice versa
+ *
  * @author NickM13
  */
 public class LocationConverter {

@@ -1,6 +1,5 @@
 package com.spleefleague.core.world;
 
-import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.entity.Player;
 

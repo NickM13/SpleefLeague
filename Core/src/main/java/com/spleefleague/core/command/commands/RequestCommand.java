@@ -9,9 +9,14 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.request.RequestManager;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author NickM13
@@ -20,7 +25,25 @@ public class RequestCommand extends CommandTemplate {
     
     public RequestCommand() {
         super(RequestCommand.class, "request", Rank.DEFAULT);
-        setUsage("Not for personal use");
+        setUsage("Sends requests while in battle");
+        setOptions("requests", RequestCommand::getAvailableRequests);
+    }
+    
+    protected static Set<String> getAvailableRequests(CorePlayer cp) {
+        Set<String> availableRequests = new HashSet<>();
+        if (cp.isInBattle()) {
+            availableRequests.addAll(cp.getBattle().getAvailableRequests(cp));
+        }
+        return availableRequests;
+    }
+    
+    @CommandAnnotation
+    public void request(CorePlayer sender,
+            @OptionArg(listName="requests") String requestType,
+            @Nullable String requestValue) {
+        if (sender.isInBattle()) {
+            sender.getBattle().onRequest(sender, requestType, requestValue);
+        }
     }
     
     @CommandAnnotation(hidden=true)

@@ -48,27 +48,27 @@ public class PlayerInfoCommand extends CommandTemplate {
     public void playerinfo(CorePlayer sender, OfflinePlayer op) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(op.getUniqueId());
         List<String> strings = new ArrayList<>();
-        strings.add(Chat.BRACE + ChatUtils.centerTitle("[ " + cp.getDisplayNamePossessive() + " data" + Chat.BRACE + " ]"));
-        strings.add(Chat.BRACE + "Name: " +
+        strings.add(Chat.TAG_BRACE + ChatUtils.centerTitle("[ " + cp.getDisplayNamePossessive() + " data" + Chat.TAG_BRACE + " ]"));
+        strings.add(Chat.TAG_BRACE + "Name: " +
                 Chat.DEFAULT + op.getName());
-        strings.add(Chat.BRACE + "UUID: " +
+        strings.add(Chat.TAG_BRACE + "UUID: " +
                 Chat.DEFAULT + op.getUniqueId().toString());
-        strings.add(Chat.BRACE + "Rank: " +
+        strings.add(Chat.TAG_BRACE + "Rank: " +
                 Chat.DEFAULT + cp.getRank().getColor() + cp.getRank().getDisplayNameUnformatted());
-        strings.add(Chat.BRACE + "State: " +
+        strings.add(Chat.TAG_BRACE + "State: " +
                 Chat.DEFAULT + getState(cp));
-        strings.add(Chat.BRACE + "Muted: " +
+        strings.add(Chat.TAG_BRACE + "Muted: " +
                 Chat.DEFAULT + getMuted(cp));
         if (!cp.isOnline())
-            strings.add(Chat.BRACE + "Last seen: " +
+            strings.add(Chat.TAG_BRACE + "Last seen: " +
                     Chat.DEFAULT + getLastSeen(cp));
-        strings.add(Chat.BRACE + "IP: " +
+        strings.add(Chat.TAG_BRACE + "IP: " +
                 Chat.DEFAULT + getIp(cp));
-        strings.add(Chat.BRACE + "Shared accounts: " +
+        strings.add(Chat.TAG_BRACE + "Shared accounts: " +
                 Chat.DEFAULT + getSharedAccounts(cp));
-        strings.add(Chat.BRACE + "Total online time: " +
+        strings.add(Chat.TAG_BRACE + "Total online time: " +
                 Chat.DEFAULT + getOnlineTime(cp));
-        strings.add(Chat.BRACE + "Total active time: " +
+        strings.add(Chat.TAG_BRACE + "Total active time: " +
                 Chat.DEFAULT + getActiveTime(cp));
         
         String mergeString = "";

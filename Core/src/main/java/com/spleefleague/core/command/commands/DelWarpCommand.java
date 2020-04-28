@@ -22,6 +22,7 @@ public class DelWarpCommand extends CommandTemplate {
         super(DelWarpCommand.class, "delwarp", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/delwarp <warp>");
         setDescription("Delete a warp");
+        setContainer("warp");
     }
     
     @CommandAnnotation

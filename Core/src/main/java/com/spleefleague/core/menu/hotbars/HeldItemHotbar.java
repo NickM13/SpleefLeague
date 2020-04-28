@@ -2,8 +2,6 @@ package com.spleefleague.core.menu.hotbars;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
-import com.spleefleague.core.player.CorePlayer;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13

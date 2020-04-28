@@ -9,12 +9,11 @@ package com.spleefleague.core.game.manager;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
-import com.spleefleague.core.database.variable.DBPlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +22,8 @@ import java.util.List;
  * Uses lead player of parties for queue id and parties for comparisons
  * 
  * @author NickM13
- * @param <B>
  */
-public class BattleManagerTeam<B extends Battle<? extends Arena>> extends BattleManager<B> {
+public class BattleManagerTeam extends BattleManager {
     
     protected PlayerQueue queue;
     
@@ -94,7 +92,7 @@ public class BattleManagerTeam<B extends Battle<? extends Arena>> extends Battle
     @Override
     public void startMatch(List<CorePlayer> players, String name) {
         Arena arena = Arena.getByName(name, mode);
-        Battle<?> sb = null;
+        Battle battle;
         List<CorePlayer> playersFull = new ArrayList<>();
         int size = -1;
         for (CorePlayer cp : players) {
@@ -120,11 +118,11 @@ public class BattleManagerTeam<B extends Battle<? extends Arena>> extends Battle
                 for (CorePlayer cp : playersFull) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
-                sb = battleClass
+                battle = battleClass
                         .getDeclaredConstructor(List.class, mode.getArenaClass())
                         .newInstance(players, arena);
-                sb.startBattle();
-                battles.add(sb);
+                battle.startBattle();
+                battles.add(battle);
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,20 +6,19 @@
 
 package com.spleefleague.spleef.game;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.core.world.build.BuildStructure;
+import com.spleefleague.core.world.build.BuildStructures;
+import com.spleefleague.spleef.Spleef;
+import org.bson.Document;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import com.spleefleague.core.util.variable.Dimension;
-import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.spleef.Spleef;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.bukkit.Location;
 
 /**
  * Spleef Arenas are defined areas read from the Database
@@ -31,26 +30,9 @@ import org.bukkit.Location;
 
 public class SpleefArena extends Arena {
     
-    protected SpleefField field;
+    @DBField
+    protected List<String> structures;
     protected Point center = new Point();
-
-    /**
-     * Boxes that the snow is filled into
-     * ObjectId links to the SuperSpleef:Fields document
-     *
-     * @param id ObjectID
-     */
-    @DBLoad(fieldName="field")
-    protected void loadSpleefField(ObjectId id) {
-        field = SpleefField.getField(id);
-        
-        Dimension bbdim = field.getAreas().get(0);
-        for (int i = 1; i < field.getAreas().size(); i++) {
-            Dimension dim = field.getAreas().get(i);
-            bbdim.combine(dim);
-        }
-        center = bbdim.getCenter();
-    }
 
     /**
      * Gets center of snow field (Used for facing players towards center)
@@ -72,13 +54,14 @@ public class SpleefArena extends Arena {
                 new Document("$unwind", new Document("path", "$spleefMode")),
                 new Document("$group", new Document("_id", "$spleefMode").append("arenas", new Document("$addToSet", "$$ROOT")))
         )).iterator();
-        while(arenaTypes.hasNext()) {
+        while (arenaTypes.hasNext()) {
             Document arenas = arenaTypes.next();
             List<Document> arenaInstances = arenas.get("arenas", List.class);
+            Iterator<Document> arenaIt = arenaInstances.iterator();
             try {
                 ArenaMode mode = SpleefMode.valueOf(arenas.get("_id", String.class)).getArenaMode();
                 int amount = 0;
-                amount = loadArenas(arenaInstances, mode);
+                amount = loadArenas(arenaIt, mode);
                 if (amount > 0) System.out.println("Loaded " + amount + " " + mode.getDisplayName() + " arenas.");
             } catch(IllegalArgumentException e) {
                 System.err.println(arenas.get("_id") + " is not a valid spleef mode.");
@@ -86,8 +69,12 @@ public class SpleefArena extends Arena {
         }
     }
     
-    public SpleefField getField() {
-        return field;
+    public List<BuildStructure> getFields() {
+        List<BuildStructure> buildStructures = new ArrayList<BuildStructure>();
+        for (String structure : structures) {
+            buildStructures.add(BuildStructures.get(structure));
+        }
+        return buildStructures;
     }
     
 }

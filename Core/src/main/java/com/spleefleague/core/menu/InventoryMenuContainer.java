@@ -7,7 +7,6 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.ArrayList;
@@ -30,10 +29,8 @@ public class InventoryMenuContainer {
     
     // Entire menu size
     public static final int MENU_ROWS = 6, MENU_COLUMNS = 9, MENU_SIZE = MENU_ROWS * MENU_COLUMNS;
-    // Dynamic menu item space
-    public static final int MENU_COUNT = (MENU_ROWS - 2) * 9;
     
-    protected class InventoryMenuControl {
+    protected static class InventoryMenuControl {
         int slot;
         InventoryMenuItem menuItem;
         
@@ -53,6 +50,12 @@ public class InventoryMenuContainer {
     protected ArrayList<InventoryMenuControl> controlItems;
     protected InventoryMenuControl backButton;
     
+    protected int rowFirst;
+    protected int rowLast;
+    protected int colFirst;
+    protected int colLast;
+    protected int pageItemTotal;
+    
     public InventoryMenuContainer() {
         openAction = null;
         titleFun = null;
@@ -60,8 +63,38 @@ public class InventoryMenuContainer {
         sortedItems = new HashMap<>();
         controlItems = new ArrayList<>();
         initControls();
+        
+        setPageBoundaries(0, 4, 0, 9);
     }
     
+    /**
+     * Set the bounding area of pages
+     *
+     * @param rowStart Starting Row (0-5)
+     * @param rowWidth Ending Row (0-5)
+     * @param colStart Starting Column (1-9)
+     * @param colWidth Ending Column (1-9)
+     * @return Self
+     */
+    public InventoryMenuContainer setPageBoundaries(int rowStart, int rowWidth, int colStart, int colWidth) {
+        rowFirst = rowStart;
+        rowLast = rowStart + rowWidth - 1;
+        colFirst = colStart;
+        colLast = colStart + colWidth - 1;
+        pageItemTotal = rowWidth * colWidth;
+        return this;
+    }
+    
+    public int getPageItemTotal() {
+        return pageItemTotal;
+    }
+    
+    /**
+     * Set the action to occur on the opening of a container, to have a dynamic flow of options
+     *
+     * @param openAction Open Action (Consumer<Container(self), Player>)
+     * @return Self
+     */
     public InventoryMenuContainer setOpenAction(BiConsumer<InventoryMenuContainer, CorePlayer> openAction) {
         this.openAction = openAction;
         return this;
@@ -77,9 +110,9 @@ public class InventoryMenuContainer {
     
     protected void initControls() {
         backButton = new InventoryMenuControl((5 * 9 - 9), InventoryMenuAPI.createItem()
-                        .setName(ChatColor.RED + "" + ChatColor.BOLD + "Return")
-                        .setDisplayItem(Material.DIAMOND_AXE, 9)
-                        .setVisibility(cp -> backButton.menuItem.hasLinkedContainer()));
+                .setName(ChatColor.RED + "" + ChatColor.BOLD + "Return")
+                .setDisplayItem(Material.DIAMOND_AXE, 9)
+                .setVisibility(cp -> backButton.menuItem.hasLinkedContainer()));
         controlItems.add(backButton);
         
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
@@ -119,7 +152,7 @@ public class InventoryMenuContainer {
         return menuItem;
     }
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int x, int y) {
-        addMenuItem(menuItem, x + (y * 9));
+        addMenuItem(menuItem, (x) + (y * (colLast - colFirst + 1)));
         menuItem.setParentContainer(this);
         return menuItem;
     }
@@ -135,7 +168,7 @@ public class InventoryMenuContainer {
     }
     
     public void removeMenuItem(int page, int slot) {
-        sortedItems.remove((page * MENU_COUNT) + slot);
+        sortedItems.remove((page * pageItemTotal) + slot);
     }
     
     public void openInventory(CorePlayer cp) {
@@ -156,11 +189,11 @@ public class InventoryMenuContainer {
         }
         
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
-            if (item.getKey() >= MENU_COUNT * cp.getPage() &&
-                    item.getKey() < MENU_COUNT * (cp.getPage() + 1) &&
+            if (item.getKey() >= pageItemTotal * cp.getPage() &&
+                    item.getKey() < pageItemTotal * (cp.getPage() + 1) &&
                     item.getValue().isVisible(cp)) {
                 ItemStack itemStack = item.getValue().createItem(cp);
-                inv.setItem(item.getKey() - MENU_COUNT * cp.getPage(), itemStack);
+                inv.setItem(item.getKey() - pageItemTotal * cp.getPage(), itemStack);
             }
         }
         
@@ -171,12 +204,16 @@ public class InventoryMenuContainer {
                     && sortedItems.get(i).isVisible(cp)) {
                 i++;
             }
-            if (i >= MENU_COUNT * cp.getPage()) {
+            if (i >= pageItemTotal * cp.getPage()) {
                 ItemStack itemStack = item.createItem(cp);
-                inv.setItem(i - MENU_COUNT * cp.getPage(), itemStack);
+                int slotNum = (i - pageItemTotal * cp.getPage());
+                int leftSpacing = colFirst;
+                int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
+                int topSpacing = rowFirst * 9;
+                inv.setItem(leftSpacing + rightSpacing + slotNum + topSpacing, itemStack);
             }
             i++;
-            if (i >= MENU_COUNT * (cp.getPage() + 1)) {
+            if (i >= pageItemTotal * (cp.getPage() + 1)) {
                 break;
             }
         }
@@ -212,7 +249,7 @@ public class InventoryMenuContainer {
         
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
-                pageCount = Math.max(pageCount, item.getKey() / MENU_COUNT + 1);
+                pageCount = Math.max(pageCount, item.getKey() / pageItemTotal + 1);
             }
         }
         
@@ -223,7 +260,7 @@ public class InventoryMenuContainer {
                     && sortedItems.get(i).isVisible(cp)) {
                 i++;
             }
-            pageCount = Math.max(pageCount, i / MENU_COUNT + 1);
+            pageCount = Math.max(pageCount, i / pageItemTotal + 1);
             i++;
         }
         
@@ -239,8 +276,8 @@ public class InventoryMenuContainer {
         }
         
         InventoryMenuItem menuItem;
-        if (slot < MENU_COUNT) {
-            if ((menuItem = sortedItems.get(slot + (cp.getPage() * MENU_COUNT))) != null
+        if (slot < pageItemTotal) {
+            if ((menuItem = sortedItems.get(slot + (cp.getPage() * pageItemTotal))) != null
                     && menuItem.isVisible(cp)) {
                 return menuItem;
             }
@@ -251,10 +288,10 @@ public class InventoryMenuContainer {
                         && sortedItems.get(i).isVisible(cp)) {
                     i++;
                 }
-                if (i - MENU_COUNT * cp.getPage() == slot) {
+                if (i - pageItemTotal * cp.getPage() == slot) {
                     return item;
                 }
-                if (i - MENU_COUNT * cp.getPage() > slot) {
+                if (i - pageItemTotal * cp.getPage() > slot) {
                     return null;
                 }
                 i++;
@@ -265,7 +302,8 @@ public class InventoryMenuContainer {
     }
     
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
-        if (e.getClickedInventory().getType() == InventoryType.PLAYER) {
+        if (e.getClickedInventory() == null
+                || e.getClickedInventory().getType() == InventoryType.PLAYER) {
             e.setCancelled(true);
         }
         else if (e.getClickedInventory().getType() == InventoryType.CHEST) {

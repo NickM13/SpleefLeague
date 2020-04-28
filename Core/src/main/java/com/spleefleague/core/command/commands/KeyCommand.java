@@ -12,6 +12,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.player.collectible.key.Key;
 import java.util.List;
@@ -32,60 +33,116 @@ public class KeyCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
+    public void keyGet(CorePlayer sender,
+            @LiteralArg("get") String l,
+            @OptionArg(listName="keys") String identifier) {
+        if (Vendorables.contains(Key.class, identifier)) {
+            sender.getPlayer().getInventory().addItem(Vendorables.get(Key.class, identifier).getDisplayItem());
+            success(sender, "Given copy of display item for key " + identifier);
+        } else {
+            error(sender, "Key not found " + identifier);
+        }
+    }
+    
+    @CommandAnnotation
     public void keyCreate(CorePlayer sender,
             @LiteralArg(value="create") String l,
-            @HelperArg(value="<identifierName>") String name,
+            @HelperArg(value="<identifier>") String identifier,
             @HelperArg(value="<damage>") Integer damage,
             @HelperArg(value="<displayName>") String displayName) {
-        //Key keyItem = Key.createKeyItem(name, damage, displayName);
-        //if (keyItem != null) {
-            //sender.getPlayer().getInventory().setItemInMainHand(keyItem.createItem());
-        //}
+        if (Vendorables.contains(Key.class, identifier)) {
+            error(sender, "That key already exists!");
+        } else {
+            Key keyItem = Key.createKeyItem(identifier, displayName, damage);
+            sender.getPlayer().getInventory().addItem(keyItem.getDisplayItem());
+            success(sender, "Created key {" + identifier + ", " + displayName + ", " + damage + "}");
+        }
     }
     
     @CommandAnnotation
-    public void keyRename(CorePlayer sender,
+    public void keyEditRename(CorePlayer sender,
+            @LiteralArg("edit") String e,
             @LiteralArg(value="rename") String l,
-            @OptionArg(listName="keys") String key,
+            @OptionArg(listName="keys") String identifier,
             @HelperArg(value="<displayName>") String displayName) {
-        //Key.getKeyItem(key).setDisplayName(displayName);
+        Key key = Vendorables.get(Key.class, identifier);
+        if (key != null) {
+            String prevName = key.getName();
+            key.setName(displayName);
+            success(sender, "Renamed key " + identifier + " from " + prevName + " to " + displayName);
+        }
     }
     
     @CommandAnnotation
-    public void keyDamage(CorePlayer sender,
+    public void keyEditDamage(CorePlayer sender,
+            @LiteralArg("edit") String e,
             @LiteralArg(value="damage") String l,
-            @OptionArg(listName="keys") String key,
+            @OptionArg(listName="keys") String identifier,
             @HelperArg(value="<damage>") Integer damage) {
-        //Key.getKeyItem(key).setDamage(damage);
+        Key key = Vendorables.get(Key.class, identifier);
+        if (key != null) {
+            Integer prevDamage = key.getDamageNbt();
+            key.setDamageNbt(damage);
+            success(sender, "Changed damage value of key " + identifier + " from " + prevDamage + " to " + damage);
+        }
     }
     
+    /**
+     * Adds a key to the players collection
+     *
+     * @param sender Sender
+     * @param l add
+     * @param target Target
+     * @param identifier Key Identifier
+     */
     @CommandAnnotation
-    public void keyUnlock(CommandSender sender,
-            @LiteralArg(value="unlock") String l,
+    public void keyAdd(CommandSender sender,
+            @LiteralArg(value="add") String l,
             CorePlayer target,
-            @OptionArg(listName="keys") String key) {
-        //target.addKey(Key.getKeyItem(key));
+            @OptionArg(listName="keys") String identifier) {
+        target.getCollectibles().add(Vendorables.get(Key.class, identifier));
     }
     
+    /**
+     * Removes a key from a players collection
+     *
+     * @param sender Sender
+     * @param l remove
+     * @param target Target
+     * @param identifier Key Identifier
+     */
     @CommandAnnotation
-    public void keyLock(CommandSender sender,
-            @LiteralArg(value="lock") String l,
+    public void keyRemove(CommandSender sender,
+            @LiteralArg(value="remove") String l,
             CorePlayer target,
-            @OptionArg(listName="keys") String key) {
-        //target.removeKey(Key.getKeyItem(key));
+            @OptionArg(listName="keys") String identifier) {
+        target.getCollectibles().remove(Vendorables.get(Key.class, identifier));
     }
     
+    /**
+     * Returns whether a player in the list is holding a key
+     *
+     * @param sender Command Sender
+     * @param l holding
+     * @param targets Target List
+     * @param identifier Key Identifier
+     * @return Success
+     */
     @CommandAnnotation
     public boolean keyHolding(CommandSender sender,
             @LiteralArg(value="holding") String l,
             List<CorePlayer> targets,
-            @OptionArg(listName="keys") String key) {
-        //KeyItem keyItem = KeyItem.getKeyItem(target.getHeldItem().getItem());
+            @OptionArg(listName="keys") String identifier) {
+        Key keyMatch = Vendorables.get(Key.class, identifier);
+        if (keyMatch == null) {
+            sender.sendMessage("Key not valid " + identifier);
+            return false;
+        }
         for (CorePlayer target : targets) {
-            //Key keyItem = Key.getKeyItem(target.getPlayer().getInventory().getItemInMainHand());
-            //if (keyItem != null) {
-                //return (keyItem.getIdentifier().equalsIgnoreCase(key));
-            //}
+            Holdable heldItem = target.getCollectibles().getHeldItem();
+            if (heldItem != null && heldItem.equalsSoft(keyMatch)) {
+                return true;
+            }
         }
         return false;
     }

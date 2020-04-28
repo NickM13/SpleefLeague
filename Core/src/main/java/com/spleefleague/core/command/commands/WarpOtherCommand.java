@@ -23,7 +23,8 @@ public class WarpOtherCommand extends CommandTemplate {
     public WarpOtherCommand() {
         super(WarpOtherCommand.class, "warpother", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/warpother <player> <warp>");
-        setOptions("warpList", (cp) -> Warp.getWarpNames(cp));
+        setOptions("warpList", Warp::getWarpNames);
+        setContainer("warp");
     }
     
     @CommandAnnotation

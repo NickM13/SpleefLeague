@@ -6,19 +6,19 @@
 
 package com.spleefleague.splegg.game.classic;
 
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.splegg.game.SpleggBattle;
+import com.spleefleague.splegg.Splegg;
 
 import java.util.List;
 
 /**
  * @author NickM13
  */
-public class ClassicSpleggBattle extends SpleggBattle {
+public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggArena, ClassicSpleggPlayer> {
     
     public ClassicSpleggBattle(List<CorePlayer> players, ClassicSpleggArena arena) {
-        super(players, arena);
+        super(Splegg.getInstance(), players, arena, ClassicSpleggPlayer.class);
     }
 
     @Override

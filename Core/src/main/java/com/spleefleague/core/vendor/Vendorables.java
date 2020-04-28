@@ -3,6 +3,7 @@ package com.spleefleague.core.vendor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainer;
+import io.netty.util.internal.SuppressJava6Requirement;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -68,7 +69,7 @@ public class Vendorables {
     }
     
     public static Map<String, Vendorable> getAll(Class<? extends Vendorable> clazz) {
-        return VENDORABLE_MAP.getOrDefault(clazz.getSimpleName(), new HashMap<>());
+        return VENDORABLE_MAP.getOrDefault(Vendorable.getTypeName(clazz), new HashMap<>());
     }
     
     public static Vendorable get(ItemStack itemStack) {
@@ -87,11 +88,34 @@ public class Vendorables {
         return null;
     }
     
-    public static Vendorable get(Class<? extends Vendorable> clazz, String identifier) {
-        if (VENDORABLE_MAP.containsKey(clazz.getSimpleName())) {
-            return VENDORABLE_MAP.get(clazz.getSimpleName()).get(identifier);
+    @SuppressWarnings("unchecked")
+    public static <T extends Vendorable> T get(Class<T> clazz, String identifier) {
+        String typeName = Vendorable.getTypeName(clazz);
+        if (VENDORABLE_MAP.containsKey(typeName)) {
+            return (T) VENDORABLE_MAP.get(typeName).get(identifier);
         }
         return null;
+    }
+    
+    public static <T extends Vendorable> boolean contains(Class<T> clazz, String identifier) {
+        return get(clazz, identifier) != null;
+    }
+    
+    /**
+     * Removes a vendorable from the global map and returns the vendorable
+     * <p>Used for renaming identifier names</p>
+     *
+     * @param clazz Class extending Vendorable
+     * @param identifier Identifier
+     * @param <T> Object extending Vendorable
+     * @return Vendorable
+     */
+    public static <T extends Vendorable> T pop(Class<T> clazz, String identifier) {
+        T vendorable = get(clazz, identifier);
+        if (vendorable != null) {
+            unregister(vendorable.getType(), vendorable.getIdentifier());
+        }
+        return vendorable;
     }
     
 }

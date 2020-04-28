@@ -2,7 +2,6 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.vendor.Vendorable;
@@ -33,7 +32,7 @@ public class PetMenu {
                                 .setDisplayItem(vendorable.getDisplayItem())
                                 .setDescription(vendorable.getDescription())
                                 .setAction(cp2 -> {
-                                    cp2.getCollectibles().activate((Collectible) vendorable);
+                                    cp2.getCollectibles().setActiveItem((Collectible) vendorable);
                                 }));
                     }
                 });

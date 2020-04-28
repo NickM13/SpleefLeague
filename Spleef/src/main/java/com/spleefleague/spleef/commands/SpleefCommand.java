@@ -7,16 +7,20 @@
 package com.spleefleague.spleef.commands;
 
 import com.google.common.collect.Lists;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author NickM13
@@ -31,13 +35,40 @@ public class SpleefCommand extends CommandTemplate {
         this.setOptions("powerArenas", (cp) -> Arena.getArenaNames(SpleefMode.POWER.getArenaMode()));
         this.setOptions("teamArenas", (cp) -> Arena.getArenaNames(SpleefMode.TEAM.getArenaMode()));
         this.setOptions("wcArenas", (cp) -> Arena.getArenaNames(SpleefMode.WC.getArenaMode()));
+        setContainer("spleef");
     }
     
     @CommandAnnotation(minRank="DEVELOPER")
-    public void spleefDebug(CorePlayer sender,
-            @LiteralArg(value="debug") String l) {
-        Party.createParty(sender);
-        Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getArenaMode()).startMatch(Lists.newArrayList(sender, sender), "temple");
+    public void spleefMatch(CorePlayer sender,
+            @LiteralArg(value="m") String l,
+            String spleefMode,
+            String arena,
+            String playerNames) {
+        ArenaMode mode;
+        try {
+            mode = SpleefMode.valueOf(spleefMode.toUpperCase()).getArenaMode();
+        } catch(IllegalArgumentException exception) {
+            error(sender, "Not a valid spleef mode!");
+            return;
+        }
+        if (mode.getTeamStyle() == ArenaMode.TeamStyle.TEAM) {
+        
+        }
+        List<CorePlayer> players = new ArrayList<>();
+        for (String playerName : playerNames.split(" ")) {
+            CorePlayer cp = Core.getInstance().getPlayers().get(playerName);
+            if (cp != null) {
+                players.add(cp);
+            } else {
+                error(sender, playerName + " is not online!");
+                return;
+            }
+        }
+        if (Arena.getByName(arena, mode) != null) {
+            Spleef.getInstance().getBattleManager(mode).startMatch(players, arena);
+        } else {
+            error(sender, arena + " is not a valid arena for " + mode.getDisplayName() + "!");
+        }
     }
     
     @CommandAnnotation

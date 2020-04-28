@@ -13,35 +13,22 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  * @since 4/16/2020
  */
-public class SelectTool extends BuildTool {
+public class SelectTool {
     
-    public SelectTool() {
-        super((InventoryMenuItemHotbar) InventoryMenuAPI
-                .createItemHotbar(0, "BUILD_TOOL_SELECT")
-                .setName("Select Material")
-                .setDisplayItem(cp -> { return new ItemStack(((BuildWorldPlayer) BuildWorld.getPlayerBuildWorld(cp).getPlayerMap()).getSelectedMaterialDisplay()); })
+    public static void init() {
+        InventoryMenuItemHotbar hotbarItem = (InventoryMenuItemHotbar) InventoryMenuAPI
+                .createItemHotbar(8, "BUILD_TOOL_PLACEABLES")
+                .setName("Available Blocks")
+                .setDisplayItem(Material.LEATHER)
                 .setDescription("Nick was here")
-                .createLinkedContainer("Select Material Menu"));
-        getHotbarItem().getLinkedContainer().setOpenAction((container, cp) -> {
-            container.clearUnsorted();
-            BuildWorld buildWorld = BuildWorld.getPlayerBuildWorld(cp);
-            BuildWorldPlayer bwp = (BuildWorldPlayer) buildWorld.getPlayerMap().get(cp.getUniqueId());
-            for (Material mat : buildWorld.getBuildMaterials()) {
-                ItemStack itemStack = new ItemStack(mat);
-                container.addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(itemStack.getItemMeta().getDisplayName())
-                        .setDescription("Sets build material to this")
-                        .setDisplayItem(mat)
-                        .setAction(cp2 -> {
-                            cp2.sendMessage("Material set!");
-                            bwp.setSelectedMaterial(mat);
-                        }));
-            }
-        });
+                .setAvailability(CorePlayer::isInBuildWorld)
+                .createLinkedContainer("TODO");
+        hotbarItem.getLinkedContainer()
+                .setOpenAction((container, cp) -> {
+                    container.clearUnsorted();
+                    BuildWorld buildWorld = BuildWorld.getPlayerBuildWorld(cp);
+                    BuildWorldPlayer bwp = buildWorld.getPlayerMap().get(cp.getUniqueId());
+                });
     }
     
-    @Override
-    public void use(CorePlayer cp, BuildWorld buildWorld) {
-    
-    }
 }

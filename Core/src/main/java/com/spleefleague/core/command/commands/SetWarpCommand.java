@@ -22,6 +22,7 @@ public class SetWarpCommand extends CommandTemplate {
         super(SetWarpCommand.class, "setwarp", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/setwarp <name>");
         setDescription("Set a warp");
+        setContainer("warp");
     }
     
     @CommandAnnotation

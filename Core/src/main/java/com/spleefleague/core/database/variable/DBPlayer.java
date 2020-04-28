@@ -6,19 +6,13 @@
 
 package com.spleefleague.core.database.variable;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.PregameState;
-import com.spleefleague.core.plugin.CorePlugin;
+
 import java.util.UUID;
-import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * Database Player
@@ -107,45 +101,7 @@ public abstract class DBPlayer extends DBEntity {
      * @return Online state
      */
     public final boolean isOnline() {
-        return online;
+        return online && getPlayer() != null;
     }
-
-    /**
-     * Print all saved elo stats of a player
-     *
-     * @deprecated Use inventory menus instead
-     */
-    @Deprecated
-    public void printStats(DBPlayer dbp) {}
-
-    /**
-     * Get the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @return Elo
-     */
-    public abstract int getRating(ArenaMode arenaMode);
-
-    /**
-     * Change the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @param rating Elo Change
-     */
-    public abstract void addRating(ArenaMode arenaMode, int rating);
-
-    /**
-     * Get a formatted String of the elo of a player in a certain mode
-     * Warning: Not cross-dbplayer compatible, Elos are saved
-     * in plugin specific variables and database
-     *
-     * @param arenaMode ArenaMode
-     * @return Elo as a formatted String
-     */
-    public abstract String getDisplayElo(ArenaMode arenaMode);
 
 }

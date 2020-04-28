@@ -35,7 +35,7 @@ import org.bukkit.util.Vector;
 /**
  * @author NickM13
  */
-public class GameWorld extends FakeWorld {
+public class GameWorld extends FakeWorld<GameWorldPlayer> {
 
     /**
      * Blocks that are added after a delay
@@ -130,7 +130,7 @@ public class GameWorld extends FakeWorld {
      */
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        if (!fakeBlocks.containsKey(pos)) return false;
+        if (!fakeBlocks.containsKey(pos) || fakeBlocks.get(pos).getBlockData().getMaterial().isAir()) return false;
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (edittable
                 && breakables.contains(fakeBlocks.get(pos).getBlockData().getMaterial())
@@ -140,7 +140,7 @@ public class GameWorld extends FakeWorld {
                     fwp.getPlayer().playSound(new Location(getWorld(), pos.getX(), pos.getY(), pos.getZ()), fakeBlocks.get(pos).getBreakSound(), 1, 1);
                 }
             }
-            breakBlock(pos);
+            breakBlock(pos, cp);
         } else {
             updateBlock(pos);
         }
@@ -151,10 +151,12 @@ public class GameWorld extends FakeWorld {
      * On player item use
      *
      * @param cp Core Player
+     * @param blockPosition Click Block
+     * @param blockRelative Placed Block
      * @return Cancel Event
      */
     @Override
-    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition) {
+    protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition, BlockPosition blockRelative) {
         return true;
     }
 
@@ -168,7 +170,7 @@ public class GameWorld extends FakeWorld {
                 if (fakeBlocks.containsKey(rr.blockPos)) {
                     FakeBlock fb = fakeBlocks.get(rr.blockPos);
                     if (!fb.getBlockData().getMaterial().equals(Material.AIR)) {
-                        breakBlock(rr.blockPos, projectile.getProjectile().power);
+                        breakBlocks(rr.blockPos, projectile.getProjectile().power);
                         projectile.bounce();
                         if (!projectile.hasBounces()) {
                             projectile.getEntity().remove();
@@ -253,7 +255,9 @@ public class GameWorld extends FakeWorld {
                 GameProjectile gp = new GameProjectile(e, projectileType);
                 projectiles.put(e.getEntityId(), gp);
             };
-            Entity entity = getWorld().spawn(handLocation, projectileType.entityType.getEntityClass(), (Consumer) consumer);
+            Entity entity = getWorld().spawn(handLocation,
+                    projectileType.entityType.getEntityClass(),
+                    (Consumer) consumer);
             projectiles.get(entity.getEntityId()).setShooter(cp.getPlayer());
             Random rand = new Random();
             entity.setVelocity(cp.getPlayer().getLocation()
@@ -291,7 +295,7 @@ public class GameWorld extends FakeWorld {
 
     public boolean chipBlock(BlockPosition pos, int amount) {
         FakeBlock fb = fakeBlocks.get(pos);
-        breakBlock(pos);
+        breakBlock(pos, null);
         /*
         if (fakeBlocks.containsKey(pos)
                 && (fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.SNOW)
@@ -349,7 +353,7 @@ public class GameWorld extends FakeWorld {
             setBlock(pos, blockData);
         } else {
             closest += random.nextInt(3);
-            futureBlocks.put(pos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(pos, blockData)));
+            futureBlocks.put(pos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(blockData)));
         }
     }
 

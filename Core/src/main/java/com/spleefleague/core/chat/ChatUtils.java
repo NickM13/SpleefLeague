@@ -15,22 +15,7 @@ public class ChatUtils {
     public static String centerText(String message, int centerPos) {
         StringBuilder centered = new StringBuilder();
         
-        int msgPxSize = 0;
-        boolean prevCode = false;
-        boolean isBold = false;
-        
-        for (char c : message.toCharArray()) {
-            if (c == '§') {
-                prevCode = true;
-            } else if (prevCode == true) {
-                prevCode = false;
-                isBold = (c == 'l' || c == 'L');
-            } else {
-                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-                int change = (isBold ? dFI.getBoldLength() : dFI.getLength()) + 1;
-                msgPxSize += change;
-            }
-        }
+        int msgPxSize = getPixelCount(message);
         
         int whitePxSize = (centerPos * 2 - msgPxSize);
         int spaceCount = whitePxSize / 2 / (DefaultFontInfo.SPACE.getLength() + 1);
@@ -44,12 +29,48 @@ public class ChatUtils {
         return centerText(message, DefaultFontInfo.SPACE.getLength() * 27);
     }
     
+    /**
+     * Add spaces to string until desired pixel count is reached
+     */
+    public static void appendSpacesTo(StringBuilder strBuilder, int toPixel) {
+        int pixelCount = getPixelCount(strBuilder.toString());
+        int spaceCount = (toPixel - pixelCount) / (DefaultFontInfo.SPACE.getLength() + 1);
+        strBuilder.append(Strings.repeat(' ', spaceCount));
+    }
+    
+    /**
+     * Returns total pixel count of a message horizontally
+     *
+     * @param message Message
+     * @return Pixel Count
+     */
+    public static int getPixelCount(String message) {
+        int pixelCount = 0;
+        boolean prevCode = false;
+        boolean isBold = false;
+    
+        for (char c : message.toCharArray()) {
+            if (c == '§') {
+                prevCode = true;
+            } else if (prevCode) {
+                prevCode = false;
+                isBold = (c == 'l' || c == 'L');
+            } else {
+                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
+                int change = (isBold ? dFI.getBoldLength() : dFI.getLength()) + 1;
+                pixelCount += change;
+            }
+        }
+        return pixelCount;
+    }
+    
     private static final int DESC_WIDTH = 180;
     
     private static ArrayList<String> wrapDesc(String message) {
         ArrayList<String> msgs = new ArrayList<>();
-        String line = "", word = "";
-        
+        StringBuilder line = new StringBuilder();
+        StringBuilder word = new StringBuilder();
+    
         int msgPxSize = 0;
         boolean prevCode = false;
         boolean isBold = false;
@@ -58,10 +79,10 @@ public class ChatUtils {
         for (char c : message.toCharArray()) {
             if (c == '§') {
                 prevCode = true;
-            } else if (prevCode == true) {
+            } else if (prevCode) {
                 prevCode = false;
                 isBold = (c == 'l' || c == 'L');
-                word += "§" + c;
+                word.append("§").append(c);
                 prevColor = ChatColor.getByChar(c) + "";
             } else {
                 DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
@@ -69,25 +90,25 @@ public class ChatUtils {
                 if (msgPxSize + change > DESC_WIDTH) {
                     msgPxSize = 0;
                     if (line.length() < 2) {
-                        line += word;
-                        word = "";
+                        line.append(word);
+                        word = new StringBuilder();
                     }
                     msgs.add(prevColor + line);
-                    line = "";
+                    line = new StringBuilder();
                 }
                 msgPxSize += change;
                 if (c == ' ') {
-                    line += word + " ";
-                    word = "";
+                    line.append(word).append(" ");
+                    word = new StringBuilder();
                 } else {
-                    word += c;
+                    word.append(c);
                 }
             }
         }
-        if (!word.isEmpty()) {
-            line += word;
+        if (word.length() > 0) {
+            line.append(word);
         }
-        if (!line.isEmpty()) {
+        if (line.length() > 0) {
             msgs.add(prevColor + line);
         }
         if (msgs.isEmpty()) {
@@ -105,16 +126,6 @@ public class ChatUtils {
         
         for (String m : messageSplit)
             msgs.addAll(wrapDesc(m));
-        
-        return msgs;
-    }
-    
-    public static ArrayList<String> wrapDescription(ArrayList<String> messages) {
-        ArrayList<String> msgs = new ArrayList<>();
-        
-        for (String m : messages) {
-            msgs.addAll(wrapDescription(m));
-        }
         
         return msgs;
     }

@@ -163,7 +163,7 @@ public class Vendor extends DBEntity {
                             SimpleVendorItem svi = new SimpleVendorItem(vendorable.getType(), vendorable.getIdentifier());
                             items.put(item.getKey(), svi);
                         } else {
-                            cp.sendMessage("Item is not a valid vendor item: " + itemStack.getItemMeta().getDisplayName());
+                            cp.sendMessage("Item is not a valid vendor item: " + itemStack);
                         }
                     }
                     quicksave();

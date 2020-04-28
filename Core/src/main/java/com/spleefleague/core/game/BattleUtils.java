@@ -1,12 +1,16 @@
 package com.spleefleague.core.game;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.core.world.build.BuildStructure;
+import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -61,9 +65,15 @@ public class BattleUtils {
      */
     public static void fillDome(GameWorld gameWorld, Material material, List<Location> locs) {
         for (Location loc : locs) {
-            List<BlockPosition> blockPositions = getDomeBlocks(loc);
-            for (BlockPosition bp : blockPositions) {
-                gameWorld.setBlock(bp, material.createBlockData());
+            BuildStructure dome = BuildStructures.get("dome");
+            for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
+                gameWorld.setBlock(
+                        entry.getKey().add(
+                        new BlockPosition(
+                                loc.getBlockX(),
+                                loc.getBlockY(),
+                                loc.getBlockZ())),
+                        entry.getValue().getBlockData());
             }
         }
     }
@@ -76,9 +86,15 @@ public class BattleUtils {
      */
     public static void clearDome(GameWorld gameWorld, List<Location> locs) {
         for (Location loc : locs) {
-            List<BlockPosition> blockPositions = getDomeBlocks(loc);
-            for (BlockPosition bp : blockPositions) {
-                gameWorld.breakBlock(bp);
+            BuildStructure dome = BuildStructures.get("dome");
+            for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
+                gameWorld.breakBlock(
+                        entry.getKey().add(
+                        new BlockPosition(
+                                loc.getBlockX(),
+                                loc.getBlockY(),
+                                loc.getBlockZ())),
+                        null);
             }
         }
     }

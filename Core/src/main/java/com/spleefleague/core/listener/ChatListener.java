@@ -6,8 +6,11 @@
 
 package com.spleefleague.core.listener;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.util.regex.Pattern;
@@ -38,12 +41,11 @@ public class ChatListener implements Listener {
         
         String formattedMessage = e.getMessage();
         if (URL_PATTERN.matcher(ChatColor.stripColor(e.getMessage().replace(" ", ""))).matches()) {
-            System.out.println("That was a url");
-            if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR)) {
-                System.out.println("No permission");
+            if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
                 e.setCancelled(true);
                 Core.getInstance().sendMessage(cp, "Please ask for permission to send a url");
-                System.out.println(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
+                Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
+                CoreLogger.logInfo(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 return;
             }
         } else if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
@@ -58,7 +60,7 @@ public class ChatListener implements Listener {
         }
         
         Chat.sendMessage(cp, formattedMessage);
-        System.out.println("<" + cp.getPlayer().getName() + "> " + e.getMessage());
+        CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + e.getMessage());
         
         e.setCancelled(true);
     }

@@ -8,6 +8,7 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Leaderboard;
+import com.spleefleague.core.game.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
@@ -26,8 +27,7 @@ public class LeaderboardMenu {
     protected static InventoryMenuItem menuItem = null;
     
     /**
-     * Gets the menu item for this menu, if it doesn't exist
-     * already then initialize it
+     * Gets the menu item for this menu, if it doesn't exist already then initialize it
      *
      * @return Inventory Menu Item
      */
@@ -43,7 +43,7 @@ public class LeaderboardMenu {
                     .setOpenAction((container, cp) -> {
                         container.clearUnsorted();
                         int i = 0;
-                        for (Map.Entry<String, Leaderboard> lb : Leaderboard.getLeaderboards().entrySet()) {
+                        for (Map.Entry<String, Leaderboard> lb : Leaderboards.getLeaderboards().entrySet()) {
                             InventoryMenuItem leaderboardItem = InventoryMenuAPI.createItem()
                                     .setName(lb.getValue().getDisplayName())
                                     .setDisplayItem(lb.getValue().getDisplayItem())

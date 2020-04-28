@@ -2,9 +2,6 @@ package com.spleefleague.core.world.build;
 
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.world.build.BuildWorld;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -15,7 +12,8 @@ public abstract class BuildTool {
     private final InventoryMenuItemHotbar hotbarItem;
     
     public BuildTool(InventoryMenuItemHotbar hotbarItem) {
-        this.hotbarItem = hotbarItem;
+        this.hotbarItem = (InventoryMenuItemHotbar) hotbarItem
+                .setAvailability(CorePlayer::isInBuildWorld);
     }
     
     public InventoryMenuItemHotbar getHotbarItem() {

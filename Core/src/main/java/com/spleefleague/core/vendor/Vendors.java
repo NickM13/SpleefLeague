@@ -1,9 +1,8 @@
 package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.InsertOneOptions;
-import com.mongodb.client.model.UpdateOptions;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -45,11 +44,18 @@ public class Vendors {
      * Clear the database and save all vendors
      */
     public static void close() {
-        vendorCollection.deleteMany(new Document());
-        List<Document> docs = new ArrayList<>();
-        vendors.values().forEach(v -> docs.add(v.save()));
-        vendorCollection.deleteMany(new Document());
-        vendorCollection.insertMany(docs);
+        try {
+            if (vendorCollection.find().first() != null) {
+                vendorCollection.deleteMany(new Document());
+            }
+            List<Document> docs = new ArrayList<>();
+            vendors.values().forEach(v -> docs.add(v.save()));
+            if (!docs.isEmpty()) {
+                vendorCollection.insertMany(docs);
+            }
+        } catch (IllegalAccessError | NoClassDefFoundError ignored) {
+        
+        }
     }
     
     /**
@@ -87,7 +93,8 @@ public class Vendors {
      *
      * @param vendor Vendor
      */
-    public static void deleteVendor(Vendor vendor) {
+    public static boolean deleteVendor(Vendor vendor) {
+        if (vendor == null) return false;
         vendorCollection.deleteMany(new Document("name", vendor.getName()));
         vendor.getEntities().forEach(entityUuid -> {
             Entity entity = Bukkit.getEntity(entityUuid);
@@ -95,6 +102,7 @@ public class Vendors {
                 clearEntityVendor(entity);
         });
         vendors.remove(vendor.getName());
+        return true;
     }
     
     /**
@@ -103,7 +111,8 @@ public class Vendors {
      * @param vendor Vendor item
      */
     public static void save(Vendor vendor) {
-        vendorCollection.updateOne(new Document("name", vendor.getName()), vendor.save(), new UpdateOptions().upsert(true));
+        vendorCollection.deleteMany(new Document("name", vendor.getName()));
+        vendorCollection.insertOne(vendor.save());
     }
     
     /**
@@ -153,12 +162,9 @@ public class Vendors {
         CorePlayer cp = Core.getInstance().getPlayers().get(player);
         if (playerSetVendorMap.containsKey(cp)) {
             if (playerSetVendorMap.get(cp) == null) {
-                Vendor vendor = entityVendorMap.get(event.getEntity().getUniqueId());
-                if (vendor != null) {
-                    vendor.removeEntity(event.getEntity());
-                }
+                clearEntityVendor(event.getEntity());
             } else {
-                playerSetVendorMap.get(cp).addEntity(event.getEntity());
+                setupEntityVendor(playerSetVendorMap.get(cp), event.getEntity());
             }
             playerSetVendorMap.remove(cp);
             event.setCancelled(true);

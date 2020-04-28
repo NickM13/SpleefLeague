@@ -11,6 +11,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.world.build.BuildWorld;
 
 /**
  * @author NickM13
@@ -28,9 +29,13 @@ public class LeaveCommand extends CommandTemplate {
     public void leave(CorePlayer sender) {
         if (sender.isInBattle()) {
             sender.getBattle().leavePlayer(sender);
-        } else {
-            Core.getInstance().unqueuePlayerGlobally(sender);
+        } else if (sender.isInBuildWorld()) {
+            BuildWorld.removePlayerGlobal(sender);
+            success(sender, "You have left the build world");
+        } else if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");
+        } else {
+            error(sender, "You have nothing to leave!");
         }
     }
     

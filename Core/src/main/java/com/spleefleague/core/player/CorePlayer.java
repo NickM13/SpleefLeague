@@ -5,7 +5,6 @@
  */
 package com.spleefleague.core.player;
 
-import com.spleefleague.core.database.variable.Checkpoint;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
@@ -14,53 +13,47 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.database.annotation.DBField;
+import com.spleefleague.core.database.variable.Checkpoint;
+import com.spleefleague.core.database.variable.DBPlayer;
 import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.game.Battle;
-import com.spleefleague.core.menu.*;
-import com.spleefleague.core.player.collectible.Holdable;
-import com.spleefleague.core.player.infraction.Infraction;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.menu.hotbars.main.HeldItemMenu;
+import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.Party;
-import com.spleefleague.core.player.collectible.armor.CosmeticArmor;
 import com.spleefleague.core.player.rank.PermRank;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.player.rank.TempRank;
-import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
+import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.TpCoord;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.database.variable.DBPlayer;
-
-import java.lang.reflect.InvocationTargetException;
-import java.time.Instant;
-import java.util.*;
-import javax.annotation.Nullable;
-
 import com.spleefleague.core.world.FakeWorld;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import com.spleefleague.core.world.build.BuildWorld;
+import com.spleefleague.core.world.global.biome.GlobalBiome;
+import net.md_5.bungee.api.chat.*;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * CorePlayer is an instance of DBPlayer that maintains various options and stats
@@ -81,7 +74,6 @@ public class CorePlayer extends DBPlayer {
     @DBField private PermRank permRank;
     @DBField private List<TempRank> tempRanks;
     
-    @DBField protected Map<String, Integer> scores = new HashMap<>();
     @DBField private Boolean vanished;
     @DBField private Integer coins;
     
@@ -90,8 +82,9 @@ public class CorePlayer extends DBPlayer {
     @DBField private Long afkTime;
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    @DBField private CorePlayerOptions options;
-    @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
+    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerStats ratings = new CorePlayerStats();
     
     /**
      * Non-database variables
@@ -120,10 +113,11 @@ public class CorePlayer extends DBPlayer {
 
     private PermissionAttachment permissions;
     
-    private LinkedHashSet<FakeWorld> fakeWorlds;
-    private Battle<?> battle;
+    private final LinkedHashSet<FakeWorld<?>> fakeWorlds = new LinkedHashSet<>();
+    private Battle<?, ?> battle;
     private BattleState battleState;
     private final PregameState pregameState;
+    private GlobalBiome globalBiome;
     
     /**
      * Constructor for CorePlayer
@@ -135,7 +129,6 @@ public class CorePlayer extends DBPlayer {
         this.checkpoint = null;
         this.permRank = new PermRank();
         this.tempRanks = new ArrayList<>();
-        this.options = new CorePlayerOptions();
         this.vanished = false;
         this.party = null;
         this.coins = 0;
@@ -144,10 +137,10 @@ public class CorePlayer extends DBPlayer {
         this.lastAction = System.currentTimeMillis();
         this.afk = false;
         this.afkWarned = false;
-        this.fakeWorlds = new LinkedHashSet<>();
         this.battle = null;
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
+        this.globalBiome = null;
     }
     
     public CorePlayer(Player player) {
@@ -159,7 +152,7 @@ public class CorePlayer extends DBPlayer {
     
     /**
      * Runs when a player who has never joined before logs in
-     * This function always runs before init()
+     * This function always calls before init()
      */
     @Override
     public void newPlayer(Player player) {
@@ -168,16 +161,42 @@ public class CorePlayer extends DBPlayer {
     }
 
     /**
-     * CorePlayer::init is run when a player comes online
+     * CorePlayer::init is called when a player comes online
      */
     @Override
     public void init() {
         permissions = getPlayer().addAttachment(Core.getInstance());
         setRank(permRank.getRank());
-        updateArmor();
         PersonalScoreboard.initPlayerScoreboard(this);
         collectibles.setOwner(this);
+        ratings.setOwner(this);
+        setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
+        FakeWorld.getGlobalFakeWorld().addPlayer(this);
+    }
+    
+    /**
+     * Called on player quit
+     */
+    @Override
+    public void close() {
+        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+        for (FakeWorld<?> fakeWorld : fakeWorldList) {
+            fakeWorld.removePlayer(this);
+        }
+        Core.getInstance().unqueuePlayerGlobally(this);
+        
+        Team team = getPlayer().getScoreboard().getEntryTeam(getPlayer().getName());
+        if (team != null) team.removeEntry(getPlayer().getName());
+        Document leaveDoc = new Document("date", Date.from(Instant.now()));
+        leaveDoc.append("type", "LEAVE");
+        leaveDoc.append("uuid", getPlayer().getUniqueId().toString());
+        
+        try {
+            Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(leaveDoc);
+        } catch (NoClassDefFoundError e) {
+            Core.getInstance().getLogger().log(Level.WARNING, "Couldn't save PlayerConnection for " + getPlayer().getName());
+        }
     }
 
     /**
@@ -202,32 +221,15 @@ public class CorePlayer extends DBPlayer {
         this.gameMode = gameMode.name();
         getPlayer().setGameMode(gameMode);
     }
-
+    
     /**
-     * Print all saved elo stats of a player
-     *
-     * @param dbp DBPlayer
-     * @deprecated Use inventory menus instead
+     * Get all Ratings of a Core Player
+     * 
+     * @return Core Player Ratings
+     * @see CorePlayerStats
      */
-    @Deprecated
-    @Override
-    public void printStats(DBPlayer dbp) {
-
-    }
-
-    @Override
-    public int getRating(ArenaMode mode) {
-        return 0;
-    }
-
-    @Override
-    public void addRating(ArenaMode mode, int rating) {
-
-    }
-
-    @Override
-    public String getDisplayElo(ArenaMode mode) {
-        return null;
+    public CorePlayerStats getRatings() {
+        return ratings;
     }
 
     public org.bukkit.GameMode getGameMode() {
@@ -268,8 +270,12 @@ public class CorePlayer extends DBPlayer {
      */
     public boolean setLastAction() {
         boolean wasAfk = this.afk;
-        if (this.afk) setAfk(false);
-        afkTime += System.currentTimeMillis() - lastAction;
+        if (this.afk) {
+            setAfk(false);
+            afkTime += System.currentTimeMillis() - lastAction;
+        } else {
+            playTime += System.currentTimeMillis() - lastAction;
+        }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
         return wasAfk;
@@ -285,8 +291,9 @@ public class CorePlayer extends DBPlayer {
         if (afk != state) {
             afk = state;
             if (afk && getRank().equals(Rank.DEFAULT)) {
-                getPlayer().kickPlayer("Kicked for AFK!");
-                return;
+                // TODO: Removed temporarily to keep Sudofox's alts from being kicked
+                //getPlayer().kickPlayer("Kicked for AFK!");
+                //return;
             }
             Core.getInstance().sendMessage(this, "You are " + (afk ? "now afk" : "no longer afk"));
             refreshHotbar();
@@ -320,35 +327,28 @@ public class CorePlayer extends DBPlayer {
     public CorePlayerCollectibles getCollectibles() {
         return collectibles;
     }
-
-    /**
-     * On right click, run the activate function of VendorItems
-     * e.g lets you shoot snowballs with a Splegg Gun active
-     */
-    public void activateHeldItem() {
     
+    public boolean isFlying() {
+        return getPlayer().isFlying()
+                || getPlayer().isGliding();
     }
-
+    
     /**
-     * Run on player disconnect
+     *
      */
-    @Override
-    public void close() {
-        Core.getInstance().unqueuePlayerGlobally(this);
-        
-        Team team = getPlayer().getScoreboard().getEntryTeam(getPlayer().getName());
-        if (team != null) team.removeEntry(getPlayer().getName());
-        Document leaveDoc = new Document("date", Date.from(Instant.now()));
-        leaveDoc.append("type", "LEAVE");
-        leaveDoc.append("uuid", getPlayer().getUniqueId().toString());
-
-        try {
-            Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(leaveDoc);
-        } catch (NoClassDefFoundError e) {
-            e.printStackTrace();
+    public void checkBiome() {
+        Vector pos = getPlayer().getLocation().toVector();
+        GlobalBiome biome = GlobalBiome.get(getPlayer().getWorld().getBiome(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ()));
+        if (globalBiome == null) {
+            getPlayer().resetPlayerWeather();
+        } else {
+            WeatherType weatherType = globalBiome.getWeatherType(getPlayer().getPlayerTime());
+            if (getPlayer().getPlayerWeather() != weatherType) {
+                getPlayer().setPlayerWeather(weatherType);
+            }
         }
     }
-
+    
     /**
      * @param vanished Vanished state
      */
@@ -390,6 +390,13 @@ public class CorePlayer extends DBPlayer {
      */
     public Party getParty() {
         return party;
+    }
+    
+    /**
+     * @return In Party
+     */
+    public boolean isInParty() {
+        return party != null;
     }
 
     /**
@@ -436,41 +443,6 @@ public class CorePlayer extends DBPlayer {
      */
     public void addCoins(int coins) {
         this.coins += coins;
-    }
-
-    /**
-     * Updates the player's armor to match their selected cosmetics
-     */
-    public void updateArmor() {
-        PlayerInventory inventory = getPlayer().getInventory();
-        ItemStack helm, chest, legs, boots;
-        helm = inventory.getHelmet();
-        chest = inventory.getChestplate();
-        legs = inventory.getLeggings();
-        boots = inventory.getBoots();
-        
-        /*
-        activeCosmetics.clear();
-        
-        CosmeticArmor cosmetic;
-        if (helm != null && (cosmetic = CosmeticArmor.getArmor(helm)) != null) activeCosmetics.add(cosmetic);
-        if (chest != null && (cosmetic = CosmeticArmor.getArmor(chest)) != null) activeCosmetics.add(cosmetic);
-        if (legs != null && (cosmetic = CosmeticArmor.getArmor(legs)) != null) activeCosmetics.add(cosmetic);
-        if (boots != null && (cosmetic = CosmeticArmor.getArmor(boots)) != null) activeCosmetics.add(cosmetic);
-        */
-    }
-
-    /**
-     * Updates effects that player's cosmetics cosmetics should be
-     */
-    public void updateArmorEffects() {
-        if (!isInBattle()) {
-            /*
-            for (CosmeticArmor armor : activeCosmetics) {
-                getPlayer().addPotionEffect(new PotionEffect(armor.getEffectType(), 39, armor.getAmplitude(), true, false));
-            }
-             */
-        }
     }
 
     /**
@@ -559,6 +531,7 @@ public class CorePlayer extends DBPlayer {
      * Updates all available permissions
      */
     public void updateRank() {
+        if (!isOnline()) return;
         PersonalScoreboard.updatePlayerRank(this);
         getPlayer().setOp(getRank().getHasOp());
         
@@ -635,7 +608,6 @@ public class CorePlayer extends DBPlayer {
         if (tempRanks.isEmpty()) return;
         Iterator<TempRank> it = tempRanks.iterator();
         while (it.hasNext()) {
-            TempRank tr = it.next();
             it.remove();
         }
         updateRank();
@@ -666,48 +638,19 @@ public class CorePlayer extends DBPlayer {
         return permRank.getRank();
     }
 
-    /**
-     * @param name ScoreName
-     * @return Whether score exists
-     */
-    public boolean hasScore(String name) {
-        return scores.containsKey(name);
-    }
-
-    /**
-     * Returns score of a player (Can refer to elo, points, time, ...)
-     *
-     * @param name ScoreName
-     * @return Score
-     */
-    public Integer getScore(String name) {
-        if (!scores.containsKey(name)) return 0;
-        return scores.get(name);
-    }
-
-    /**
-     * Sets score
-     *
-     * @param name ScoreName
-     * @param score Score
-     */
-    public void setScore(String name, int score) {
-        scores.put(name, score);
-    }
-
-    /**
-     * Sets score if the new value is higher than the old
-     *
-     * @param name ScoreName
-     * @param score Score
-     */
-    public void checkScore(String name, int score) {
-        if (scores.containsKey(name) &&
-                scores.get(name) < score) {
-            scores.put(name, score);
+    public void checkGlobalSpectate() {
+        if (isInGlobal()) {
+            for (ArenaMode arenaMode : ArenaMode.getAllArenaModes()) {
+                for (Battle<?, ?> battle : arenaMode.getOngoingBattles()) {
+                    if (battle.isInGlobalSpectatorBorder(this)) {
+                        battle.addGlobalSpectator(this);
+                        return;
+                    }
+                }
+            }
         }
     }
-
+    
     /**
      * Returns player's location, or if they're offline their lastLocation (/back)
      * Not really that useful for offline players atm
@@ -732,7 +675,7 @@ public class CorePlayer extends DBPlayer {
      * Teleports player to a warp location if they have permissions
      */
     public boolean warp(Warp warp) {
-        if (getRank().hasPermission(warp.getMinRank())) {
+        if (warp.isAvailable(this)) {
             teleport(warp.getLocation());
             return true;
         }
@@ -794,7 +737,6 @@ public class CorePlayer extends DBPlayer {
      * and fills it with base hotbar items
      */
     public void refreshHotbar() {
-        if (getGameMode().equals(GameMode.CREATIVE)) return;
         InventoryMenuItemHotbar.fillHotbar(this);
     }
 
@@ -802,11 +744,11 @@ public class CorePlayer extends DBPlayer {
      * Returns player's spawn location
      * Uses warp folder called spawn, if it doesn't exist then SpawnLocation of the default world
      *
-     * @return
+     * @return Location
      */
     public Location getSpawnLocation() {
         Set<Warp> warps = Warp.getWarps("spawn");
-        if (warps != null && !warps.isEmpty()) {
+        if (!warps.isEmpty()) {
             Random random = new Random();
             return ((Warp) warps.toArray()[(random.nextInt(warps.size()))]).getLocation();
         } else {
@@ -853,6 +795,23 @@ public class CorePlayer extends DBPlayer {
      */
     public Checkpoint getCheckpoint() {
         return checkpoint;
+    }
+    
+    public GlobalBiome getGlobalBiome() {
+        return globalBiome;
+    }
+    
+    public void setGlobalBiome(GlobalBiome globalBiome) {
+        if (this.globalBiome != globalBiome) {
+            GlobalBiome prevBiome = this.globalBiome;
+            this.globalBiome = globalBiome;
+            if (prevBiome == null
+                || prevBiome.getEnvironment() != globalBiome.getEnvironment()) {
+                getPlayer().spigot().respawn();
+            } else {
+                getPlayer().spigot().respawn();
+            }
+        }
     }
 
     /**
@@ -1051,7 +1010,7 @@ public class CorePlayer extends DBPlayer {
      * @return Can Join
      */
     public final boolean isAvailable() {
-        return !isInBattle() && !isAfk();
+        return !isInGlobal() && !isAfk();
     }
     
     /**
@@ -1061,18 +1020,25 @@ public class CorePlayer extends DBPlayer {
      * @return In Global World
      */
     public final boolean isInGlobal() {
-       return !isInBattle();
+       return !isInBattle() && !isInBuildWorld();
     }
     
-    public final LinkedHashSet<FakeWorld> getFakeWorlds() {
-        return fakeWorlds;
+    /**
+     * Returns a reversed list of the FakeWorlds for prioritizing interactions
+     *
+     * @return Sorted FakeWorld List
+     */
+    public final Iterator<FakeWorld<?>> getFakeWorlds() {
+        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+        Collections.reverse(fakeWorldList);
+        return fakeWorldList.iterator();
     }
     
-    public final void joinFakeWorld(FakeWorld fakeWorld) {
+    public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.add(fakeWorld);
     }
     
-    public final void leaveFakeWorld(FakeWorld fakeWorld) {
+    public final void leaveFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.remove(fakeWorld);
     }
     
@@ -1082,10 +1048,12 @@ public class CorePlayer extends DBPlayer {
      * @param battle Battle
      * @param battleState Battle State
      */
-    public final void joinBattle(Battle<?> battle, BattleState battleState) {
+    public final void joinBattle(Battle<?, ?> battle, BattleState battleState) {
         this.battle = battle;
         this.battleState = battleState;
-        savePregameState();
+        if (battleState != BattleState.SPECTATOR_GLOBAL) {
+            savePregameState();
+        }
         CorePlugin.addIngamePlayerName(this);
     }
     
@@ -1095,7 +1063,9 @@ public class CorePlayer extends DBPlayer {
      * @param exitLocation Location to attempt to teleport player to
      */
     public final void leaveBattle(Location exitLocation) {
-        loadPregameState(exitLocation);
+        if (battleState != BattleState.SPECTATOR_GLOBAL) {
+            loadPregameState(exitLocation);
+        }
         this.battle = null;
         this.battleState = BattleState.NONE;
         CorePlugin.removeIngamePlayerName(this);
@@ -1116,15 +1086,35 @@ public class CorePlayer extends DBPlayer {
      *
      * @return Battle
      */
-    public final Battle<?> getBattle() {
+    public final Battle<?, ?> getBattle() {
         return battle;
     }
     
     /**
-     * @return BattleState
+     * @return Battle State
      */
     public final BattleState getBattleState() {
         return battleState;
+    }
+    
+    /**
+     * Returns whether player is in a Build World or not
+     *
+     * // TODO: This is kind of hacky, set up better way
+     *
+     * @return In Build World
+     */
+    public final boolean isInBuildWorld() {
+        return BuildWorld.getPlayerBuildWorld(this) != null;
+    }
+    
+    /**
+     * Returns a player's Build World if they are in one
+     *
+     * @return Build World
+     */
+    public final BuildWorld getBuildWorld() {
+        return BuildWorld.getPlayerBuildWorld(this);
     }
     
     /**

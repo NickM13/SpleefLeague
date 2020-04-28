@@ -7,10 +7,10 @@
 package com.spleefleague.core.game;
 
 import com.google.common.collect.Sets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.battle.Battle;
+
+import java.util.*;
 
 /**
  * Arena Mode defines a gamemode, named ArenaMode for lack of
@@ -25,9 +25,9 @@ public class ArenaMode {
     public enum TeamStyle {
         SOLO,
         TEAM,
-        MULTI_STATIC,
-        MULTI_DYNAMIC,
-        MULTI_BANANA
+        VERSUS,
+        DYNAMIC,
+        BONANZA
     }
     
     protected static Map<String, ArenaMode> arenaModes = new HashMap<>();
@@ -39,10 +39,18 @@ public class ArenaMode {
     protected final Set<Integer> requiredTeamSizes;
     protected final boolean joinOngoing;
     protected final Class<? extends Arena> arenaClass;
-    protected final Class<? extends Battle<? extends Arena>> battleClass;
+    protected final Class<? extends Battle<?, ?>> battleClass;
+    protected final Set<Battle<?, ?>> ongoingBattles = new HashSet<>();
 
     // TODO: Rework this, constructor is enormongo
-    protected ArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle<? extends Arena>> battleClass) {
+    protected ArenaMode(String name,
+            String displayName,
+            int requiredTeams,
+            int maximumTeams,
+            TeamStyle teamStyle,
+            boolean joinOngoing,
+            Class<? extends Arena> arenaClass,
+            Class<? extends Battle<?, ?>> battleClass) {
         this.name = name;
         this.displayName = displayName;
         this.requiredTeams = requiredTeams;
@@ -54,11 +62,35 @@ public class ArenaMode {
         this.battleClass = battleClass;
     }
     
-    public static void addArenaMode(String name, String displayName, int requiredTeams, int maximumTeams, TeamStyle teamStyle, boolean joinOngoing, Class<? extends Arena> arenaClass, Class<? extends Battle<? extends Arena>> battleClass) {
+    public static void addArenaMode(String name,
+            String displayName,
+            int requiredTeams,
+            int maximumTeams,
+            TeamStyle teamStyle,
+            boolean joinOngoing,
+            Class<? extends Arena> arenaClass,
+            Class<? extends Battle<?, ?>> battleClass) {
         arenaModes.put(name, new ArenaMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, arenaClass, battleClass));
     }
+    
     public static ArenaMode getArenaMode(String name) {
         return arenaModes.get(name);
+    }
+    
+    public static Collection<ArenaMode> getAllArenaModes() {
+        return arenaModes.values();
+    }
+    
+    public Set<Battle<?, ?>> getOngoingBattles() {
+        return ongoingBattles;
+    }
+    
+    public void addBattle(Battle<?, ?> battle) {
+        this.ongoingBattles.add(battle);
+    }
+    
+    public void removeBattle(Battle<?, ?> battle) {
+        this.ongoingBattles.remove(battle);
     }
     
     public TeamStyle getTeamStyle() {
@@ -98,11 +130,15 @@ public class ArenaMode {
         return displayName;
     }
     
+    public String getChatTag() {
+        return Chat.TAG_BRACE + "[" + displayName + "]";
+    }
+    
     public Class<? extends Arena> getArenaClass() {
         return arenaClass;
     }
     
-    public Class<? extends Battle<? extends Arena>> getBattleClass() {
+    public Class<? extends Battle<?, ?>> getBattleClass() {
         return battleClass;
     }
     

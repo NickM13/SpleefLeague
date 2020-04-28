@@ -11,12 +11,9 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.spleefleague.core.vendor.Vendors;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -29,13 +26,13 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Player listener for out of game actions
@@ -75,6 +72,15 @@ public class EnvironmentListener implements Listener {
         }
         return blocks;
     }
+    
+    private void stopHorizontalMovement(PlayerMoveEvent event) {
+        if (event.getTo() != null) {
+            Location newLoc = event.getTo().clone();
+            newLoc.setX(event.getFrom().getX());
+            newLoc.setZ(event.getFrom().getZ());
+            event.setTo(newLoc);
+        }
+    }
 
     /**
      * Perform some actions if a player walks into or above a sign
@@ -98,13 +104,14 @@ public class EnvironmentListener implements Listener {
                         cp.teleport(getSignVector(sign));
                         break;
                     case "[min-rank]":
+                        // TODO: Would be cool if FakeWorld was incorporated to set fake block walls
                         if (!cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
-                            event.setCancelled(true);
+                            stopHorizontalMovement(event);
                         }
                         break;
                     case "[max-rank]":
                         if (cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
-                            event.setCancelled(true);
+                            stopHorizontalMovement(event);
                         }
                         break;
                     case "[warp]":
@@ -131,7 +138,7 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-
+    
     /**
      * Prevent non building players from dropping blocks
      *
@@ -154,7 +161,6 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
-            Player player = (Player) event.getEntity();
             if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
                 event.setDamage(event.getFinalDamage() / 2);
             }
@@ -234,24 +240,6 @@ public class EnvironmentListener implements Listener {
         cp.saveLastLocation();
         event.setDeathMessage(cp.getDisplayName() + " somehow died on SpleefLeague?  Seems kinda sus.  Oh well, here's the real reason: " + event.getDeathMessage());
         Core.getInstance().sendMessage(event.getDeathMessage());
-    }
-
-    /**
-     * Removes player's cosmetic armor when they click
-     * the armor slot
-     *
-     * @param event Event
-     */
-    @EventHandler
-    public void onArmorEquip(InventoryClickEvent event) {
-        if (event.getSlotType().equals(InventoryType.SlotType.ARMOR) && event.getClickedInventory() != null) {
-            ItemStack itemStack = event.getClickedInventory().getItem(event.getSlot());
-            if (event.getClickedInventory().getHolder() instanceof Player) {
-                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                    Core.getInstance().getPlayers().get((Player)event.getClickedInventory().getHolder()).updateArmor();
-                }, 10L);
-            }
-        }
     }
 
     private static final Set<CreatureSpawnEvent.SpawnReason> noSpawnReasons = Sets.newHashSet(CreatureSpawnEvent.SpawnReason.BEEHIVE, CreatureSpawnEvent.SpawnReason.BREEDING,
@@ -345,7 +333,7 @@ public class EnvironmentListener implements Listener {
      * Prevent gamemode from being changed by other plugins
      * (looking at you MultiVerse)
      *
-     * @param event
+     * @param event Event
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
@@ -406,6 +394,16 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
+    
+    /**
+     * Prevents campfires from cooking food
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onBlockCook(BlockCookEvent event) {
+        event.setCancelled(true);
+    }
 
     /**
      * Prevent coral blocks from dying outside of water
@@ -449,5 +447,5 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-    
+
 }

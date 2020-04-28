@@ -1,15 +1,10 @@
 package com.spleefleague.core.player.collectible;
 
-import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.collectible.key.Key;
 import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.vendor.Vendorable;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Collectible items are vendorable items that when
@@ -23,8 +18,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 public abstract class Collectible extends Vendorable {
     
     public static void init() {
+        Hat.init();
         Key.init();
         Pet.init();
+    }
+    
+    public static void close() {
+        Hat.close();
+        Key.close();
+        Pet.close();
     }
     
     public Collectible() {

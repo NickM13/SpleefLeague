@@ -8,6 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;

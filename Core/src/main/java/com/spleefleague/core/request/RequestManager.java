@@ -65,7 +65,6 @@ public class RequestManager {
             requests.get(receiver.getName()).remove(target);
             return true;
         } else {
-            //Core.sendMessageToPlayer(receiver, "Request no longer exists");
             return false;
         }
     }
@@ -76,10 +75,10 @@ public class RequestManager {
         requests.get(receiver.getName()).put(target, request);
         
         TextComponent text = new TextComponent(tag);
-        TextComponent accept = new TextComponent(Chat.BRACE + "[" + Chat.SUCCESS + "Accept" + Chat.BRACE + "]");
+        TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Accept" + Chat.TAG_BRACE + "]");
         accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to accept").create()));
         accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request accept " + target));
-        TextComponent decline = new TextComponent(Chat.BRACE + "[" + Chat.ERROR + "Decline" + Chat.BRACE + "]");
+        TextComponent decline = new TextComponent(Chat.TAG_BRACE + "[" + Chat.ERROR + "Decline" + Chat.TAG_BRACE + "]");
         decline.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to decline").create()));
         decline.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request decline " + target));
         text.addExtra(accept);

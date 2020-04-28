@@ -8,6 +8,7 @@ package com.spleefleague.core.menu;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
+import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,19 +38,37 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
      */
     public static void fillHotbar(CorePlayer cp) {
         Set<String> currentHotbarItems = new HashSet<>();
-        for (int i = 0; i <= 40; i++) {
-            ItemStack itemStack = cp.getPlayer().getInventory().getItem(i);
-            if (itemStack != null) {
-                /*
-                if (isHotbarItem(itemStack)) {
-                    String tag = getHotbarTag(itemStack);
-                    if (HOTBAR_ITEMS.get(tag).isAvailable(cp) && !currentHotbarItems.contains(tag)) {
-                        currentHotbarItems.add(tag);
-                        continue;
+        if (!cp.getGameMode().equals(GameMode.CREATIVE)) {
+            for (int i = 0; i <= 40; i++) {
+                ItemStack itemStack = cp.getPlayer().getInventory().getItem(i);
+                if (itemStack != null) {
+                    if (isHotbarItem(itemStack)) {
+                        InventoryMenuItemHotbar hotbarItem = InventoryMenuItemHotbar.getHotbarItem(itemStack);
+                        if (hotbarItem != null
+                                && hotbarItem.isAvailable(cp)
+                                && hotbarItem.getSlot() == i) {
+                            currentHotbarItems.add(hotbarItem.getHotbarTag());
+                            continue;
+                        }
+                    }
+                    cp.getPlayer().getInventory().setItem(i, null);
+                }
+            }
+        } else {
+            for (int i = 0; i <= 40; i++) {
+                ItemStack itemStack = cp.getPlayer().getInventory().getItem(i);
+                if (itemStack != null) {
+                    if (isHotbarItem(itemStack)) {
+                        InventoryMenuItemHotbar hotbarItem = InventoryMenuItemHotbar.getHotbarItem(itemStack);
+                        if (hotbarItem != null
+                                && hotbarItem.isAvailable(cp)
+                                && hotbarItem.getSlot() == i) {
+                            currentHotbarItems.add(hotbarItem.getHotbarTag());
+                            continue;
+                        }
+                        cp.getPlayer().getInventory().setItem(i, null);
                     }
                 }
-                */
-                cp.getPlayer().getInventory().setItem(i, null);
             }
         }
         
@@ -163,6 +182,14 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
         }
         item.setItemMeta(meta);
         return item;
+    }
+    
+    @Override
+    public void callAction(CorePlayer cp) {
+        if (getLinkedContainer() != null) {
+            cp.setInventoryMenuContainer(getLinkedContainer());
+        }
+        super.callAction(cp);
     }
     
 }

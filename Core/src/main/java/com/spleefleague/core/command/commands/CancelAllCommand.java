@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.game.Battle;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
@@ -35,11 +35,11 @@ public class CancelAllCommand extends CommandTemplate {
      */
     @CommandAnnotation
     public void cancelall(CorePlayer sender) {
-        Set<Battle<?>> battles = new HashSet<>();
+        Set<Battle> battles = new HashSet<>();
         for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
             battles.add(cp.getBattle());
         }
-        for (Battle<?> battle : battles) {
+        for (Battle battle : battles) {
             battle.cancel();
         }
         success(sender, "Cancelled all battles");
