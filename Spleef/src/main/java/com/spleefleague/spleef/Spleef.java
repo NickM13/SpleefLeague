@@ -15,9 +15,7 @@ import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.spleef.commands.*;
-import com.spleefleague.spleef.game.SpleefArena;
 import com.spleefleague.spleef.game.Shovel;
-import com.spleefleague.spleef.game.SpleefField;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.banana.BananaSpleefArena;
@@ -55,16 +53,12 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         
         // Load Spleef gamemodes
         SpleefMode.init();
-        addBattleManager(SpleefMode.BONANZA.getArenaMode());
-        addBattleManager(SpleefMode.CLASSIC.getArenaMode());
-        addBattleManager(SpleefMode.MULTI.getArenaMode());
-        addBattleManager(SpleefMode.POWER.getArenaMode());
-        addBattleManager(SpleefMode.TEAM.getArenaMode());
+        addBattleManager(SpleefMode.BONANZA.getBattleMode());
+        addBattleManager(SpleefMode.CLASSIC.getBattleMode());
+        addBattleManager(SpleefMode.MULTI.getBattleMode());
+        addBattleManager(SpleefMode.POWER.getBattleMode());
+        addBattleManager(SpleefMode.TEAM.getBattleMode());
         
-        // Load database related static lists
-        SpleefField.init();
-        SpleefArena.init();
-
         initMenu();
     }
     
@@ -103,6 +97,8 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         spleefMenuItem.getLinkedContainer().addStaticItem(Shovel.createMenu(), 4, 4);
     
         SLMainHotbar.getItemHotbar().getLinkedContainer().addMenuItem(spleefMenuItem, 4, 2);
+        
+        ClassicSpleefArena.initLeaderboard(1, 2);
     }
     
     public void initCommands() {

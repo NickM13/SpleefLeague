@@ -4,7 +4,7 @@ import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.database.variable.DBVariable;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
@@ -43,11 +43,13 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     private CorePlayer owner;
     private final Map<String, Map<String, CollectibleInfo>> collectibles;
     private final Map<String, String> activeCollectibles;
-    private Holdable heldItem = null;
+    private Holdable heldItem;
     
     public CorePlayerCollectibles() {
         this.collectibles = new TreeMap<>();
         this.activeCollectibles = new TreeMap<>();
+        this.owner = null;
+        this.heldItem = null;
     }
     
     public void setOwner(CorePlayer owner) {
@@ -184,6 +186,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     /**
      * Returns the current active collectibles item of a type, or null if there is none
      *
+     * @param <T> ? extends Collectible
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
@@ -200,6 +203,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * Returns the current active collectibles item of a type, or default if there is none or the active collectible
      * is no longer available
      *
+     * @param <T> ? extends Collectible
      * @param clazz Collectible Class
      * @param defaultCollectible Default Collectible
      * @return NonNull Collectible
@@ -344,7 +348,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * @param container Menu Container
      * @param canHaveNone Disable Item Shown
      */
-    public static void createCollectibleContainer(Class<? extends Collectible> clazz, InventoryMenuContainer container, boolean canHaveNone) {
+    public static void createCollectibleContainer(Class<? extends Collectible> clazz, InventoryMenuContainerChest container, boolean canHaveNone) {
         container.setOpenAction((container2, cp1) -> {
                 container2.clearUnsorted();
                 if (canHaveNone) {

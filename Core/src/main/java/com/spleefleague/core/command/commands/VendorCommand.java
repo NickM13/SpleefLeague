@@ -25,7 +25,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 
 /**
  * @author NickM13
@@ -84,14 +84,14 @@ public class VendorCommand extends CommandTemplate {
     @CommandAnnotation
     public void vendorItems(CorePlayer sender,
             @LiteralArg(value="items") String l) {
-        InventoryMenuContainer menu = InventoryMenuAPI.createContainer()
+        InventoryMenuContainerChest menu = InventoryMenuAPI.createContainer()
                 .setTitle("Vendor Items!");
         
         for (String type : Vendorable.getTypeNames()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItem()
                     .setName(type)
                     .setDisplayItem(Material.CHEST);
-            InventoryMenuContainer typeMenu = typeItem
+            InventoryMenuContainerChest typeMenu = typeItem
                     .getLinkedContainer()
                     .setTitle(type);
             Map<String, Vendorable> vendorableMap = Vendorables.getAll(type);
@@ -108,7 +108,7 @@ public class VendorCommand extends CommandTemplate {
             menu.addMenuItem(typeItem);
         }
         
-        sender.setInventoryMenuContainer(menu);
+        sender.setInventoryMenuChest(menu, true);
     }
     
     @CommandAnnotation

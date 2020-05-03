@@ -11,7 +11,6 @@ import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggArena;
 import com.spleefleague.splegg.game.SpleggMode;
-import com.spleefleague.splegg.Splegg;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -19,10 +18,6 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class MultiSpleggArena extends SpleggArena {
-
-    public MultiSpleggArena() {
-        this.mode = SpleggMode.MULTI.getArenaMode();
-    }
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.GREEN + "" + ChatColor.BOLD;
@@ -30,7 +25,7 @@ public class MultiSpleggArena extends SpleggArena {
                 .setName(mainColor + "MultiSplegg")
                 .setDescription("This is infact a real gamemode, with lots of people!")
                 .setDisplayItem(Material.CHICKEN_SPAWN_EGG)
-                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.MULTI.getArenaMode(), cp));
+                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.MULTI.getBattleMode(), cp));
 
         Splegg.getInstance().getSpleggMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

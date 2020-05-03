@@ -10,9 +10,12 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.chat.ChatEmoticons;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+
+import java.util.Map;
 import java.util.regex.Pattern;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -57,6 +60,9 @@ public class ChatListener implements Listener {
                     && !formattedMessage.endsWith("?")) {
                 formattedMessage += "!";
             }
+        }
+        for (Map.Entry<String, String> entry : ChatEmoticons.getEmoticons().entrySet()) {
+            formattedMessage = formattedMessage.replaceAll(entry.getKey(), entry.getValue());
         }
         
         Chat.sendMessage(cp, formattedMessage);

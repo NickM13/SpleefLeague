@@ -17,7 +17,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
 
     List<Power> powers = new ArrayList<>(4);
 
-    public PowerSpleefPlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public PowerSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
         SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
         powers.add(0, new Power(sp.getActivePower(0)));

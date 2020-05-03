@@ -13,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 /**
+ * Essentially a Location without the world variable
+ *
  * @author NickM13
  */
 public class Position extends DBVariable<List> {
@@ -20,8 +22,20 @@ public class Position extends DBVariable<List> {
     /**
      * For database usage, requires list of 5 numbers
     */
+
+    public double x, y, z, pitch, yaw;
     
-    private double x, y, z, pitch, yaw;
+    public Position() {
+    
+    }
+    
+    public Position(Location loc) {
+        x = loc.getX();
+        y = loc.getY();
+        z = loc.getZ();
+        pitch = loc.getPitch();
+        yaw = loc.getYaw();
+    }
     
     private double doublefy(List list, int i) {
         double num = -1;

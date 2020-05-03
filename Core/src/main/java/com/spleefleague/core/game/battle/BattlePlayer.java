@@ -15,12 +15,12 @@ import org.bukkit.entity.Player;
 public abstract class BattlePlayer {
 
     private final CorePlayer cp;
-    private final Battle<?, ?> battle;
+    private final Battle<?> battle;
     private Location spawn;
     private boolean fallen;
     private int roundWins;
 
-    public BattlePlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public BattlePlayer(CorePlayer cp, Battle<?> battle) {
         this.cp = cp;
         this.battle = battle;
         this.roundWins = 0;
@@ -52,7 +52,7 @@ public abstract class BattlePlayer {
     /**
      * @return Battle
      */
-    public Battle<?, ?> getBattle() {
+    public Battle<?> getBattle() {
         return battle;
     }
 

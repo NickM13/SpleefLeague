@@ -40,10 +40,6 @@ public class WarpEditCommand extends CommandTemplate {
         return materialNameSet;
     }
     
-    /**
-     * Appearance Commands
-     */
-    
     @CommandAnnotation
     public void warpeditDisplaySkull(CorePlayer sender,
             @LiteralArg("display") String m,
@@ -52,10 +48,6 @@ public class WarpEditCommand extends CommandTemplate {
         Warp warp = Warp.getWarp(warpName);
         warp.setDisplayItem(username);
     }
-    
-    /**
-     * Folder Commands
-     */
     
     @CommandAnnotation
     public void warpeditFolderCreate(CorePlayer sender,

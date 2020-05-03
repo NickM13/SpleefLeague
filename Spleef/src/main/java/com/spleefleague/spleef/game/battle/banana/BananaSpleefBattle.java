@@ -6,13 +6,13 @@
 
 package com.spleefleague.spleef.game.battle.banana;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -24,7 +24,7 @@ import java.util.Random;
 /**
  * @author NickM13
  */
-public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaSpleefPlayer> {
+public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefPlayer> {
 
     protected static long FIELD_RESET = 30 * 1000L;
     protected long fieldResetTime = 0;
@@ -33,14 +33,14 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
     protected List<Vector> possibleSpawns;
     
     public BananaSpleefBattle(List<CorePlayer> players,
-                              BananaSpleefArena arena) {
-        super(Spleef.getInstance(), players, arena, BananaSpleefPlayer.class);
+                              Arena arena) {
+        super(Spleef.getInstance(), players, arena, BananaSpleefPlayer.class, SpleefMode.BONANZA.getBattleMode());
         
         possibleSpawns = new ArrayList<>();
-        for (BuildStructure structure : arena.getFields()) {
-            for (BlockPosition pos : structure.getFakeBlocks().keySet()) {
+        for (BuildStructure structure : arena.getStructures()) {
+            structure.getFakeBlocks().keySet().forEach(pos -> {
                 possibleSpawns.add(new Vector(pos.getX(), pos.getY(), pos.getZ()));
-            }
+            });
         }
     }
 
@@ -48,7 +48,7 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
         Random r = new Random();
         Vector spawn = possibleSpawns.get(Math.abs(r.nextInt()) % possibleSpawns.size());
         Location spawnLoc = new Location(gameWorld.getWorld(), spawn.getX(), spawn.getY() + 1, spawn.getZ());
-        double theta = Math.atan2(spawn.getZ() - arena.getCenter().z, spawn.getX() - arena.getCenter().x);
+        double theta = Math.atan2(spawn.getZ(), spawn.getX());
         spawnLoc.setYaw((float) Math.toDegrees(theta) + 90);
         return spawnLoc;
     }
@@ -107,7 +107,12 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
     protected void fillField() {
         SpleefUtils.fillFieldFast(this);
     }
-
+    
+    @Override
+    protected void saveBattlerStats(BananaSpleefPlayer bananaSpleefPlayer) {
+    
+    }
+    
     @Override
     protected void endRound(BananaSpleefPlayer winner) {
 
@@ -122,7 +127,12 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
     protected void sendStartMessage() {
         
     }
-
+    
+    @Override
+    protected void setupBattleRequests() {
+    
+    }
+    
     @Override
     protected void setupBaseSettings() {
         super.setupBaseSettings();
@@ -130,7 +140,12 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
         chatGroup.addTeam("PlayerCount", Chat.SCORE + "Player Count");
         chatGroup.addTeam("PKnockout", Chat.SCORE + "");
     }
-
+    
+    @Override
+    protected void setupScoreboard() {
+    
+    }
+    
     /**
      * Adds a knockout point to a player and controls any streak
      * shutdowns or reaching required streak points actions
@@ -170,6 +185,16 @@ public class BananaSpleefBattle extends BonanzaBattle<BananaSpleefArena, BananaS
         }
         bp.respawn();
         updateScoreboard();
+    }
+    
+    @Override
+    public void reset() {
+    
+    }
+    
+    @Override
+    public void setPlayTo(int i) {
+    
     }
     
 }

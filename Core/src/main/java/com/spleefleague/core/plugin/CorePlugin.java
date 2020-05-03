@@ -14,7 +14,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
 import com.spleefleague.core.player.BattleState;
@@ -37,7 +37,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * allowing for synced battle states
  *
  * @author NickM13
- * @param <P>
+ * @param <P> extends DBPlayer
  */
 public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     
@@ -52,7 +52,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     // Map of all players in the database and their UUIDs (loaded as they connect)
     protected PlayerManager<P> playerManager;
     
-    protected Map<ArenaMode, BattleManager> battleManagers = new HashMap<>();
+    protected Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
     
     protected boolean running = false;
 
@@ -117,7 +117,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      *
      * @param mode Arena Mode
      */
-    public final void addBattleManager(ArenaMode mode) {
+    public final void addBattleManager(BattleMode mode) {
         battleManagers.put(mode, BattleManager.createManager(mode));
     }
     
@@ -127,7 +127,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param mode Arena Mode
      * @return Battle Manager
      */
-    public final BattleManager getBattleManager(ArenaMode mode) {
+    public final BattleManager getBattleManager(BattleMode mode) {
         return battleManagers.get(mode);
     }
     
@@ -137,7 +137,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param mode Arena Mode
      * @param cp Core Player
      */
-    public final void queuePlayer(ArenaMode mode, CorePlayer cp) {
+    public final void queuePlayer(BattleMode mode, CorePlayer cp) {
         battleManagers.get(mode).queuePlayer(cp);
     }
     
@@ -148,7 +148,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      * @param arena Arena
      */
-    public final void queuePlayer(ArenaMode mode, CorePlayer cp, Arena arena) {
+    public final void queuePlayer(BattleMode mode, CorePlayer cp, Arena arena) {
         battleManagers.get(mode).queuePlayer(cp, arena);
     }
     

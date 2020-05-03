@@ -10,7 +10,7 @@ import com.spleefleague.spleef.game.battle.SpleefBattlePlayer;
  */
 public class BananaSpleefPlayer extends SpleefBattlePlayer {
 
-    BananaSpleefPlayer(CorePlayer cp, Battle<?, ?> battle) {
+    BananaSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
     }
 

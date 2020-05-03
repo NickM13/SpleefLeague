@@ -20,7 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * @author NickM13
  */
-public class InventoryMenuEditor extends InventoryMenuContainer {
+public class InventoryMenuEditor extends InventoryMenuContainerChest {
     
     protected HashMap<Integer, InventoryMenuItem> edittableItems;
     protected Consumer<HashMap<Integer, InventoryMenuItem>> saveFun;
@@ -40,27 +40,27 @@ public class InventoryMenuEditor extends InventoryMenuContainer {
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
                 .setName("Next Page")
                 .setDescription("")
-                .setDisplayItem(Material.DIAMOND_AXE, 8)
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem())
                 .setCloseOnAction(false)
-                .setAction(CorePlayer::nextPage)));
+                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) + 1))));
         
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
                 .setName("Prev Page")
                 .setDescription("")
-                .setDisplayItem(Material.DIAMOND_AXE, 9)
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem())
                 .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getPage() > 0)
-                .setAction(CorePlayer::prevPage)));
+                .setVisibility(cp -> cp.getMenuTag("page", Integer.class) > 0)
+                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) - 1))));
     }
     
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
         if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.CHEST) {
-            InventoryMenuContainer menu = cp.getInventoryMenuContainer();
+            InventoryMenuContainerChest menu = (InventoryMenuContainerChest) cp.getInventoryMenuContainer();
             InventoryMenuItem clicked = menu.getMenuItem(cp, e.getSlot());
             if (e.getSlot() < pageItemTotal) {
                 InventoryMenuItem prevItem = this.getMenuItem(cp, e.getSlot());
                 if (clicked != null) {
-                    removeMenuItem(cp.getPage(), e.getSlot());
+                    removeMenuItem(cp.getMenuTag("page", Integer.class), e.getSlot());
                 }
                 // TODO: Is air a thing for cursors?
                 if (e.getCursor() != null && !e.getCursor().getType().equals(Material.AIR)) {
@@ -69,7 +69,7 @@ public class InventoryMenuEditor extends InventoryMenuContainer {
                             .setName(meta != null ? meta.getDisplayName() : "")
                             .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
                             .setDisplayItem(e.getCursor()),
-                            cp.getPage() * pageItemTotal + e.getSlot());
+                            cp.getMenuTag("page", Integer.class) * pageItemTotal + e.getSlot());
                 }
                 cp.getPlayer().setItemOnCursor(prevItem == null ? null : prevItem.createItem(cp));
                 saveFun.accept(sortedItems);

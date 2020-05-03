@@ -6,11 +6,11 @@
 
 package com.spleefleague.spleef.game;
 
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.spleef.game.battle.team.*;
 import com.spleefleague.spleef.game.battle.power.*;
 import com.spleefleague.spleef.game.battle.multi.*;
 import com.spleefleague.spleef.game.battle.classic.*;
-import com.spleefleague.core.game.ArenaMode;
 import com.spleefleague.spleef.game.battle.banana.*;
 
 /**
@@ -25,17 +25,23 @@ public enum SpleefMode {
     WC,
     BONANZA;
     
+    private static final String prefix = "spleef:";
+    
     public static void init() {
-        ArenaMode.addArenaMode("SPLEEF_CLASSIC", "Classic Spleef", 2, 2, ArenaMode.TeamStyle.VERSUS, false, ClassicSpleefArena.class, ClassicSpleefBattle.class);
-        ArenaMode.addArenaMode("SPLEEF_TEAM", "Team Spleef", 2, 2, ArenaMode.TeamStyle.TEAM, false, TeamSpleefArena.class, TeamSpleefBattle.class);
-        ArenaMode.addArenaMode("SPLEEF_MULTI", "Multispleef", 3, 32, ArenaMode.TeamStyle.DYNAMIC, true, MultiSpleefArena.class, MultiSpleefBattle.class);
-        ArenaMode.addArenaMode("SPLEEF_BONANZA", "Bananaspleef", 3, 32, ArenaMode.TeamStyle.BONANZA, true, BananaSpleefArena.class, BananaSpleefBattle.class);
-        ArenaMode.addArenaMode("SPLEEF_POWER", "Power Spleef", 2, 2, ArenaMode.TeamStyle.VERSUS, false, PowerSpleefArena.class, PowerSpleefBattle.class);
-        ArenaMode.addArenaMode("SPLEEF_WC", "SWC", 2, 2, ArenaMode.TeamStyle.VERSUS, false, null, null);
+        BattleMode.addArenaMode(CLASSIC.getName(), "Classic Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSpleefBattle.class);
+        BattleMode.addArenaMode(TEAM.getName(), "Team Spleef", 2, 2, BattleMode.TeamStyle.TEAM, false, TeamSpleefBattle.class);
+        BattleMode.addArenaMode(MULTI.getName(), "Multispleef", 2, 32, BattleMode.TeamStyle.DYNAMIC, true, MultiSpleefBattle.class);
+        BattleMode.addArenaMode(BONANZA.getName(), "Bananaspleef", 0, 0, BattleMode.TeamStyle.BONANZA, true, BananaSpleefBattle.class);
+        BattleMode.addArenaMode(POWER.getName(), "Power Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, PowerSpleefBattle.class);
+        BattleMode.addArenaMode(WC.getName(), "SWC", 2, 2, BattleMode.TeamStyle.VERSUS, false, null);
     }
     
-    public ArenaMode getArenaMode() {
-        return ArenaMode.getArenaMode("SPLEEF_" + this.name());
+    public String getName() {
+        return prefix + name().toLowerCase();
+    }
+    
+    public BattleMode getBattleMode() {
+        return BattleMode.get(getName());
     }
     
 }

@@ -8,7 +8,8 @@ package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.party.Party;
@@ -26,11 +27,11 @@ import java.util.List;
  */
 public class BattleManagerBonanza extends BattleManager {
     
-    public BattleManagerBonanza(ArenaMode mode) {
+    public BattleManagerBonanza(BattleMode mode) {
         super(mode);
     }
     
-    public Battle<?, ?> getMainBattle() {
+    public Battle<?> getMainBattle() {
         if (battles.isEmpty()) return null;
         return battles.get(0);
     }
@@ -45,7 +46,7 @@ public class BattleManagerBonanza extends BattleManager {
     public int queuePlayer(CorePlayer cp) {
         if (getMainBattle() == null)
             startFirstAvailable();
-        Battle<?, ?> battle = getMainBattle();
+        Battle<?> battle = getMainBattle();
         if (battle != null) {
             if (cp.isInBattle()) {
                 return 2;
@@ -80,16 +81,17 @@ public class BattleManagerBonanza extends BattleManager {
      * Starts a battle on a random arena
      */
     private void startFirstAvailable() {
-        Arena arena = Arena.getRandomArena(mode);
-        if (arena != null)
+        Arena arena = Arenas.getRandom(mode);
+        if (arena != null) {
             startMatch(new ArrayList<>(), arena.getName());
+        }
     }
 
     /**
      * @param battle Battle
      * @param cp CorePlayer
      */
-    private void addBattlePlayer(Battle<?, ?> battle, CorePlayer cp) {
+    private void addBattlePlayer(Battle<?> battle, CorePlayer cp) {
         if (cp.getParty() != null) cp.getParty().leave(cp);
         Core.getInstance().unqueuePlayerGlobally(cp);
         battle.addBattler(cp);
@@ -97,12 +99,12 @@ public class BattleManagerBonanza extends BattleManager {
 
     /**
      * @param players Empty Player List
-     * @param name Arena Name
+     * @param arenaName Arena Name
      */
     @Override
-    public void startMatch(List<CorePlayer> players, String name) {
-        Arena arena = Arena.getByName(name, mode);
-        Battle<?, ?> battle;
+    public void startMatch(List<CorePlayer> players, String arenaName) {
+        Arena arena = Arenas.get(arenaName, mode);
+        Battle<?> battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -121,7 +123,7 @@ public class BattleManagerBonanza extends BattleManager {
                 }
 
                 battle = battleClass
-                        .getDeclaredConstructor(List.class, mode.getArenaClass())
+                        .getDeclaredConstructor(List.class, Arena.class)
                         .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);

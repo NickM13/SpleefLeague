@@ -12,7 +12,6 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.bukkit.Material;
@@ -35,8 +34,8 @@ public class InventoryMenuItem {
     
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
-    protected InventoryMenuContainer linkedContainer;
-    protected InventoryMenuContainer parentContainer;
+    protected InventoryMenuContainerChest linkedContainer;
+    protected InventoryMenuContainerChest parentContainer;
     
     public InventoryMenuItem() {
         minRank = Rank.DEFAULT;
@@ -118,10 +117,10 @@ public class InventoryMenuItem {
      * Returns currently linked container
      * @return Menu Container
      */
-    public InventoryMenuContainer getLinkedContainer() {
+    public InventoryMenuContainerChest getLinkedContainer() {
         return linkedContainer;
     }
-    public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {
+    public InventoryMenuItem setLinkedContainer(InventoryMenuContainerChest container) {
         linkedContainer = container;
         if (parentContainer != null)
             linkedContainer.setParentContainer(parentContainer);
@@ -133,11 +132,12 @@ public class InventoryMenuItem {
         return this;
     }
     
-    public void setParentContainer(InventoryMenuContainer container) {
+    public InventoryMenuItem setParentContainer(InventoryMenuContainerChest container) {
         parentContainer = container;
         if (hasLinkedContainer()) {
             linkedContainer.setParentContainer(parentContainer);
         }
+        return this;
     }
     
     public InventoryMenuItem setVisibility(Function<CorePlayer, Boolean> visibilityFun) {

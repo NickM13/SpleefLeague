@@ -1,6 +1,7 @@
 package com.spleefleague.splegg.util;
 
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.splegg.game.SpleggArena;
 import org.bukkit.GameMode;
@@ -15,7 +16,7 @@ public class SpleggUtils {
     /**
      * Initialize base battle settings such as GameWorld tools and Scoreboard values
      */
-    public static void setupBaseSettings(Battle<?, ?> battle) {
+    public static void setupBaseSettings(Battle<?> battle) {
         battle.setGameMode(GameMode.ADVENTURE);
         battle.getGameWorld().addBreakableBlock(Material.SNOW_BLOCK);
     }
@@ -25,22 +26,13 @@ public class SpleggUtils {
      *
      * @param battle Battle
      */
-    public static void fillFieldFast(Battle<? extends SpleggArena, ?> battle) {
+    public static void fillFieldFast(Battle<?> battle) {
         if (battle == null || battle.getGameWorld() == null) return;
         GameWorld gameWorld = battle.getGameWorld();
         gameWorld.clear();
-        /*
-        for (Dimension field : battle.getArena().getField().getAreas()) {
-            // Fill field with delayed blocks (snow goes up in stacks)
-            for (int x = (int)field.getLow().x; x <= (int)field.getHigh().x; x++) {
-                for (int y = (int)field.getLow().y; y <= (int)field.getHigh().y; y++) {
-                    for (int z = (int)field.getLow().z; z <= (int)field.getHigh().z; z++) {
-                        gameWorld.setBlock(new BlockPosition(x, y, z), Material.SNOW_BLOCK.createBlockData());
-                    }
-                }
-            }
+        for (BuildStructure structure : battle.getArena().getStructures()) {
+            gameWorld.setBlocks(structure.getOriginPos(), structure.getFakeBlocks());
         }
-         */
     }
 
 }

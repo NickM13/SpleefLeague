@@ -50,7 +50,8 @@ public class SpleggGun extends Holdable {
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg);
+                        && cp.getBattle().getPlugin() instanceof Splegg)
+                .setAction(cp -> cp.getBattle().getGameWorld().shootProjectile(cp, cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getProjectile()));
     }
     
     public static SpleggGun getSpleggGun(int id) {

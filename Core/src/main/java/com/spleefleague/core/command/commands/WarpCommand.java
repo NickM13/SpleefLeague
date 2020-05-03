@@ -28,7 +28,7 @@ public class WarpCommand extends CommandTemplate {
     }
     
     public static void printWarps(CorePlayer sender) {
-        sender.setInventoryMenuContainer(Warp.createAvailableWarpMenu());
+        sender.setInventoryMenuChest(Warp.createAvailableWarpMenu(), true);
     }
     
     @CommandAnnotation

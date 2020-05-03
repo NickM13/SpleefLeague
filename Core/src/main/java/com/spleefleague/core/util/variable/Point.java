@@ -10,6 +10,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.spleefleague.core.database.variable.DBVariable;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
@@ -17,7 +18,7 @@ import org.bukkit.util.Vector;
 /**
  * @author NickM13
  */
-public class Point {
+public class Point extends DBVariable<List<Double>> {
 
     public double x, y, z;
     
@@ -44,7 +45,7 @@ public class Point {
     
     @Override
     public String toString() {
-        return "{" + x + ", " + y + ", " + z + "}";
+        return "(" + x + ", " + y + ", " + z + ")";
     }
     
     public Vector toVector() {
@@ -175,4 +176,19 @@ public class Point {
         return resultSorted;
     }
     
+    @Override
+    public void load(List<Double> list) {
+        x = list.get(0);
+        y = list.get(1);
+        z = list.get(2);
+    }
+    
+    @Override
+    public List<Double> save() {
+        List<Double> list = new ArrayList<>();
+        list.add(x);
+        list.add(y);
+        list.add(z);
+        return list;
+    }
 }

@@ -1,13 +1,15 @@
 package com.spleefleague.core.player.stats;
 
-import java.util.HashMap;
+import com.spleefleague.core.database.variable.DBVariable;
+import org.bson.Document;
+
 import java.util.Map;
 
 /**
  * @author NickM13
  * @since 4/27/2020
  */
-public class Stats {
+public class Stats extends DBVariable<Document> {
     
     protected Map<String, Integer> stats;
     
@@ -42,4 +44,19 @@ public class Stats {
         return stats.get(name);
     }
     
+    @Override
+    public void load(Document doc) {
+        for (Map.Entry<String, Object> entry : doc.entrySet()) {
+            stats.put(entry.getKey(), (Integer) entry.getValue());
+        }
+    }
+    
+    @Override
+    public Document save() {
+        Document doc = new Document();
+        for (Map.Entry<String, Integer> stat : stats.entrySet()) {
+            doc.append(stat.getKey(), stat.getValue());
+        }
+        return doc;
+    }
 }

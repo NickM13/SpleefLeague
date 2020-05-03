@@ -17,8 +17,8 @@ public class TimeUtils {
     /**
      * Greatest common denom time to string
      * Takes milliseconds
-     * @param age
-     * @return 
+     * @param age Age in millis
+     * @return Formatted String
     */
     public static String gcdTimeToString(long age) {
         String timeStr = "";

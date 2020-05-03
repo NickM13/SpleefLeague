@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.spleefleague.core.logger.CoreLogger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -98,8 +100,9 @@ public class DBEntity {
      * Loads fields from a Document into the DBEntity
      *
      * @param doc Document
+     * @return Success
      */
-    public final void load(Document doc) {
+    public final boolean load(Document doc) {
         if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
         Class<?> clazz = this.getClass();
         while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
@@ -109,7 +112,7 @@ public class DBEntity {
                         f.setAccessible(true);
                         String fieldName = f.getAnnotation(DBField.class).fieldName();
                         if (fieldName.equals("")) fieldName = f.getName();
-                        if (!doc.containsKey(fieldName)) continue;
+                        if (doc.get(fieldName) == null) continue;
                         Object obj = null;
                         if (Enum.class.isAssignableFrom(f.getType())) {
                             obj = f.getType().getDeclaredMethod("valueOf", String.class).invoke(f.getType(), doc.get(fieldName, String.class));
@@ -143,8 +146,9 @@ public class DBEntity {
                                 f.set(this, obj);
                             }
                         }
-                    } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException ex) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException exception) {
+                        CoreLogger.logError(exception.getMessage());
+                        return false;
                     }
                 }
             }
@@ -173,14 +177,16 @@ public class DBEntity {
                                 m.invoke(this, doc.get(fieldName, m.getParameters()[0].getType()));
                             }
                         }
-                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException exception) {
+                        CoreLogger.logError(exception.getMessage());
+                        return false;
                     }
                 }
             }
             clazz = clazz.getSuperclass();
         }
         afterLoad();
+        return true;
     }
     
     /**

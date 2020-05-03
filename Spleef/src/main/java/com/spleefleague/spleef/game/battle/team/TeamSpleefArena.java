@@ -7,13 +7,12 @@
 package com.spleefleague.spleef.game.battle.team;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.SpleefArena;
 import com.spleefleague.spleef.game.SpleefMode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -22,16 +21,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * @author NickM13
  */
-public class TeamSpleefArena extends SpleefArena {
-    
-    @DBField
-    protected Integer teamSize;
-    @DBField
-    protected Integer teamCount;
-    
-    public TeamSpleefArena() {
-        this.mode = SpleefMode.TEAM.getArenaMode();
-    }
+public class TeamSpleefArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.YELLOW + "" + ChatColor.BOLD;
@@ -44,9 +34,9 @@ public class TeamSpleefArena extends SpleefArena {
                     if (party == null) {
                         Core.getInstance().sendMessage(cp, "You have to be in a party for TeamSpleef!");
                         return false;
-                    } else if (!SpleefMode.TEAM.getArenaMode().getRequiredTeamSizes().contains(party.getPlayers().size())) {
+                    } else if (!SpleefMode.TEAM.getBattleMode().getRequiredTeamSizes().contains(party.getPlayers().size())) {
                         Core.getInstance().sendMessage(cp, "No TeamSpleef maps exist with a party size of " + party.getPlayers().size() + "!");
-                        Core.getInstance().sendMessage(cp, "Valid sizes: " + SpleefMode.TEAM.getArenaMode().getRequiredTeamSizesString());
+                        Core.getInstance().sendMessage(cp, "Valid sizes: " + SpleefMode.TEAM.getBattleMode().getRequiredTeamSizesString());
                         return false;
                     }
                     return true;
@@ -56,9 +46,9 @@ public class TeamSpleefArena extends SpleefArena {
         menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getArenaMode(), cp)));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp)));
         
-        getArenas(SpleefMode.TEAM.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer()
+        Arenas.getAll(SpleefMode.TEAM.getBattleMode()).values().forEach(arena -> menuItem.getLinkedContainer()
                 .addMenuItem(InventoryMenuAPI.createItem()
                         .setName(arena.getDisplayName())
                         .setVisibility(cp -> {
@@ -68,7 +58,7 @@ public class TeamSpleefArena extends SpleefArena {
                         })
                         .setDescription(cp -> arena.getDescription())
                         .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                        .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getArenaMode(), cp, arena))));
+                        .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp, arena))));
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

@@ -32,7 +32,12 @@ public class Dimension extends DBVariable<Document> {
         equalize(p1, p2);
     }
     
-    // Set lower and higher values based on two points
+    /**
+     * Sets the lower and higher values based on two points
+     *
+     * @param p1 Point 1
+     * @param p2 Point 2
+     */
     private void equalize(Point p1, Point p2) {
         if (p1.x < p2.x) {
             low.x = p1.x;
@@ -59,10 +64,20 @@ public class Dimension extends DBVariable<Document> {
         }
     }
     
+    /**
+     * Lower point of dimension
+     *
+     * @return Lower Point
+     */
     public Point getLow() {
         return low;
     }
     
+    /**
+     * Higher point of dimension
+     *
+     * @return Higher Point
+     */
     public Point getHigh() {
         return high;
     }
@@ -74,13 +89,26 @@ public class Dimension extends DBVariable<Document> {
                 low.z + (high.z - low.z) / 2);
     }
     
-    // Check if point is contained between lower and upper bounds
+    /**
+     * Checks if a point is contained within lower and higher points (inclusive)
+     *
+     * @param p Point
+     * @return Contained
+     */
     public boolean isContained(Point p) {
         return (p.x >= low.x && p.x <= high.x &&
                 p.y >= low.y && p.y <= high.y &&
                 p.z >= low.z && p.z <= high.z);
     }
     
+    /**
+     * Returns a new dimension with expanded boundaries
+     *
+     * @param x X increase
+     * @param y Y increase
+     * @param z Z increase
+     * @return Expanded Dimension
+     */
     public Dimension expand(double x, double y, double z) {
         Dimension dim = new Dimension(this);
         dim.low.x -= x;
@@ -92,10 +120,22 @@ public class Dimension extends DBVariable<Document> {
         dim.high.z += z;
         return dim;
     }
+    
+    /**
+     * Returns a new dimension with expanded boundaries
+     *
+     * @param v Increase Value
+     * @return Expanded Dimension
+     */
     public Dimension expand(double v) {
         return expand(v, v, v);
     }
     
+    /**
+     * Merges a dimension into this one, using the lowest and highest values from both
+     *
+     * @param dim Dimension to Merge
+     */
     public void combine(Dimension dim) {
         low.x = Math.min(low.x, dim.low.x);
         low.y = Math.min(low.y, dim.low.y);
@@ -108,23 +148,20 @@ public class Dimension extends DBVariable<Document> {
 
     @Override
     public void load(Document doc) {
-        // Read from two array lists
-        Location loc1 = LocationConverter.load(doc.get("low", List.class));
-        Location loc2 = LocationConverter.load(doc.get("high", List.class));
-        
-        Point p1 = new Point(loc1.getX(), loc1.getY(), loc1.getZ());
-        Point p2 = new Point(loc2.getX(), loc2.getY(), loc2.getZ());
-        
+        Point p1 = new Point();
+        p1.load(doc.get("low", List.class));
+        Point p2 = new Point();
+        p2.load(doc.get("high", List.class));
         equalize(p1, p2);
     }
 
     @Override
     public Document save() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new Document("low", low.save()).append("high", high.save());
     }
     
     @Override
     public String toString() {
-        return "{" + low + ", " + high + "}";
+        return "(" + low + ", " + high + ")";
     }
 }

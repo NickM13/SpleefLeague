@@ -33,8 +33,15 @@ public class SpleefPlayer extends DBPlayer {
     }
 
     @Override
-    public void init() { }
-
+    public void init() {
+    
+    }
+    
+    @Override
+    public void initOffline() {
+    
+    }
+    
     @Override
     public void close() { }
     

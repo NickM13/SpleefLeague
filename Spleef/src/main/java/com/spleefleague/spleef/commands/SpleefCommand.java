@@ -6,15 +6,13 @@
 
 package com.spleefleague.spleef.commands;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
@@ -30,28 +28,28 @@ public class SpleefCommand extends CommandTemplate {
     public SpleefCommand() {
         super(SpleefCommand.class, "spleef", Rank.DEFAULT);
         this.addAlias("s");
-        this.setOptions("classicArenas", (cp) -> Arena.getArenaNames(SpleefMode.CLASSIC.getArenaMode()));
-        this.setOptions("multiArenas", (cp) -> Arena.getArenaNames(SpleefMode.MULTI.getArenaMode()));
-        this.setOptions("powerArenas", (cp) -> Arena.getArenaNames(SpleefMode.POWER.getArenaMode()));
-        this.setOptions("teamArenas", (cp) -> Arena.getArenaNames(SpleefMode.TEAM.getArenaMode()));
-        this.setOptions("wcArenas", (cp) -> Arena.getArenaNames(SpleefMode.WC.getArenaMode()));
+        this.setOptions("classicArenas",    cp -> Arenas.getUnpaused(SpleefMode.CLASSIC.getBattleMode()).keySet());
+        this.setOptions("multiArenas",      cp -> Arenas.getUnpaused(SpleefMode.MULTI.getBattleMode()).keySet());
+        this.setOptions("powerArenas",      cp -> Arenas.getUnpaused(SpleefMode.POWER.getBattleMode()).keySet());
+        this.setOptions("teamArenas",       cp -> Arenas.getUnpaused(SpleefMode.TEAM.getBattleMode()).keySet());
+        this.setOptions("wcArenas",         cp -> Arenas.getUnpaused(SpleefMode.WC.getBattleMode()).keySet());
         setContainer("spleef");
     }
     
     @CommandAnnotation(minRank="DEVELOPER")
     public void spleefMatch(CorePlayer sender,
-            @LiteralArg(value="m") String l,
-            String spleefMode,
-            String arena,
-            String playerNames) {
-        ArenaMode mode;
+            @LiteralArg("m") String l,
+            @HelperArg("<mode>") String spleefMode,
+            @HelperArg("<arena>") String arenaName,
+            @HelperArg("<players>") String playerNames) {
+        BattleMode mode;
         try {
-            mode = SpleefMode.valueOf(spleefMode.toUpperCase()).getArenaMode();
+            mode = SpleefMode.valueOf(spleefMode.toUpperCase()).getBattleMode();
         } catch(IllegalArgumentException exception) {
             error(sender, "Not a valid spleef mode!");
             return;
         }
-        if (mode.getTeamStyle() == ArenaMode.TeamStyle.TEAM) {
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.TEAM) {
         
         }
         List<CorePlayer> players = new ArrayList<>();
@@ -64,10 +62,10 @@ public class SpleefCommand extends CommandTemplate {
                 return;
             }
         }
-        if (Arena.getByName(arena, mode) != null) {
-            Spleef.getInstance().getBattleManager(mode).startMatch(players, arena);
+        if (Arenas.get(arenaName, mode) != null) {
+            Spleef.getInstance().getBattleManager(mode).startMatch(players, arenaName);
         } else {
-            error(sender, arena + " is not a valid arena for " + mode.getDisplayName() + "!");
+            error(sender, arenaName + " is not a valid arena for " + mode.getDisplayName() + "!");
         }
     }
     
@@ -77,29 +75,37 @@ public class SpleefCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
-    public void spleefClassic(CorePlayer sender, @LiteralArg(value="classic") String l, @Nullable @OptionArg(listName="classicArenas") String arena) {
-        Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.CLASSIC.getArenaMode()));
+    public void spleefClassic(CorePlayer sender,
+            @LiteralArg("classic") String l,
+            @Nullable @OptionArg(listName="classicArenas") String arena) {
+        Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getBattleMode(), sender, Arenas.get(arena, SpleefMode.CLASSIC.getBattleMode()));
     }
     
     @CommandAnnotation
-    public void spleefMulti(CorePlayer sender, @LiteralArg(value="multi") String l) {
-        Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), sender);
+    public void spleefMulti(CorePlayer sender,
+            @LiteralArg("multi") String l) {
+        Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getBattleMode(), sender);
     }
     
     @CommandAnnotation
-    public void spleefPower(CorePlayer sender, @LiteralArg(value="power") String l, @Nullable @OptionArg(listName="powerArenas") String arena) {
-        Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.POWER.getArenaMode()));
+    public void spleefPower(CorePlayer sender,
+            @LiteralArg("power") String l,
+            @Nullable @OptionArg(listName="powerArenas") String arenaName) {
+        Spleef.getInstance().queuePlayer(SpleefMode.POWER.getBattleMode(), sender, Arenas.get(arenaName, SpleefMode.POWER.getBattleMode()));
     }
     
     @CommandAnnotation
-    public void spleefTeam(CorePlayer sender, @LiteralArg(value="team") String l, @Nullable @OptionArg(listName="teamArenas") String arena) {
-        Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.TEAM.getArenaMode()));
+    public void spleefTeam(CorePlayer sender,
+            @LiteralArg("team") String l,
+            @Nullable @OptionArg(listName="teamArenas") String arenaName) {
+        Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), sender, Arenas.get(arenaName, SpleefMode.TEAM.getBattleMode()));
     }
     
     @CommandAnnotation(hidden=true)
-    public void spleefWc(CorePlayer sender, @LiteralArg(value="wc") String l, @Nullable @OptionArg(listName="wcArenas") String arena) {
+    public void spleefWc(CorePlayer sender,
+            @LiteralArg("wc") String l,
+            @Nullable @OptionArg(listName="wcArenas") String arenaName) {
         error(sender, CoreError.SETUP);
-        //Spleef.getInstance().queuePlayer(SpleefMode.WC.getArenaMode(), sender, Arena.getByName(arena, SpleefMode.WC.getArenaMode()));
     }
     
 }

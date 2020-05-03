@@ -12,6 +12,7 @@ import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
+import com.mongodb.lang.NonNull;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
@@ -19,12 +20,10 @@ import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.Checkpoint;
 import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.menu.InventoryMenuContainer;
-import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.PermRank;
@@ -82,9 +81,10 @@ public class CorePlayer extends DBPlayer {
     @DBField private Long afkTime;
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
-    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
-    @DBField private final CorePlayerStats ratings = new CorePlayerStats();
+    @DBField private CorePlayerOptions options = new CorePlayerOptions();
+    @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private CorePlayerStats stats = new CorePlayerStats();
+    @DBField private CorePlayerRatings ratings = new CorePlayerRatings();
     
     /**
      * Non-database variables
@@ -95,7 +95,7 @@ public class CorePlayer extends DBPlayer {
     private long urlTime;
 
     // Current inventory menu page
-    private int inventoryPage;
+    private Map<String, Object> menuTags = new HashMap<>();
     // Current inventory menu
     private InventoryMenuContainer inventoryMenuContainer;
     // Current selected chat channel to send messages in
@@ -114,7 +114,7 @@ public class CorePlayer extends DBPlayer {
     private PermissionAttachment permissions;
     
     private final LinkedHashSet<FakeWorld<?>> fakeWorlds = new LinkedHashSet<>();
-    private Battle<?, ?> battle;
+    private Battle<?> battle;
     private BattleState battleState;
     private final PregameState pregameState;
     private GlobalBiome globalBiome;
@@ -155,8 +155,8 @@ public class CorePlayer extends DBPlayer {
      * This function always calls before init()
      */
     @Override
-    public void newPlayer(Player player) {
-        super.newPlayer(player);
+    public void newPlayer(UUID uuid, String username) {
+        super.newPlayer(uuid, username);
         permRank.setRank(Rank.getDefaultRank());
     }
 
@@ -169,10 +169,29 @@ public class CorePlayer extends DBPlayer {
         setRank(permRank.getRank());
         PersonalScoreboard.initPlayerScoreboard(this);
         collectibles.setOwner(this);
+        stats.setOwner(this);
         ratings.setOwner(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
+        FakeWorld.onPlayerJoin(getPlayer());
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
+    }
+    
+    @Override
+    public void initOffline() {
+        collectibles.setOwner(this);
+        stats.setOwner(this);
+        ratings.setOwner(this);
+    }
+    
+    /**
+     * Called after loading data from the database DBEntity::load
+     */
+    @Override
+    public void afterLoad() {
+        collectibles.setOwner(this);
+        stats.setOwner(this);
+        ratings.setOwner(this);
     }
     
     /**
@@ -194,19 +213,9 @@ public class CorePlayer extends DBPlayer {
         
         try {
             Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(leaveDoc);
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError | IllegalAccessError exception) {
             Core.getInstance().getLogger().log(Level.WARNING, "Couldn't save PlayerConnection for " + getPlayer().getName());
         }
-    }
-
-    /**
-     * Get the options object that CorePlayer options are stored in,
-     * accessed ingame via the MainMenu>Options menu
-     *
-     * @return CorePlayerOptions object
-     */
-    public CorePlayerOptions getOptions() {
-        return options;
     }
 
     /**
@@ -223,15 +232,49 @@ public class CorePlayer extends DBPlayer {
     }
     
     /**
-     * Get all Ratings of a Core Player
-     * 
-     * @return Core Player Ratings
+     * Get the stats object of a Core Player
+     *
+     * @return Core Player Stats
      * @see CorePlayerStats
      */
-    public CorePlayerStats getRatings() {
+    public CorePlayerStats getStats() {
+        return stats;
+    }
+    
+    /**
+     * Get all ratings object of a Core Player
+     *
+     * @return Core Player Ratings
+     * @see CorePlayerRatings
+     */
+    public CorePlayerRatings getRatings() {
         return ratings;
     }
-
+    
+    /**
+     * Get the collectibles object owned by the player
+     *
+     * @return Collectibles
+     */
+    public CorePlayerCollectibles getCollectibles() {
+        return collectibles;
+    }
+    
+    /**
+     * Get the options object that CorePlayer options are stored in,
+     * accessed ingame via the MainMenu Options menu
+     *
+     * @return CorePlayerOptions object
+     */
+    public CorePlayerOptions getOptions() {
+        return options;
+    }
+    
+    /**
+     * Gets the current gamemode of a player, used for preventing gamemode change on world hopping
+     *
+     * @return Current GameMode
+     */
     public org.bukkit.GameMode getGameMode() {
         return org.bukkit.GameMode.valueOf(gameMode);
     }
@@ -319,24 +362,13 @@ public class CorePlayer extends DBPlayer {
         return 0;
     }
     
-    /**
-     * Get the collectibles object owned by the player
-     *
-     * @return Collectibles
-     */
-    public CorePlayerCollectibles getCollectibles() {
-        return collectibles;
-    }
-    
     public boolean isFlying() {
         return getPlayer().isFlying()
                 || getPlayer().isGliding();
     }
     
-    /**
-     *
-     */
     public void checkBiome() {
+        if (!isOnline()) return;
         Vector pos = getPlayer().getLocation().toVector();
         GlobalBiome biome = GlobalBiome.get(getPlayer().getWorld().getBiome(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ()));
         if (globalBiome == null) {
@@ -640,8 +672,8 @@ public class CorePlayer extends DBPlayer {
 
     public void checkGlobalSpectate() {
         if (isInGlobal()) {
-            for (ArenaMode arenaMode : ArenaMode.getAllArenaModes()) {
-                for (Battle<?, ?> battle : arenaMode.getOngoingBattles()) {
+            for (BattleMode arenaMode : BattleMode.getAllModes()) {
+                for (Battle<?> battle : arenaMode.getOngoingBattles()) {
                     if (battle.isInGlobalSpectatorBorder(this)) {
                         battle.addGlobalSpectator(this);
                         return;
@@ -673,8 +705,11 @@ public class CorePlayer extends DBPlayer {
     }
     /**
      * Teleports player to a warp location if they have permissions
+     *
+     * @param warp Warp
+     * @return Success
      */
-    public boolean warp(Warp warp) {
+    public boolean warp(@NonNull Warp warp) {
         if (warp.isAvailable(this)) {
             teleport(warp.getLocation());
             return true;
@@ -875,25 +910,79 @@ public class CorePlayer extends DBPlayer {
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
+    
+    public int getInvSwap() {
+        return invSwap;
+    }
+    
+    public void addInvSwap() {
+        invSwap++;
+    }
+    
+    public void removeInvSwap() {
+        invSwap--;
+    }
 
     /**
      * Set player's current InventoryMenuContainer
      *
      * @param inventoryMenuContainer InventoryMenuContainer
      */
-    public void setInventoryMenuContainer(InventoryMenuContainer inventoryMenuContainer) {
-        if (inventoryMenuContainer != null) {
-            inventoryPage = 0;
+    private int invSwap = 0;
+    public void setInventoryMenuChest(InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
+        if (inventoryMenuChest != null) {
+            invSwap++;
+            menuTags.put("page", 0);
             ItemStack item = getPlayer().getItemOnCursor();
             getPlayer().setItemOnCursor(null);
-            inventoryMenuContainer.openInventory(this);
+            if (initialize) inventoryMenuChest.open(this);
+            else            inventoryMenuChest.refreshInventory(this);
             getPlayer().setItemOnCursor(item);
-            this.inventoryMenuContainer = inventoryMenuContainer;
-        } else {
+            this.inventoryMenuContainer = inventoryMenuChest;
+        } else if (invSwap <= 0) {
             this.inventoryMenuContainer = null;
+            this.menuTags.clear();
+        } else {
+            invSwap--;
         }
     }
+    
+    public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {
+        invSwap++;
+        ItemStack item = getPlayer().getItemOnCursor();
+        if (item != null) {
+            getPlayer().getInventory().addItem(item);
+            getPlayer().setItemOnCursor(null);
+        }
+        inventoryMenuAnvil.open(this);
+        this.inventoryMenuContainer = inventoryMenuAnvil;
+    }
+    
+    public void setInventoryMenuContainer(InventoryMenuContainer inventoryMenuContainer) {
+        if (inventoryMenuContainer instanceof InventoryMenuContainerAnvil) {
+            setInventoryMenuAnvil((InventoryMenuContainerAnvil) inventoryMenuContainer);
+        } else if (inventoryMenuContainer instanceof InventoryMenuContainerChest) {
+            setInventoryMenuChest((InventoryMenuContainerChest) inventoryMenuContainer, true);
+        }
+    }
+    
+    private InventoryMenuDialog inventoryMenuDialog = null;
+    private int nextDialog;
+    
+    public void setInventoryMenuDialog(InventoryMenuDialog inventoryMenuDialog) {
+        this.inventoryMenuDialog = inventoryMenuDialog;
+        nextDialog = 0;
+        openNextDialog();
+    }
 
+    public void openNextDialog() {
+        if (inventoryMenuDialog != null) {
+            if (inventoryMenuDialog.openNextContainer(this, nextDialog)) {
+                nextDialog++;
+            }
+        }
+    }
+    
     /**
      * Set player's current InventoryMenuContainer based on linked container of item
      *
@@ -901,11 +990,12 @@ public class CorePlayer extends DBPlayer {
      */
     public void setInventoryMenuItem(InventoryMenuItem inventoryMenuItem) {
         if (inventoryMenuItem != null) {
-            inventoryPage = 0;
+            invSwap++;
+            menuTags.put("page", 0);
             if (inventoryMenuItem.hasLinkedContainer()) {
                 ItemStack item = getPlayer().getItemOnCursor();
                 getPlayer().setItemOnCursor(null);
-                inventoryMenuItem.getLinkedContainer().openInventory(this);
+                inventoryMenuItem.getLinkedContainer().open(this);
                 getPlayer().setItemOnCursor(item);
                 inventoryMenuContainer = inventoryMenuItem.getLinkedContainer();
             } else {
@@ -915,21 +1005,24 @@ public class CorePlayer extends DBPlayer {
         } else {
             getPlayer().closeInventory();
             inventoryMenuContainer = null;
+            menuTags.clear();
         }
     }
 
     /**
-     * Updates the player's current ivnentoryMenuContainer
+     * Updates the player's current inventoryMenuContainer
      * For refreshing/page change
      */
     public void refreshInventoryMenuContainer() {
-        if (inventoryMenuContainer != null) {
-            InventoryMenuContainer im = inventoryMenuContainer;
-            ItemStack item = getPlayer().getItemOnCursor();
+        if (inventoryMenuContainer != null
+                && inventoryMenuContainer instanceof InventoryMenuContainerChest) {
+            invSwap++;
+            InventoryMenuContainerChest container = (InventoryMenuContainerChest) inventoryMenuContainer;
+            ItemStack itemStack = getPlayer().getItemOnCursor();
             getPlayer().setItemOnCursor(null);
-            inventoryMenuContainer.openInventory(this);
-            getPlayer().setItemOnCursor(item);
-            inventoryMenuContainer = im;
+            container.refreshInventory(this);
+            getPlayer().setItemOnCursor(itemStack);
+            inventoryMenuContainer = container;
         }
     }
 
@@ -939,18 +1032,27 @@ public class CorePlayer extends DBPlayer {
     public InventoryMenuContainer getInventoryMenuContainer() {
         return inventoryMenuContainer;
     }
-
+    
     /**
-     * @return Current Menu Page
+     * @param <T> ? extends Collectible
+     * @param name Menu Tag Identifier
+     * @param clazz Class of T
+     * @return Current Menu Tags
      */
-    public int getPage() {
-        return inventoryPage;
+    public <T> T getMenuTag(String name, Class<T> clazz) {
+        if (menuTags.containsKey(name)
+                && clazz.isAssignableFrom(menuTags.get(name).getClass())) {
+            return (T) menuTags.get(name);
+        }
+        return null;
     }
-    public void nextPage() {
-        inventoryPage++;
+    
+    public <T> void setMenuTag(String name, T obj) {
+        menuTags.put(name, obj);
     }
-    public void prevPage() {
-        inventoryPage--;
+    
+    public boolean hasMenuTag(String name) {
+        return menuTags.containsKey(name);
     }
 
     /**
@@ -1048,7 +1150,7 @@ public class CorePlayer extends DBPlayer {
      * @param battle Battle
      * @param battleState Battle State
      */
-    public final void joinBattle(Battle<?, ?> battle, BattleState battleState) {
+    public final void joinBattle(Battle<?> battle, BattleState battleState) {
         this.battle = battle;
         this.battleState = battleState;
         if (battleState != BattleState.SPECTATOR_GLOBAL) {
@@ -1086,7 +1188,7 @@ public class CorePlayer extends DBPlayer {
      *
      * @return Battle
      */
-    public final Battle<?, ?> getBattle() {
+    public final Battle<?> getBattle() {
         return battle;
     }
     
@@ -1099,8 +1201,6 @@ public class CorePlayer extends DBPlayer {
     
     /**
      * Returns whether player is in a Build World or not
-     *
-     * // TODO: This is kind of hacky, set up better way
      *
      * @return In Build World
      */

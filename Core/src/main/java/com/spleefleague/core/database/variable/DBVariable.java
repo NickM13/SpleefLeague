@@ -11,7 +11,7 @@ package com.spleefleague.core.database.variable;
  * with DBEntity's load/save function
  *
  * @author NickM13
- * @param <T>
+ * @param <T> Database Type
  */
 public abstract class DBVariable<T> {
 

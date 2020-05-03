@@ -6,12 +6,15 @@
 
 package com.spleefleague.core.listener;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,6 +35,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -139,6 +144,22 @@ public class EnvironmentListener implements Listener {
         }
     }
     
+    private static List<String> WISHES = Lists.newArrayList(
+            "I wish I would grow up, it feels like I've been 10 for years.",
+            "I wish to know how you survived my wrath, little fountain.",
+            "Already, I've a kingdom in my prospects, a land to rule.  What to ask for?  Perhaps a frozen scone...",
+            "I wish someday to retire to my own tidy little estate, with a bunch of pet dogs to keep me company.",
+            "Brann Bronzebeard was here.",
+            "Just once, I wish someone would greet me without making a stupid joke about gnomes or time travel.",
+            "Sometimes... I wish someone would come along and just give me a big, long hug.",
+            "Arthas, my love, please come back to me.",
+            "Listen, little wishing fountain.  You'll give me all your power if you know what's good for you.",
+            "That young apprentice Jaina is quite attractive for a human.  I hope she recognizes my elegance and power.",
+            "I hope my sisters and I can grow up and get married together.",
+            "Wishes are a fool's pastime.  Take this coin as payment for your precious Eye.",
+            "Grom, may you rest well, old friend.",
+            "It is my wish that my dear Taelan will grow strong enough to defend the people he cares for.",
+            "Young Arthas must learn patience to temper his power.  I will pray that he one day learns how to lead with care rather than force.");
     /**
      * Prevent non building players from dropping blocks
      *
@@ -149,6 +170,13 @@ public class EnvironmentListener implements Listener {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         if (!cp.canBuild()) {
             event.setCancelled(true);
+            Block block = cp.getPlayer().getTargetBlockExact(5, FluidCollisionMode.ALWAYS);
+            if (block != null
+                    && block.getType().equals(Material.WATER)
+                    && SLMainHotbar.getItemHotbar().createItem(cp).equals(event.getItemDrop().getItemStack())) {
+                Random rand = new Random();
+                Core.getInstance().sendMessage(cp, WISHES.get(rand.nextInt(WISHES.size())));
+            }
         }
     }
 
@@ -242,7 +270,7 @@ public class EnvironmentListener implements Listener {
         Core.getInstance().sendMessage(event.getDeathMessage());
     }
 
-    private static final Set<CreatureSpawnEvent.SpawnReason> noSpawnReasons = Sets.newHashSet(CreatureSpawnEvent.SpawnReason.BEEHIVE, CreatureSpawnEvent.SpawnReason.BREEDING,
+    private static final Set<CreatureSpawnEvent.SpawnReason> noSpawnReasons = Sets.newHashSet(CreatureSpawnEvent.SpawnReason.BREEDING,
             CreatureSpawnEvent.SpawnReason.BUILD_IRONGOLEM, CreatureSpawnEvent.SpawnReason.BUILD_SNOWMAN, CreatureSpawnEvent.SpawnReason.BUILD_WITHER, CreatureSpawnEvent.SpawnReason.CURED, /*SpawnReason.CUSTOM,*/ /*SpawnReason.DEFAULT,*/
             CreatureSpawnEvent.SpawnReason.DROWNED, CreatureSpawnEvent.SpawnReason.DISPENSE_EGG, CreatureSpawnEvent.SpawnReason.EGG, CreatureSpawnEvent.SpawnReason.ENDER_PEARL, CreatureSpawnEvent.SpawnReason.EXPLOSION, CreatureSpawnEvent.SpawnReason.INFECTION,
             CreatureSpawnEvent.SpawnReason.JOCKEY, CreatureSpawnEvent.SpawnReason.LIGHTNING, CreatureSpawnEvent.SpawnReason.MOUNT, CreatureSpawnEvent.SpawnReason.NATURAL, CreatureSpawnEvent.SpawnReason.NETHER_PORTAL, CreatureSpawnEvent.SpawnReason.OCELOT_BABY,

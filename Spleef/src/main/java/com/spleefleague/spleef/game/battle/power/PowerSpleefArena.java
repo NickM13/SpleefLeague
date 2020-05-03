@@ -6,11 +6,10 @@
 
 package com.spleefleague.spleef.game.battle.power;
 
-import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.SpleefArena;
 import com.spleefleague.spleef.game.SpleefMode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,11 +18,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * @author NickM13
  */
-public class PowerSpleefArena extends SpleefArena {
-    
-    public PowerSpleefArena() {
-        mode = SpleefMode.POWER.getArenaMode();
-    }
+public class PowerSpleefArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
@@ -36,11 +31,11 @@ public class PowerSpleefArena extends SpleefArena {
         menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), cp)));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getBattleMode(), cp)));
         
-        getArenas(SpleefMode.POWER.getArenaMode()).forEach((String s, Arena arena) -> {
+        Arenas.getAll(SpleefMode.POWER.getBattleMode()).values().forEach(arena -> {
             menuItem.getLinkedContainer().addMenuItem(arena.createMenu((cp -> {
-                Spleef.getInstance().queuePlayer(SpleefMode.POWER.getArenaMode(), cp, arena);
+                Spleef.getInstance().queuePlayer(SpleefMode.POWER.getBattleMode(), cp, arena);
             })));
         });
         
@@ -48,8 +43,6 @@ public class PowerSpleefArena extends SpleefArena {
         menuItem.getLinkedContainer().addStaticItem(Power.createMenu(1), 3, 4);
         menuItem.getLinkedContainer().addStaticItem(Power.createMenu(2), 5, 4);
         menuItem.getLinkedContainer().addStaticItem(Power.createMenu(3), 7, 4);
-        
-        menuItem.getLinkedContainer().addMenuItem(menuItem, 0);
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

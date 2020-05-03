@@ -6,8 +6,9 @@
 package com.spleefleague.core.chat;
 
 /**
+ * spigotmc.org/threads/free-code-sending-perfectly-centered-chat-message.95872/
+ *
  * @author SirSpoodles
- * @url spigotmc.org/threads/free-code-sending-perfectly-centered-chat-message.95872/
  */
 public enum DefaultFontInfo {
 

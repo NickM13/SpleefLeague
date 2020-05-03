@@ -43,6 +43,8 @@ public abstract class Vendorable extends DBEntity {
      * If any vendorables use the type "Invalid", they have not been
      * set up correctly and their base class should call this function
      * in their static init
+     * 
+     * @param clazz Class of ? extends Vendorable
      */
     protected static void registerVendorableType(Class<? extends Vendorable> clazz) {
         REGISTERED_TYPES.put(clazz.getSimpleName(), clazz);
@@ -52,6 +54,9 @@ public abstract class Vendorable extends DBEntity {
      * Checks against the classes in REGISTERED_TYPES to see if the
      * class passed is a sub-class of any, returning the simple class
      * name of that class, or Invalid if none found
+     *
+     * @param clazz Class of Vendorable
+     * @return Vendorable Type Name
      */
     public static String getTypeName(Class<? extends Vendorable> clazz) {
         for (Map.Entry<String, Class<? extends Vendorable>> type : REGISTERED_TYPES.entrySet()) {
@@ -70,7 +75,7 @@ public abstract class Vendorable extends DBEntity {
      * Get the Vendorable class that this type is instantiated from
      *
      * @param type Type
-     * @return Class<? extends Vendorable>
+     * @return Class of ? extends Vendorable
      */
     public static Class<? extends Vendorable> getClassFromType(String type) {
         return REGISTERED_TYPES.get(type);
@@ -236,6 +241,8 @@ public abstract class Vendorable extends DBEntity {
     
     /**
      * Called when a player clicks on the vendorable item
+     *
+     * @param cp Core Player
      */
     public final void attemptPurchase(CorePlayer cp) {
         if (canPurchase(cp)) {
@@ -248,6 +255,7 @@ public abstract class Vendorable extends DBEntity {
      * refer to the coin cost of an item, that always
      * overrides this
      *
+     * @param cp Core Player
      * @return Can Purchase
      */
     public final boolean canPurchase(CorePlayer cp) {
@@ -258,12 +266,15 @@ public abstract class Vendorable extends DBEntity {
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
      *
+     * @param cp Core Player
      * @return Availability
      */
     public abstract boolean isAvailableToPurchase(CorePlayer cp);
     
     /**
      * Called when a player successfully purchases this item from the vendor
+     *
+     * @param cp Core Player
      */
     public abstract void purchase(CorePlayer cp);
     

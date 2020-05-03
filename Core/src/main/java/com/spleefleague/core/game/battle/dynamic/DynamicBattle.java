@@ -1,10 +1,19 @@
 package com.spleefleague.core.game.battle.dynamic;
 
+import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.request.EndGameRequest;
+import com.spleefleague.core.game.request.PauseRequest;
+import com.spleefleague.core.game.request.PlayToRequest;
+import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.util.CoreUtils;
 
 import java.util.List;
 
@@ -12,10 +21,23 @@ import java.util.List;
  * @author NickM13
  * @since 4/24/2020
  */
-public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> extends Battle<A, BP> {
+public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> {
     
-    public DynamicBattle(CorePlugin<?> plugin, List<CorePlayer> players, A arena, Class<BP> battlePlayerClass) {
-        super(plugin, players, arena, battlePlayerClass);
+    protected static final int MAX_SHOWN = 5;
+    protected int playToPoints = 5;
+    
+    public DynamicBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, players, arena, battlePlayerClass, battleMode);
+    }
+    
+    /**
+     * Initialize battle requests (/request)
+     */
+    protected void setupBattleRequests() {
+        addBattleRequest(new ResetRequest(this));
+        addBattleRequest(new EndGameRequest(this));
+        addBattleRequest(new PlayToRequest(this));
+        addBattleRequest(new PauseRequest(this));
     }
     
     /**
@@ -34,12 +56,25 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
     
     }
     
+    @Override
+    protected void setupScoreboard() {
+        chatGroup.addTeam("playto", Chat.SCOREBOARD_DEFAULT + "Playing To " + Chat.SCORE + playToPoints);
+        for (int i = 0; i < battlers.size() && i < 5; i++) {
+            chatGroup.addTeam("p" + i, "");
+        }
+    }
+    
     /**
      * Send a message on the start of a battle
      */
     @Override
     protected void sendStartMessage() {
-    
+        getPlugin().sendMessage("Starting "
+                + getMode().getDisplayName()
+                + " match on "
+                + arena.getName()
+                + " between "
+                + CoreUtils.mergePlayerNames(battlers.keySet()) + "!");
     }
     
     @Override
@@ -50,7 +85,7 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
     /**
      * Called when a battler joins mid-game (if available)
      *
-     * @param cp
+     * @param cp Core Player
      */
     @Override
     protected void joinBattler(CorePlayer cp) {
@@ -59,12 +94,12 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
     
     /**
      * Save the battlers stats
-     * Called when a battler is removed from the battle
+     * Called when a battler is being removed from the battle
      *
-     * @param cp
+     * @param bp Battle Player
      */
     @Override
-    protected void saveBattlerStats(CorePlayer cp) {
+    protected void saveBattlerStats(BP bp) {
     
     }
     
@@ -75,7 +110,21 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
      */
     @Override
     protected void endRound(BP winner) {
+        winner.addRoundWin();
+        if (winner.getRoundWins() < playToPoints) {
+            Core.getInstance().sendMessage(chatGroup, Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
+            startRound();
+        } else {
+            endBattle(winner);
+        }
+    }
     
+    /**
+     *
+     * @param winner Battle Player
+     */
+    protected void applyEloChange(BP winner) {
+        getPlugin().sendMessage("Elo Change not set up for Dynamic Battles yet!");
     }
     
     /**
@@ -85,7 +134,12 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
      */
     @Override
     protected void endBattle(BP winner) {
-    
+        applyEloChange(winner);
+        getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " all other players in "
+                + Chat.GAMEMODE + getMode().getDisplayName());
+        endBattle();
     }
     
     /**
@@ -95,7 +149,12 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
      */
     @Override
     protected void failBattler(CorePlayer cp) {
-    
+        remainingPlayers.remove(battlers.get(cp));
+        if (remainingPlayers.isEmpty()) {
+            endRound(null);
+        } else if (remainingPlayers.size() == 1) {
+            endRound(remainingPlayers.iterator().next());
+        }
     }
     
     /**
@@ -105,72 +164,17 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
      */
     @Override
     public void surrender(CorePlayer cp) {
-    
+        leaveBattler(cp);
     }
     
     /**
-     * Called when a player requests the game to end (/endgame)
+     * Called when a Play To request passes
      *
-     * @param cp CorePlayer
+     * @param playToPoints Play To Value
      */
     @Override
-    public void requestEndGame(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to pause the game with specified
-     * time (/pause <seconds>)
-     *
-     * @param cp      CorePlayer
-     * @param timeout Seconds
-     */
-    @Override
-    public void requestPause(CorePlayer cp, int timeout) {
-    
-    }
-    
-    /**
-     * Called when a player requests to pause the game (/pause)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestPause(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to reset the field (/reset)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestReset(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to change the
-     * PlayTo score (/playto)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestPlayTo(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to change the
-     * PlayTo score with specified score (/playto <score>)
-     *
-     * @param cp     CorePlayer
-     * @param playTo
-     */
-    @Override
-    public void requestPlayTo(CorePlayer cp, int playTo) {
-    
+    public void setPlayTo(int playToPoints) {
+        this.playToPoints = playToPoints;
     }
     
     /**
@@ -189,7 +193,11 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
      */
     @Override
     public void updateScoreboard() {
-    
+        chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString() + "     " + Chat.SCORE + "Score  ");
+        for (int i = 0; i < Math.min(sortedBattlers.size(), MAX_SHOWN); i++) {
+            chatGroup.setTeamDisplayName("p" + i, Chat.PLAYER_NAME + sortedBattlers.get(i).getCorePlayer().getName()
+                    + ": " + Chat.SCORE + sortedBattlers.get(i).getRoundWins());
+        }
     }
     
     /**
@@ -209,4 +217,5 @@ public abstract class DynamicBattle<A extends Arena, BP extends BattlePlayer> ex
     public void updateExperience() {
     
     }
+    
 }

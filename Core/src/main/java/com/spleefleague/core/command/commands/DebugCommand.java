@@ -14,6 +14,8 @@ import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.RaycastResult;
 import java.util.List;
+
+import com.spleefleague.core.world.FakeWorld;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,6 +34,7 @@ public class DebugCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void debug(CorePlayer sender) {
+        /*
         Snowball snowball = sender.getPlayer().launchProjectile(Snowball.class);
         Point point = new Point(snowball.getLocation());
         List<RaycastResult> result = point.cast(sender.getPlayer().getLocation().getDirection(), 10);
@@ -51,8 +54,9 @@ public class DebugCommand extends CommandTemplate {
                 default: mat = Material.YELLOW_CONCRETE;
             }
             sender.getPlayer().getWorld().getBlockAt(new Location(sender.getLocation().getWorld(), (double)bp.getX(), (double)bp.getY(), (double)bp.getZ())).setBlockData(mat.createBlockData());
-            System.out.println(r.toString());
         });
+        */
+        success(sender, "Nice try.  No.  Correction.  Terrible try.");
     }
     
 }

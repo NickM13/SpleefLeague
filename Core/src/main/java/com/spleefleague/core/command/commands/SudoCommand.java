@@ -31,7 +31,6 @@ public class SudoCommand extends CommandTemplate {
     @CommandAnnotation
     public void sudo(CorePlayer sender, List<CorePlayer> receivers, String command) {
         for (CorePlayer cp : receivers) {
-            System.out.println(cp.getDisplayName());
             Bukkit.dispatchCommand(cp.getPlayer(), command);
         }
         success(sender, "Sudoed all : /" + command);

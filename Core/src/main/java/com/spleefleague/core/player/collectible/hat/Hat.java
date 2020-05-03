@@ -74,7 +74,7 @@ public class Hat extends Collectible {
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
      *
-     * @param cp
+     * @param cp Core Player
      * @return Availability
      */
     @Override

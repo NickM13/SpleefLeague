@@ -1,11 +1,9 @@
 package com.spleefleague.spleef.util;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.Battle;
-import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.game.GameWorld;
-import com.spleefleague.spleef.game.SpleefArena;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 
@@ -18,7 +16,7 @@ public class SpleefUtils {
     /**
      * Initialize base battle settings such as GameWorld tools and Scoreboard values
      */
-    public static void setupBaseSettings(Battle<?, ?> battle) {
+    public static void setupBaseSettings(Battle<?> battle) {
         battle.setGameMode(GameMode.ADVENTURE);
         battle.getGameWorld().addBreakableBlock(Material.SNOW_BLOCK);
         battle.getGameWorld().addBreakTool(Material.DIAMOND_SHOVEL);
@@ -29,11 +27,11 @@ public class SpleefUtils {
      *
      * @param battle Battle
      */
-    public static void fillFieldFast(Battle<? extends SpleefArena, ?> battle) {
+    public static void fillFieldFast(Battle<?> battle) {
         if (battle == null || battle.getGameWorld() == null) return;
         GameWorld gameWorld = battle.getGameWorld();
         gameWorld.clear();
-        for (BuildStructure structure : battle.getArena().getFields()) {
+        for (BuildStructure structure : battle.getArena().getStructures()) {
             gameWorld.setBlocks(structure.getOriginPos(), structure.getFakeBlocks());
         }
     }

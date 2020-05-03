@@ -1,10 +1,7 @@
 package com.spleefleague.core.player;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.database.variable.DBVariable;
-import com.spleefleague.core.game.ArenaMode;
-import com.spleefleague.core.player.stats.Rating;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.player.stats.Stats;
 import org.bson.Document;
 
@@ -17,12 +14,12 @@ import java.util.Map;
  */
 public class CorePlayerStats extends DBVariable<Document> {
     
-    protected Map<String, Rating> ratings = new HashMap<>();
-    protected Map<String, Stats> stats = new HashMap<>();
-    protected CorePlayer owner = null;
+    protected final Map<String, Stats> stats;
+    protected CorePlayer owner;
     
     public CorePlayerStats() {
-    
+        this.stats = new HashMap<>();
+        this.owner = null;
     }
     
     public void setOwner(CorePlayer owner) {
@@ -36,29 +33,46 @@ public class CorePlayerStats extends DBVariable<Document> {
     
     @Override
     public Document save() {
-        return null;
+        Document doc = new Document();
+        for (Map.Entry<String, Stats> statsEntry : stats.entrySet()) {
+            doc.append(statsEntry.getKey(), statsEntry.getValue().save());
+        }
+        return doc;
     }
     
+    /*
+    public Rating getRating(String mode) {
+        if (!ratings.containsKey(mode)) {
+            ratings.put(mode, new Rating());
+        }
+        return ratings.get(mode);
+    }
+     */
+    
     /**
-     * Get the ranking stats in a certain mode
+     * Get the ranking stats by the name of a mode
      *
      * @param mode Arena Mode (not hard set)
      * @return Elo
      */
-    public Stats get(ArenaMode mode) {
-        if (!stats.containsKey(mode.getName()))
+    public Stats getStats(BattleMode mode) {
+        if (!stats.containsKey(mode.getName())) {
             stats.put(mode.getName(), new Stats());
+        }
         return stats.get(mode.getName());
     }
     
     /**
-     * Set the elo of a player in a certain mode
+     * Get the ranking stats by name
      *
-     * @param mode Arena Mode (not hard set)
-     * @param amt Elo
+     * @param name Name of Stats Group
+     * @return Stats Group
      */
-    public void set(String mode, int amt) {
-        //ratings.put(mode, amt);
+    public Stats getStats(String name) {
+        if (!stats.containsKey(name)) {
+            stats.put(name, new Stats());
+        }
+        return stats.get(name);
     }
     
     /**
@@ -67,10 +81,13 @@ public class CorePlayerStats extends DBVariable<Document> {
      * @param mode Arena Mode (not hard set)
      * @return Elo as a formatted String
      */
-    public String getDisplayElo(ArenaMode mode) {
+    public String getDisplayElo(BattleMode mode) {
+        return "";
+        /*
         return (Chat.BRACKET + "("
-                + Chat.ELO + get(mode)
+                + ratings.get(mode.getName()).getDisplayElo()
                 + Chat.BRACKET + ")");
+         */
     }
     
 }

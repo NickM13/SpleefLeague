@@ -6,9 +6,11 @@
 
 package com.spleefleague.spleef.game.battle.classic;
 
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.util.SpleefUtils;
 
 import java.util.List;
@@ -16,11 +18,10 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefArena, ClassicSpleefPlayer> {
+public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
     
-    public ClassicSpleefBattle(List<CorePlayer> players,
-                               ClassicSpleefArena arena) {
-        super(Spleef.getInstance(), players, arena, ClassicSpleefPlayer.class);
+    public ClassicSpleefBattle(List<CorePlayer> players, Arena arena) {
+        super(Spleef.getInstance(), players, arena, ClassicSpleefPlayer.class, SpleefMode.CLASSIC.getBattleMode());
     }
     
     /**
@@ -35,14 +36,14 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefArena, Classi
     public void fillField() {
         SpleefUtils.fillFieldFast(this);
     }
-
+    
+    @Override
+    public void reset() {
+        fillField();
+    }
+    
     @Override
     public void updateField() {
-    
-    }
-
-    @Override
-    public void updateExperience() {
     
     }
 

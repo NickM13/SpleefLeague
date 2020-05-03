@@ -24,7 +24,7 @@ public class EndGameCommand extends CommandTemplate {
     @CommandAnnotation
     public void endgame(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
-        sender.getBattle().requestEndGame(sender);
+        sender.getBattle().onRequest(sender, "endgame", null);
     }
 
 }

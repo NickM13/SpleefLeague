@@ -4,9 +4,13 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.request.EndGameRequest;
+import com.spleefleague.core.game.request.PauseRequest;
+import com.spleefleague.core.game.request.PlayToRequest;
 import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -18,16 +22,22 @@ import java.util.List;
  * @author NickM13
  * @since 4/24/2020
  */
-public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> extends Battle<A, BP> {
+public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected int playToPoints = 5;
     
-    public VersusBattle(CorePlugin<?> plugin, List<CorePlayer> players, A arena, Class<BP> battlePlayerClass) {
-        super(plugin, players, arena, battlePlayerClass);
+    public VersusBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, players, arena, battlePlayerClass, battleMode);
     }
     
+    /**
+     * Initialize battle requests (/request)
+     */
     protected void setupBattleRequests() {
         addBattleRequest(new ResetRequest(this));
+        addBattleRequest(new EndGameRequest(this));
+        addBattleRequest(new PlayToRequest(this));
+        addBattleRequest(new PauseRequest(this));
     }
     
     /**
@@ -43,9 +53,7 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
      * Initialize scoreboard
      */
     protected void setupScoreboard() {
-        chatGroup.setRightSideBuffer(70);
-        chatGroup.addTeam("playto", Chat.SCOREBOARD_DEFAULT + "Playing To ");
-        chatGroup.setTeamDisplayName("playto", Chat.SCOREBOARD_DEFAULT + "Playing To " + Chat.SCORE + playToPoints);
+        chatGroup.addTeam("playto", Chat.SCOREBOARD_DEFAULT + "Playing To " + Chat.SCORE + playToPoints);
         chatGroup.addTeam("p1", sortedBattlers.get(0).getCorePlayer().getName());
         chatGroup.addTeam("p2", sortedBattlers.get(1).getCorePlayer().getName());
         updateScoreboard();
@@ -57,7 +65,7 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
     @Override
     protected void sendStartMessage() {
         getPlugin().sendMessage("Starting "
-                + arena.getMode().getDisplayName()
+                + getMode().getDisplayName()
                 + " match on "
                 + arena.getName()
                 + " between "
@@ -81,12 +89,12 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
     
     /**
      * Save the battlers stats
-     * Called when a battler is removed from the battle
+     * Called when a battler is being removed from the battle
      *
-     * @param cp Core Player
+     * @param bp Battle Player
      */
     @Override
-    protected void saveBattlerStats(CorePlayer cp) {
+    protected void saveBattlerStats(BP bp) {
     
     }
     
@@ -142,21 +150,21 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
         int avgRating = 0;
     
         for (BattlePlayer bp : battlers.values()) {
-            avgRating += bp.getCorePlayer().getRatings().get(getMode());
+            avgRating += bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
         }
         avgRating /= battlers.size();
     
-        if (winner.getCorePlayer().getRatings().get(getMode()) > avgRating) {
-            eloChange = 20 - (int)(Math.min((winner.getCorePlayer().getRatings().get((getMode())) - avgRating) / 100.0, 1) * 15);
+        if (winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) > avgRating) {
+            eloChange = 20 - (int)(Math.min((winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) - avgRating) / 100.0, 1) * 15);
         } else {
-            eloChange = 20 + (int)(Math.min((avgRating - winner.getCorePlayer().getRatings().get((getMode()))) / 100.0, 1) * 20);
+            eloChange = 20 + (int)(Math.min((avgRating - winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason())) / 100.0, 1) * 20);
         }
     
         for (BattlePlayer bp : battlers.values()) {
             if (bp.equals(winner)) {
-                bp.getCorePlayer().getRatings().add(getMode(), eloChange);
+                bp.getCorePlayer().getRatings().addElo(getMode().getName(), getMode().getSeason(), eloChange);
             } else {
-                bp.getCorePlayer().getRatings().add(getMode(), -eloChange);
+                bp.getCorePlayer().getRatings().addElo(getMode().getName(), getMode().getSeason(), -eloChange);
             }
         }
     }
@@ -181,10 +189,10 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
             applyEloChange(winner);
         }
         getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                + winner.getCorePlayer().getRatings().getDisplayElo(getMode())
+                + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                 + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
                 + Chat.PLAYER_NAME + loser.getPlayer().getName()
-                + loser.getCorePlayer().getRatings().getDisplayElo(getMode())
+                + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                 + Chat.DEFAULT + " in "
                 + Chat.GAMEMODE + getMode().getDisplayName() + " "
                 + Chat.DEFAULT + "("
@@ -200,10 +208,11 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
      */
     @Override
     protected void failBattler(CorePlayer cp) {
-        if (sortedBattlers.get(0).getCorePlayer().equals(cp)) {
-            endRound(sortedBattlers.get(1));
+        remainingPlayers.remove(battlers.get(cp));
+        if (remainingPlayers.isEmpty()) {
+            endRound(null);
         } else {
-            endRound(sortedBattlers.get(0));
+            endRound(remainingPlayers.iterator().next());
         }
     }
     
@@ -218,68 +227,13 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
     }
     
     /**
-     * Called when a player requests the game to end (/endgame)
+     * Called when a Play To request passes
      *
-     * @param cp CorePlayer
+     * @param playToPoints Play To Value
      */
     @Override
-    public void requestEndGame(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to pause the game with specified
-     * time (/pause <seconds>)
-     *
-     * @param cp      CorePlayer
-     * @param timeout Seconds
-     */
-    @Override
-    public void requestPause(CorePlayer cp, int timeout) {
-    
-    }
-    
-    /**
-     * Called when a player requests to pause the game (/pause)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestPause(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to reset the field (/reset)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestReset(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to change the
-     * PlayTo score (/playto)
-     *
-     * @param cp CorePlayer
-     */
-    @Override
-    public void requestPlayTo(CorePlayer cp) {
-    
-    }
-    
-    /**
-     * Called when a player requests to change the
-     * PlayTo score with specified score (/playto <score>)
-     *
-     * @param cp     CorePlayer
-     * @param playTo Play To
-     */
-    @Override
-    public void requestPlayTo(CorePlayer cp, int playTo) {
-    
+    public void setPlayTo(int playToPoints) {
+        this.playToPoints = playToPoints;
     }
     
     /**
@@ -289,13 +243,12 @@ public abstract class VersusBattle<A extends Arena, BP extends BattlePlayer> ext
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
-        for (CorePlayer cp2 : battlers.keySet()) {
-            if (!cp2.equals(cp)) {
-                endBattle(battlers.get(cp2));
-                return;
-            }
+        remainingPlayers.remove(battlers.get(cp));
+        if (remainingPlayers.isEmpty()) {
+            endBattle(null);
+        } else {
+            endBattle(remainingPlayers.iterator().next());
         }
-        endBattle(battlers.get(cp));
     }
     
 }

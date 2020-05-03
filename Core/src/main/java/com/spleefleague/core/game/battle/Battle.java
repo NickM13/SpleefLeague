@@ -10,7 +10,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.request.BattleRequest;
 import com.spleefleague.core.player.BattleState;
@@ -41,17 +41,18 @@ import javax.annotation.Nullable;
  *
  * @author NickM13
  */
-public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
+public abstract class Battle<BP extends BattlePlayer> {
 
     protected CorePlugin<?> plugin;
     
-    protected org.bukkit.GameMode gameMode = org.bukkit.GameMode.SURVIVAL;
+    protected org.bukkit.GameMode gameMode = org.bukkit.GameMode.ADVENTURE;
     protected GameWorld gameWorld;
+    protected BattleMode battleMode;
     
     protected ChatGroup chatGroup;
     
     // Arena to play battle on
-    protected final A arena;
+    protected final Arena arena;
 
     private final Class<BP> battlePlayerClass;
     
@@ -66,6 +67,7 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     protected final Set<CorePlayer> spectators = new HashSet<>();
     protected final Map<CorePlayer, BP> battlers = new HashMap<>();
     protected final List<BP> sortedBattlers = new ArrayList<>();
+    protected final Set<BP> remainingPlayers = new HashSet<>();
     
     private final Map<String, BattleRequest> battleRequests = new HashMap<>();
     
@@ -73,16 +75,17 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     protected boolean ongoing;
     protected long startedTime;
     protected long roundStartTime = 0;
-    protected int remainingPlayers = 0;
+    protected boolean frozen = false;
     
     // Round countdown
     protected static final int COUNTDOWN = 3;
     protected int countdown = 0;
 
-    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, A arena, Class<BP> battlePlayerClass) {
+    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         this.plugin = plugin;
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
+        this.battleMode = battleMode;
         this.borders.addAll(arena.getBorders());
         this.spectatorBorders.addAll(arena.getSpectatorBorders());
         this.globalSpectatorBorders.addAll(arena.getGlobalSpectatorBorders());
@@ -97,7 +100,7 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
      */
     public final void startBattle() {
         arena.incrementMatches();
-        arena.getMode().addBattle(this);
+        battleMode.addBattle(this);
         startedTime = System.currentTimeMillis();
         ongoing = true;
         setupBattleRequests();
@@ -181,6 +184,8 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
 
     /**
      * Called when a battler joins mid-game (if available)
+     *
+     * @param cp Core Player
      */
     protected abstract void joinBattler(CorePlayer cp);
 
@@ -196,7 +201,7 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     public final void addBattler(CorePlayer cp) {
         try {
             List<CorePlayer> toBattlefy = new ArrayList<>();
-            if (arena.getMode().getTeamStyle().equals(ArenaMode.TeamStyle.TEAM)) {
+            if (battleMode.getTeamStyle().equals(BattleMode.TeamStyle.TEAM)) {
                 toBattlefy.addAll(cp.getParty().getPlayers());
             } else {
                 toBattlefy.add(cp);
@@ -219,8 +224,10 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     /**
      * Save the battlers stats
      * Called when a battler is removed from the battle
+     *
+     * @param bp Battle Player
      */
-    protected abstract void saveBattlerStats(CorePlayer cp);
+    protected abstract void saveBattlerStats(BP bp);
 
     /**
      * Removes a battler from the battle without any further checking
@@ -229,9 +236,9 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
      */
     public final void removeBattler(CorePlayer cp) {
         if (!battlers.containsKey(cp)) return;
+        saveBattlerStats(battlers.get(cp));
         battlers.remove(cp);
         removePlayer(cp);
-        saveBattlerStats(cp);
     }
 
     /**
@@ -326,7 +333,14 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
             BP bp = battlers.get(cp);
             if (!bp.isFallen()) {
                 if (!isRoundStarted()) {
-                    if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
+                    if (frozen) {
+                        e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
+                                e.getFrom().getX(),
+                                e.getFrom().getY(),
+                                e.getFrom().getZ(),
+                                e.getTo().getYaw(),
+                                e.getTo().getPitch()));
+                    } else if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
                         e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
                                 e.getTo().getX(),
                                 e.getFrom().getY(),
@@ -342,11 +356,15 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
                     e.setTo(getClosestBattler(cp).getPlayer().getLocation());
                 }
             }
-        } else if (cp.getBattleState() == BattleState.SPECTATOR || cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
-            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasTpBackSpectators() && (isInBorder(cp)/* || !isInArea(p)*/)) {
+        } else if (cp.getBattleState() == BattleState.SPECTATOR) {
+            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
                 cp.getPlayer().teleport(arena.getSpectatorSpawn());
             }
-            if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL && !isInGlobalSpectatorBorder(cp)) {
+        } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
+            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
+                cp.getPlayer().teleport(arena.getSpectatorSpawn());
+            }
+            if (!isInGlobalSpectatorBorder(cp)) {
                 removeSpectator(cp);
             }
         }
@@ -448,7 +466,7 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
             removePlayer(cp);
         }
         arena.decrementMatches();
-        arena.getMode().removeBattle(this);
+        battleMode.removeBattle(this);
         gameWorld.destroy();
         ongoing = false;
     }
@@ -519,56 +537,32 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     }
     
     /**
-     * Called when a player requests the game to end (/endgame)
-     *
-     * @param cp CorePlayer
+     * Called when a Reset request passes
      */
-    public abstract void requestEndGame(CorePlayer cp);
-
+    public abstract void reset();
+    
     /**
-     * Called when a player requests to pause the game with specified
-     * time (/pause <seconds>)
+     * Called when a Play To request passes
      *
-     * @param cp CorePlayer
-     * @param timeout Seconds
+     * @param playTo Play To Value
      */
-    public abstract void requestPause(CorePlayer cp, int timeout);
-
+    public abstract void setPlayTo(int playTo);
+    
     /**
-     * Called when a player requests to pause the game (/pause)
+     * Called when a Pause request passes
      *
-     * @param cp CorePlayer
+     * @param pauseTime Pause Time (Seconds)
      */
-    public abstract void requestPause(CorePlayer cp);
-
-    /**
-     * Called when a player requests to reset the field (/reset)
-     *
-     * @param cp CorePlayer
-     */
-    public abstract void requestReset(CorePlayer cp);
-
-    /**
-     * Called when a player requests to change the
-     * PlayTo score (/playto)
-     *
-     * @param cp CorePlayer
-     */
-    public abstract void requestPlayTo(CorePlayer cp);
-
-    /**
-     * Called when a player requests to change the
-     * PlayTo score with specified score (/playto <score>)
-     *
-     * @param cp CorePlayer
-     */
-    public abstract void requestPlayTo(CorePlayer cp, int playTo);
-
+    public void pause(int pauseTime) {
+        countdown = pauseTime;
+        frozen = true;
+    }
+    
     /**
      * Reset all battlers
      */
     protected final void resetBattlers() {
-        remainingPlayers = battlers.size();
+        remainingPlayers.addAll(battlers.values());
         for (BP bp : battlers.values()) {
             spawnBattler(bp);
         }
@@ -598,6 +592,8 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
      * Adds a global spectator to the battle when they enter
      * the global spectator boundaries of the arena, which is
      * a spectator who isn't teleport away at the end of the battle
+     *
+     * @param cp Core Player
      */
     public void addGlobalSpectator(CorePlayer cp) {
         if (addPlayer(cp, BattleState.SPECTATOR_GLOBAL)) {
@@ -704,6 +700,11 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     public void releasePlayers() {
         BattleUtils.clearDome(gameWorld, spawns);
         gameWorld.setEditable(true);
+        frozen = false;
+    }
+    
+    public boolean isFrozen() {
+        return frozen;
     }
 
     /**
@@ -727,7 +728,7 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
                 sendPlayerTitle(ChatColor.GREEN + "Go!", "", 5, 10, 5);
                 releasePlayers();
                 roundStartTime = System.currentTimeMillis();
-            } else if (countdown <= 3) {
+            } else /*if (countdown <= 3)*/ {
                 sendPlayerTitle(ChatColor.RED + "" + countdown + "...", "", 5, 10, 5);
             }
             countdown--;
@@ -752,14 +753,14 @@ public abstract class Battle<A extends Arena, BP extends BattlePlayer> {
     /**
      * @return Arena Mode
      */
-    public ArenaMode getMode() {
-        return arena.getMode();
+    public BattleMode getMode() {
+        return battleMode;
     }
 
     /**
      * @return Arena
      */
-    public A getArena() {
+    public Arena getArena() {
         return arena;
     }
 

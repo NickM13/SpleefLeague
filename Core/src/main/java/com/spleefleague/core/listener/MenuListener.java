@@ -8,6 +8,7 @@ package com.spleefleague.core.listener;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.event.EventHandler;
@@ -52,7 +53,7 @@ public class MenuListener implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getName());
         if (cp != null) {
-            cp.setInventoryMenuContainer(null);
+            cp.setInventoryMenuChest(null, true);
         }
     }
     
@@ -67,12 +68,12 @@ public class MenuListener implements Listener {
     
     @EventHandler
     public void onInventoryInteract(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null) return;
+        if (event.getClickedInventory() == null || (event.getCurrentItem() == null && event.getCursor().getType().isAir())) return;
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
         
-        if (cp.getInventoryMenuContainer() != null
-                && event.getClickedInventory().getType() != InventoryType.PLAYER) {
-            cp.getInventoryMenuContainer().onInventoryInteract(event, cp);
+        if (cp.getInventoryMenuContainer() instanceof InventoryMenuContainerChest
+                && event.getClickedInventory().getType() == InventoryType.CHEST) {
+            ((InventoryMenuContainerChest) cp.getInventoryMenuContainer()).onInventoryInteract(event, cp);
         } else if (event.getCurrentItem() != null && !cp.canBuild()) {
             InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getCurrentItem());
             if (menu != null) {
