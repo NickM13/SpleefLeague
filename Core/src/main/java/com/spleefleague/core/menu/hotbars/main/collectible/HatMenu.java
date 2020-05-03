@@ -27,9 +27,10 @@ public class HatMenu {
         menuItem = InventoryMenuAPI.createItem()
                 .setName("Hats")
                 .setDisplayItem(Material.LEATHER_HELMET)
-                .setDescription("Pick a hat, any hat!");
+                .setDescription("Pick a hat, any hat!")
+                .createLinkedContainer("Hats");
 
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.createLinkedContainer("Hats").getLinkedContainer(), true);
+        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedContainer(), true);
     }
     
     /**

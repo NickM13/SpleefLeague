@@ -7,7 +7,6 @@
 package com.spleefleague.core.database.variable;
 
 import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.game.ArenaMode;
 
 import java.util.UUID;
 
@@ -40,11 +39,12 @@ public abstract class DBPlayer extends DBEntity {
     /**
      * Called when a new player logs in
      *
-     * @param player Player
+     * @param uuid Player UUID
+     * @param username Player Username
      */
-    public void newPlayer(Player player) {
-        this.uuid = player.getUniqueId();
-        this.username = player.getName();
+    public void newPlayer(UUID uuid, String username) {
+        this.uuid = uuid;
+        this.username = username;
     }
 
     /**
@@ -52,6 +52,8 @@ public abstract class DBPlayer extends DBEntity {
      * Initialize DBPlayer with default values
      */
     public abstract void init();
+    
+    public abstract void initOffline();
 
     /**
      * Called when player goes offline

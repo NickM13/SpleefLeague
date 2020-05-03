@@ -6,16 +6,9 @@
 
 package com.spleefleague.core.menu.hotbars.main;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.game.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
 
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -39,6 +32,7 @@ public class LeaderboardMenu {
                     .setDisplayItem(new ItemStack(Material.OAK_SIGN))
                     .setDescription("View the Top Players of SpleefLeague!")
                     .createLinkedContainer("Leaderboards");
+            /*
             menuItem.getLinkedContainer()
                     .setOpenAction((container, cp) -> {
                         container.clearUnsorted();
@@ -66,6 +60,7 @@ public class LeaderboardMenu {
                             i++;
                         }
                     });
+            */
         }
         return menuItem;
     }

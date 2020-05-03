@@ -11,16 +11,15 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.game.Leaderboards;
+import com.spleefleague.core.game.arena.Arenas;
+import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.credits.Credits;
-import com.spleefleague.core.game.Leaderboard;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.listener.*;
@@ -48,7 +47,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.reflections.Reflections;
 
@@ -95,6 +93,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Tickets.init();
         CorePlayerOptions.init();
         FakeWorld.init();
+        Arenas.init();
 
         // Initialize listeners
         initListeners();
@@ -111,7 +110,7 @@ public class Core extends CorePlugin<CorePlayer> {
 
         Leaderboards.init();
 
-        // TODO: Move this
+        // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (CorePlayer cp : getPlayers().getAll()) {
                 cp.checkAfk();
@@ -208,7 +207,8 @@ public class Core extends CorePlugin<CorePlayer> {
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getAll()) {
             if (!cp.equals(cp2)) {
-                if (cp.getBattle() == cp2.getBattle()) {
+                if (cp.getBattle() == cp2.getBattle()
+                        && cp.getBuildWorld() == cp2.getBuildWorld()) {
                     cp.getPlayer().showPlayer(this, cp2.getPlayer());
                     if (!cp.isVanished())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
                     else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
@@ -332,6 +332,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * Unqueue a player from all Queues
      *
      * @param cp Core Player
+     * @return Success
      */
     public boolean unqueuePlayerGlobally(CorePlayer cp) {
         boolean unqueued = false;
@@ -363,10 +364,6 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public QueueManager getQueueManager() {
         return queueManager;
-    }
-
-    public PlayerManager<?> getPlayerManager() {
-        return playerManager;
     }
 
     /**

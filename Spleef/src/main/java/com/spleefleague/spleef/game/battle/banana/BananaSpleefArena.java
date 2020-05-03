@@ -6,10 +6,10 @@
 
 package com.spleefleague.spleef.game.battle.banana;
 
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.SpleefArena;
 import com.spleefleague.spleef.game.SpleefMode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -17,11 +17,7 @@ import org.bukkit.Material;
 /**
  * @author NickM13
  */
-public class BananaSpleefArena extends SpleefArena {
-    
-    public BananaSpleefArena() {
-        mode = SpleefMode.BONANZA.getArenaMode();
-    }
+public class BananaSpleefArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.GREEN + "" + ChatColor.BOLD;
@@ -29,7 +25,7 @@ public class BananaSpleefArena extends SpleefArena {
                 .setName(mainColor + "BananaSpleef")
                 .setDescription("Multispleef but Banana Mode!!!1!111!!!")
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.BONANZA.getArenaMode(), cp));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.BONANZA.getBattleMode(), cp));
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

@@ -8,11 +8,15 @@ package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.queue.PlayerQueue;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +35,7 @@ public class BattleManagerDynamic extends BattleManager {
     
     protected Long delayedStart = null;
     
-    public BattleManagerDynamic(ArenaMode mode) {
+    public BattleManagerDynamic(BattleMode mode) {
         super(mode);
         
         queue = new PlayerQueue();
@@ -84,7 +88,7 @@ public class BattleManagerDynamic extends BattleManager {
         if (delayedStart != null) {
             if (delayedStart < System.currentTimeMillis()) {
                 if (queue.getQueueSize() < this.mode.getRequiredTeams()) {
-                    // Not enough players message :(
+                    // Some players left, not enough players message :(
                     delayedStart = null;
                 } else {
                     if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
@@ -97,7 +101,7 @@ public class BattleManagerDynamic extends BattleManager {
                 }
                 delayedStart = null;
             } else {
-                // About to begin message!
+                Core.getInstance().sendMessage("A " + this.mode.getDisplayName() + " game will be beginning soon! BattleManagerDynamic.java:100");
             }
         } else {
             if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
@@ -108,10 +112,10 @@ public class BattleManagerDynamic extends BattleManager {
     }
     
     @Override
-    public void startMatch(List<CorePlayer> players, String name) {
-        Arena arena = Arena.getByName(name, mode);
+    public void startMatch(List<CorePlayer> players, String arenaName) {
+        Arena arena = Arenas.get(arenaName, mode);
         if (arena == null) return;
-        Battle battle;
+        Battle<?> battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -127,15 +131,14 @@ public class BattleManagerDynamic extends BattleManager {
                 for (CorePlayer cp : players) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
-                battle = battleClass
-                        .getDeclaredConstructor(List.class, mode.getArenaClass())
-                        .newInstance(players, arena);
+                    battle = battleClass
+                            .getDeclaredConstructor(List.class, Arena.class)
+                            .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);
             }
-        } catch (Exception e) {
-            System.out.println("A battle failed to begin on arena " + arena.getDisplayName());
-            e.printStackTrace();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            CoreLogger.logError("A battle failed to begin on arena " + arena.getDisplayName() + "\n" + e.getMessage());
         }
     }
 

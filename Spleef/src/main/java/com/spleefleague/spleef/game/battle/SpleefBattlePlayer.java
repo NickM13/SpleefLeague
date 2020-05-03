@@ -13,12 +13,13 @@ public class SpleefBattlePlayer extends BattlePlayer {
     private int knockouts;
     private int knockoutStreak;
 
-    public SpleefBattlePlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public SpleefBattlePlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
         this.knockouts = 0;
         this.knockoutStreak = 0;
     }
 
+    @Override
     public void respawn() {
         super.respawn();
         knockoutStreak = 0;

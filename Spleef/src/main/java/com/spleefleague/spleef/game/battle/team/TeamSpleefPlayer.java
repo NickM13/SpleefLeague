@@ -10,7 +10,7 @@ import com.spleefleague.core.player.CorePlayer;
  */
 public class TeamSpleefPlayer extends TeamBattlePlayer {
 
-    public TeamSpleefPlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public TeamSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
     }
 

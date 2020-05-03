@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
  */
 public class ResetRequest extends BattleRequest {
     
-    public ResetRequest(Battle<?, ?> battle) {
+    public ResetRequest(Battle<?> battle) {
         super(battle, true, "reset");
     }
     
@@ -24,7 +24,7 @@ public class ResetRequest extends BattleRequest {
     
     @Override
     protected void meetsRequirement() {
-        battle.startRound();
+        battle.reset();
     }
     
 }

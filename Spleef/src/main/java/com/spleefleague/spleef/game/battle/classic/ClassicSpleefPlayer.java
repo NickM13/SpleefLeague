@@ -10,7 +10,7 @@ import com.spleefleague.spleef.game.battle.SpleefBattlePlayer;
  */
 public class ClassicSpleefPlayer extends SpleefBattlePlayer {
 
-    public ClassicSpleefPlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public ClassicSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
     }
 

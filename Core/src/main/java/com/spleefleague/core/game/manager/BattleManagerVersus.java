@@ -8,8 +8,10 @@ package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.queue.PlayerQueue;
@@ -26,7 +28,7 @@ public class BattleManagerVersus extends BattleManager {
     
     protected PlayerQueue queue;
 
-    public BattleManagerVersus(ArenaMode mode) {
+    public BattleManagerVersus(BattleMode mode) {
         super(mode);
         
         queue = new PlayerQueue();
@@ -78,9 +80,13 @@ public class BattleManagerVersus extends BattleManager {
     }
     
     @Override
-    public void startMatch(List<CorePlayer> players, String name) {
-        Arena arena = Arena.getByName(name, mode);
-        Battle<?, ?> battle;
+    public void startMatch(List<CorePlayer> players, String arenaName) {
+        Arena arena = Arenas.get(arenaName, mode);
+        if (arena == null) {
+            CoreLogger.logError("Tried to start match on null arena " + arenaName);
+            return;
+        }
+        Battle<?> battle;
         for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
@@ -97,7 +103,7 @@ public class BattleManagerVersus extends BattleManager {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
                 battle = battleClass
-                        .getDeclaredConstructor(List.class, mode.getArenaClass())
+                        .getDeclaredConstructor(List.class, Arena.class)
                         .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);

@@ -12,7 +12,7 @@ public class TeamBattlePlayer extends BattlePlayer {
     
     TeamBattleTeam<? extends TeamBattlePlayer> team;
     
-    public TeamBattlePlayer(CorePlayer cp, Battle<?, ?> battle) {
+    public TeamBattlePlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
     }
     

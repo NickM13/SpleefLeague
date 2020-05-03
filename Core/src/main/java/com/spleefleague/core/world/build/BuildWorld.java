@@ -28,11 +28,11 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     private static final Map<UUID, BuildWorld> PLAYER_BUILD_WORLDS = new HashMap<>();
     
     /**
-     * Initialize build tools
+     * Initialize structures and build tools
      */
     public static void init() {
         BuildStructures.init();
-        SelectTool.init();
+        //SelectTool.init();
     }
     
     public static void createBuildWorld(CorePlayer corePlayer, BuildStructure structure) {
@@ -157,7 +157,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         PLAYER_BUILD_WORLDS.put(cp.getUniqueId(), this);
 
         if (!fakeBlocks.isEmpty()) {
-            cp.getPlayer().teleport(structure.getOriginPos().toLocation(getWorld()));
+            cp.getPlayer().teleport(structure.getOriginPos().toLocation(getWorld()).add(0.5D, 0D, 0.5D));
         }
     }
     

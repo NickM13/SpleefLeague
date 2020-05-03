@@ -31,7 +31,7 @@ public class StatsCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void stats(CorePlayer sender, OfflinePlayer target) {
-        if (!Core.getInstance().getPlayerManager().hasPlayedBefore(target.getUniqueId())) {
+        if (!Core.getInstance().getPlayers().hasPlayedBefore(target.getUniqueId())) {
             error(sender, "Player has not logged in before.");
             return;
         }

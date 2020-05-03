@@ -11,7 +11,7 @@ import com.spleefleague.core.player.CorePlayer;
 /**
  * @author NickM13
  */
-public class Request {
+public abstract class Request {
     
     protected String tag;
     protected long timeout;
@@ -28,8 +28,8 @@ public class Request {
         return timeout < System.currentTimeMillis();
     }
     
-    public void accept(CorePlayer receiver, String sender) { }
-    public void decline(CorePlayer receiver, String sender) { }
-    public void timeout(CorePlayer receiver, String sender) { }
+    public abstract void accept(CorePlayer receiver, String sender);
+    public abstract void decline(CorePlayer receiver, String sender);
+    public abstract void timeout(CorePlayer receiver, String sender);
     
 }

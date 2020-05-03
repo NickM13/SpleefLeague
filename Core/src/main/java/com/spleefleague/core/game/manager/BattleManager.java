@@ -8,7 +8,7 @@ package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.queue.QueueContainer;
@@ -31,7 +31,7 @@ public abstract class BattleManager implements QueueContainer {
      * @param mode Arena Mode
      * @return New Battle Manager
      */
-    public static BattleManager createManager(ArenaMode mode) {
+    public static BattleManager createManager(BattleMode mode) {
         BattleManager bm = null;
         switch (mode.getTeamStyle()) {
             case SOLO:      bm = new BattleManagerSolo(mode);       break;
@@ -46,12 +46,12 @@ public abstract class BattleManager implements QueueContainer {
     
     protected final String name;
     protected final String displayName;
-    protected final ArenaMode mode;
-    protected Class<? extends Battle<?, ?>> battleClass;
+    protected final BattleMode mode;
+    protected Class<? extends Battle<?>> battleClass;
 
-    protected final List<Battle<?, ?>> battles;
+    protected final List<Battle<?>> battles;
 
-    protected BattleManager(ArenaMode mode) {
+    protected BattleManager(BattleMode mode) {
         this.name = mode.getName();
         this.displayName = mode.getDisplayName();
         this.mode = mode;
@@ -67,8 +67,8 @@ public abstract class BattleManager implements QueueContainer {
      */
     public void init() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
-            Iterator<? extends Battle<?, ?>> bit = battles.iterator();
-            Battle<?, ?> b;
+            Iterator<? extends Battle<?>> bit = battles.iterator();
+            Battle<?> b;
             while (bit.hasNext()) {
                 b = bit.next();
                 if (b != null) {
@@ -82,8 +82,8 @@ public abstract class BattleManager implements QueueContainer {
             }
         }, 0L, 20L);
         Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            Iterator<? extends Battle<?, ?>> bit = battles.iterator();
-            Battle<?, ?> b;
+            Iterator<? extends Battle<?>> bit = battles.iterator();
+            Battle<?> b;
             while (bit.hasNext()) {
                 b = bit.next();
                 if (b != null) {
@@ -98,7 +98,7 @@ public abstract class BattleManager implements QueueContainer {
      * Terminates battles
      */
     public void close() {
-        for (Battle<?, ?> battle : battles) {
+        for (Battle<?> battle : battles) {
             battle.endBattle();
         }
         battles.clear();
@@ -121,7 +121,7 @@ public abstract class BattleManager implements QueueContainer {
      */
     public int getIngamePlayers() {
         int players = 0;
-        for (Battle<?, ?> battle : battles) {
+        for (Battle<?> battle : battles) {
             players += battle.getPlayers().size();
         }
         return players;
@@ -134,7 +134,7 @@ public abstract class BattleManager implements QueueContainer {
     public abstract void checkQueue();
     
     public abstract void startMatch(List<CorePlayer> corePlayers, String name);
-    public void endMatch(Battle<?, ?> battle) {
+    public void endMatch(Battle<?> battle) {
         battles.remove(battle);
     }
     

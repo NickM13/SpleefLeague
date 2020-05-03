@@ -31,6 +31,9 @@ public class ChatUtils {
     
     /**
      * Add spaces to string until desired pixel count is reached
+     * 
+     * @param strBuilder String Builder
+     * @param toPixel Pixel to Reach
      */
     public static void appendSpacesTo(StringBuilder strBuilder, int toPixel) {
         int pixelCount = getPixelCount(strBuilder.toString());

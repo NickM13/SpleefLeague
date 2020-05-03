@@ -27,10 +27,12 @@ public class PlayerQueue {
     private static class QueuePlayer {
         CorePlayer cp;
         Arena arena;
+        long joinTime;
         
         public QueuePlayer(CorePlayer dbp, Arena arena) {
             this.cp = dbp;
             this.arena = arena;
+            this.joinTime = System.currentTimeMillis();
         }
         
         public boolean equals(CorePlayer dbp) {
@@ -200,25 +202,25 @@ public class PlayerQueue {
     }
     public ArrayList<CorePlayer> getMatchedPlayers(int count, int teamSize) {
         ArrayList<CorePlayer> cps = new ArrayList<>();
-        ArrayList<QueuePlayer> qplayers = new ArrayList<>();
+        ArrayList<QueuePlayer> queuePlayers = new ArrayList<>();
         ListIterator<QueuePlayer> pit = this.players.listIterator();
         
         while (pit.hasNext()) {
             QueuePlayer qp = pit.next();
-            qplayers.clear();
-            qplayers.add(qp);
+            queuePlayers.clear();
+            queuePlayers.add(qp);
             StringBuilder arenaName = new StringBuilder(qp.arena == null ? "" : qp.arena.getName());
             CorePlayer cp1 = qp.cp;
             Party party = cp1.getParty();
             if (teamQueue && party != null && party.getPlayers().size() == teamSize) {
-                if (matchAfter(teamSize, arenaName, pit.nextIndex(), count-1, qplayers)) {
-                    qplayers.forEach(qp2 -> cps.add(qp2.cp));
+                if (matchAfter(teamSize, arenaName, pit.nextIndex(), count-1, queuePlayers)) {
+                    queuePlayers.forEach(qp2 -> cps.add(qp2.cp));
                     lastParam = arenaName.toString();
                     return cps;
                 }
             } else {
-                if (matchAfter(0, arenaName, pit.nextIndex(), count-1, qplayers)) {
-                    qplayers.forEach(qp2 -> cps.add(qp2.cp));
+                if (matchAfter(0, arenaName, pit.nextIndex(), count-1, queuePlayers)) {
+                    queuePlayers.forEach(qp2 -> cps.add(qp2.cp));
                     lastParam = arenaName.toString();
                     return cps;
                 }

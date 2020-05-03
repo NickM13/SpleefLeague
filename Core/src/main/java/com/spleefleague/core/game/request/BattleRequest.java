@@ -15,13 +15,13 @@ public abstract class BattleRequest {
     
     private static final double REQUIRED = 0.65D;
     
-    protected final Battle<?, ?> battle;
+    protected final Battle<?> battle;
     protected String chatName, scoreboardName;
     protected final boolean battlerRequest;
     protected final String requestName;
     protected final Set<CorePlayer> requestingPlayers = new HashSet<>();
     
-    protected BattleRequest(Battle<?, ?> battle, boolean isBattlerRequest, String requestName) {
+    protected BattleRequest(Battle<?> battle, boolean isBattlerRequest, String requestName) {
         this.battle = battle;
         this.battlerRequest = isBattlerRequest;
         this.requestName = requestName;
@@ -75,6 +75,7 @@ public abstract class BattleRequest {
      * Add a requesting player, returns false if player was already a requester
      *
      * @param cp Battle Player
+     * @param total Total Possible Request Players
      */
     public void addRequester(CorePlayer cp, int total) {
         battle.getPlugin().sendMessage(cp, "You requested to " + getChatName());
@@ -99,6 +100,7 @@ public abstract class BattleRequest {
     /**
      * Returns whether or not a player is currently requesting this
      *
+     * @param cp Core Player
      * @return Is Requesting
      */
     public boolean isRequesting(CorePlayer cp) {
@@ -127,6 +129,7 @@ public abstract class BattleRequest {
      * Check whether enough players are requesting for the action to be called
      *
      * @param total Total Players
+     * @return Requirement Met
      */
     public boolean checkRequired(int total) {
         if (getPercent(total) >= REQUIRED) {

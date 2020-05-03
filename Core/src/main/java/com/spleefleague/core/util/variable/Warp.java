@@ -16,7 +16,7 @@ import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.io.converter.LocationConverter;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
@@ -67,7 +67,7 @@ public class Warp extends DBEntity {
      *
      * @return Menu Container
      */
-    public static InventoryMenuContainer createAvailableWarpMenu() {
+    public static InventoryMenuContainerChest createAvailableWarpMenu() {
         return InventoryMenuAPI.createContainer()
                 .setTitle("Warp Menu")
                 .setOpenAction((container, cp) -> {
@@ -123,6 +123,7 @@ public class Warp extends DBEntity {
      * Deletes a folder and moves all contained warps to DEFAULT_FOLDER
      *
      * @param folder Folder
+     * @return Success
      */
     public static boolean deleteFolder(String folder) {
         if (folder.equals(DEFAULT_FOLDER)) {

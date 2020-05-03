@@ -6,9 +6,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -16,7 +14,7 @@ import java.util.Set;
  */
 public class BuildStructures {
     
-    private static final Map<String, BuildStructure> STRUCTURES = new HashMap<>();
+    private static final SortedMap<String, BuildStructure> STRUCTURES = new TreeMap<>();
     private static MongoCollection<Document> fieldCol;
     
     public static void init() {

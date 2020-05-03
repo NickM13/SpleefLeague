@@ -8,7 +8,6 @@ package com.spleefleague.core.player;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.InsertOneOptions;
-import com.mongodb.client.model.UpdateOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.database.variable.DBPlayer;
 import java.lang.reflect.InvocationTargetException;
@@ -19,8 +18,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.spleefleague.core.logger.CoreLogger;
 import org.bson.Document;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,7 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Manager for custom DBPlayer objects based on Player UUIDs
  *
  * @author NickM13
- * @param <P>
+ * @param <P> extends DBPlayer
  */
 public class PlayerManager <P extends DBPlayer> implements Listener {
     
@@ -54,7 +56,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     public void initOnline() {
         playerList.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            load(p);
+            load(p.getUniqueId(), p.getName());
         }
         for (P p : playerList.values()) {
             p.init();
@@ -83,7 +85,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
             if ((p = PlayerManager.this.get(player.getUniqueId())) != null) {
                 return p;
             } else {
-                p = load(player);
+                p = load(player.getUniqueId(), player.getName());
                 if (p != null) {
                     p.init();
                     return PlayerManager.this.get(player.getUniqueId());
@@ -127,6 +129,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
             Document doc = playerCol.find(new Document("uuid", uniqueId.toString())).first();
             if (doc != null) {
                 p.load(doc);
+                p.initOffline();
             }
             return p;
         } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
@@ -190,18 +193,19 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * Load a DBPlayer's information in from the database
      * Called on player log in
      *
-     * @param player Player
+     * @param uuid Player UUID
+     * @param username Player Username
      * @return DBPlayer
      */
-    private P load(Player player) {
-        if (playerList.get(player.getUniqueId()) == null) {
+    private P load(UUID uuid, String username) {
+        if (playerList.get(uuid) == null) {
             try {
                 P p = playerClass.getDeclaredConstructor().newInstance();
-                Document pdoc = playerCol.find(new Document("uuid", player.getUniqueId().toString())).first();
+                Document pdoc = playerCol.find(new Document("uuid", uuid.toString())).first();
                 if (pdoc != null) {
                     p.load(pdoc);
                 } else {
-                    p.newPlayer(player);
+                    p.newPlayer(uuid, username);
                 }
                 p.setOnline(true);
                 playerList.put(p.getUniqueId(), p);
@@ -210,7 +214,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
                 return null;
             }
         }
-        return playerList.get(player.getUniqueId());
+        return playerList.get(uuid);
     }
 
     /**
@@ -219,7 +223,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      *
      * @param player Player
      */
-    private void save(P player) {
+    public void save(P player) {
         try {
             if (playerCol.find(new Document("uuid", player.getUniqueId().toString())).first() != null) {
                 playerCol.deleteMany(new Document("uuid", player.getUniqueId().toString()));
@@ -249,8 +253,42 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        P p = load(event.getPlayer());
+        P p = load(event.getPlayer().getUniqueId(), event.getPlayer().getName());
         if (p != null) p.init();
+    }
+    
+    /**
+     * Test Function
+     *
+     * @param op Player
+     * @return ? extends DBPlayer
+     */
+    public P createFakePlayer(OfflinePlayer op) {
+        if (op == null) {
+            CoreLogger.logError("PlayerManager:createFakePlayer(OfflinePlayer): Offline Player was null!");
+            return null;
+        }
+        if (playerList.get(op.getUniqueId()) == null) {
+            try {
+                P p = playerClass.getDeclaredConstructor().newInstance();
+                Document pdoc = playerCol.find(new Document("uuid", op.getUniqueId().toString())).first();
+                if (pdoc != null) {
+                    p.load(pdoc);
+                } else {
+                    p.newPlayer(op.getUniqueId(), op.getName());
+                }
+                p.initOffline();
+                p.setOnline(false);
+                playerList.put(p.getUniqueId(), p);
+                return p;
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+        P p = load(op.getUniqueId(), op.getName());
+        if (p != null) p.init();
+        return p;
     }
 
     /**

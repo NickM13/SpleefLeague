@@ -6,10 +6,10 @@
 
 package com.spleefleague.spleef.game.battle.multi;
 
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.SpleefArena;
 import com.spleefleague.spleef.game.SpleefMode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -17,11 +17,8 @@ import org.bukkit.Material;
 /**
  * @author NickM13
  */
-public class MultiSpleefArena extends SpleefArena {
+public class MultiSpleefArena {
     
-    public MultiSpleefArena() {
-        this.mode = SpleefMode.MULTI.getArenaMode();
-    }
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.RED + "" + ChatColor.BOLD;
@@ -29,7 +26,7 @@ public class MultiSpleefArena extends SpleefArena {
                 .setName(mainColor + "Multispleef")
                 .setDescription("Fight your dominance in this free-for-all edition of Spleef.")
                 .setDisplayItem(Material.SHEARS, 238)
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getArenaMode(), cp));
+                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getBattleMode(), cp));
         
         Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
     }

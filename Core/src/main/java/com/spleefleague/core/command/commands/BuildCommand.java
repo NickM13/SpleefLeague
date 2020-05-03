@@ -1,14 +1,11 @@
 package com.spleefleague.core.command.commands;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.request.ConsoleRequest;
-import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.build.BuildWorld;
@@ -79,6 +76,32 @@ public class BuildCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
+    public void buildJoin(CorePlayer sender,
+            @LiteralArg("join") String l,
+            @CorePlayerArg(allowSelf = false) CorePlayer target) {
+        if (!sender.isInGlobal()) {
+            error(sender, "You're already in a fake world!");
+        } else if (!target.isInBuildWorld()) {
+            error(sender, "They aren't in a build world!");
+        } else {
+            Chat.sendRequest(sender.getDisplayName() + " wants to join your build world!",
+                    target,
+                    sender,
+                    (r, s) -> {
+                        if (!target.isInBuildWorld()) {
+                            error(sender, "They aren't in a build world anymore!");
+                        } else if (!sender.isInGlobal()) {
+                            error(sender, "You're already in a fake world!");
+                        } else {
+                            target.getBuildWorld().addPlayer(sender);
+                            success(sender, "Joined " + target.getDisplayNamePossessive() + " world");
+                        }
+                    });
+            success(sender, "Join request sent");
+        }
+    }
+    
+    @CommandAnnotation
     public void buildEdit(CorePlayer sender,
             @LiteralArg("edit") String l,
             @OptionArg(listName="structures") String structureName) {
@@ -107,16 +130,16 @@ public class BuildCommand extends CommandTemplate {
             @LiteralArg("destroy") String l,
             @OptionArg(listName="structures") String structureName) {
         if (BuildStructures.get(structureName) != null) {
-            RequestManager.sendRequest(Core.getInstance().getChatPrefix(),
-                    "Are you sure you want to destroy " + structureName + "?",
+            Chat.sendRequest("Are you sure you want to destroy " + structureName + "?",
                     sender,
-                    "StructureDestroy", new ConsoleRequest((r, s) -> {
+                    "StructureDestroy",
+                    (r, s) -> {
                         if (BuildStructures.destroy(structureName)) {
                             success(sender, "Structure destroyed");
                         } else {
                             error(sender, "Structure can not be destroyed");
                         }
-                    }));
+                    });
         } else {
             error(sender, "Structure does not exist!");
         }
@@ -148,16 +171,16 @@ public class BuildCommand extends CommandTemplate {
             @LiteralArg("origin") String o) {
         if (sender.isInBuildWorld()) {
             BuildStructure structure = sender.getBuildWorld().getStructure();
-            RequestManager.sendRequest(Core.getInstance().getChatPrefix(),
-                    "Are you sure you want to move the origin of " + structure.getName() + "?",
+            Chat.sendRequest("Are you sure you want to move the origin of " + structure.getName() + "?",
                     sender,
-                    "StructureSetOrigin", new ConsoleRequest((r, s) -> {
+                    "StructureSetOrigin",
+                    (r, s) -> {
                         structure.setOriginPos(new BlockPosition(
                                 sender.getLocation().getBlockX(),
                                 sender.getLocation().getBlockY(),
                                 sender.getLocation().getBlockZ()));
                         success(sender, "Origin relocated to " + structure.getOriginPos());
-                    }));
+                    });
         } else {
             error(sender, "You aren't in a build world!");
         }
@@ -171,13 +194,13 @@ public class BuildCommand extends CommandTemplate {
             @HelperArg("<z>") Integer z) {
         if (sender.isInBuildWorld()) {
             BuildStructure structure = sender.getBuildWorld().getStructure();
-            RequestManager.sendRequest(Core.getInstance().getChatPrefix(),
-                    "Are you sure you want to shift " + structure.getName() + "?",
+            Chat.sendRequest("Are you sure you want to shift " + structure.getName() + "?",
                     sender,
-                    "StructureShift", new ConsoleRequest((r, s) -> {
+                    "StructureShift",
+                    (r, s) -> {
                         sender.getBuildWorld().shift(new BlockPosition(x, y, z));
                         success(sender, "Structure has been moved");
-                    }));
+                    });
         } else {
             error(sender, "You aren't in a build world!");
         }
@@ -222,13 +245,13 @@ public class BuildCommand extends CommandTemplate {
         if (sender.isInBuildWorld()) {
             BuildStructure structure = sender.getBuildWorld().getStructure();
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
-            RequestManager.sendRequest(Core.getInstance().getChatPrefix(),
-                    "Are you sure you want to fill?  No undoing!",
+            Chat.sendRequest("Are you sure you want to fill?  No undoing!",
                     sender,
-                    "StructureFill", new ConsoleRequest((r, s) -> {
+                    "StructureFill",
+                    (r, s) -> {
                         sender.getBuildWorld().fill(bwp.getPosBox(), Material.valueOf(materialName.toUpperCase()));
                         success(sender, "Structure has been filled");
-                    }));
+                    });
         } else {
             error(sender, "You aren't in a build world!");
         }

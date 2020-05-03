@@ -12,18 +12,21 @@ import javax.annotation.Nullable;
  */
 public class PlayToRequest extends BattleRequest {
     
-    protected PlayToRequest(Battle<?, ?> battle, boolean isBattlerRequest) {
-        super(battle, isBattlerRequest, "playto");
+    private int playToValue;
+    
+    public PlayToRequest(Battle<?> battle) {
+        super(battle, true, "playto");
     }
     
     @Override
     protected boolean attemptStartRequest(CorePlayer cp, int total, @Nullable String requestValue) {
         if (requestValue != null) {
             try {
-                int playtoVal = Integer.parseInt(requestValue);
-                if (playtoVal > 0 && playtoVal <= 100) {
-                    chatName = "play to " + playtoVal;
-                    scoreboardName = "Play To " + playtoVal;
+                int playToVal = Integer.parseInt(requestValue);
+                if (playToVal > 0 && playToVal <= 100) {
+                    chatName = "play to " + playToVal;
+                    scoreboardName = "Play To " + playToVal;
+                    this.playToValue = playToVal;
                     return true;
                 }
                 battle.getPlugin().sendMessage(cp, Chat.ERROR + "Expected number from 1 to 100!");
@@ -44,4 +47,5 @@ public class PlayToRequest extends BattleRequest {
     protected void meetsRequirement() {
     
     }
+    
 }

@@ -24,12 +24,12 @@ public class PauseCommand extends CommandTemplate {
     @CommandAnnotation
     public void pause(CorePlayer sender, Integer time) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
-        sender.getBattle().requestPause(sender, time);
+        sender.getBattle().onRequest(sender, "pause", time.toString());
     }
     @CommandAnnotation
     public void pause(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
-        sender.getBattle().requestPause(sender);
+        sender.getBattle().onRequest(sender, "pause", null);
     }
     
 }

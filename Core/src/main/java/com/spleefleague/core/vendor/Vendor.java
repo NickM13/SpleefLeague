@@ -4,7 +4,7 @@ import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.annotation.DBLoad;
 import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuEditor;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
@@ -80,7 +80,7 @@ public class Vendor extends DBEntity {
      * @param cp Core Player
      */
     public void openShop(CorePlayer cp) {
-        cp.setInventoryMenuContainer(createVendorMenu(cp));
+        cp.setInventoryMenuChest(createVendorMenu(cp), true);
     }
     
     /**
@@ -179,7 +179,7 @@ public class Vendor extends DBEntity {
                 })
                 .setTitle(this.getName() + "(" + this.getDisplayName() + ")");
         
-        cp.setInventoryMenuContainer(editor);
+        cp.setInventoryMenuChest(editor, true);
     }
     
     /**
@@ -188,8 +188,8 @@ public class Vendor extends DBEntity {
      * @param cp Core Player
      * @return Menu Container
      */
-    protected InventoryMenuContainer createVendorMenu(CorePlayer cp) {
-        InventoryMenuContainer menu = InventoryMenuAPI.createContainer()
+    protected InventoryMenuContainerChest createVendorMenu(CorePlayer cp) {
+        InventoryMenuContainerChest menu = InventoryMenuAPI.createContainer()
                 .setTitle(getDisplayName());
         
         for (Map.Entry<Integer, SimpleVendorItem> item : items.entrySet()) {

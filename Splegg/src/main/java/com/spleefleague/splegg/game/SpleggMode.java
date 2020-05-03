@@ -6,7 +6,7 @@
 
 package com.spleefleague.splegg.game;
 
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.splegg.game.classic.*;
 
 /**
@@ -17,12 +17,18 @@ public enum SpleggMode {
     CLASSIC,
     MULTI;
     
+    private static final String prefix = "splegg:";
+    
     public static void init() {
-        ArenaMode.addArenaMode("SPLEGG_CLASSIC", "Classic Splegg", 2, 2, ArenaMode.TeamStyle.VERSUS, false, ClassicSpleggArena.class, ClassicSpleggBattle.class);
+        BattleMode.addArenaMode(CLASSIC.getName(), "Classic Splegg", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSpleggBattle.class);
     }
     
-    public ArenaMode getArenaMode() {
-        return ArenaMode.getArenaMode("SPLEGG_" + this.name());
+    public String getName() {
+        return prefix + name().toLowerCase();
+    }
+    
+    public BattleMode getBattleMode() {
+        return BattleMode.get(getName());
     }
     
 }

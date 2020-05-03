@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
 
+import com.spleefleague.core.request.ConsoleRequest;
 import com.spleefleague.core.request.PlayerRequest;
 import com.spleefleague.core.request.RequestManager;
 import org.bukkit.ChatColor;
@@ -115,7 +116,8 @@ public class Chat {
             cp.sendMessage(msg);
         } else {
             for (CorePlayer cp1 : cc.getPlayers(cp)) {
-                if (cc.isAvailable(cp1)
+                if (cp1.isOnline()
+                        && cc.isAvailable(cp1)
                         && !cp1.getOptions().isChannelDisabled(cc.getName())) {
                     cp1.sendMessage(msg);
                 }
@@ -158,32 +160,36 @@ public class Chat {
     }
 
     public static void sendMessageToPlayer(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp != null && cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("DEFAULT") + msg);
     }
 
     public static void sendMessageToPlayerSuccess(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp != null && cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("SUCCESS") + msg);
     }
 
     public static void sendMessageToPlayerError(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp != null && cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("ERROR") + msg);
     }
 
     public static void sendMessageToPlayerInvalid(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp != null && cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("ERROR") + "Invalid command: " + msg);
     }
 
     public static void sendMessageToPlayerInfo(CorePlayer cp, String msg) {
-        if (cp.isOnline())
+        if (cp != null && cp.isOnline())
             cp.getPlayer().sendMessage(chatColors.get("INFO") + msg);
     }
     
     public static void sendRequest(String message, CorePlayer receiver, CorePlayer sender, BiConsumer<CorePlayer, CorePlayer> action) {
-        RequestManager.sendRequest("", message, receiver, sender.getName(), new PlayerRequest(action));
+        RequestManager.sendRequest(Core.getInstance().getChatPrefix(), message, receiver, sender.getName(), new PlayerRequest(action));
+    }
+    
+    public static void sendRequest(String message, CorePlayer receiver, String requestType, BiConsumer<CorePlayer, String> action) {
+        RequestManager.sendRequest(Core.getInstance().getChatPrefix(), message, receiver, requestType, new ConsoleRequest(action));
     }
     
 }

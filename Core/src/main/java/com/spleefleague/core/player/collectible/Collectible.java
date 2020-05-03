@@ -53,7 +53,7 @@ public abstract class Collectible extends Vendorable {
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
      *
-     * @param cp
+     * @param cp Core Player
      * @return Availability
      */
     @Override
@@ -62,7 +62,7 @@ public abstract class Collectible extends Vendorable {
     /**
      * Called when a player successfully purchases this item from the vendor
      *
-     * @param cp
+     * @param cp Core Player
      */
     @Override
     public void purchase(CorePlayer cp) {

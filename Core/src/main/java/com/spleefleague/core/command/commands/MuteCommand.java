@@ -48,13 +48,13 @@ public class MuteCommand extends CommandTemplate {
      * they're muted (their messages appear to still
      * send for them)
      * 
-     * @param sender
-     * @param l
-     * @param op
-     * @param time
-     * @param reason
+     * @param sender Sender
+     * @param l "secret"
+     * @param op Offline Player
+     * @param time Time String
+     * @see TimeUtils
+     * @param reason Reason
      */
-    
     @CommandAnnotation
     public void muteSecret(CorePlayer sender,
             @LiteralArg(value="secret") String l,

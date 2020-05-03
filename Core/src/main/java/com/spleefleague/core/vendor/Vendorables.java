@@ -1,9 +1,6 @@
 package com.spleefleague.core.vendor;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
-import io.netty.util.internal.SuppressJava6Requirement;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;

@@ -34,6 +34,24 @@ public class InventoryMenuUtils {
         return LOCKED_ICON;
     }
     
+    public static enum MenuIcon {
+        LOCKED(createCustomItem(Material.DIAMOND_AXE, 12)),
+        NEXT(createCustomItem(Material.DIAMOND_AXE, 8)),
+        PREVIOUS(createCustomItem(Material.DIAMOND_AXE, 9)),
+        RETURN(createCustomItem(Material.DIAMOND_AXE, 9));
+        
+        ItemStack iconItem;
+        
+        MenuIcon(ItemStack iconItem) {
+            this.iconItem = iconItem;
+        }
+        
+        public ItemStack getIconItem() {
+            return iconItem;
+        }
+        
+    }
+    
     /**
      * Creates a "locked" menu item with the display name of "Locked"
      * @return Locked InventoryMenuItem
@@ -62,7 +80,38 @@ public class InventoryMenuUtils {
      * @return Item Stack
      */
     public static ItemStack createCustomItem(Material displayItem) {
-        ItemStack itemStack = new ItemStack(displayItem);
+        return createCustomItemAmount(displayItem, 1);
+    }
+    
+    /**
+     * Creates an unbreaking item with all flags hidden and a custom model data value
+     *
+     * @param displayItem Display Item
+     * @param customModelData Custom Model Data tag
+     * @return Item Stack
+     */
+    public static ItemStack createCustomItem(Material displayItem, int customModelData) {
+        return createCustomItemAmount(displayItem, customModelData, 1);
+    }
+    
+    /**
+     * Creates an unbreaking item with all flags hidden and a custom model data value
+     *
+     * @param displayName Display Name
+     * @param displayItem Display Item
+     * @param customModelData Custom Model Data tag
+     * @return Item Stack
+     */
+    public static ItemStack createCustomItem(String displayName, Material displayItem, int customModelData) {
+        ItemStack item = createCustomItemAmount(displayItem, customModelData, 1);
+        if (item.getItemMeta() != null) {
+            item.getItemMeta().setDisplayName(displayName);
+        }
+        return item;
+    }
+    
+    public static ItemStack createCustomItemAmount(Material displayItem, int amount) {
+        ItemStack itemStack = new ItemStack(displayItem, amount);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
             itemMeta.setUnbreakable(true);
@@ -72,31 +121,16 @@ public class InventoryMenuUtils {
         return itemStack;
     }
     
-    /**
-     * Creates an unbreaking item with all flags hidden and a damage value
-     *
-     * @param displayItem Display Item
-     * @param damage Damage Value
-     * @return Item Stack
-     */
-    public static ItemStack createCustomItem(Material displayItem, int damage) {
-        ItemStack itemStack = new ItemStack(displayItem);
+    public static ItemStack createCustomItemAmount(Material displayItem, int customModelData, int amount) {
+        ItemStack itemStack = new ItemStack(displayItem, amount);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
-            if (itemMeta instanceof Damageable) {
-                ((Damageable) itemMeta).setDamage(damage);
-            }
+            itemMeta.setCustomModelData(customModelData);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemStack.setItemMeta(itemMeta);
         }
         return itemStack;
-    }
-    public static ItemStack createCustomItem(String name, Material displayItem, int damage) {
-        ItemStack item = createCustomItem(displayItem, damage);
-        if (item.getItemMeta() != null)
-            item.getItemMeta().setDisplayName(name);
-        return item;
     }
     
     public static ItemStack createCustomPotion(PotionType pt) {
@@ -118,10 +152,15 @@ public class InventoryMenuUtils {
     }
     
     public static ItemStack createCustomSkull(UUID uuid) {
-        OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+        OfflinePlayer op;
+        if (uuid == null) {
+            op = Bukkit.getOfflinePlayer("Blaezon");
+        } else {
+            op = Bukkit.getOfflinePlayer(uuid);
+        }
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
-        if (skullMeta != null) skullMeta.setOwningPlayer(op);
+        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        skullMeta.setOwningPlayer(op);
         skull.setItemMeta(skullMeta);
         return skull;
     }

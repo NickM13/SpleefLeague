@@ -9,6 +9,7 @@ package com.spleefleague.core.menu.hotbars.main;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.main.moderator.ArenaMenu;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -76,6 +77,9 @@ public class ModeratorMenu {
                             .setDisplayItem(Material.BARRIER)
                             .setAction(cp -> cp.getPlayer().getInventory().addItem(new ItemStack(Material.BARRIER)))
                             .setCloseOnAction(false));
+            
+            menuItem.getLinkedContainer()
+                    .addMenuItem(ArenaMenu.getItem());
         }
         return menuItem;
     }

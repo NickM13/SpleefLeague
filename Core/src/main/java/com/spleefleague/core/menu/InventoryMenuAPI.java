@@ -8,6 +8,7 @@ package com.spleefleague.core.menu;
 
 import com.spleefleague.core.player.CorePlayer;
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.bukkit.inventory.ItemStack;
@@ -17,8 +18,8 @@ import org.bukkit.inventory.ItemStack;
  */
 public class InventoryMenuAPI {
     
-    public static InventoryMenuContainer createContainer() {
-        return new InventoryMenuContainer();
+    public static InventoryMenuContainerChest createContainer() {
+        return new InventoryMenuContainerChest();
     }
     
     /**
@@ -39,6 +40,10 @@ public class InventoryMenuAPI {
         return new InventoryMenuItem();
     }
     
+    public static InventoryMenuContainerAnvil createAnvil() {
+        return new InventoryMenuContainerAnvil();
+    }
+    
     /**
      * Creates and registers a new Hotbar item with a permanent slot TODO: should it be permanent?
      * and an identifier which is stored in the "hotbar" nbt
@@ -52,6 +57,10 @@ public class InventoryMenuAPI {
         return new InventoryMenuItemHotbar(slot, hotbarTag);
     }
     
+    public static InventoryMenuDialog createDialog() {
+        return new InventoryMenuDialog();
+    }
+    
     public static InventoryMenuItemOption createItemOption(Function<CorePlayer, Integer> selectedFun) {
         return new InventoryMenuItemOption()
                 .setSelected(selectedFun);
@@ -60,7 +69,7 @@ public class InventoryMenuAPI {
     /**
      * Returns a collection of all hotbar items
      *
-     * @return
+     * @return All Hotbar Items
      */
     public static Collection<InventoryMenuItemHotbar> getHotbarItems() {
         return InventoryMenuItemHotbar.getHotbarItems().values();

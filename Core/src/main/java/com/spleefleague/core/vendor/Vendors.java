@@ -92,6 +92,7 @@ public class Vendors {
      * Clear all entities from a vendor and delete it from the database
      *
      * @param vendor Vendor
+     * @return Success
      */
     public static boolean deleteVendor(Vendor vendor) {
         if (vendor == null) return false;
@@ -136,11 +137,9 @@ public class Vendors {
      * no long be a vendor
      *
      * @param player Player
-     * @return
      */
-    public static boolean unsetPlayerVendor(CorePlayer player) {
+    public static void unsetPlayerVendor(CorePlayer player) {
         playerSetVendorMap.put(player, null);
-        return true;
     }
     
     public static void interactEvent(PlayerInteractEntityEvent event) {

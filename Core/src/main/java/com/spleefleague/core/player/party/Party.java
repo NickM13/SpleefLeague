@@ -9,8 +9,7 @@ package com.spleefleague.core.player.party;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainer;
-import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.Iterator;
@@ -151,7 +150,7 @@ public class Party {
     }
     
     public void openPartyList(CorePlayer cp) {
-        InventoryMenuContainer menuContainer = InventoryMenuAPI.createContainer()
+        InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
                 .setTitle("Party List");
         
     }

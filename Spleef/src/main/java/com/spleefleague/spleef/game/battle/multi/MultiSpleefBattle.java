@@ -7,39 +7,45 @@
 package com.spleefleague.spleef.game.battle.multi;
 
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.dynamic.DynamicBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.SpleefArena;
+import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.util.SpleefUtils;
 
 import java.util.List;
 
 /**
  * @author NickM13
  */
-public class MultiSpleefBattle extends DynamicBattle<SpleefArena, MultiSpleefPlayer> {
-    
-    protected long FIELD_RESET = 5000;
-    protected long fieldResetTime = 0;
+public class MultiSpleefBattle extends DynamicBattle<MultiSpleefPlayer> {
     
     public MultiSpleefBattle(List<CorePlayer> players,
-                             MultiSpleefArena arena) {
-        super(Spleef.getInstance(), players, arena, MultiSpleefPlayer.class);
+                             Arena arena) {
+        super(Spleef.getInstance(), players, arena, MultiSpleefPlayer.class, SpleefMode.MULTI.getBattleMode());
+    }
+    
+    @Override
+    public void fillField() {
+        SpleefUtils.fillFieldFast(this);
+    }
+    
+    @Override
+    public void reset() {
+        fillField();
     }
     
     @Override
     public void updateScoreboard() {
         chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString() + "     " + Chat.SCORE + "Score");
-        chatGroup.setTeamDisplayName("PlayerCount", "Players (" + sortedBattlers.size() + ")");
+        chatGroup.setTeamDisplayName("PlayerCount", "Players (" + battlers.size() + ")");
         //chatGroup.setTeamScore("PlayTo", playToPoints);
     }
 
     @Override
     public void updateField() {
-        if (System.currentTimeMillis() > fieldResetTime) {
-            fillField();
-            fieldResetTime = System.currentTimeMillis() + FIELD_RESET;
-        }
+    
     }
     
 }

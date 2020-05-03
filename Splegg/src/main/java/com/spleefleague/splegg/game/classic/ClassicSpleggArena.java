@@ -7,6 +7,7 @@
 package com.spleefleague.splegg.game.classic;
 
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.splegg.Splegg;
@@ -17,16 +18,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import static com.spleefleague.core.game.Arena.getArenas;
-
 /**
  * @author NickM13
  */
-public class ClassicSpleggArena extends SpleggArena {
-    
-    public ClassicSpleggArena() {
-        this.mode = SpleggMode.CLASSIC.getArenaMode();
-    }
+public class ClassicSpleggArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.GREEN + "" + ChatColor.BOLD;
@@ -39,13 +34,13 @@ public class ClassicSpleggArena extends SpleggArena {
         menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getArenaMode(), cp)));
+                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getBattleMode(), cp)));
         
-        getArenas(SpleggMode.CLASSIC.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
+        Arenas.getAll(SpleggMode.CLASSIC.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
                 .setName(arena.getDisplayName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getArenaMode(), cp, arena))));
+                .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getBattleMode(), cp, arena))));
         
         menuItem.getLinkedContainer().addStaticItem(SpleggGun.createMenu(), 4, 4);
         

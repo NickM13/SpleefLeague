@@ -6,15 +6,21 @@
 
 package com.spleefleague.core.game;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.database.annotation.DBLoad;
+import com.spleefleague.core.database.annotation.DBSave;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.core.world.build.BuildStructure;
+import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +36,8 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -38,87 +46,100 @@ import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * Arena is a set of variables loaded from a specified Database
- * Arena is Used in Battle
+ * Arena is a set of variables loaded from a specified Database<br>
+ * Arena is Used in Battle<br>
+ * <br>
+ * Arena Document:<br>
+ * {<br>
+ *     name:            <i>required</i>, Identifier and display name for arena<br>
+ *     description:     <i>optional</i>, Description for arena<br>
+ *     teamCount:       <i>optional</i>, Used for dynamically sized modes, number of teams (if team size is 1 this is number of players)<br>
+ *     rated:           <i>optional</i>, Default true, Whether arena will apply an elo rating or not afterward<br>
+ *     queued:          <i>optional</i>, Default true, If false, this arena can only be entered through challenges<br>
+ *     paused:          <i>optional</i>, Default false, If true, arena cannot be played on<br>
+ *     border:          <i>optional</i>, List of dimensions that the arena is contained in<br>
+ *     spectatorSpawn:  <i>optional</i>, Spawn location of spectators<br>
+ *     modes:           <i>required</i>, List of mode names<br>
+ *     spawns:          <i>optional</i>, List of spawn locations for battlers<br>
+ *     structures:      <i>optional</i>, List of build structure names<br>
+ * }
  *
  * @author NickM13
  */
 public class Arena extends DBEntity {
-
-    /**
-     * ARENAS contains every loaded arena
-     */
-    private static final Map<ArenaMode, Map<String, Arena>> ARENAS = new HashMap<>();
-    private static final Set<Arena> GLOBAL_ARENAS = new HashSet<>();
     
-    @DBField
-    protected String creator;
-    // name is just displayName without spaces
     protected String displayName;
-    protected String name;
-    @DBField
-    protected String description;
-    @DBField
-    protected Boolean isDefault;
+    protected String name; // name is just displayName without spaces for indexing with commands
+    @DBField protected String description = "";
     
-    protected ArenaMode mode;
+    @DBField protected Set<String> modes;
     
-    @DBField
-    protected Boolean paused;
+    @DBField protected Boolean paused = false;
     
-    protected World world;
+    protected World world = Core.DEFAULT_WORLD;
     
-    @DBField
-    protected Integer teamCount;
-    @DBField
-    protected Integer teamSize = 1;
+    @DBField protected Integer teamCount = 1;
+    @DBField protected Integer teamSize = 1;
     
     protected List<Location> spawns = new ArrayList<>();
-    @DBField
-    protected Boolean tpBackSpectators;
     protected Location spectatorSpawn = null;
     
-    // Border is used for boundaries of match
     protected List<Dimension> borders = new ArrayList<>();
     private static final int SPECTATOR_EXPAND = 20;
     protected List<Dimension> spectatorBorders = new ArrayList<>();
     private static final int GLOBAL_SPECTATOR_EXPAND = 40;
     protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
     
-    // Fake worlds are for spleef and superjump, real worlds allow for
-    // projectiles to interact with blocks
+    @DBField protected Set<String> structures;
+    
     protected int ongoingMatches = 0;
     protected int ongoingQueues = 0;
-
-    @DBLoad(fieldName ="border")
-    private void loadBorder(Document doc) {
-        Dimension dim = new Dimension();
-        dim.load(doc);
-        borders.add(dim);
-        spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
-        globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
+    
+    public Arena() {
+    
     }
-    @DBLoad(fieldName ="border")
+    
+    public Arena(String name) {
+        setName(name);
+        modes = new HashSet<>();
+        structures = new HashSet<>();
+        paused = false;
+    }
+
+    @DBLoad(fieldName ="borders")
     private void loadBorders(List<Document> docs) {
         docs.forEach(doc -> {
             Dimension dim = new Dimension();
             dim.load(doc);
             borders.add(dim);
+        });
+        refreshSpectatorBorders();
+    }
+    
+    @DBSave(fieldName="borders")
+    private List<Document> saveBorders() {
+        return borders
+                .stream()
+                .map(Dimension::save)
+                .collect(Collectors.toList());
+    }
+    
+    private void refreshSpectatorBorders() {
+        spectatorBorders.clear();
+        globalSpectatorBorders.clear();
+        for (Dimension dim : borders) {
             spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
             globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
-        });
+        }
     }
-
+    
     /**
-     * Get the name of the creator of this arena
+     * Set the name and displayName of an arena
      *
-     * @return Arena Creator
+     * @param displayName Display name
      */
-    public String getCreator() {
-        return creator;
-    }
     @DBLoad(fieldName ="name")
-    private void setName(String displayName) {
+    public void setName(String displayName) {
         this.displayName = displayName;
         name = displayName.replaceAll("\\s", "");
     }
@@ -137,6 +158,7 @@ public class Arena extends DBEntity {
      *
      * @return Arena Display Name
      */
+    @DBSave(fieldName = "name")
     public String getDisplayName() {
         return displayName;
     }
@@ -144,12 +166,31 @@ public class Arena extends DBEntity {
     /**
      * Returns the formatted descriptoin of an arena, including
      * number of players in queue and number of ongoing matches
+     *
+     * @return Description
      */
     public String getDescription() {
         String desc = description;
         desc += "\n" + "Queued: " + getOngoingQueues();
         desc += "\n" + "Matches: " + getOngoingMatches();
         return desc;
+    }
+    
+    /**
+     * Return the modes this arena is used in
+     *
+     * @return Set of Modes
+     */
+    public Set<String> getModes() {
+        return modes;
+    }
+    
+    public boolean addMode(String mode) {
+        return modes.add(mode);
+    }
+    
+    public boolean removeMode(String mode) {
+        return modes.remove(mode);
     }
 
     /**
@@ -161,6 +202,25 @@ public class Arena extends DBEntity {
         return teamSize;
     }
     
+    public void setTeamSize(int teamSize) {
+        this.teamSize = teamSize;
+        Arenas.saveArenaDB(this);
+    }
+    
+    /**
+     * Get the required number of teams (or players if teamSize = 1)
+     *
+     * @return Team Size
+     */
+    public int getTeamCount() {
+        return teamCount;
+    }
+    
+    public void setTeamCount(int teamCount) {
+        this.teamCount = teamCount;
+        Arenas.saveArenaDB(this);
+    }
+    
     /**
      * Get the borders of this arena
      *
@@ -168,6 +228,17 @@ public class Arena extends DBEntity {
      */
     public List<Dimension> getBorders() {
         return borders;
+    }
+    
+    public void addBorder(Dimension border) {
+        borders.add(border);
+        refreshSpectatorBorders();
+        Arenas.saveArenaDB(this);
+    }
+    
+    public void removeBorder(int id) {
+        borders.remove(id);
+        Arenas.saveArenaDB(this);
     }
     
     /**
@@ -188,35 +259,24 @@ public class Arena extends DBEntity {
         return globalSpectatorBorders;
     }
 
-    @DBLoad(fieldName ="world")
-    private void setWorld(String worldName) {
-        if (worldName == null || worldName.equals("")) {
-            world = Core.DEFAULT_WORLD;
+    @DBLoad(fieldName="spectatorSpawn")
+    private void loadSpectatorSpawn(Position pos) {
+        if (pos == null) {
+            spectatorSpawn = null;
         } else {
-            world = Bukkit.getWorld(worldName);
-            if (world == null) {
-                world = Core.DEFAULT_WORLD;
-            }
+            spectatorSpawn = pos.asLocation(world != null ? world : Core.DEFAULT_WORLD);
         }
-        for (Location spawn : spawns) {
-            spawn.setWorld(world);
-        }
-        if (spectatorSpawn != null) spectatorSpawn.setWorld(world);
     }
-
-    @DBLoad(fieldName ="spectatorSpawn")
-    private void setSpectatorSpawn(Position pos) {
-        spectatorSpawn = pos.asLocation(world != null ? world : Core.DEFAULT_WORLD);
+    
+    @DBSave(fieldName="spectatorSpawn")
+    private Position saveSpectatorSpawn() {
+        if (spectatorSpawn == null) return null;
+        return new Position(spectatorSpawn);
     }
-
-    /**
-     * Whether spectators should be teleported if they
-     * leave the spectator boundaries
-     *
-     * @return Tp Back Spectators?
-     */
-    public boolean hasTpBackSpectators() {
-        return tpBackSpectators;
+    
+    public void setSpectatorSpawn(Location loc) {
+        spectatorSpawn = loc;
+        Arenas.saveArenaDB(this);
     }
 
     /**
@@ -227,23 +287,14 @@ public class Arena extends DBEntity {
     public Location getSpectatorSpawn() {
         return spectatorSpawn;
     }
-
+    
     /**
-     * Set the mode of an arena
+     * For determining whether players should be in GM3 on spectating
      *
-     * @param mode Mode Name
+     * @return Whether spectatorSpawn exists
      */
-    protected void setMode(String mode) {
-        this.mode = ArenaMode.getArenaMode(mode);
-    }
-
-    /**
-     * Get the mode of an arena
-     *
-     * @return Arena Mode
-     */
-    public ArenaMode getMode() {
-        return mode;
+    public boolean hasSpectatorSpawn() {
+        return spectatorSpawn != null;
     }
 
     /**
@@ -348,15 +399,42 @@ public class Arena extends DBEntity {
     public List<Location> getSpawns() {
         return spawns;
     }
-
+    
+    public void removeSpawn(int index) {
+        spawns.remove(index);
+        Arenas.saveArenaDB(this);
+    }
+    
+    public void addSpawn(Location spawnLoc) {
+        spawns.add(spawnLoc);
+        Arenas.saveArenaDB(this);
+    }
+    
+    public boolean insertSpawn(Location spawnLoc, int index) {
+        if (index < 0 || index > spawns.size()) return false;
+        spawns.add(index, spawnLoc);
+        Arenas.saveArenaDB(this);
+        return true;
+    }
+    
     @DBLoad(fieldName ="spawns")
-    private void loadSpawns(List<List<?>> spawnList) {
-        for (List<?> spawn : spawnList) {
+    private void loadSpawns(List<List<?>> spawnLists) {
+        for (List<?> spawnList : spawnLists) {
             Position pos = new Position();
-            pos.load(spawn);
+            pos.load(spawnList);
             if (world != null) spawns.add(pos.asLocation(world));
             else spawns.add(pos.asLocation(Core.DEFAULT_WORLD));
         }
+    }
+    
+    @DBSave(fieldName ="spawns")
+    private List<List<?>> saveSpawns() {
+        List<List<?>> spawnLists = new ArrayList<>();
+        for (Location spawn : spawns) {
+            Position pos = new Position(spawn);
+            spawnLists.add(pos.save());
+        }
+        return spawnLists;
     }
 
     /**
@@ -384,121 +462,38 @@ public class Arena extends DBEntity {
     public Location getPostGameWarp() {
         return spectatorSpawn;
     }
-
-    public static Set<Arena> getGlobalArenas() {
-        return GLOBAL_ARENAS;
+    
+    public boolean addStructure(String structureName) {
+        if (structures.add(structureName)) {
+            Arenas.saveArenaDB(this);
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean removeStructure(String structureName) {
+        if (structures.remove(structureName)) {
+            Arenas.saveArenaDB(this);
+            return true;
+        }
+        return false;
+    }
+    
+    public Set<String> getStructureNames() {
+        return structures;
     }
     
     /**
-     * Get all arenas for a specific mode that are available
+     * Get the Build Structures for this arena
      *
-     * @param mode Arena Mode
-     * @return Available Arenas
+     * @return List of Build Structures
      */
-    public static Map<String, Arena> getUnpausedArenas(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode))
-            return new HashMap<>();
-        Map<String, Arena> arenas = new TreeMap<>();
-        
-        for (Map.Entry<String, Arena> arena : ARENAS.get(mode).entrySet()) {
-            if (arena.getValue().isAvailable()) {
-                arenas.put(arena.getKey(), arena.getValue());
-            }
+    public List<BuildStructure> getStructures() {
+        List<BuildStructure> buildStructures = new ArrayList<BuildStructure>();
+        for (String structure : structures) {
+            buildStructures.add(BuildStructures.get(structure));
         }
-        
-        return arenas;
-    }
-
-    /**
-     * Get all arenas for a specific mode
-     *
-     * @param mode Arena Mode
-     * @return Arenas
-     */
-    public static Map<String, Arena> getArenas(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) 
-            return new HashMap<>();
-        return ARENAS.get(mode);
-    }
-
-    /**
-     * Get a set of names of all available arenas for a mode
-     *
-     * @param mode Arena Mode
-     * @return String Set
-     */
-    public static Set<String> getArenaNames(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) {
-            return new HashSet<>();
-        }
-        Set<String> arenas = new HashSet<>();
-        for (Map.Entry<String, Arena> arena : ARENAS.get(mode).entrySet()) {
-            if (arena.getValue().isAvailable()) {
-                arenas.add(arena.getKey());
-            }
-        }
-        return arenas;
-    }
-
-    /**
-     * Returns a random arena of a mode
-     *
-     * @param mode Arena Mode
-     * @return Arena
-     */
-    public static Arena getRandomArena(ArenaMode mode) {
-        Map<String, Arena> arenas = getUnpausedArenas(mode);
-        if (arenas.isEmpty()) return null;
-        Random generator = new Random();
-        Object[] values = arenas.values().toArray();
-        return (Arena)(values[generator.nextInt(values.length)]);
-    }
-
-    /**
-     * Returns an arena by name and mode
-     *
-     * @param name Arena Name
-     * @param mode Arena Mode
-     * @return Arena
-     */
-    public static Arena getByName(String name, ArenaMode mode) {
-        if (name == null) return null;
-        Map<String, Arena> arenas = ARENAS.get(mode);
-        if (arenas != null) {
-            if (name.equals("")) {
-                return getRandomArena(mode);
-            } else {
-                return arenas.get(name.toLowerCase());
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Load arenas into ARENAS list from an iterator of docs
-     *
-     * @param itArena Document Iterator
-     * @param mode Arena Mode
-     * @return Num of successes
-     */
-    protected static int loadArenas(Iterator<Document> itArena, ArenaMode mode) {
-        if (mode == null || mode.getArenaClass() == null) return 0;
-        int successCounter = 0;
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        while (itArena.hasNext()) {
-            Document adoc = itArena.next();
-            try {
-                Arena arena = mode.getArenaClass().getDeclaredConstructor().newInstance();
-                arena.load(adoc);
-                arena.getMode().addRequiredTeamSize(arena.getTeamSize());
-                ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
-                GLOBAL_ARENAS.add(arena);
-                successCounter++;
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
-                Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return successCounter;
+        return buildStructures;
     }
     
 }

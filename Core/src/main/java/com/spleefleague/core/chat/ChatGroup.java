@@ -9,12 +9,9 @@ package com.spleefleague.core.chat;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.database.variable.DBPlayer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+
 import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.Team;
@@ -65,7 +62,6 @@ public class ChatGroup {
      * Sets the number of pixels to the right second text is shown
      *
      * @param buffer Pixel Count
-     * @see ChatGroup::setTeamDisplayName(String, String, String)
      */
     public void setRightSideBuffer(int buffer) {
         rightSideBuffer = buffer;
@@ -149,17 +145,16 @@ public class ChatGroup {
         String str = nameIdHash.remove(name);
         if (str == null) return;
         scores.remove(name);
-        for (int i = 0; i < sortedScores.size(); i++) {
-            if (sortedScores.get(i).equalsIgnoreCase(name)) {
-                sortedScores.remove(i);
-                break;
-            }
-        }
     
-        int i = sortedScores.size() - 1;
-        for (String sscore : sortedScores) {
-            scores.get(sscore).score = i;
-            i--;
+        int i = scores.size() - 1;
+        Iterator<String> ssit = sortedScores.iterator();
+        while (ssit.hasNext()) {
+            String next = ssit.next();
+            if (!scores.containsKey(next)) {
+                ssit.remove();
+            } else {
+                scores.get(next).score = i;
+            }
         }
         
         for (CorePlayer cp : players) {
@@ -258,7 +253,7 @@ public class ChatGroup {
      */
     public void setExperience(float progress, int level) {
         for (DBPlayer dbp : players) {
-            dbp.getPlayer().sendExperienceChange(progress, level);
+            //dbp.getPlayer().sendExperienceChange(progress, level);
         }
     }
     
@@ -300,7 +295,8 @@ public class ChatGroup {
      * @param cp Core Player
      */
     public void removePlayer(CorePlayer cp) {
-        cp.getPlayer().sendExperienceChange(0, 0);
+        //cp.getPlayer().sendExperienceChange(0, 0);
+        cp.getPlayer().setTotalExperience(0);
         players.remove(cp);
         PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
     }
