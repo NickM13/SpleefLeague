@@ -5,9 +5,7 @@ import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.build.BuildWorldPlayer;
-import com.spleefleague.core.world.build.BuildTool;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -23,7 +21,7 @@ public class SelectTool {
                 .setDescription("Nick was here")
                 .setAvailability(CorePlayer::isInBuildWorld)
                 .createLinkedContainer("TODO");
-        hotbarItem.getLinkedContainer()
+        hotbarItem.getLinkedChest()
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
                     BuildWorld buildWorld = BuildWorld.getPlayerBuildWorld(cp);

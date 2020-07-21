@@ -33,8 +33,14 @@ public class PersonalScoreboard {
         
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
-            scoreboard.getTeam(cp2.getRank().getNameShort()).addEntry(cp2.getName());
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
+            scoreboard.getTeam(cp2.getRank().getIdentifierShort()).addEntry(cp2.getName());
+        }
+    }
+
+    public static void closePlayerScoreboard(CorePlayer cp) {
+        if (scoreboards.containsKey(cp)) {
+            scoreboards.remove(cp).close();
         }
     }
     
@@ -44,7 +50,7 @@ public class PersonalScoreboard {
             team.removeEntry(cp.getName());
         }
         for (PersonalScoreboard ps : scoreboards.values()) {
-            ps.getScoreboard().getTeam(cp.getRank().getNameShort()).addEntry(cp.getName());
+            ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort()).addEntry(cp.getName());
         }
     }
     
@@ -65,35 +71,44 @@ public class PersonalScoreboard {
     }
     
     protected Scoreboard scoreboard;
-    protected Objective objective;
+    protected Objective tabList, sideBar;
     protected boolean showRanks;
     
     public PersonalScoreboard(boolean showRanks) {
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         scoreboard.registerNewTeam("Players");
         scoreboard.getTeam("Players").setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        objective = scoreboard.registerNewObjective("ServerName", "dummy", "=---=");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        resetObjective();
         
         this.showRanks = showRanks;
         if (showRanks) {
             Rank.initScoreboard(scoreboard);
         }
     }
+
+    public void close() {
+        if (tabList != null) tabList.unregister();
+        if (sideBar != null) sideBar.unregister();
+    }
     
     public void resetObjective() {
-        objective.unregister();
-        objective = scoreboard.registerNewObjective("ServerName", "dummy", "=---=");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        if (tabList != null) tabList.unregister();
+        tabList = scoreboard.registerNewObjective("Welcome to SL!", "dummy", "=-=");
+        tabList.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+
+        if (sideBar != null) sideBar.unregister();
+        sideBar = scoreboard.registerNewObjective("ServerName", "dummy", "=---=");
+        sideBar.setDisplaySlot(DisplaySlot.SIDEBAR);
     }
     
     public void setScoreboardName(String name) {
-        objective.setDisplayName(name);
+        sideBar.setDisplayName(name);
     }
     
     public void createTeam(String teamId) {
         scoreboard.registerNewTeam(teamId);
-        objective.getScore(teamId).setScore(0);
+        sideBar.getScore(teamId).setScore(0);
     }
     
     public void setTeamName(String teamId, String displayName) {
@@ -103,9 +118,13 @@ public class PersonalScoreboard {
     public Scoreboard getScoreboard() {
         return scoreboard;
     }
-    
-    public Objective getObjective() {
-        return objective;
+
+    public Objective getTabList() {
+        return tabList;
+    }
+
+    public Objective getSideBar() {
+        return sideBar;
     }
     
 }

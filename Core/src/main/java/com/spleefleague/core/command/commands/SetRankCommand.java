@@ -6,8 +6,8 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
@@ -18,10 +18,10 @@ import com.spleefleague.core.command.annotation.OptionArg;
 /**
  * @author NickM13
  */
-public class SetRankCommand extends CommandTemplate {
+public class SetRankCommand extends CoreCommand {
     
     public SetRankCommand() {
-        super(SetRankCommand.class, "setrank", Rank.DEVELOPER);
+        super("setrank", Rank.DEVELOPER);
         setUsage("/setrank [name] <rank>");
         setOptions("rankList", (cp) -> Rank.getRankNames());
     }
@@ -59,12 +59,12 @@ public class SetRankCommand extends CommandTemplate {
     }
     
     @CommandAnnotation
-    public void setrank(CorePlayer sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
+    public void setrankPlayer(CorePlayer sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
         sr(sender, cp, Rank.getRank(rank));
     }
     
     @CommandAnnotation
-    public void setrank(CommandSender sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
+    public void setrankConsole(CommandSender sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
         sr(sender, cp, Rank.getRank(rank));
     }
     

@@ -6,8 +6,8 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
@@ -15,10 +15,10 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public class SetCheckpointCommand extends CommandTemplate {
+public class SetCheckpointCommand extends CoreCommand {
     
     public SetCheckpointCommand() {
-        super(SetCheckpointCommand.class, "setcheckpoint", Rank.MODERATOR);
+        super("setcheckpoint", Rank.MODERATOR);
         setUsage("/setcheckpoint <target> <warp> [duration]");
     }
     

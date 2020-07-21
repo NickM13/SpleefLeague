@@ -12,6 +12,7 @@ import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.credits.Credits;
 import com.spleefleague.core.player.CorePlayer;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -24,14 +25,16 @@ public class CreditsMenu {
     
     public static void init() {
         menuItem = InventoryMenuAPI.createItem()
-                .setName("Server Credits")
+                .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Server Credits")
                 .setDisplayItem(new ItemStack(Material.BOOK))
                 .setDescription("View the Players that made SpleefLeague possible!")
                 .createLinkedContainer("Server Credits");
+
+        menuItem.getLinkedChest().setPageBoundaries(1, 3, 1, 7);
     
         for (Credits credit : Credits.getCredits()) {
             CorePlayer cp = Core.getInstance().getPlayers().getOffline(credit.getUuid());
-            menuItem.getLinkedContainer()
+            menuItem.getLinkedChest()
                     .addMenuItem(InventoryMenuAPI.createItem()
                                     .setDisplayItem(InventoryMenuUtils.createCustomSkull(credit.getUuid()))
                                     .setName(cp.getDisplayName())

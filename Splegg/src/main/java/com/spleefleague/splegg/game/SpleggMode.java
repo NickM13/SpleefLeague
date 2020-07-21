@@ -14,8 +14,7 @@ import com.spleefleague.splegg.game.classic.*;
  */
 public enum SpleggMode {
     
-    CLASSIC,
-    MULTI;
+    CLASSIC;
     
     private static final String prefix = "splegg:";
     

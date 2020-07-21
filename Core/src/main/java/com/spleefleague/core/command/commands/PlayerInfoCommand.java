@@ -12,7 +12,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -24,16 +24,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bson.Document;
 import org.bukkit.OfflinePlayer;
 
 /**
  * @author NickM13
  */
-public class PlayerInfoCommand extends CommandTemplate {
+public class PlayerInfoCommand extends CoreCommand {
     
     public PlayerInfoCommand() {
-        super(PlayerInfoCommand.class, "playerinfo", Rank.DEFAULT);
+        super("playerinfo", Rank.DEFAULT);
         addAlias("pi");
         setUsage("/playerinfo [player]");
         setDescription("Get player's server statistics");
@@ -47,8 +48,14 @@ public class PlayerInfoCommand extends CommandTemplate {
     @CommandAnnotation
     public void playerinfo(CorePlayer sender, OfflinePlayer op) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(op.getUniqueId());
+
+        if (cp == null) {
+            error(sender, op.getName() + " has never logged in!");
+            return;
+        }
+
         List<String> strings = new ArrayList<>();
-        strings.add(Chat.TAG_BRACE + ChatUtils.centerTitle("[ " + cp.getDisplayNamePossessive() + " data" + Chat.TAG_BRACE + " ]"));
+        strings.add(Chat.TAG_BRACE + ChatUtils.centerChat("[ " + cp.getDisplayNamePossessive() + " data" + Chat.TAG_BRACE + " ]"));
         strings.add(Chat.TAG_BRACE + "Name: " +
                 Chat.DEFAULT + op.getName());
         strings.add(Chat.TAG_BRACE + "UUID: " +
@@ -59,7 +66,7 @@ public class PlayerInfoCommand extends CommandTemplate {
                 Chat.DEFAULT + getState(cp));
         strings.add(Chat.TAG_BRACE + "Muted: " +
                 Chat.DEFAULT + getMuted(cp));
-        if (!cp.isOnline())
+        if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE)
             strings.add(Chat.TAG_BRACE + "Last seen: " +
                     Chat.DEFAULT + getLastSeen(cp));
         strings.add(Chat.TAG_BRACE + "IP: " +
@@ -70,7 +77,7 @@ public class PlayerInfoCommand extends CommandTemplate {
                 Chat.DEFAULT + getOnlineTime(cp));
         strings.add(Chat.TAG_BRACE + "Total active time: " +
                 Chat.DEFAULT + getActiveTime(cp));
-        
+
         String mergeString = "";
         Iterator<String> sit = strings.iterator();
         while (sit.hasNext()) {
@@ -79,7 +86,7 @@ public class PlayerInfoCommand extends CommandTemplate {
                 mergeString += "\n";
             }
         }
-        
+
         sender.sendMessage(mergeString);
     }
     
@@ -92,9 +99,9 @@ public class PlayerInfoCommand extends CommandTemplate {
     }
     
     private String getState(CorePlayer cp) {
-        String state = "";
+        String state;
         
-        if (!cp.isOnline()) {
+        if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
             Infraction infraction = Infraction.getMostRecent(cp.getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
             if (infraction == null) {
                 state = "Offline";
@@ -192,13 +199,13 @@ public class PlayerInfoCommand extends CommandTemplate {
     }
     
     private String getActiveTime(CorePlayer cp) {
-        return TimeUtils.timeToString(cp.getPlayTime());
+        return TimeUtils.timeToString(cp.getStatistics().get("general").get("playTime"));
     }
     
     private String getLastSeen(CorePlayer cp) {
         String lastSeen = "";
         long lastConnection = -1;
-        
+
         MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString())).sort(new Document("date", 1)).iterator();
         
         while (cursor.hasNext()) {

@@ -7,6 +7,7 @@ import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.logger.CoreLogger;
 import org.bson.Document;
+import org.bukkit.ChatColor;
 
 import java.util.*;
 
@@ -41,9 +42,9 @@ public class Arenas {
                     if (!modeArenaMap.containsKey(modeName)) {
                         modeArenaMap.put(modeName, new TreeMap<>());
                     }
-                    modeArenaMap.get(modeName).put(arena.getName(), arena);
+                    modeArenaMap.get(modeName).put(arena.getIdentifier(), arena);
                 }
-                arenaMap.put(arena.getName(), arena);
+                arenaMap.put(arena.getIdentifier(), arena);
             }
         }
         for (Map.Entry<String, Integer> entry : successMap.entrySet()) {
@@ -51,39 +52,53 @@ public class Arenas {
         }
     }
     
-    public static void deleteArenaDB(String arenaDisplayName) {
-        arenaCol.deleteMany(new Document("name", arenaDisplayName));
-    }
-    
     public static void saveArenaDB(Arena arena) {
-        if (arenaCol.find(new Document("name", arena.getDisplayName())).first() != null) {
-            arenaCol.deleteMany(new Document("name", arena.getDisplayName()));
-        }
-        arenaCol.insertOne(arena.save());
+        arena.save(arenaCol);
+    }
+
+    public static void unsaveArenaDB(Arena arena) {
+        arena.unsave(arenaCol);
     }
     
-    public static Arena createArena(String arenaName) {
-        Arena arena = new Arena(arenaName);
-        if (!arenaMap.containsKey(arena.getName())) {
-            arenaMap.put(arena.getName(), arena);
+    public static Arena createArena(String identifier, String arenaName) {
+        identifier = ChatColor.stripColor(identifier.replaceAll("\\s", "").toLowerCase());
+        if (!arenaMap.containsKey(identifier)) {
+            Arena arena = new Arena(identifier, arenaName);
+            arenaMap.put(arena.getIdentifier(), arena);
             saveArenaDB(arena);
             return arena;
         }
         return null;
     }
-    
-    public static boolean renameArena(String arenaName, String newArenaName) {
-        Arena arena = arenaMap.get(arenaName);
-        if (arena != null && arenaMap.get(newArenaName) == null) {
-            deleteArenaDB(arena.getDisplayName());
-            arena.setName(newArenaName);
-            for (String modeName : arena.getModes()) {
-                modeArenaMap.get(modeName).remove(arenaName);
-                modeArenaMap.get(modeName).put(arena.getName(), arena);
+
+    public static Arena cloneArena(String fromIdentifier, String toIdentifier) {
+        toIdentifier = toIdentifier.toLowerCase();
+        if (arenaMap.keySet().contains(toIdentifier)) {
+            return null;
+        }
+        Arena arena = get(fromIdentifier);
+        Arena newArena = createArena(toIdentifier, arena.getName());
+        newArena.cloneFrom(arena);
+        return newArena;
+    }
+
+    public static boolean destroyArena(String identifier) {
+        if (arenaMap.containsKey(identifier)) {
+            Arena arena = arenaMap.remove(identifier);
+            unsaveArenaDB(arena);
+            for (String mode : arena.getModes()) {
+                modeArenaMap.get(mode).remove(identifier);
             }
-            arenaMap.remove(arenaName);
-            arenaMap.put(arena.getName(), arena);
-            Arenas.saveArenaDB(arena);
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean renameArena(String identifier, String arenaName) {
+        Arena arena = arenaMap.get(identifier);
+        if (arena != null) {
+            arena.setName(arenaName);
+            saveArenaDB(arena);
             return true;
         } else {
             return false;
@@ -96,7 +111,7 @@ public class Arenas {
             if (!modeArenaMap.containsKey(mode.getName())) {
                 modeArenaMap.put(mode.getName(), new TreeMap<>());
             }
-            modeArenaMap.get(mode.getName()).put(arena.getName(), arena);
+            modeArenaMap.get(mode.getName()).put(arena.getIdentifier(), arena);
             saveArenaDB(arena);
             return true;
         }
@@ -107,6 +122,7 @@ public class Arenas {
         Arena arena = arenaMap.get(arenaName);
         if (arena != null && arena.removeMode(mode.getName())) {
             modeArenaMap.get(mode.getName()).remove(arenaName);
+            saveArenaDB(arena);
             return true;
         }
         return false;

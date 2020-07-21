@@ -34,7 +34,7 @@ public class InventoryMenuItem {
     
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
-    protected InventoryMenuContainerChest linkedContainer;
+    protected InventoryMenuContainer linkedContainer;
     protected InventoryMenuContainerChest parentContainer;
     
     public InventoryMenuItem() {
@@ -65,7 +65,7 @@ public class InventoryMenuItem {
     }
     
     public InventoryMenuItem setDescription(String description) {
-        this.descriptionFun = (cp) -> description;
+        this.descriptionFun = (cp) -> Chat.colorize(description);
         return this;
     }
     public InventoryMenuItem setDescription(Function<CorePlayer, String> descriptionFun) {
@@ -87,8 +87,8 @@ public class InventoryMenuItem {
         this.displayItemFun = (cp) -> new ItemStack(material);
         return this;
     }
-    public InventoryMenuItem setDisplayItem(Material material, int damage) {
-        this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, damage);
+    public InventoryMenuItem setDisplayItem(Material material, int customModelData) {
+        this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, customModelData);
         return this;
     }
     public InventoryMenuItem setDisplayItem(ItemStack displayItem) {
@@ -117,13 +117,16 @@ public class InventoryMenuItem {
      * Returns currently linked container
      * @return Menu Container
      */
-    public InventoryMenuContainerChest getLinkedContainer() {
-        return linkedContainer;
+    public InventoryMenuContainerChest getLinkedChest() {
+        return (InventoryMenuContainerChest) linkedContainer;
     }
-    public InventoryMenuItem setLinkedContainer(InventoryMenuContainerChest container) {
+    public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {
         linkedContainer = container;
-        if (parentContainer != null)
-            linkedContainer.setParentContainer(parentContainer);
+        if (parentContainer != null) {
+            if (linkedContainer instanceof InventoryMenuContainerChest) {
+                ((InventoryMenuContainerChest) linkedContainer).setParent(parentContainer);
+            }
+        }
         return this;
     }
     public InventoryMenuItem createLinkedContainer(String title) {
@@ -132,10 +135,12 @@ public class InventoryMenuItem {
         return this;
     }
     
-    public InventoryMenuItem setParentContainer(InventoryMenuContainerChest container) {
+    public InventoryMenuItem setParent(InventoryMenuContainerChest container) {
         parentContainer = container;
         if (hasLinkedContainer()) {
-            linkedContainer.setParentContainer(parentContainer);
+            if (linkedContainer instanceof InventoryMenuContainerChest) {
+                ((InventoryMenuContainerChest) linkedContainer).setParent(parentContainer);
+            }
         }
         return this;
     }
@@ -169,7 +174,7 @@ public class InventoryMenuItem {
     
     protected List<String> getWrappedDescription(CorePlayer cp) {
         if (descriptionFun != null) {
-            return ChatUtils.wrapDescription("\n" + descriptionFun.apply(cp));
+            return ChatUtils.wrapDescription("\n" + Chat.colorize(descriptionFun.apply(cp)));
         } else {
             return Lists.newArrayList();
         }
@@ -179,7 +184,7 @@ public class InventoryMenuItem {
         ItemStack item = displayItemFun.apply(cp).clone();
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
+            meta.setDisplayName(Chat.MENU_NAME + Chat.colorize(nameFun.apply(cp)));
             meta.setLore(getWrappedDescription(cp));
             meta.addItemFlags(ItemFlag.values());
             item.setItemMeta(meta);

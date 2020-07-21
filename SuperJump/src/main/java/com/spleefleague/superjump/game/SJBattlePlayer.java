@@ -1,11 +1,9 @@
 package com.spleefleague.superjump.game;
 
-import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.core.game.Battle;
-import com.spleefleague.core.game.BattlePlayer;
+import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Location;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 /**
  * @author NickM
@@ -13,29 +11,19 @@ import org.bukkit.event.player.PlayerTeleportEvent;
  */
 public class SJBattlePlayer extends BattlePlayer {
 
-    private int falls;
-    private Location spawn;
-
-    public SJBattlePlayer(CorePlayer cp, Battle battle) {
+    protected int falls;
+    
+    public SJBattlePlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
+        falls = 0;
     }
-
-    @Override
-    public void respawn() {
-        getPlayer().teleport(spawn, PlayerTeleportEvent.TeleportCause.PLUGIN);
-    }
-
+    
     public void addFall() {
         falls++;
     }
+    
     public int getFalls() {
         return falls;
     }
-
-    public void setSpawn(Location spawn) {
-        this.spawn = spawn;
-    }
-    public Location getSpawn() {
-        return spawn;
-    }
+    
 }

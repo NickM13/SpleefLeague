@@ -1,14 +1,15 @@
 package com.spleefleague.core.player;
 
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
-import com.spleefleague.core.database.variable.DBVariable;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
+import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
+import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bson.Document;
 import org.bukkit.Material;
 
@@ -41,13 +42,15 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     private CorePlayer owner;
-    private final Map<String, Map<String, CollectibleInfo>> collectibles;
-    private final Map<String, String> activeCollectibles;
+    private final SortedMap<String, Map<String, CollectibleInfo>> collectibles;
+    private final SortedMap<String, String> activeCollectibles;
+    private final Set<String> collectedLeaves;
     private Holdable heldItem;
     
     public CorePlayerCollectibles() {
         this.collectibles = new TreeMap<>();
         this.activeCollectibles = new TreeMap<>();
+        this.collectedLeaves = new HashSet<>();
         this.owner = null;
         this.heldItem = null;
     }
@@ -101,7 +104,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         for (Map.Entry<String, Map<String, CollectibleInfo>> collectibleType : collectibles.entrySet()) {
             Document collectionFullDoc = new Document();
             for (Map.Entry<String, CollectibleInfo> collectible : collectibleType.getValue().entrySet()) {
-                collectionFullDoc.append(collectible.getKey(), collectible.getValue().save());
+                collectionFullDoc.append(collectible.getKey(), collectible.getValue().toDocument());
             }
             fullCollectionDoc.append(collectibleType.getKey(), collectionFullDoc);
         }
@@ -117,6 +120,8 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
             Document heldDoc = new Document("type", heldItem.getType()).append("identifier", heldItem.getIdentifier());
             fullDoc.append("held", heldDoc);
         }
+
+        fullDoc.append("leaves", collectedLeaves);
         
         return fullDoc;
     }
@@ -151,14 +156,21 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         if (heldDoc != null) {
             heldItem = (Holdable) Vendorables.get(heldDoc.get("type", String.class), heldDoc.get("identifier", String.class));
         }
+
+        if (collectiblesDoc.containsKey("leaves")) {
+            collectedLeaves.addAll(collectiblesDoc.get("leaves", List.class));
+        }
     }
     
-    public void add(Collectible collectible) {
-        if (collectible == null) return;
-        if (!collectibles.containsKey(collectible.getType())) {
-            collectibles.put(collectible.getType(), new TreeMap<>());
+    public boolean add(Collectible collectible) {
+        if (collectible != null) {
+            if (!collectibles.containsKey(collectible.getType())) {
+                collectibles.put(collectible.getType(), new HashMap<>());
+            }
+            collectibles.get(collectible.getType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+            return true;
         }
-        collectibles.get(collectible.getType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+        return false;
     }
     
     public boolean contains(Collectible collectible) {
@@ -175,12 +187,13 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         return null;
     }
     
-    public void remove(Collectible collectible) {
-        if (collectible == null) return;
-        if (collectibles.containsKey(collectible.getType())) {
+    public boolean remove(Collectible collectible) {
+        if (collectible != null && collectibles.containsKey(collectible.getType())) {
             collectibles.get(collectible.getType()).remove(collectible.getIdentifier());
+            deactivate(collectible);
+            return true;
         }
-        deactivate(collectible);
+        return false;
     }
     
     /**
@@ -196,7 +209,16 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
     
     public boolean hasActive(Class<? extends Collectible> clazz) {
-        return activeCollectibles.containsKey(Vendorable.getTypeName(clazz));
+        String typeName = Vendorable.getTypeName(clazz);
+        String activeName = activeCollectibles.get(typeName);
+        if (activeName != null) {
+            if (Vendorables.get(clazz, activeName) == null) {
+                activeCollectibles.remove(typeName);
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -225,7 +247,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         
         for (Map.Entry<String, Map<String, CollectibleInfo>> collectibleEntry : collectibles.entrySet()) {
             Class<? extends Vendorable> collectibleClass = Vendorable.getClassFromType(collectibleEntry.getKey());
-            if (collectibleClass != null && Holdable.class.isAssignableFrom(collectibleClass)) {
+            if (!collectibleEntry.getValue().isEmpty() && collectibleClass != null && Holdable.class.isAssignableFrom(collectibleClass)) {
                 // TODO: Probably safer way to do this than finding the first and checking for showAll
                 Holdable firstHoldable = (Holdable) Vendorables.get(collectibleEntry.getKey(), collectibleEntry.getValue().keySet().iterator().next());
                 Holdable holdCollectible;
@@ -376,6 +398,36 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
                 .setDisplayItem(cp -> cp.getCollectibles().getActive(clazz).getDisplayItem())
                 .setVisibility(cp -> cp.getCollectibles().hasActive(clazz)),
                 4, 4);
+    }
+
+    public boolean addLeaf(String leafName) {
+        if (!collectedLeaves.contains(leafName)) {
+            collectedLeaves.add(leafName);
+            owner.updateLeaves();
+            return true;
+        }
+        return false;
+    }
+
+    // TODO: This is temporary, redo this
+    public int getLeafCount(String zoneName) {
+        int count = 0;
+        for (String leaf : collectedLeaves) {
+            if (leaf.startsWith(zoneName)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public boolean hasLeaf(String leafName) {
+        return collectedLeaves.contains(leafName);
+    }
+
+    public void clearLeaves(String zoneName) {
+        collectedLeaves.removeIf(next -> next.startsWith(zoneName));
+        owner.updateLeaves();
+        GlobalZone.getZone(zoneName).clearLeaves(owner);
     }
     
 }

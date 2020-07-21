@@ -8,22 +8,26 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class UnqueueCommand extends CommandTemplate {
+public class UnqueueCommand extends CoreCommand {
 
     public UnqueueCommand() {
-        super(UnqueueCommand.class, "unqueue", Rank.DEFAULT);
+        super("unqueue", Rank.DEFAULT);
     }
     
     @CommandAnnotation
     public void unqueue(CorePlayer sender) {
-        Core.getInstance().unqueuePlayerGlobally(sender);
+        if (Core.getInstance().unqueuePlayerGlobally(sender)) {
+            success(sender, "You have left all queues");
+        } else {
+            error(sender, "You aren't in any queues!");
+        }
     }
     
 }

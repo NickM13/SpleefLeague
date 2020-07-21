@@ -13,24 +13,23 @@ import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.request.BattleRequest;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.game.GameWorld;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-import net.minecraft.server.v1_15_R1.EntityPlayer;
-import net.minecraft.server.v1_15_R1.NBTTagCompound;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import javax.annotation.Nullable;
@@ -57,12 +56,19 @@ public abstract class Battle<BP extends BattlePlayer> {
     private final Class<BP> battlePlayerClass;
     
     // Some values of Arena that can be modified without changing the arena
+    protected List<Dimension> goals = new ArrayList<>();
     protected List<Dimension> borders = new ArrayList<>();
+    private static final int SPECTATOR_EXPAND = 20;
+    private static final int GLOBAL_SPECTATOR_EXPAND = 40;
     protected List<Dimension> spectatorBorders = new ArrayList<>();
     protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
-    protected List<Location> spawns = new ArrayList<>();
+    
+    protected List<Position> checkpoints = new ArrayList<>();
+    protected List<Dimension> checkpointAreas = new ArrayList<>();
+    protected List<Position> spawns = new ArrayList<>();
 
     // Collections for players
+    protected final List<CorePlayer> waitingPlayers = new ArrayList<>();
     protected final Set<CorePlayer> players = new HashSet<>();
     protected final Set<CorePlayer> spectators = new HashSet<>();
     protected final Map<CorePlayer, BP> battlers = new HashMap<>();
@@ -73,6 +79,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     
     // Ongoing battle stats
     protected boolean ongoing;
+    protected boolean waiting = true;
     protected long startedTime;
     protected long roundStartTime = 0;
     protected boolean frozen = false;
@@ -86,29 +93,35 @@ public abstract class Battle<BP extends BattlePlayer> {
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
         this.battleMode = battleMode;
-        this.borders.addAll(arena.getBorders());
-        this.spectatorBorders.addAll(arena.getSpectatorBorders());
-        this.globalSpectatorBorders.addAll(arena.getGlobalSpectatorBorders());
-        spawns.addAll(arena.getSpawns());
+        this.setGoals(arena.getGoals());
+        this.setBorders(arena.getBorders());
+        this.setCheckpoints(arena.getCheckpoints());
+        this.spawns.addAll(arena.getSpawns());
         this.gameWorld = arena.createGameWorld();
         this.chatGroup = new ChatGroup(plugin.getChatPrefix());
-        players.forEach(this::addBattler);
+        this.waitingPlayers.addAll(players);
     }
 
     /**
      * Start a battle
      */
     public final void startBattle() {
-        arena.incrementMatches();
-        battleMode.addBattle(this);
-        startedTime = System.currentTimeMillis();
-        ongoing = true;
-        setupBattleRequests();
-        setupBaseSettings();
-        setupScoreboard();
-        setupBattlers();
-        sendStartMessage();
-        startRound();
+        if (!waiting) {
+            arena.incrementMatches();
+            battleMode.addBattle(this);
+            startedTime = System.currentTimeMillis();
+            ongoing = true;
+            setupBattleRequests();
+            setupBaseSettings();
+            setupBattlers();
+            setupScoreboard();
+            sendStartMessage();
+            startRound();
+        }
+    }
+
+    public final void waitForPlayers() {
+        waiting = true;
     }
     
     /**
@@ -136,23 +149,23 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected abstract void setupBattlers();
 
     /**
-     * Called in startBattle()<br>
+     * Called in startBattle<br>
      * Send a message on the start of a battle
      */
     protected abstract void sendStartMessage();
 
     /**
-     * Start a round
-     * <br>Resets the field and its players, also used in Reset Request
+     * Start a round<br>
+     * Resets the field and its players, also used in Reset Request
      */
     public void startRound() {
         if (!ongoing) return;
         gameWorld.clearProjectiles();
         fillField();
-        BattleUtils.fillDome(gameWorld, Material.GLASS, spawns);
         startCountdown();
         resetBattlers();
         updateScoreboard();
+        resetRequests();
     }
     
     /**
@@ -175,10 +188,6 @@ public abstract class Battle<BP extends BattlePlayer> {
         bp.getCorePlayer().refreshHotbar();
         bp.getCorePlayer().setGameMode(gameMode);
         bp.getPlayer().setWalkSpeed(0.2f);
-        EntityPlayer entityPlayer = ((CraftPlayer) bp.getPlayer()).getHandle();
-        NBTTagCompound tag = new NBTTagCompound();
-        entityPlayer.c(tag);
-        
         bp.respawn();
     }
 
@@ -200,6 +209,9 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     public final void addBattler(CorePlayer cp) {
         try {
+            if (cp.isInBattle()) {
+                cp.getBattle().leavePlayer(cp);
+            }
             List<CorePlayer> toBattlefy = new ArrayList<>();
             if (battleMode.getTeamStyle().equals(BattleMode.TeamStyle.TEAM)) {
                 toBattlefy.addAll(cp.getParty().getPlayers());
@@ -210,15 +222,26 @@ public abstract class Battle<BP extends BattlePlayer> {
                 Constructor<BP> c = battlePlayerClass.getDeclaredConstructor(CorePlayer.class, Battle.class);
                 c.setAccessible(true);
                 BP bp = c.newInstance(cp2, this);
-                bp.setSpawn(getSpawn(battlers.size()));
+                bp.setSpawn(getSpawn(battlers.size()).toLocation(arena.getWorld()));
                 addPlayer(cp2, BattleState.BATTLER);
                 battlers.put(cp2, bp);
                 sortedBattlers.add(bp);
-                spawnBattler(bp);
+                //spawnBattler(bp);
             }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            Core.getInstance().getLogger().log(Level.SEVERE, "Battle.java: Failed to create new instance of a battle player " + battlePlayerClass);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
+            CoreLogger.logError(exception);
+            //Core.getInstance().getLogger().log(Level.SEVERE, "Battle.java: Failed to create new instance of a battle player " + battlePlayerClass);
         }
+    }
+
+    /**
+     * Called when a player that is already in this battle player list wants it's battle state changed
+     *
+     * @param cp Core Player
+     * @param toState To Battle State
+     */
+    public void convertIngamePlayer(CorePlayer cp, BattleState toState) {
+        //cp.
     }
 
     /**
@@ -245,11 +268,44 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @return Ongoing Battle State
      */
     public boolean isOngoing() { return ongoing; }
+
+    public boolean isWaiting() {
+        return waiting;
+    }
     
     public GameWorld getGameWorld() {
         return gameWorld;
     }
-
+    
+    public List<Dimension> getGoals() {
+        return goals;
+    }
+    
+    /**
+     * @param cp Core Player
+     * @return In Goal
+     */
+    private boolean isInGoal(CorePlayer cp) {
+        if (!goals.isEmpty()) {
+            Point point = new Point(cp.getPlayer().getLocation());
+            for (Dimension goal : goals) {
+                if (goal.isContained(point)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Set goal dimensions
+     *
+     * @param goals List of Dimensions
+     */
+    public void setGoals(List<Dimension> goals) {
+        this.goals = goals;
+    }
+    
     /**
      * Check if a player is within the bounding boxes of the arena
      *
@@ -257,8 +313,12 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @return In Battler Bounds
      */
     private boolean isInBorder(CorePlayer cp) {
+        if (borders.isEmpty()) {
+            return true;
+        }
+        Point point = new Point(cp.getPlayer().getLocation());
         for (Dimension border : borders) {
-            if (border.isContained(new Point(cp.getPlayer().getLocation()))) {
+            if (border.isContained(point)) {
                 return true;
             }
         }
@@ -296,6 +356,16 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return false;
     }
+    
+    public void setBorders(List<Dimension> borders) {
+        this.borders = borders;
+        this.spectatorBorders.clear();
+        this.globalSpectatorBorders.clear();
+        for (Dimension dim : borders) {
+            this.spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
+            this.globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
+        }
+    }
 
     /**
      * Returns the closest battler (non-fallen) to the player
@@ -319,6 +389,14 @@ public abstract class Battle<BP extends BattlePlayer> {
         return closest;
     }
 
+    protected void onSpectatorEnter(CorePlayer cp) {
+        cp.getPlayer().teleport(arena.getSpectatorSpawn());
+    }
+
+    protected void onGlobalSpectatorEnter(CorePlayer cp) {
+        cp.getPlayer().teleport(arena.getSpectatorSpawn());
+    }
+
     /**
      * Check the movement of a player based on their battle state
      *
@@ -333,7 +411,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             BP bp = battlers.get(cp);
             if (!bp.isFallen()) {
                 if (!isRoundStarted()) {
-                    if (frozen) {
+                    if (frozen || true) {
                         e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
                                 e.getFrom().getX(),
                                 e.getFrom().getY(),
@@ -350,6 +428,10 @@ public abstract class Battle<BP extends BattlePlayer> {
                     }
                 } else if (e.getPlayer().getLocation().getBlock().isLiquid() || !isInBorder(cp)) {
                     failBattler(cp);
+                } else if (isInGoal(cp)) {
+                    winBattler(cp);
+                } else {
+                    checkCheckpoints(cp);
                 }
             } else {
                 if (!isInSpectatorBorder(cp)) {
@@ -357,12 +439,14 @@ public abstract class Battle<BP extends BattlePlayer> {
                 }
             }
         } else if (cp.getBattleState() == BattleState.SPECTATOR) {
-            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
-                cp.getPlayer().teleport(arena.getSpectatorSpawn());
+            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) &&
+                    !cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR) &&
+                    arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
+                onSpectatorEnter(cp);
             }
         } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
             if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
-                cp.getPlayer().teleport(arena.getSpectatorSpawn());
+                onGlobalSpectatorEnter(cp);
             }
             if (!isInGlobalSpectatorBorder(cp)) {
                 removeSpectator(cp);
@@ -371,22 +455,95 @@ public abstract class Battle<BP extends BattlePlayer> {
     }
 
     /**
-     * Do something if player right clicks
+     * Called when a player right clicks.
      *
      * @param cp CorePlayer
      */
     public void onRightClick(CorePlayer cp) {
+        battlers.get(cp).onRightClick();
+    }
 
+    /**
+     * Called when a battler punches another battler
+     *
+     * @param cp Core Player
+     * @param target Core Player
+     */
+    public void onPlayerPunch(CorePlayer cp, CorePlayer target) {
+        battlers.get(cp).onPlayerPunch(battlers.get(target));
+    }
+
+    public void onPlayerHit(CorePlayer cp, CorePlayer target) {
+        battlers.get(target).onPlayerHit(battlers.get(cp));
+    }
+
+    /**
+     * Called when a player breaks a block.
+     *
+     * @param cp Core Player
+     */
+    public void onBlockBreak(CorePlayer cp) {
+        battlers.get(cp).onBlockBreak();
+    }
+
+    public void onSlotChange(CorePlayer cp, int newSlot) {
+        battlers.get(cp).onSlotChange(newSlot);
+    }
+
+    public void onDropItem(CorePlayer cp) {
+        battlers.get(cp).onDropItem();
+    }
+
+    public void onSwapItem(CorePlayer cp) {
+        battlers.get(cp).onSwapItem();
+    }
+
+    public void onStartSneak(CorePlayer cp) {
+        battlers.get(cp).onStartSneak();
+    }
+
+    public void onStopSneak(CorePlayer cp) {
+        battlers.get(cp).onStopSneak();
     }
 
     /**
      * @param id Spawn Index
      * @return Spawn Location
      */
-    protected Location getSpawn(int id) {
+    protected Position getSpawn(int id) {
         if (id < spawns.size())
             return spawns.get(id);
         return spawns.get(0);
+    }
+    
+    public void setCheckpoints(List<Position> checkpoints) {
+        this.checkpoints = checkpoints;
+        this.checkpointAreas.clear();
+        this.checkpointAreas.addAll(arena.getCheckpoints()
+                .stream()
+                .map(checkpoint -> new Dimension(checkpoint.add(-0.5, 0, -0.5), checkpoint.add(0.5, 1, 0.5)))
+                .collect(Collectors.toList()));
+    }
+    
+    /**
+     *
+     * @param cp Core Player
+     * @return In Checkpoint
+     */
+    private void checkCheckpoints(CorePlayer cp) {
+        if (checkpointAreas.isEmpty()) return;
+        BattlePlayer bp = battlers.get(cp);
+        Point point = new Point(cp.getLocation());
+        for (int i = bp.getCheckpoint() + 1; i < checkpointAreas.size(); i++) {
+            if (checkpointAreas.get(i).isContained(point)) {
+                bp.setCheckpoint(i);
+                return;
+            }
+        }
+    }
+    
+    public Location getCheckpoint(int id) {
+        return checkpoints.get(id).toLocation(arena.getWorld());
     }
 
     /**
@@ -415,12 +572,16 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     private boolean addPlayer(CorePlayer cp, BattleState battleState) {
         if (!players.contains(cp)) {
+            if (cp.isInBattle()) {
+                cp.getBattle().leavePlayer(cp);
+            }
             players.add(cp);
             gameWorld.addPlayer(cp);
             chatGroup.addPlayer(cp);
             cp.joinBattle(this, battleState);
             cp.getPlayer().getInventory().setHeldItemSlot(0);
             cp.getPlayer().getInventory().clear();
+            cp.refreshHotbar();
             return true;
         }
         return false;
@@ -434,10 +595,11 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     protected final boolean removePlayer(CorePlayer cp) {
         if (players.contains(cp)) {
-            cp.leaveBattle(arena.getPostGameWarp());
             chatGroup.removePlayer(cp);
             gameWorld.removePlayer(cp);
             players.remove(cp);
+            cp.leaveBattle(arena.getPostGameWarp());
+            Core.getInstance().returnToHub(cp);
             return true;
         }
         return false;
@@ -477,7 +639,14 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param cp CorePlayer
      */
     protected abstract void failBattler(CorePlayer cp);
-
+    
+    /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    protected abstract void winBattler(CorePlayer cp);
+    
     /**
      * Called when a player surrenders (/ff, /leave)
      *
@@ -533,6 +702,12 @@ public abstract class Battle<BP extends BattlePlayer> {
             }
         } else {
             Core.getInstance().sendMessage(cp, "Can't request that here!");
+        }
+    }
+
+    public void resetRequests() {
+        for (BattleRequest br : battleRequests.values()) {
+            br.clear();
         }
     }
     
@@ -662,27 +837,48 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @return Formatted Runtime String
      */
     protected String getRuntimeString() {
+        long sec2 = (System.currentTimeMillis() - startedTime) / 100;
+        long sec = sec2 / 10;
+        String str = "";
+
+        // Hours
+        str += String.format("%02d", sec / 3600) + ":";
+        // Minutes
+        str += String.format("%02d", sec / 60 % 60) + ":";
+        // Seconds
+        str += String.format("%02d", sec % 60) + ".";
+        str += String.format("%01d", sec2 % 10) + "";
+
+        return str;
+    }
+
+    /**
+     * Returns the current runtime of a battle as a formatted string
+     *
+     * @return Formatted Runtime String
+     */
+    protected String getRuntimeStringNoMillis() {
         long sec = (System.currentTimeMillis() - startedTime) / 1000;
         String str = "";
-        
+
         // Hours
         str += String.format("%02d", sec / 3600) + ":";
         // Minutes
         str += String.format("%02d", sec / 60 % 60) + ":";
         // Seconds
         str += String.format("%02d", sec % 60);
-        
+
         return str;
     }
 
     /**
-     * Called every 1 second or on score updates
+     * Called every 0.1 second or on score updates
      * Updates the player scoreboards
      */
     public abstract void updateScoreboard();
 
     /**
-     * Called every 1/10 second
+     * Called every 1/20 second
      * Updates the field on occasion for events such as
      * auto-regenerating maps
      */
@@ -697,10 +893,13 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Called when the game begins, removes glass boxes and allows
      * the world to be broken by specified tools and specified blocks
      */
-    public void releasePlayers() {
+    public void releaseBattlers() {
         BattleUtils.clearDome(gameWorld, spawns);
         gameWorld.setEditable(true);
         frozen = false;
+        for (BattlePlayer bp : battlers.values()) {
+            bp.getCorePlayer().refreshHotbar();
+        }
     }
     
     public boolean isFrozen() {
@@ -717,21 +916,36 @@ public abstract class Battle<BP extends BattlePlayer> {
         return (System.currentTimeMillis() - roundStartTime) / 1000.0;
     }
 
+    public void checkWaiting() {
+        Iterator<CorePlayer> it = waitingPlayers.iterator();
+        while (it.hasNext()) {
+            CorePlayer cp = it.next();
+            if (cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
+                addBattler(cp);
+                it.remove();
+            }
+        }
+        waiting = !waitingPlayers.isEmpty();
+        startBattle();
+    }
+
     /**
      * Called every second
      *
      * Counts down the start of a round
      */
     public void doCountdown() {
-        if (countdown >= 0) {
-            if (countdown == 0) {
-                sendPlayerTitle(ChatColor.GREEN + "Go!", "", 5, 10, 5);
-                releasePlayers();
-                roundStartTime = System.currentTimeMillis();
-            } else /*if (countdown <= 3)*/ {
-                sendPlayerTitle(ChatColor.RED + "" + countdown + "...", "", 5, 10, 5);
+        if (!waiting) {
+            if (countdown >= 0) {
+                if (countdown == 0) {
+                    sendPlayerTitle(ChatColor.GREEN + "Go!", "", 5, 10, 5);
+                    releaseBattlers();
+                    roundStartTime = System.currentTimeMillis();
+                } else /*if (countdown <= 3)*/ {
+                    sendPlayerTitle(ChatColor.RED + "" + countdown + "...", "", 5, 10, 5);
+                }
+                countdown--;
             }
-            countdown--;
         }
     }
 
@@ -745,9 +959,12 @@ public abstract class Battle<BP extends BattlePlayer> {
     /**
      * Set countdown and prevents world from being broken
      */
-    protected void startCountdown() {
+    public void startCountdown() {
         countdown = COUNTDOWN;
         gameWorld.setEditable(false);
+        for (BattlePlayer bp : battlers.values()) {
+            bp.getCorePlayer().refreshHotbar();
+        }
     }
 
     /**
@@ -769,6 +986,14 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     public Set<CorePlayer> getPlayers() {
         return players;
+    }
+
+    public List<BP> getBattlers() {
+        return sortedBattlers;
+    }
+
+    public BP getBattler(CorePlayer cp) {
+        return battlers.get(cp);
     }
 
     /**

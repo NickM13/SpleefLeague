@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -30,10 +30,10 @@ import com.spleefleague.core.menu.InventoryMenuContainerChest;
 /**
  * @author NickM13
  */
-public class VendorCommand extends CommandTemplate {
+public class VendorCommand extends CoreCommand {
     
     public VendorCommand() {
-        super(VendorCommand.class, "vendor", Rank.DEVELOPER);
+        super("vendor", Rank.DEVELOPER);
         setUsage("/vendor");
         setOptions("vendors", (cp) -> Vendors.getVendors().keySet());
     }
@@ -90,10 +90,10 @@ public class VendorCommand extends CommandTemplate {
         for (String type : Vendorable.getTypeNames()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItem()
                     .setName(type)
-                    .setDisplayItem(Material.CHEST);
+                    .setDisplayItem(Material.CHEST)
+                    .createLinkedContainer(type);
             InventoryMenuContainerChest typeMenu = typeItem
-                    .getLinkedContainer()
-                    .setTitle(type);
+                    .getLinkedChest();
             Map<String, Vendorable> vendorableMap = Vendorables.getAll(type);
             if (vendorableMap != null) {
                 for (Vendorable item : vendorableMap.values()) {

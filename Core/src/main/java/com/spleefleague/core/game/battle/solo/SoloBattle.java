@@ -6,6 +6,7 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.util.CoreUtils;
 
 import java.util.List;
 
@@ -14,6 +15,8 @@ import java.util.List;
  * @since 4/24/2020
  */
 public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
+    
+    protected BP battler;
     
     public SoloBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
@@ -32,7 +35,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void setupBattlers() {
-    
+        battler = sortedBattlers.get(0);
     }
     
     /**
@@ -65,6 +68,16 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void failBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
     
     }
     
@@ -114,4 +127,12 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void updateExperience() {
     
     }
+    
+    /**
+     * Called when a Play To request passes
+     *
+     * @param playTo Play To Value
+     */
+    public void setPlayTo(int playTo) { }
+    
 }

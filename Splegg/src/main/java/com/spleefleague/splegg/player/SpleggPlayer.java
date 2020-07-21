@@ -1,6 +1,6 @@
 package com.spleefleague.splegg.player;
 
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 
 /**
  * @author NickM

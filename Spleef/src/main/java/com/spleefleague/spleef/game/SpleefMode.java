@@ -11,7 +11,7 @@ import com.spleefleague.spleef.game.battle.team.*;
 import com.spleefleague.spleef.game.battle.power.*;
 import com.spleefleague.spleef.game.battle.multi.*;
 import com.spleefleague.spleef.game.battle.classic.*;
-import com.spleefleague.spleef.game.battle.banana.*;
+import com.spleefleague.spleef.game.battle.bonanza.*;
 
 /**
  * @author NickM13
@@ -31,7 +31,7 @@ public enum SpleefMode {
         BattleMode.addArenaMode(CLASSIC.getName(), "Classic Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSpleefBattle.class);
         BattleMode.addArenaMode(TEAM.getName(), "Team Spleef", 2, 2, BattleMode.TeamStyle.TEAM, false, TeamSpleefBattle.class);
         BattleMode.addArenaMode(MULTI.getName(), "Multispleef", 2, 32, BattleMode.TeamStyle.DYNAMIC, true, MultiSpleefBattle.class);
-        BattleMode.addArenaMode(BONANZA.getName(), "Bananaspleef", 0, 0, BattleMode.TeamStyle.BONANZA, true, BananaSpleefBattle.class);
+        BattleMode.addArenaMode(BONANZA.getName(), "Bonanza Spleef", 0, 0, BattleMode.TeamStyle.BONANZA, true, BonanzaSpleefBattle.class);
         BattleMode.addArenaMode(POWER.getName(), "Power Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, PowerSpleefBattle.class);
         BattleMode.addArenaMode(WC.getName(), "SWC", 2, 2, BattleMode.TeamStyle.VERSUS, false, null);
     }

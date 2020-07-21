@@ -11,7 +11,6 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuItemOption;
 import com.spleefleague.core.player.CorePlayerOptions;
-import com.spleefleague.core.player.PlayerOptions;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -33,7 +32,7 @@ public class OptionsMenu {
         if (menuItem == null) {
             // Options Menus
             menuItem = InventoryMenuAPI.createItem()
-                    .setName("Options")
+                    .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Options")
                     .setDisplayItem(new ItemStack(Material.WRITABLE_BOOK))
                     .setDescription("Customize your SpleefLeague experience")
                     .createLinkedContainer("Options Menu");
@@ -46,7 +45,7 @@ public class OptionsMenu {
                     .createLinkedContainer("Chat Channels");
 
             for (ChatChannel.Channel channel : ChatChannel.Channel.values()) {
-                chatOptionsItem.getLinkedContainer()
+                chatOptionsItem.getLinkedChest()
                         .addMenuItem(InventoryMenuAPI.createItem()
                         .setName(ChatChannel.getChannel(channel).getName())
                         .setDescription(cp -> { return "This chat is "
@@ -57,7 +56,7 @@ public class OptionsMenu {
                         .setVisibility(cp -> ChatChannel.getChannel(channel).isAvailable(cp)));
             }
 
-            menuItem.getLinkedContainer()
+            menuItem.getLinkedChest()
                     .addMenuItem(chatOptionsItem);
             
             // Post Game Warping
@@ -66,12 +65,12 @@ public class OptionsMenu {
                     .setName("Post Game Positioning")
                     .setDisplayItem(Material.ENDER_PEARL)
                     .setAction(cp -> cp.getOptions().nextOption(CorePlayerOptions.CPOptions.POST_GAME_WARP));
-            PlayerOptions pgw = CorePlayerOptions.getOptions(CorePlayerOptions.CPOptions.POST_GAME_WARP.name());
-            for (PlayerOptions.Option o : pgw.getOptions()) {
+            CorePlayerOptions.PlayerOptions pgw = CorePlayerOptions.getOptions(CorePlayerOptions.CPOptions.POST_GAME_WARP.name());
+            for (CorePlayerOptions.PlayerOptions.Option o : pgw.getOptions()) {
                 postGameItem.addOption(o.displayName, o.displayItem);
             }
             
-            menuItem.getLinkedContainer()
+            menuItem.getLinkedChest()
                     .addMenuItem(postGameItem);
         }
         return menuItem;

@@ -7,12 +7,13 @@
 package com.spleefleague.core.chat.ticket;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

@@ -4,7 +4,6 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.pet.EntityPet;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 
 /**
  * @author NickM13

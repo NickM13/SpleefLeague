@@ -1,5 +1,6 @@
 package com.spleefleague.core.player.collectible.pet;
 
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
@@ -24,8 +25,8 @@ public enum PetType {
     private <T extends Entity> void registerCustomEntity(Class<? extends Entity> entityClass,
             EntityTypes.b<T> newFunc,
             EnumCreatureType creatureType) {
-        System.out.println("Registered custom entity " + entityClass);
-        EntityTypes.a<?> entity = EntityTypes.a.a(newFunc, creatureType);
+        CoreLogger.logInfo("Registered custom entity " + entityClass);
+        EntityTypes.a<Entity> entity = EntityTypes.a.a(newFunc, creatureType);
         entity.b();
         IRegistry.a(IRegistry.ENTITY_TYPE, "pettype30", entity.a("pettype31"));
     }
@@ -35,8 +36,8 @@ public enum PetType {
             EntityPet entityPet = entityClass.getDeclaredConstructor(PetOwner.class).newInstance(owner);
             ((CraftWorld) owner.getPlayer().getWorld()).getHandle().addEntity(entityPet);
             return entityPet;
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
+            CoreLogger.logError(exception);
         }
         return null;
     }

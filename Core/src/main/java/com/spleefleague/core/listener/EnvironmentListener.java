@@ -6,24 +6,26 @@
 
 package com.spleefleague.core.listener;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import com.spleefleague.core.world.global.lock.GlobalLock;
+import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
+import com.spleefleague.core.world.global.vehicle.LaunchPad;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.v1_15_R1.block.CraftSign;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,11 +35,9 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Player listener for out of game actions
@@ -45,7 +45,7 @@ import java.util.Set;
  * @author NickM13
  */
 public class EnvironmentListener implements Listener {
-
+    
     /**
      * Converts lines 1, 2, and 3 to doubles
      *
@@ -87,6 +87,8 @@ public class EnvironmentListener implements Listener {
         }
     }
 
+    private final Map<UUID, Long> jumpCooldowns = new HashMap<>();
+    
     /**
      * Perform some actions if a player walks into or above a sign
      * with specific text on it
@@ -102,8 +104,38 @@ public class EnvironmentListener implements Listener {
             if (state instanceof CraftSign) {
                 CraftSign sign = (CraftSign) state;
                 switch (sign.getLine(0).toLowerCase()) {
-                    case "[jump]":
-                        event.getPlayer().setVelocity(event.getPlayer().getVelocity().add(getSignVector(sign)));
+                    case "[jump_1]":
+                        if ((!jumpCooldowns.containsKey(event.getPlayer().getUniqueId())
+                                || jumpCooldowns.get(event.getPlayer().getUniqueId()) < System.currentTimeMillis())
+                                && !event.getPlayer().isInsideVehicle()) {
+                            Vector vec = getSignVector(sign).multiply(0.3);
+                            LaunchPad.launchEntity(new Vector(block.getX() + 0.5, block.getY() + 3., block.getZ() + 0.5),
+                                    vec,
+                                    event.getPlayer());
+                            jumpCooldowns.put(event.getPlayer().getUniqueId(), System.currentTimeMillis() + 2000);
+                        }
+                        break;
+                    case "[jump_2]":
+                        if ((!jumpCooldowns.containsKey(event.getPlayer().getUniqueId())
+                                || jumpCooldowns.get(event.getPlayer().getUniqueId()) < System.currentTimeMillis())
+                                && !event.getPlayer().isInsideVehicle()) {
+                            Vector vec = getSignVector(sign).multiply(0.3);
+                            LaunchPad.launchEntity(new Vector(block.getX() + 0.5, block.getY() + 1., block.getZ() + 0.5),
+                                    vec,
+                                    event.getPlayer());
+                            jumpCooldowns.put(event.getPlayer().getUniqueId(), System.currentTimeMillis() + 2000);
+                        }
+                        break;
+                    case "[jump_3]":
+                        if ((!jumpCooldowns.containsKey(event.getPlayer().getUniqueId())
+                                || jumpCooldowns.get(event.getPlayer().getUniqueId()) < System.currentTimeMillis())
+                                && !event.getPlayer().isInsideVehicle()) {
+                            Vector vec = getSignVector(sign).multiply(0.3);
+                            LaunchPad.launchEntity(new Vector(block.getX() + 0.5, block.getY() + 2.5, block.getZ() + 0.5),
+                                    vec,
+                                    event.getPlayer());
+                            jumpCooldowns.put(event.getPlayer().getUniqueId(), System.currentTimeMillis() + 2000);
+                        }
                         break;
                     case "[teleport]":
                         cp.teleport(getSignVector(sign));
@@ -144,7 +176,7 @@ public class EnvironmentListener implements Listener {
         }
     }
     
-    private static List<String> WISHES = Lists.newArrayList(
+    private static final List<String> WISHES = Lists.newArrayList(
             "I wish I would grow up, it feels like I've been 10 for years.",
             "I wish to know how you survived my wrath, little fountain.",
             "Already, I've a kingdom in my prospects, a land to rule.  What to ask for?  Perhaps a frozen scone...",
@@ -177,6 +209,36 @@ public class EnvironmentListener implements Listener {
                 Random rand = new Random();
                 Core.getInstance().sendMessage(cp, WISHES.get(rand.nextInt(WISHES.size())));
             }
+        } else {
+            if (InventoryMenuItemHotbar.isHotbarItem(event.getItemDrop().getItemStack())) {
+                event.getItemDrop().remove();
+            }
+        }
+    }
+
+    /**
+     * @param event Event
+     */
+    @EventHandler
+    public void onPlayerDismount(EntityDismountEvent event) {
+        if (event.getEntity() instanceof Player) {
+            CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity().getUniqueId());
+            GlobalVehicle.remove(event.getDismounted().getEntityId());
+        }
+    }
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        Projectile projectile = event.getEntity();
+        LivingEntity entity = GlobalVehicle.remove(projectile.getEntityId());
+        if (entity != null) {
+            entity.eject();
+            entity.teleport(new Location(projectile.getWorld(),
+                    projectile.getLocation().getX(),
+                    projectile.getLocation().getY() + 2,
+                    projectile.getLocation().getZ(),
+                    entity.getLocation().getYaw(),
+                    entity.getLocation().getPitch()));
         }
     }
 
@@ -209,7 +271,15 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player) {
+        if (event.getDamager() instanceof Projectile) {
+            Projectile projectile = (Projectile) event.getDamager();
+            if (projectile.getShooter() instanceof Player) {
+                if (!Core.getInstance().getPlayers().get((Player) projectile.getShooter()).canBuild()) {
+                    if (!damageableMobs.contains(event.getEntityType()))
+                        event.setCancelled(true);
+                }
+            }
+        } else if (event.getDamager() instanceof Player) {
             if (!Core.getInstance().getPlayers().get((Player)event.getDamager()).canBuild()) {
                 if (!damageableMobs.contains(event.getEntityType()))
                     event.setCancelled(true);
@@ -291,7 +361,6 @@ public class EnvironmentListener implements Listener {
 
     /**
      * Prevent non-building players from picking up items
-     * TODO: **Idea** Add handler to possibly add vendor items to collection on pickup?
      *
      * @param event Event
      */
@@ -303,6 +372,17 @@ public class EnvironmentListener implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+    
+    /**
+     * Prevent players from picking up arrows (since we use them for launch pads)
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onArrowPickup(PlayerPickupArrowEvent event) {
+        event.getArrow().remove();
+        event.setCancelled(true);
     }
 
     /**
@@ -458,7 +538,11 @@ public class EnvironmentListener implements Listener {
         if (!cp.canBuild()) {
             if (event.getClickedBlock() != null) {
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                    if (!interactables.contains(event.getClickedBlock().getType())) {
+                    if (!interactables.contains(event.getClickedBlock().getType())
+                            || GlobalLock.isLocked(new BlockPosition(
+                                    event.getClickedBlock().getX(),
+                                    event.getClickedBlock().getY(),
+                                    event.getClickedBlock().getZ()))) {
                         event.setCancelled(true);
                     }
                 }

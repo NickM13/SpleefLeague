@@ -7,7 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.inventory.ItemStack;
@@ -17,10 +17,10 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 /**
  * @author NickM13
  */
-public class ColorArmorCommand extends CommandTemplate {
+public class ColorArmorCommand extends CoreCommand {
     
     public ColorArmorCommand() {
-        super(ColorArmorCommand.class, "colorarmor", Rank.SENIOR_MODERATOR);
+        super("colorarmor", Rank.SENIOR_MODERATOR);
         setUsage("/colorarmor <r=0-255> <g=0-255> <b=0-255>");
         setDescription("¯\\_(ツ)_/¯");
     }

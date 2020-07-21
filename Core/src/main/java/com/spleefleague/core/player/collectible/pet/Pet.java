@@ -6,21 +6,15 @@
 
 package com.spleefleague.core.player.collectible.pet;
 
-import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.vendor.Vendorable;
-import org.bson.Document;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import org.bukkit.Material;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 /**
  * PETS PETS PEPREPSTS SERKLRJSPKLHEL:KWJHYALIUUEWYAOIURYGHALOWSEI*U
@@ -29,23 +23,15 @@ import java.util.logging.Level;
  */
 public class Pet extends Collectible {
     
-    private static MongoCollection<Document> petCol;
-    
     private static final Map<CorePlayer, PetOwner> playerPetMap = new HashMap<>();
     private static final Map<UUID, CorePlayer> petPlayerMap = new HashMap<>();
     
     public static void init() {
         Vendorable.registerVendorableType(Pet.class);
-        
-        petCol = Core.getInstance().getPluginDB().getCollection("Pets");
-        petCol.find().iterator().forEachRemaining(doc -> {
-            Pet petItem = new Pet();
-            petItem.load(doc);
-        });
     }
     
     public static void close() {
-        playerPetMap.keySet().forEach(Pet::despawnPet);
+        playerPetMap.keySet().forEach(Pet::killPet);
     }
     
     protected static void spawnPet(CorePlayer cp, Pet pet) {
@@ -63,7 +49,7 @@ public class Pet extends Collectible {
         }
     }
     
-    protected static void despawnPet(CorePlayer cp) {
+    protected static void killPet(CorePlayer cp) {
         if (!playerPetMap.containsKey(cp)) return;
         if (playerPetMap.get(cp).getEntityPet() == null) return;
         petPlayerMap.remove(playerPetMap.get(cp).getEntityPet().getUniqueID());
@@ -75,6 +61,19 @@ public class Pet extends Collectible {
     
     public Pet() {
         super();
+    }
+
+    /**
+     * Constructor for use with /pet create
+     *
+     * @param identifier Identifier String
+     * @param name Display Name
+     */
+    public Pet(String identifier, String name) {
+        super();
+        this.identifier = identifier;
+        this.name = name;
+        this.material = Material.WOLF_SPAWN_EGG;
     }
     
     public void afterLoad() {
@@ -106,7 +105,7 @@ public class Pet extends Collectible {
     @Override
     public void onDisable(CorePlayer cp) {
         cp.sendMessage("Goodbye :(");
-        despawnPet(cp);
+        killPet(cp);
     }
     
     /**

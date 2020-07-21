@@ -7,17 +7,17 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class GrantCurrencyCommand extends CommandTemplate {
+public class GrantCurrencyCommand extends CoreCommand {
     
     public GrantCurrencyCommand() {
-        super(GrantCurrencyCommand.class, "grantcurrency", Rank.DEVELOPER);
+        super("grantcurrency", Rank.DEVELOPER);
         setUsage("/grantcurrency <player> <amt>");
         setDescription("Add currency");
     }

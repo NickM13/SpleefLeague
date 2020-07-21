@@ -11,19 +11,23 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.mongodb.lang.NonNull;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.command.CommandTemplate;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.Checkpoint;
-import com.spleefleague.core.database.variable.DBPlayer;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
+import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.io.converter.LocationConverter;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.*;
+import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.PermRank;
@@ -31,15 +35,22 @@ import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.player.rank.TempRank;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.util.variable.Checkpoint;
 import com.spleefleague.core.util.variable.TpCoord;
 import com.spleefleague.core.util.variable.Warp;
+import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.core.world.global.biome.GlobalBiome;
+import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.player.RatedPlayer;
 import net.md_5.bungee.api.chat.*;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
 import org.bson.Document;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -60,7 +71,7 @@ import java.util.logging.Level;
  *
  * @author NickM13
  */
-public class CorePlayer extends DBPlayer {
+public class CorePlayer extends RatedPlayer {
 
     /**
      * Database variables
@@ -75,16 +86,10 @@ public class CorePlayer extends DBPlayer {
     
     @DBField private Boolean vanished;
     @DBField private Integer coins;
-    
-    // Non-afk time
-    @DBField private Long playTime;
-    @DBField private Long afkTime;
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
     @DBField private CorePlayerOptions options = new CorePlayerOptions();
     @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
-    @DBField private CorePlayerStats stats = new CorePlayerStats();
-    @DBField private CorePlayerRatings ratings = new CorePlayerRatings();
     
     /**
      * Non-database variables
@@ -113,17 +118,16 @@ public class CorePlayer extends DBPlayer {
 
     private PermissionAttachment permissions;
     
-    private final LinkedHashSet<FakeWorld<?>> fakeWorlds = new LinkedHashSet<>();
+    private final Set<FakeWorld<?>> fakeWorlds = new TreeSet<>((left, right) -> right.getPriority() - left.getPriority());
     private Battle<?> battle;
     private BattleState battleState;
     private final PregameState pregameState;
-    private GlobalBiome globalBiome;
-    
+    private GlobalZone globalZone;
+
     /**
      * Constructor for CorePlayer
      */
     public CorePlayer() {
-        super();
         this.chatChannel = ChatChannel.getDefaultChannel();
         this.lastLocation = null;
         this.checkpoint = null;
@@ -132,15 +136,13 @@ public class CorePlayer extends DBPlayer {
         this.vanished = false;
         this.party = null;
         this.coins = 0;
-        this.playTime = 0L;
-        this.afkTime = 0L;
         this.lastAction = System.currentTimeMillis();
         this.afk = false;
         this.afkWarned = false;
         this.battle = null;
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
-        this.globalBiome = null;
+        this.globalZone = null;
     }
     
     public CorePlayer(Player player) {
@@ -160,28 +162,33 @@ public class CorePlayer extends DBPlayer {
         permRank.setRank(Rank.getDefaultRank());
     }
 
+    public Player getPlayer() {
+        return Bukkit.getPlayer(uuid);
+    }
+
     /**
      * CorePlayer::init is called when a player comes online
      */
     @Override
     public void init() {
+        username = getPlayer().getName();
         permissions = getPlayer().addAttachment(Core.getInstance());
         setRank(permRank.getRank());
         PersonalScoreboard.initPlayerScoreboard(this);
         collectibles.setOwner(this);
-        stats.setOwner(this);
-        ratings.setOwner(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         FakeWorld.onPlayerJoin(getPlayer());
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
+        getPlayer().setGravity(true);
+        getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
+        super.init();
     }
     
     @Override
     public void initOffline() {
         collectibles.setOwner(this);
-        stats.setOwner(this);
-        ratings.setOwner(this);
+        super.initOffline();
     }
     
     /**
@@ -189,9 +196,8 @@ public class CorePlayer extends DBPlayer {
      */
     @Override
     public void afterLoad() {
+        super.afterLoad();
         collectibles.setOwner(this);
-        stats.setOwner(this);
-        ratings.setOwner(this);
     }
     
     /**
@@ -199,23 +205,41 @@ public class CorePlayer extends DBPlayer {
      */
     @Override
     public void close() {
+        if (battle != null) {
+            battle.leavePlayer(this);
+        }
+
         List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
         for (FakeWorld<?> fakeWorld : fakeWorldList) {
             fakeWorld.removePlayer(this);
         }
         Core.getInstance().unqueuePlayerGlobally(this);
+
+        NoteBlockMusic.stopSong(this);
         
         Team team = getPlayer().getScoreboard().getEntryTeam(getPlayer().getName());
         if (team != null) team.removeEntry(getPlayer().getName());
+
         Document leaveDoc = new Document("date", Date.from(Instant.now()));
         leaveDoc.append("type", "LEAVE");
         leaveDoc.append("uuid", getPlayer().getUniqueId().toString());
-        
         try {
             Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(leaveDoc);
         } catch (NoClassDefFoundError | IllegalAccessError exception) {
             Core.getInstance().getLogger().log(Level.WARNING, "Couldn't save PlayerConnection for " + getPlayer().getName());
         }
+
+        PersonalScoreboard.closePlayerScoreboard(this);
+    }
+
+    public void addElo(String mode, int season, int amt) {
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        output.writeUTF(mode);
+        output.writeInt(season);
+        output.writeInt(1);
+        output.writeUTF(getUniqueId().toString());
+        output.writeInt(getRatings().getElo(mode, season) + amt);
+        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "slcore:score", output.toByteArray());
     }
 
     /**
@@ -229,26 +253,6 @@ public class CorePlayer extends DBPlayer {
     public void setGameMode(GameMode gameMode) {
         this.gameMode = gameMode.name();
         getPlayer().setGameMode(gameMode);
-    }
-    
-    /**
-     * Get the stats object of a Core Player
-     *
-     * @return Core Player Stats
-     * @see CorePlayerStats
-     */
-    public CorePlayerStats getStats() {
-        return stats;
-    }
-    
-    /**
-     * Get all ratings object of a Core Player
-     *
-     * @return Core Player Ratings
-     * @see CorePlayerRatings
-     */
-    public CorePlayerRatings getRatings() {
-        return ratings;
     }
     
     /**
@@ -280,31 +284,17 @@ public class CorePlayer extends DBPlayer {
     }
 
     /**
-     * @return Total Non-AFK time
-     */
-    public long getPlayTime() {
-        return playTime;
-    }
-
-    /**
-     *
-     *
-     * @return Total AFK time
-     */
-    public long getAfkTime() {
-        return afkTime;
-    }
-
-    /**
      * Checks if player is or is about to become AFK
      */
     public void checkAfk() {
-        if (lastAction + AFK_TIMEOUT < System.currentTimeMillis()) {
-            setAfk(true);
-        } else if (!afkWarned && lastAction + AFK_WARNING < System.currentTimeMillis()
-                && getRank().equals(Rank.DEFAULT)) {
-            Core.getInstance().sendMessage(this, "You will be kicked for AFK in 30 seconds!");
-            afkWarned = true;
+        if (getPlayer() != null) {
+            if (lastAction + AFK_TIMEOUT < System.currentTimeMillis()) {
+                setAfk(true);
+            } else if (!afkWarned && lastAction + AFK_WARNING < System.currentTimeMillis()
+                    && getRank().equals(Rank.DEFAULT)) {
+                Core.getInstance().sendMessage(this, "You will be kicked for AFK in 30 seconds!");
+                afkWarned = true;
+            }
         }
     }
 
@@ -315,9 +305,9 @@ public class CorePlayer extends DBPlayer {
         boolean wasAfk = this.afk;
         if (this.afk) {
             setAfk(false);
-            afkTime += System.currentTimeMillis() - lastAction;
+            getStatistics().get("general").add("afkTime", System.currentTimeMillis() - lastAction);
         } else {
-            playTime += System.currentTimeMillis() - lastAction;
+            getStatistics().get("general").add("playTime", System.currentTimeMillis() - lastAction);
         }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
@@ -361,24 +351,12 @@ public class CorePlayer extends DBPlayer {
         }
         return 0;
     }
+
+
     
     public boolean isFlying() {
         return getPlayer().isFlying()
                 || getPlayer().isGliding();
-    }
-    
-    public void checkBiome() {
-        if (!isOnline()) return;
-        Vector pos = getPlayer().getLocation().toVector();
-        GlobalBiome biome = GlobalBiome.get(getPlayer().getWorld().getBiome(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ()));
-        if (globalBiome == null) {
-            getPlayer().resetPlayerWeather();
-        } else {
-            WeatherType weatherType = globalBiome.getWeatherType(getPlayer().getPlayerTime());
-            if (getPlayer().getPlayerWeather() != weatherType) {
-                getPlayer().setPlayerWeather(weatherType);
-            }
-        }
     }
     
     /**
@@ -545,7 +523,7 @@ public class CorePlayer extends DBPlayer {
      * @return Whether player can build
      */
     public boolean canBuild() {
-        return (getRank().hasPermission(Rank.BUILDER) && !getPlayer().getGameMode().equals(org.bukkit.GameMode.SURVIVAL) && !isInBattle());
+        return (getRank().hasPermission(Rank.BUILDER) && getPlayer().getGameMode().equals(GameMode.CREATIVE) && !isInBattle());
     }
 
     /**
@@ -563,22 +541,29 @@ public class CorePlayer extends DBPlayer {
      * Updates all available permissions
      */
     public void updateRank() {
-        if (!isOnline()) return;
+        if (getPlayer() == null) return;
         PersonalScoreboard.updatePlayerRank(this);
         getPlayer().setOp(getRank().getHasOp());
-        
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO);
+
+        PacketPlayOutPlayerInfo packetPlayOutPlayerInfo = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME,
+                ((CraftPlayer) getPlayer()).getHandle());
+
+
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, packetPlayOutPlayerInfo);
+
         packet.getPlayerInfoAction().write(0, EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME);
-        packet.getPlayerInfoDataLists().write(0, Lists.newArrayList(new PlayerInfoData(
+        List<PlayerInfoData> pidList = Lists.newArrayList(new PlayerInfoData(
                 WrappedGameProfile.fromPlayer(getPlayer()),
                 1,
                 EnumWrappers.NativeGameMode.fromBukkit(getPlayer().getGameMode()),
-                WrappedChatComponent.fromText(getDisplayName()))));
-        Core.sendPacketAll(packet);
+                WrappedChatComponent.fromText(getDisplayName())));
+
+        //packet.getPlayerInfoDataLists().write(0, pidList);
+        //Core.sendPacketAll(packet);
 
         permissions.getPermissions().clear();
         
-        for (String p : CommandTemplate.getAllPermissions()) {
+        for (String p : CoreCommand.getAllPermissions()) {
             boolean has = false;
             if (getPermanentRank().hasPermission(p)) {
                 has = true;
@@ -690,11 +675,21 @@ public class CorePlayer extends DBPlayer {
      * @return Player Location
      */
     public Location getLocation() {
-        if (!isOnline()) {
+        Player p = Bukkit.getPlayer(uuid);
+        if (p == null) {
             return this.lastLocation;
         } else {
-            return getPlayer().getLocation();
+            return p.getLocation();
         }
+    }
+
+    /**
+     * Returns the coordinates of the chunk the player is in
+     *
+     * @return
+     */
+    public ChunkCoord getChunkCoord() {
+        return new ChunkCoord(getLocation().getChunk().getX(), getLocation().getChunk().getZ());
     }
 
     /**
@@ -758,8 +753,8 @@ public class CorePlayer extends DBPlayer {
      * @param yaw Double
      */
     public void teleport(TpCoord x, TpCoord y, TpCoord z, @Nullable Double pitch, @Nullable Double yaw) {
-        Location loc = getLocation().clone();
-        
+        Location loc = getPlayer().getLocation().clone();
+
         TpCoord.apply(loc, x, y, z);
         if (pitch != null) loc.setPitch(pitch.floatValue());
         if (yaw != null) loc.setYaw(yaw.floatValue());
@@ -782,6 +777,7 @@ public class CorePlayer extends DBPlayer {
      * @return Location
      */
     public Location getSpawnLocation() {
+        /*
         Set<Warp> warps = Warp.getWarps("spawn");
         if (!warps.isEmpty()) {
             Random random = new Random();
@@ -789,6 +785,8 @@ public class CorePlayer extends DBPlayer {
         } else {
             return Core.DEFAULT_WORLD.getSpawnLocation().clone();
         }
+        */
+        return Core.DEFAULT_WORLD.getSpawnLocation().clone();
     }
 
     /**
@@ -831,21 +829,41 @@ public class CorePlayer extends DBPlayer {
     public Checkpoint getCheckpoint() {
         return checkpoint;
     }
-    
-    public GlobalBiome getGlobalBiome() {
-        return globalBiome;
+
+    public GlobalZone getGlobalZone() {
+        return globalZone;
     }
-    
-    public void setGlobalBiome(GlobalBiome globalBiome) {
-        if (this.globalBiome != globalBiome) {
-            GlobalBiome prevBiome = this.globalBiome;
-            this.globalBiome = globalBiome;
-            if (prevBiome == null
-                || prevBiome.getEnvironment() != globalBiome.getEnvironment()) {
-                getPlayer().spigot().respawn();
-            } else {
-                getPlayer().spigot().respawn();
+
+    private GlobalZone zoneChange = null;
+    private boolean isChanging = false;
+    public void setGlobalZone(GlobalZone globalZone) {
+        if (!isInGlobal()) return;
+        if (!globalZone.equals(this.globalZone)) {
+            this.zoneChange = globalZone;
+            if (!isChanging) {
+                isChanging = true;
+                //Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                    if (this.zoneChange.equals(globalZone) && !isInGlobal()) {
+                        this.globalZone = this.zoneChange;
+                        sendTitle(globalZone.getName(), "", 15, 50, 15);
+                        if (!globalZone.isWild()) {
+                            //getPlayer().playSound(getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.25f, 1.5f);
+                        }
+                    }
+                    zoneChange = null;
+                    isChanging = false;
+                    updateLeaves();
+                //}, 80L);
             }
+        }
+        sendHotbarText(globalZone.getName());
+    }
+
+    public void updateLeaves() {
+        if (globalZone == null || globalZone.getLeaves().isEmpty()) {
+            getPlayer().sendExperienceChange(0, 0);
+        } else {
+            getPlayer().sendExperienceChange(Math.min(1.f, getCollectibles().getLeafCount(globalZone.getIdentifier()) / ((float) globalZone.getLeaves().size())), 0);
         }
     }
 
@@ -910,7 +928,14 @@ public class CorePlayer extends DBPlayer {
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
-    
+
+    public void sendHotbarText(String text) {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
+        packet.getChatTypes().write(0, EnumWrappers.ChatType.GAME_INFO);
+        packet.getChatComponents().write(0, WrappedChatComponent.fromText(text));
+        Core.sendPacket(this, packet);
+    }
+
     public int getInvSwap() {
         return invSwap;
     }
@@ -922,13 +947,14 @@ public class CorePlayer extends DBPlayer {
     public void removeInvSwap() {
         invSwap--;
     }
-
+    
+    private int invSwap = 0;
     /**
      * Set player's current InventoryMenuContainer
      *
-     * @param inventoryMenuContainer InventoryMenuContainer
+     * @param inventoryMenuChest InventoryMenuContainer
+     * @param initialize Should Call OpenFunction
      */
-    private int invSwap = 0;
     public void setInventoryMenuChest(InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
         if (inventoryMenuChest != null) {
             invSwap++;
@@ -950,10 +976,8 @@ public class CorePlayer extends DBPlayer {
     public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {
         invSwap++;
         ItemStack item = getPlayer().getItemOnCursor();
-        if (item != null) {
-            getPlayer().getInventory().addItem(item);
-            getPlayer().setItemOnCursor(null);
-        }
+        getPlayer().getInventory().addItem(item);
+        getPlayer().setItemOnCursor(null);
         inventoryMenuAnvil.open(this);
         this.inventoryMenuContainer = inventoryMenuAnvil;
     }
@@ -995,9 +1019,9 @@ public class CorePlayer extends DBPlayer {
             if (inventoryMenuItem.hasLinkedContainer()) {
                 ItemStack item = getPlayer().getItemOnCursor();
                 getPlayer().setItemOnCursor(null);
-                inventoryMenuItem.getLinkedContainer().open(this);
+                inventoryMenuItem.getLinkedChest().open(this);
                 getPlayer().setItemOnCursor(item);
-                inventoryMenuContainer = inventoryMenuItem.getLinkedContainer();
+                inventoryMenuContainer = inventoryMenuItem.getLinkedChest();
             } else {
                 getPlayer().closeInventory();
                 inventoryMenuContainer = null;
@@ -1124,6 +1148,14 @@ public class CorePlayer extends DBPlayer {
     public final boolean isInGlobal() {
        return !isInBattle() && !isInBuildWorld();
     }
+
+    public final boolean canJoinBattle() {
+        return (battle == null || battleState != BattleState.BATTLER || battle instanceof BonanzaBattle);
+    }
+
+    public final boolean isMenuAvailable() {
+        return (!isInBattle() || getBattleState() != BattleState.BATTLER);
+    }
     
     /**
      * Returns a reversed list of the FakeWorlds for prioritizing interactions
@@ -1131,9 +1163,7 @@ public class CorePlayer extends DBPlayer {
      * @return Sorted FakeWorld List
      */
     public final Iterator<FakeWorld<?>> getFakeWorlds() {
-        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
-        Collections.reverse(fakeWorldList);
-        return fakeWorldList.iterator();
+        return fakeWorlds.iterator();
     }
     
     public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
@@ -1165,7 +1195,7 @@ public class CorePlayer extends DBPlayer {
      * @param exitLocation Location to attempt to teleport player to
      */
     public final void leaveBattle(Location exitLocation) {
-        if (battleState != BattleState.SPECTATOR_GLOBAL) {
+        if (battleState != BattleState.SPECTATOR_GLOBAL && Core.getInstance().getServerType().equals(Core.ServerType.LOBBY)) {
             loadPregameState(exitLocation);
         }
         this.battle = null;
@@ -1232,6 +1262,24 @@ public class CorePlayer extends DBPlayer {
         } else {
             return getPlayer().getInventory().getContents();
         }
+    }
+
+    /**
+     * Returns item in main hand
+     *
+     * @return
+     */
+    public final ItemStack getHeldItem() {
+        return getPlayer().getInventory().getItemInMainHand();
+    }
+
+    /**
+     * Sets an item the player's main hand
+     * 
+     * @param itemStack
+     */
+    public final void setHeldItem(ItemStack itemStack) {
+        getPlayer().getInventory().setItemInMainHand(itemStack);
     }
     
     /**

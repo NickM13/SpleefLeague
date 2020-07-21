@@ -26,14 +26,15 @@ public class EntityPetOwl extends EntityPet {
         this.goalSelector.a(6, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
         this.goalSelector.a(7, new PathfinderGoalRandomLookaround(this));
     }
-    
+
+    /*
     @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(10.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.20000000298023224D);
         this.getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(20);
     }
+     */
     
     public PetOwner getOwner() {
         return owner;

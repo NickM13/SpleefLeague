@@ -7,19 +7,20 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.entity.Player;
 
 /**
  * @author NickM13
  */
-public class ReplyCommand extends CommandTemplate {
+public class ReplyCommand extends CoreCommand {
     
     public ReplyCommand() {
-        super(ReplyCommand.class, "reply", Rank.DEFAULT);
+        super("reply", Rank.DEFAULT);
         addAlias("r");
         setUsage("/reply <message>");
     }
@@ -33,7 +34,7 @@ public class ReplyCommand extends CommandTemplate {
         CorePlayer receiver = Core.getInstance().getPlayers().get(player);
         if (receiver == null) {
             error(sender, "Issue replying to player!");
-        } else if (!receiver.isOnline()) {
+        } else if (receiver.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
             error(sender, receiver.getDisplayName() + " is offline!");
         } else {
             Core.getInstance().sendTell(sender, receiver, message);

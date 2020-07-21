@@ -21,36 +21,15 @@ import org.bukkit.Material;
  */
 public class Key extends Holdable {
     
-    private static MongoCollection<Document> keyCol;
-    
     public static void init() {
         Vendorable.registerVendorableType(Key.class);
-        
-        keyCol = Core.getInstance().getPluginDB().getCollection("KeyItems");
-        keyCol.find().iterator().forEachRemaining(doc -> {
-            Key keyItem = new Key();
-            keyItem.load(doc);
-        });
     }
     
     public static void close() {
-        Vendorables.getAll(Key.class).forEach((id, key) -> {
-            keyCol.deleteMany(new Document("identifer", id));
-            keyCol.insertOne(key.save());
-        });
+
     }
     
-    public static Key createKeyItem(String identifier, String name, Integer damage) {
-        Key key;
-        if ((key = Vendorables.get(Key.class, identifier)) != null) {
-            return key;
-        }
-        key = new Key(identifier, name, damage);
-        Vendorables.register(key);
-        return key;
-    }
-    
-    private static final Material DEFAULT_KEY_MAT = Material.DIAMOND_AXE;
+    private static final Material DEFAULT_KEY_MAT = Material.BARRIER;
     
     /**
      * Constructor for DB loading
@@ -64,27 +43,12 @@ public class Key extends Holdable {
      *
      * @param identifier Identifier String
      * @param name Display Name
-     * @param damage Damage
      */
-    public Key(String identifier, String name, Integer damage) {
+    public Key(String identifier, String name) {
         super(true);
         this.identifier = identifier;
         this.name = name;
-        this.description = "";
         this.material = DEFAULT_KEY_MAT;
-        this.setDamageNbt(damage);
-        this.coinCost = 0;
-        updateDisplayItem();
-    }
-    
-    @Override
-    public void afterLoad() {
-        super.afterLoad();
-    }
-    
-    public void saveKeyItem() {
-        keyCol.deleteMany(new Document("identifier", getIdentifier()));
-        keyCol.insertOne(save());
     }
     
     /**

@@ -19,8 +19,7 @@ public class AfkHotbar {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(40, "afkitem")
                 .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "AFK")
                 .setDescription("You're AFK!")
-                .setDisplayItem(Material.DIAMOND_HOE, 253)
-                .setAction(cp -> { cp.setInventoryMenuItem(getItemHotbar()); })
+                .setDisplayItem(Material.BARRIER, 5400)
                 .setAvailability(CorePlayer::isAfk);
     }
     

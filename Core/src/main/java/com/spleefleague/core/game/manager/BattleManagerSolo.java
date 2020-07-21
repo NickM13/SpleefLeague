@@ -7,6 +7,8 @@
 package com.spleefleague.core.game.manager;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -30,55 +32,40 @@ public class BattleManagerSolo extends BattleManager {
     }
     
     @Override
-    public int queuePlayer(CorePlayer cp) {
-        startMatch(Lists.newArrayList(cp), "");
-        return 0;
-    }
-    
-    @Override
-    public int queuePlayer(CorePlayer cp, Arena arena) {
-        if (arena == null) {
-            return queuePlayer(cp);
-        } else {
-            if (!arena.isAvailable()) {
-                Core.getInstance().sendMessage(cp, arena.getDisplayName() + " is currently disabled.");
-                return 3;
-            } else {
-                startMatch(Lists.newArrayList(cp), arena.getName());
-                return 0;
-            }
-        }
-    }
-    
-    @Override
-    public void checkQueue() {
-    
-    }
-    
-    @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);
         if (arena == null) {
-            CoreLogger.logError("Tried to start match on null arena " + arenaName);
+            CoreLogger.logError("", new NullPointerException("Null arena: " + arenaName));
             return;
         }
         Battle<?> battle;
-        List<CorePlayer> playersFull = new ArrayList<>();
-        playersFull = players;
-        for (CorePlayer cp : playersFull) {
+        for (CorePlayer cp : players) {
             Party party = cp.getParty();
             if (party != null) {
                 party.leave(cp);
             }
-            if (cp.isInBattle()) {
-                CoreLogger.logError("Player " + cp.getDisplayName() + " is already in a battle!");
+            if (!cp.canJoinBattle()) {
+                CoreLogger.logError("Player " + cp.getDisplayName() + " is already in a battle!", null);
                 Core.getInstance().unqueuePlayerGlobally(cp);
                 return;
             }
         }
         try {
             if (arena.isAvailable()) {
-                for (CorePlayer cp : playersFull) {
+                ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+                output.writeUTF(mode.getName());
+                output.writeUTF(arena.getIdentifier());
+
+                output.writeInt(players.size());
+                for (CorePlayer cp : players) {
+                    Core.getInstance().unqueuePlayerGlobally(cp);
+                    output.writeUTF(cp.getUniqueId().toString());
+                }
+
+                players.get(0).getPlayer().sendPluginMessage(Core.getInstance(), "battle:start", output.toByteArray());
+                /*
+                for (CorePlayer cp : players) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
                 battle = battleClass
@@ -86,6 +73,7 @@ public class BattleManagerSolo extends BattleManager {
                         .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);
+                 */
             }
         } catch (Exception e) {
             e.printStackTrace();

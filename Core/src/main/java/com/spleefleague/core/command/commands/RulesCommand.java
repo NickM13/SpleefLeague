@@ -7,17 +7,17 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class RulesCommand extends CommandTemplate {
+public class RulesCommand extends CoreCommand {
     
     public RulesCommand() {
-        super(RulesCommand.class, "rules", Rank.DEFAULT);
+        super("rules", Rank.DEFAULT);
         setDescription("Read the rules of the server");
     }
     

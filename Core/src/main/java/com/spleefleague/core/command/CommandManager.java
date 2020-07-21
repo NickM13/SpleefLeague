@@ -19,8 +19,7 @@ import org.bukkit.command.CommandMap;
  * @author NickM13
  */
 public class CommandManager {
-    
-    private final ArrayList<CommandTemplate> commandsToRegister = new ArrayList<>();
+
     private CommandMap commandMap = null;
     
     public CommandManager() {
@@ -34,15 +33,8 @@ public class CommandManager {
         }
     }
     
-    public void flushRegisters() {
-        for (CommandTemplate ct : commandsToRegister) {
-            commandMap.register(ct.getContainer(), ct);
-        }
-        commandsToRegister.clear();
-    }
-    
-    public void addCommand(CommandTemplate command) {
-        commandsToRegister.add(command);
+    public void addCommand(CoreCommand command) {
+        commandMap.register(command.getContainer(), command);
     }
     
 }

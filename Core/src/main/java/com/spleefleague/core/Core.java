@@ -9,17 +9,20 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.credits.Credits;
+import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.listener.*;
@@ -43,12 +46,21 @@ import java.util.logging.Logger;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
+import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 
 /**
  * SpleefLeague's Core Plugin
@@ -62,7 +74,6 @@ public class Core extends CorePlugin<CorePlayer> {
     private static Core instance;
 
     private QueueManager queueManager;
-    private QueueRunnable qrunnable;
 
     // Command manager, contains list of all commands
     // and registers them to the server
@@ -81,6 +92,7 @@ public class Core extends CorePlugin<CorePlayer> {
         protocolManager = ProtocolLibrary.getProtocolManager();
     
         CorePlugin.initMongo();
+        initConfig();
         setPluginDB("SpleefLeague");
 
         Credits.init();
@@ -94,13 +106,15 @@ public class Core extends CorePlugin<CorePlayer> {
         CorePlayerOptions.init();
         FakeWorld.init();
         Arenas.init();
-
-        // Initialize listeners
-        initListeners();
+        NoteBlockMusic.init();
+        GlobalZone.init();
 
         // Initialize manager
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
         commandManager = new CommandManager();
+
+        // Initialize listeners
+        initListeners();
 
         // Initialize various things
         initQueues();
@@ -112,9 +126,8 @@ public class Core extends CorePlugin<CorePlayer> {
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (CorePlayer cp : getPlayers().getAll()) {
+            for (CorePlayer cp : getPlayers().getOnline()) {
                 cp.checkAfk();
-                cp.checkBiome();
                 cp.checkTempRanks();
                 cp.checkGlobalSpectate();
             }
@@ -134,7 +147,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Vendors.close();
         Tickets.close();
         Leaderboards.close();
-        qrunnable.close();
+        NoteBlockMusic.close();
         playerManager.close();
         running = false;
         ProtocolLibrary.getPlugin().onDisable();
@@ -156,6 +169,18 @@ public class Core extends CorePlugin<CorePlayer> {
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
         Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
+
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:score");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:end");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:create");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:join");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:leave");
+
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:chat", new ChatPluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:refresh", new RefreshPluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:score", new RefreshPluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new RefreshPluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "battle:start", new BattlePluginListener());
     }
     
     /**
@@ -165,22 +190,54 @@ public class Core extends CorePlugin<CorePlayer> {
      * Does not work with sub-plugins
      */
     private void initCommands() {
-        Reflections reflections = new Reflections("com.spleefleague.core.command.commands");
-        
-        Set<Class<? extends CommandTemplate>> subTypes = reflections.getSubTypesOf(CommandTemplate.class);
-        
+        List<ClassLoader> classLoadersList = new LinkedList<>();
+        classLoadersList.add(ClasspathHelper.staticClassLoader());
+
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new SubTypesScanner(true), new ResourcesScanner())
+                .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])))
+                .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix("com.spleefleague.core.command.commands"))));
+
+        initCommands(reflections);
+    }
+
+    public void initCommands(Reflections reflections) {
+        Set<Class<? extends CoreCommand>> subTypes = reflections.getSubTypesOf(CoreCommand.class);
+
         subTypes.forEach(st -> {
             try {
                 addCommand(st.getConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException
-                    | NoSuchMethodException | InvocationTargetException exception) {
-                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, exception);
+                    | NoSuchMethodException | InvocationTargetException ignored) {
+                //Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, exception);
             }
         });
-
-        commandManager.flushRegisters();
     }
-    
+
+    public enum ServerType {
+        LOBBY,
+        MINIGAME
+    }
+    private ServerType serverType = ServerType.MINIGAME;
+
+    /**
+     * Parse plugin's config.yml file
+     */
+    public void initConfig() {
+        FileConfiguration config = this.getConfig();
+        if (config.getString("serverType") == null) {
+            config.addDefault("serverType", ServerType.MINIGAME.toString());
+        } else {
+            serverType = ServerType.valueOf(config.getString("serverType"));
+        }
+        config.options().copyDefaults(false);
+        saveConfig();
+    }
+
+    public ServerType getServerType() {
+        return serverType;
+    }
+
     /**
      * Initialize menus
      */
@@ -196,16 +253,16 @@ public class Core extends CorePlugin<CorePlayer> {
      *
      * @param cp Core Player
      */
-    public void returnToWorld(CorePlayer cp) {
+    public void applyVisibilities(CorePlayer cp) {
+        if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         if (cp.isVanished()) {
             cp.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
         } else {
             cp.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
         }
-        // TODO: Probably better way to do this, trying to avoid as much spigot as possible
-        // See and become visible to all players outside of games
+        // See and become seen by all players outside of games
         // getOnline doesn't return vanished players
-        for (CorePlayer cp2 : getPlayers().getAll()) {
+        for (CorePlayer cp2 : getPlayers().getOnline()) {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle()
                         && cp.getBuildWorld() == cp2.getBuildWorld()) {
@@ -217,6 +274,20 @@ public class Core extends CorePlugin<CorePlayer> {
                     cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 }
             }
+        }
+    }
+
+    public void returnToHub(CorePlayer cp) {
+        Player p = cp.getPlayer();
+        if (p != null) {
+            ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+            output.writeUTF("Connect");
+            output.writeUTF("lobby");
+
+            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                p.sendPluginMessage(Core.getInstance(), "BungeeCord", output.toByteArray());
+            }, 20L);
         }
     }
 
@@ -236,18 +307,21 @@ public class Core extends CorePlugin<CorePlayer> {
                         case ADD_PLAYER:
                             cp = Core.getInstance().getPlayers().get(packet.getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID());
                             if (!cp.isVanished()) {
+                                // TODO: Add this back
+                                /*
                                 packet.getPlayerInfoDataLists().write(0, Lists.newArrayList(new PlayerInfoData(
                                         packet.getPlayerInfoDataLists().read(0).get(0).getProfile(),
                                         packet.getPlayerInfoDataLists().read(0).get(0).getLatency(),
                                         packet.getPlayerInfoDataLists().read(0).get(0).getGameMode(),
                                         WrappedChatComponent.fromText(cp.getDisplayName()))));
+                                 */
                             } else {
                                 pe.setCancelled(true);
                             }
                             break;
                         case REMOVE_PLAYER:
                             cp = Core.getInstance().getPlayers().get(packet.getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID());
-                            if (cp != null && cp.isOnline() && !cp.isVanished()) {
+                            if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE && !cp.isVanished()) {
                                 pe.setCancelled(true);
                             }
                             break;
@@ -303,7 +377,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param packet Packet Container
      */
     public static void sendPacketAll(PacketContainer packet) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
             sendPacket(cp, packet);
         }
     }
@@ -315,8 +389,9 @@ public class Core extends CorePlugin<CorePlayer> {
         queueManager = new QueueManager();
         queueManager.initialize();
 
-        qrunnable = new QueueRunnable();
-        Bukkit.getScheduler().runTaskTimer(getInstance(), qrunnable, 0L, qrunnable.getDelayTicks());
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            queueManager.getQueues().forEach(PlayerQueue::checkQueue);
+        }, 0L, 20L);
     }
 
     /**
@@ -378,7 +453,7 @@ public class Core extends CorePlugin<CorePlayer> {
     public List<CorePlayer> getPlayersInRadius(Location loc, Double minDist, Double maxDist) {
         List<CorePlayer> cpList = new ArrayList<>();
 
-        for (CorePlayer cp1 : playerManager.getAll()) {
+        for (CorePlayer cp1 : playerManager.getOnline()) {
             if (loc.getWorld() != null
                     && loc.getWorld().equals(cp1.getLocation().getWorld())
                     && loc.distance(cp1.getLocation()) >= minDist
@@ -406,15 +481,8 @@ public class Core extends CorePlugin<CorePlayer> {
      *
      * @param command CommandTemplate
      */
-    public void addCommand(CommandTemplate command) {
+    public void addCommand(CoreCommand command) {
         commandManager.addCommand(command);
-    }
-
-    /**
-     * Push all newly registered commands through
-     */
-    public void flushCommands() {
-        commandManager.flushRegisters();
     }
 
     /**
@@ -625,6 +693,7 @@ public class Core extends CorePlugin<CorePlayer> {
         sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
         target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
         target.setReply(sender.getPlayer());
+        target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     }
 
     /**

@@ -6,9 +6,11 @@
 
 package com.spleefleague.core.util.variable;
 
-import com.spleefleague.core.database.variable.DBVariable;
+import com.spleefleague.coreapi.database.variable.DBVariable;
+
 import java.time.Instant;
 import java.util.Date;
+import java.util.Random;
 import java.util.TimeZone;
 
 /**
@@ -18,6 +20,9 @@ public class Day extends DBVariable<Integer> {
     
     private static final TimeZone timeZone = TimeZone.getTimeZone("PST");
     private int day;
+    
+    private static int dailyRandomDay = 0;
+    private static int dailyRandom;
     
     public static int asDay(long millis) {
         int day = (int) (millis / 1000 / 60 / 60 / 24);
@@ -62,6 +67,14 @@ public class Day extends DBVariable<Integer> {
     
     public int getDay() {
         return day;
+    }
+    
+    public static int getDailyRandom() {
+        if (dailyRandomDay != getCurrentDay()) {
+            dailyRandomDay = getCurrentDay();
+            dailyRandom = new Random(dailyRandomDay).nextInt();
+        }
+        return dailyRandom;
     }
 
     @Override

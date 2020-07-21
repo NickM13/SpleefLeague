@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -19,10 +19,10 @@ import java.util.Set;
 /**
  * @author NickM13
  */
-public class CancelAllCommand extends CommandTemplate {
+public class CancelAllCommand extends CoreCommand {
     
     public CancelAllCommand() {
-        super(CancelAllCommand.class, "cancelall", Rank.SENIOR_MODERATOR);
+        super("cancelall", Rank.SENIOR_MODERATOR);
         setUsage("/cancelall");
         setDescription("Cancel all ongoing matches");
     }
@@ -36,7 +36,7 @@ public class CancelAllCommand extends CommandTemplate {
     @CommandAnnotation
     public void cancelall(CorePlayer sender) {
         Set<Battle> battles = new HashSet<>();
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAll()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
             battles.add(cp.getBattle());
         }
         for (Battle battle : battles) {

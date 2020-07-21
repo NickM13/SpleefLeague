@@ -9,11 +9,7 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayerCollectibles;
-import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.hat.Hat;
-import com.spleefleague.core.player.collectible.pet.Pet;
-import com.spleefleague.core.vendor.Vendorable;
-import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.Material;
 
 /**
@@ -30,7 +26,7 @@ public class HatMenu {
                 .setDescription("Pick a hat, any hat!")
                 .createLinkedContainer("Hats");
 
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedContainer(), true);
+        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedChest(), true);
     }
     
     /**

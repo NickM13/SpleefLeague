@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import javax.annotation.Nullable;
@@ -18,10 +18,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author NickM13
  */
-public class UnmuteCommand extends CommandTemplate {
+public class UnmuteCommand extends CoreCommand {
     
     public UnmuteCommand() {
-        super(UnmuteCommand.class, "unmute", Rank.MODERATOR);
+        super("unmute", Rank.MODERATOR);
     }
     
     @CommandAnnotation

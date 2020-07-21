@@ -112,7 +112,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void endRound(BP winner) {
         winner.addRoundWin();
         if (winner.getRoundWins() < playToPoints) {
-            Core.getInstance().sendMessage(chatGroup, Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
+            chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
             startRound();
         } else {
             endBattle(winner);
@@ -155,6 +155,16 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         } else if (remainingPlayers.size() == 1) {
             endRound(remainingPlayers.iterator().next());
         }
+    }
+    
+    /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
+    
     }
     
     /**

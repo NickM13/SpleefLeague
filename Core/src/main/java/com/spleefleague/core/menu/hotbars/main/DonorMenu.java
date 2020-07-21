@@ -10,6 +10,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 /**
@@ -21,11 +22,10 @@ public class DonorMenu {
     
     public static void init() {
         menuItem = InventoryMenuAPI.createItem()
-                .setName("Donor Warps")
+                .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "SpleefLeague Store")
                 .setDisplayItem(Material.EMERALD)
-                .setDescription("Warps to the donations room")
-                .setAvailability(cp -> cp.getRank().hasPermission(Rank.DONOR_1))
-                .setAction(cp -> { cp.warp(Warp.getWarp("Donator")); });
+                .setDescription("")
+                .createLinkedContainer("SpleefLeague Store");
     }
     
     /**

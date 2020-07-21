@@ -15,12 +15,16 @@ import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -75,14 +79,14 @@ public class ConnectionListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         CorePlayer cp1 = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (cp1.isVanished()) {
+        //if (cp1.isVanished()) {
             event.setJoinMessage("");
-        }
+        //}
         if (!cp1.getRank().hasPermission(Rank.MODERATOR)) {
             cp1.gotoSpawn();
         }
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-            for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
+            for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
                 if (!cp2.getPlayer().equals(cp1.getPlayer()) && cp2.isInBattle()) {
                     cp2.getPlayer().hidePlayer(Core.getInstance(), cp1.getPlayer());
                     cp1.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
@@ -94,32 +98,29 @@ public class ConnectionListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (cp.isVanished()) {
+        //if (cp.isVanished()) {
             event.setQuitMessage("");
-        }
-        cp.close();
+        //}
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO);
         packet.getPlayerInfoAction().write(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
-        packet.getPlayerInfoDataLists().write(0, Lists.newArrayList(new PlayerInfoData(
+        List<PlayerInfoData> playerInfoDataList = new ArrayList<>();
+        playerInfoDataList.add(new PlayerInfoData(
                 WrappedGameProfile.fromPlayer(event.getPlayer()),
                 1,
                 EnumWrappers.NativeGameMode.fromBukkit(cp.getPlayer().getGameMode()),
-                WrappedChatComponent.fromText(cp.getDisplayName()))));
+                WrappedChatComponent.fromText(cp.getDisplayName())));
+        packet.getPlayerInfoDataLists().write(0, playerInfoDataList);
         
         Core.sendPacketAll(packet);
-        
-        
-        if (cp.isInBattle()) {
-            cp.getBattle().leavePlayer(cp);
-        }
     }
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
         if (event == null) {
-            CoreLogger.logWarning("PlayerResourcePackStatusEvent was null! ConnectionListener.java");
+            CoreLogger.logWarning(null, new NullPointerException("PlayerResourcePackStatusEvent null"));
             return;
         }
+        /*
         switch (event.getStatus()) {
             case DECLINED:
                 Core.getInstance().sendMessage(event.getPlayer(), "It's suggested that you use the resource pack " +
@@ -130,6 +131,7 @@ public class ConnectionListener implements Listener {
                         "out and back in!");
                 break;
         }
+        */
     }
     
 }

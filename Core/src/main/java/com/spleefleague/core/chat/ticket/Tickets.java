@@ -66,7 +66,7 @@ public class Tickets {
     public static void save() {
         List<Document> docs = new ArrayList<>();
         for (Ticket ticket : newTickets) {
-            docs.add(ticket.save());
+            docs.add(ticket.toDocument());
         }
         if (!docs.isEmpty()) ticketCollection.insertMany(docs);
         newTickets.clear();

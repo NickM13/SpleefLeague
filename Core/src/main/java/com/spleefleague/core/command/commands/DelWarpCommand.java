@@ -7,8 +7,9 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
@@ -16,19 +17,21 @@ import com.spleefleague.core.util.variable.Warp;
 /**
  * @author NickM13
  */
-public class DelWarpCommand extends CommandTemplate {
+public class DelWarpCommand extends CoreCommand {
 
     public DelWarpCommand() {
-        super(DelWarpCommand.class, "delwarp", Rank.MODERATOR, Rank.BUILDER);
+        super("delwarp", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/delwarp <warp>");
         setDescription("Delete a warp");
+        setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");
     }
     
     @CommandAnnotation
-    public void delwarp(CorePlayer sender, String warp) {
-        if (Warp.delWarp(warp)) {
-            success(sender, "You have deleted a warp: " + Chat.INFO + warp);
+    public void delwarp(CorePlayer sender,
+                        @OptionArg(listName="warpList") String warpName) {
+        if (Warp.delWarp(warpName)) {
+            success(sender, "You have deleted a warp: " + Chat.INFO + warpName);
         } else {
             error(sender, "Warp does not exist, try /warps");
         }

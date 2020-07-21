@@ -6,23 +6,24 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.chat.ChatUtils;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.chat.ChatUtils;
+import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.command.annotation.CorePlayerArg;
+import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class PartyCommand extends CommandTemplate {
+public class PartyCommand extends CoreCommand {
     
     public PartyCommand() {
-        super(PartyCommand.class, "party", Rank.DEFAULT);
+        super("party", Rank.DEFAULT);
         setUsage("/party");
         setDescription("Party commands");
         
@@ -43,16 +44,11 @@ public class PartyCommand extends CommandTemplate {
     @CommandAnnotation
     public void partyJoin(CorePlayer sender,
             @LiteralArg("join") String join,
-            CorePlayer receiver) {
+            @CorePlayerArg(allowSelf = false) CorePlayer receiver) {
         Party party = receiver.getParty();
         if (party != null &&
                 sender.getParty() == null) {
             success(sender, "You requested to join " + receiver.getDisplayName() + "'s party");
-            /*
-            ChatRequest.createRequest(sender.getName() + " wants to join your party", "Click to accept join request", "/party accept ", sender, receiver, (s, r) -> {
-                party.add(s);
-            }, 120);
-            */
             Chat.sendRequest(sender.getDisplayName() + " wants to join your party!", receiver, sender, (r, s) -> {
                 r.getParty().add(s);
             });
@@ -73,11 +69,7 @@ public class PartyCommand extends CommandTemplate {
     @CommandAnnotation
     public void partyInvite(CorePlayer sender,
             @LiteralArg("invite") String invite,
-            CorePlayer receiver) {
-        if (sender.equals(receiver)) {
-            error(sender, "You can't invite yourself!");
-            return;
-        }
+            @CorePlayerArg(allowSelf = false) CorePlayer receiver) {
         if (sender.getParty() == null) {
             partyCreate(sender, "create");
         }
@@ -96,14 +88,10 @@ public class PartyCommand extends CommandTemplate {
         }
     }
     
-    @CommandAnnotation(minRank="DEVELOPER")
+    @CommandAnnotation(minRank = "DEVELOPER")
     public void partyForceInvite(CorePlayer sender,
-            @LiteralArg(value="forceinvite") String invite,
+            @LiteralArg("forceinvite") String invite,
             CorePlayer receiver) {
-        if (sender.equals(receiver)) {
-            error(sender, "You can't invite yourself!");
-            return;
-        }
         if (sender.getParty() == null) {
             partyCreate(sender, "create");
         }
@@ -122,12 +110,8 @@ public class PartyCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void partyKick(CorePlayer sender,
-            @LiteralArg(value="kick") String kick,
-            CorePlayer receiver) {
-        if (sender.equals(receiver)) {
-            error(sender, "You can't kick yourself!");
-            return;
-        }
+            @LiteralArg("kick") String kick,
+            @CorePlayerArg(allowSelf = false) CorePlayer receiver) {
         Party party = sender.getParty();
         if (party != null) {
             if (party.getOwner().equals(sender)) {
@@ -144,7 +128,7 @@ public class PartyCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void partyLeave(CorePlayer sender,
-            @LiteralArg(value="leave") String leave) {
+            @LiteralArg("leave") String leave) {
         Party party = sender.getParty();
         if (party != null) {
             party.leave(sender);
@@ -155,8 +139,8 @@ public class PartyCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void partyOwner(CorePlayer sender,
-            @LiteralArg(value="owner") String owner,
-            CorePlayer receiver) {
+            @LiteralArg("owner") String owner,
+            @CorePlayerArg(allowSelf = false) CorePlayer receiver) {
         Party party = sender.getParty();
         if (party != null) {
             if (party == receiver.getParty()) {
@@ -175,11 +159,11 @@ public class PartyCommand extends CommandTemplate {
     
     @CommandAnnotation
     public void partyList(CorePlayer sender,
-            @LiteralArg(value="list") String list) {
+            @LiteralArg("list") String list) {
         Party party = sender.getParty();
         if (party != null) {
             sender.sendMessage(party.getPlayersFormatted());
         }
     }
-
+    
 }

@@ -1,6 +1,7 @@
 package com.spleefleague.splegg.util;
 
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.splegg.game.SpleggArena;
@@ -31,7 +32,7 @@ public class SpleggUtils {
         GameWorld gameWorld = battle.getGameWorld();
         gameWorld.clear();
         for (BuildStructure structure : battle.getArena().getStructures()) {
-            gameWorld.setBlocks(structure.getOriginPos(), structure.getFakeBlocks());
+            gameWorld.overwriteBlocks(FakeUtils.translateBlocks(structure.getFakeBlocks(), structure.getOriginPos()));
         }
     }
 

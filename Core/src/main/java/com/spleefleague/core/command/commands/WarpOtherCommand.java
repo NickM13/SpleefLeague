@@ -6,9 +6,9 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.OptionArg;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
@@ -18,10 +18,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author NickM13
  */
-public class WarpOtherCommand extends CommandTemplate {
+public class WarpOtherCommand extends CoreCommand {
     
     public WarpOtherCommand() {
-        super(WarpOtherCommand.class, "warpother", Rank.MODERATOR, Rank.BUILDER);
+        super("warpother", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/warpother <player> <warp>");
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");
@@ -34,8 +34,8 @@ public class WarpOtherCommand extends CommandTemplate {
         Warp warp = Warp.getWarp(warpName);
         if (warp != null) {
             if (cp.warp(warp)) {
-                success(cp, "You were warped to " + warp.getName());
-                success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getName());
+                success(cp, "You were warped to " + warp.getIdentifier());
+                success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
             }
         }
     }
@@ -48,10 +48,10 @@ public class WarpOtherCommand extends CommandTemplate {
         if (warp != null) {
             for (CorePlayer cp : cps) {
                 if (cp.warp(warp)) {
-                    success(cp, "You were warped to " + warp.getName());
+                    success(cp, "You were warped to " + warp.getIdentifier());
                 }
             }
-            success(cs, "Warped others to " + warp.getName());
+            success(cs, "Warped others to " + warp.getIdentifier());
         }
     }
     

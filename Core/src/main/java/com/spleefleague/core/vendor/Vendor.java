@@ -1,14 +1,10 @@
 package com.spleefleague.core.vendor;
 
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuEditor;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.database.variable.DBEntity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -29,9 +30,7 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  */
 public class Vendor extends DBEntity {
-    
-    @DBField
-    private String name;
+
     @DBField
     private String displayName;
     private static class SimpleVendorItem {
@@ -51,9 +50,9 @@ public class Vendor extends DBEntity {
         super();
     }
     
-    public Vendor(String name, String displayName) {
-        this.name = name;
-        this.displayName = displayName;
+    public Vendor(String identifier, String name) {
+        this.identifier = identifier;
+        this.displayName = name;
     }
     
     @DBLoad(fieldName ="items")
@@ -177,7 +176,7 @@ public class Vendor extends DBEntity {
                         }
                     }
                 })
-                .setTitle(this.getName() + "(" + this.getDisplayName() + ")");
+                .setTitle(this.getDisplayName() + "(" + this.getDisplayName() + ")");
         
         cp.setInventoryMenuChest(editor, true);
     }
@@ -207,16 +206,7 @@ public class Vendor extends DBEntity {
         
         return menu;
     }
-    
-    /**
-     * Get the identifying name of Vendor
-     *
-     * @return Name
-     */
-    public String getName() {
-        return name;
-    }
-    
+
     /**
      * Set the display name for Vendor
      *

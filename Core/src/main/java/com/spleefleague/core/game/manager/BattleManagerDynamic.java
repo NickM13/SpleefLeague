@@ -31,84 +31,10 @@ public class BattleManagerDynamic extends BattleManager {
     
     protected static Long DELAY_START_TIME = 1000L;
     
-    protected PlayerQueue queue;
-    
     protected Long delayedStart = null;
     
     public BattleManagerDynamic(BattleMode mode) {
         super(mode);
-        
-        queue = new PlayerQueue();
-        queue.initialize(displayName, this, false);
-    }
-    
-    private ArrayList<CorePlayer> gatherPlayers(int num) {
-        return queue.getMatchedPlayers(num, 1);
-    }
-    
-    @Override
-    public int queuePlayer(CorePlayer cp) {
-        Party party = cp.getParty();
-        if (party == null) {
-            queue.queuePlayer(cp);
-        } else {
-            for (CorePlayer cp2 : party.getPlayers()) {
-                queue.queuePlayer(cp2);
-            }
-        }
-        return 0;
-    }
-    
-    @Override
-    public int queuePlayer(CorePlayer cp, Arena arena) {
-        if (arena == null) {
-            return queuePlayer(cp);
-        } else {
-            if (!arena.isAvailable()) {
-                Core.getInstance().sendMessage(cp, arena.getDisplayName() + " is currently disabled.");
-                return 3;
-            } else {
-                Party party = cp.getParty();
-                if (party == null) {
-                    Core.getInstance().sendMessage(cp, "You must been in a party to join this queue!");
-                    return 1;
-                }
-                if (arena.getTeamSize() != party.getPlayers().size()) {
-                    Core.getInstance().sendMessage(cp, "That arena requires a team size of " + arena.getTeamSize() + "!");
-                    return 2;
-                }
-                queue.queuePlayer(cp, arena);
-                return 0;
-            }
-        }
-    }
-    
-    @Override
-    public void checkQueue() {
-        if (delayedStart != null) {
-            if (delayedStart < System.currentTimeMillis()) {
-                if (queue.getQueueSize() < this.mode.getRequiredTeams()) {
-                    // Some players left, not enough players message :(
-                    delayedStart = null;
-                } else {
-                    if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
-                        int size = Math.max(this.mode.getRequiredTeams(), queue.getQueueSize());
-                        ArrayList<CorePlayer> players = gatherPlayers(size);
-                        if (players != null) {
-                            startMatch(players, queue.getLastArenaName());
-                        }
-                    }
-                }
-                delayedStart = null;
-            } else {
-                Core.getInstance().sendMessage("A " + this.mode.getDisplayName() + " game will be beginning soon! BattleManagerDynamic.java:100");
-            }
-        } else {
-            if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
-                Core.getInstance().sendMessage("A " + this.mode.getDisplayName() + " game will be beginning soon!");
-                delayedStart = System.currentTimeMillis() + DELAY_START_TIME;
-            }
-        }
     }
     
     @Override
@@ -121,7 +47,7 @@ public class BattleManagerDynamic extends BattleManager {
             if (party != null) {
                 party.leave(cp);
             }
-            if (cp.isInBattle()) {
+            if (!cp.canJoinBattle()) {
                 Core.getInstance().unqueuePlayerGlobally(cp);
                 return;
             }
@@ -131,14 +57,14 @@ public class BattleManagerDynamic extends BattleManager {
                 for (CorePlayer cp : players) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
                 }
-                    battle = battleClass
-                            .getDeclaredConstructor(List.class, Arena.class)
-                            .newInstance(players, arena);
+                battle = battleClass
+                        .getDeclaredConstructor(List.class, Arena.class)
+                        .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);
             }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            CoreLogger.logError("A battle failed to begin on arena " + arena.getDisplayName() + "\n" + e.getMessage());
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
+            CoreLogger.logError("A battle failed to begin on arena " + arena.getName(), exception);
         }
     }
 

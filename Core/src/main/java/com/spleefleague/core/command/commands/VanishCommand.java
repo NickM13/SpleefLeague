@@ -14,18 +14,18 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class VanishCommand extends CommandTemplate {
+public class VanishCommand extends CoreCommand {
     
     public VanishCommand() {
-        super(VanishCommand.class, "vanish", Rank.DEVELOPER);
+        super("vanish", Rank.DEVELOPER);
     }
     
     @CommandAnnotation
@@ -52,7 +52,7 @@ public class VanishCommand extends CommandTemplate {
                     WrappedChatComponent.fromText(sender.getDisplayName()))));
             Core.sendPacketAll(packet);
         }
-        Core.getInstance().returnToWorld(sender);
+        Core.getInstance().applyVisibilities(sender);
     }
     
 }

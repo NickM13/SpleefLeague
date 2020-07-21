@@ -99,6 +99,16 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     }
     
     /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
      * Called when a player surrenders (/ff, /leave)
      *
      * @param cp CorePlayer

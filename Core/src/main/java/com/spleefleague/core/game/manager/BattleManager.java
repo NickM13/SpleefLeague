@@ -23,7 +23,7 @@ import java.util.List;
  * 
  * @author NickM13
  */
-public abstract class BattleManager implements QueueContainer {
+public abstract class BattleManager {
     
     /**
      * Returns a new battle manager based on the team style of the passed ArenaMode
@@ -66,7 +66,7 @@ public abstract class BattleManager implements QueueContainer {
      * and updating the field and experience bar for timers
      */
     public void init() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
+        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
             Iterator<? extends Battle<?>> bit = battles.iterator();
             Battle<?> b;
             while (bit.hasNext()) {
@@ -75,7 +75,6 @@ public abstract class BattleManager implements QueueContainer {
                     if (!b.isOngoing()) {
                         bit.remove();
                     } else {
-                        b.updateScoreboard();
                         b.doCountdown();
                     }
                 }
@@ -87,11 +86,25 @@ public abstract class BattleManager implements QueueContainer {
             while (bit.hasNext()) {
                 b = bit.next();
                 if (b != null) {
-                    b.updateExperience();
-                    b.updateField();
+                    if (!b.isWaiting()) {
+                        b.updateScoreboard();
+                        b.updateExperience();
+                    } else {
+                        b.checkWaiting();
+                    }
                 }
             }
         }, 0L, 2L);
+        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            Iterator<? extends Battle<?>> bit = battles.iterator();
+            Battle<?> b;
+            while (bit.hasNext()) {
+                b = bit.next();
+                if (b != null && !b.isWaiting()) {
+                    b.updateField();
+                }
+            }
+        }, 0L, 1L);
     }
     
     /**
@@ -122,18 +135,19 @@ public abstract class BattleManager implements QueueContainer {
     public int getIngamePlayers() {
         int players = 0;
         for (Battle<?> battle : battles) {
-            players += battle.getPlayers().size();
+            players += battle.getBattlers().size();
         }
         return players;
     }
-    
-    public abstract int queuePlayer(CorePlayer cp);
-    public abstract int queuePlayer(CorePlayer cp, Arena arena);
 
-    @Override
-    public abstract void checkQueue();
+    public int getCurrentlyPlaying() {
+        return getIngamePlayers();
+    }
     
     public abstract void startMatch(List<CorePlayer> corePlayers, String name);
+    public void startMatch(Battle<?> battle) {
+        battles.add(battle);
+    }
     public void endMatch(Battle<?> battle) {
         battles.remove(battle);
     }

@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface CorePlayerArg {
+    boolean allowCrossServer() default false;
     boolean allowOffline() default false;
     boolean allowSelf() default true;
 }

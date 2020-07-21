@@ -4,6 +4,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.tool.SelectTool;
 import org.bukkit.GameMode;
@@ -77,10 +78,14 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         buildWorld.destroy();
     }
     
-    public static void removePlayerGlobal(CorePlayer cp) {
-        BuildWorld buildWorld = PLAYER_BUILD_WORLDS.get(cp.getUniqueId());
-        buildWorld.removePlayer(cp);
-        PLAYER_BUILD_WORLDS.remove(cp.getUniqueId());
+    public static boolean removePlayerGlobal(CorePlayer cp) {
+        if (PLAYER_BUILD_WORLDS.containsKey(cp.getUniqueId())) {
+            BuildWorld buildWorld = PLAYER_BUILD_WORLDS.get(cp.getUniqueId());
+            PLAYER_BUILD_WORLDS.remove(cp.getUniqueId());
+            buildWorld.removePlayer(cp);
+            return true;
+        }
+        return false;
     }
     
     private final CorePlayer owner;
@@ -88,7 +93,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     private BlockPosition lowest, highest;
     
     private BuildWorld(World world, CorePlayer owner, BuildStructure structure) {
-        super(world, BuildWorldPlayer.class);
+        super(2, world, BuildWorldPlayer.class);
         this.owner = owner;
         this.structure = structure;
         this.structure.setUnderConstruction(this);
@@ -170,13 +175,11 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
      */
     @Override
     public boolean removePlayer(CorePlayer cp) {
-        if (super.removePlayer(cp)) {
-            if (cp.equals(owner)) {
-                destroy();
-            }
+        if (cp.equals(owner)) {
+            closeBuildWorld(this);
             return true;
         }
-        return false;
+        return super.removePlayer(cp);
     }
 
     public void setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
@@ -209,9 +212,8 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     }
     
     public void shift(BlockPosition shift) {
-        Map<BlockPosition, FakeBlock> prevBlocks = new HashMap<>(fakeBlocks);
-        clear();
-        setBlocks(shift, prevBlocks);
+        Map<BlockPosition, FakeBlock> shiftedBlocks = FakeUtils.translateBlocks(new HashMap<>(fakeBlocks), shift);
+        overwriteBlocks(shiftedBlocks);
     }
     
     public void fill(Dimension fillBox, Material material) {
@@ -224,7 +226,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                 }
             }
         }
-        setBlocks(new BlockPosition(0, 0, 0), fillBlocks);
+        setBlocks(fillBlocks);
     }
 
 }

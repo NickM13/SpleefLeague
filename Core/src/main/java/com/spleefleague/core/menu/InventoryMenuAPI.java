@@ -56,7 +56,8 @@ public class InventoryMenuAPI {
     public static InventoryMenuItemHotbar createItemHotbar(int slot, String hotbarTag) {
         return new InventoryMenuItemHotbar(slot, hotbarTag);
     }
-    
+
+    @Deprecated
     public static InventoryMenuDialog createDialog() {
         return new InventoryMenuDialog();
     }

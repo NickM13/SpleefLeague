@@ -89,6 +89,16 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
     }
     
     /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
      * Called when a player surrenders (/ff, /leave)
      *
      * @param cp CorePlayer
@@ -134,4 +144,5 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
     public void updateExperience() {
     
     }
+
 }

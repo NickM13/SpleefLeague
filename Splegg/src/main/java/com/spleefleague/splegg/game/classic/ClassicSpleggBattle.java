@@ -35,6 +35,9 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     @Override
     public void fillField() {
         SpleggUtils.fillFieldFast(this);
+        for (ClassicSpleggPlayer csp : battlers.values()) {
+            csp.respawn();
+        }
     }
     
     @Override

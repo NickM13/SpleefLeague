@@ -24,7 +24,7 @@ public class PlayerRequest extends Request {
     
     @Override
     public void accept(CorePlayer receiver, String target) {
-        if (isTimedout()) {
+        if (isExpired()) {
             timeout(receiver, target);
         } else {
             action.accept(receiver, Core.getInstance().getPlayers().get(target));

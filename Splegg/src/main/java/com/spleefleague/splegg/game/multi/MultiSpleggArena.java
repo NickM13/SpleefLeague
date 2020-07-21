@@ -20,6 +20,7 @@ import org.bukkit.Material;
 public class MultiSpleggArena extends SpleggArena {
     
     public static void createMenu(int x, int y) {
+        /*
         String mainColor = ChatColor.GREEN + "" + ChatColor.BOLD;
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName(mainColor + "MultiSplegg")
@@ -27,7 +28,8 @@ public class MultiSpleggArena extends SpleggArena {
                 .setDisplayItem(Material.CHICKEN_SPAWN_EGG)
                 .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.MULTI.getBattleMode(), cp));
 
-        Splegg.getInstance().getSpleggMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
+        Splegg.getInstance().getSpleggMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        */
     }
     
 }

@@ -10,8 +10,8 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -25,10 +25,10 @@ import org.bukkit.OfflinePlayer;
 /**
  * @author NickM13
  */
-public class InfractionsCommand extends CommandTemplate {
+public class InfractionsCommand extends CoreCommand {
     
     public InfractionsCommand() {
-        super(InfractionsCommand.class, "infractions", Rank.MODERATOR);
+        super("infractions", Rank.MODERATOR);
         setUsage("/infractions <player> [page]");
         setDescription("View infractions of a player");
     }

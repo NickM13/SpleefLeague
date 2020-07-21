@@ -1,14 +1,10 @@
 package com.spleefleague.core.player.collectible.pet;
 
 import com.spleefleague.core.player.CorePlayer;
-import net.minecraft.server.v1_15_R1.Entity;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
-
-import java.util.UUID;
 
 /**
  * @author NickM13

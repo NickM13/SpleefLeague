@@ -1,7 +1,7 @@
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
@@ -14,10 +14,10 @@ import com.spleefleague.core.player.rank.Rank;
 /**
  * @author NickM13
  */
-public class UrlCommand extends CommandTemplate {
+public class UrlCommand extends CoreCommand {
     
     public UrlCommand() {
-        super(UrlCommand.class, "url", Rank.MODERATOR);
+        super("url", Rank.MODERATOR);
     }
     
     @CommandAnnotation

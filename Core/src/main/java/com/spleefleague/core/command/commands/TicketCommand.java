@@ -6,7 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.chat.ticket.Ticket;
@@ -19,10 +19,10 @@ import org.bukkit.OfflinePlayer;
 /**
  * @author NickM13
  */
-public class TicketCommand extends CommandTemplate {
+public class TicketCommand extends CoreCommand {
     
     public TicketCommand() {
-        super(TicketCommand.class, "ticket", Rank.DEFAULT);
+        super("ticket", Rank.DEFAULT);
         setUsage("/ticket <msg|player|close> [msg|player]");
     }
     

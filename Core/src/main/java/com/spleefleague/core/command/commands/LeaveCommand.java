@@ -6,7 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
@@ -16,10 +16,10 @@ import com.spleefleague.core.world.build.BuildWorld;
 /**
  * @author NickM13
  */
-public class LeaveCommand extends CommandTemplate {
+public class LeaveCommand extends CoreCommand {
     
     public LeaveCommand() {
-        super(LeaveCommand.class, "leave", Rank.DEFAULT);
+        super("leave", Rank.DEFAULT);
         addAlias("l");
         setUsage("/leave");
         setDescription("Leave all queues");
@@ -29,8 +29,7 @@ public class LeaveCommand extends CommandTemplate {
     public void leave(CorePlayer sender) {
         if (sender.isInBattle()) {
             sender.getBattle().leavePlayer(sender);
-        } else if (sender.isInBuildWorld()) {
-            BuildWorld.removePlayerGlobal(sender);
+        } else if (BuildWorld.removePlayerGlobal(sender)) {
             success(sender, "You have left the build world");
         } else if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");

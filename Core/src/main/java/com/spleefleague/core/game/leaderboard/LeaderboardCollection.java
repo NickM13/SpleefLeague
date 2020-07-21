@@ -6,6 +6,9 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.coreapi.game.leaderboard.ActiveLeaderboard;
+import com.spleefleague.coreapi.game.leaderboard.ArchivedLeaderboard;
+import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -85,14 +88,18 @@ public class LeaderboardCollection {
                     }
                     for (int i = 0; i < players.size(); i++) {
                         CorePlayer cp2 = Core.getInstance().getPlayers().getOffline(players.get(i));
-                        container.addMenuItem(InventoryMenuAPI.createItem()
-                                .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + cp2.getName() + " " + cp2.getRatings().getDisplayElo(name, season))
-                                .setDescription(ChatColor.GRAY + "Rank: " + cp2.getRatings().getDisplayDivision(name, season) + ChatColor.YELLOW + " (#" + (i + container.getPageItemTotal() * page + 1) + ")\n"
-                                        + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp2.getRatings().getWins(name, season) + "\n"
-                                        + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp2.getRatings().getLosses(name, season) + "\n"
-                                        + ChatColor.GRAY + "Win Rate: " + cp2.getRatings().getWinPercent(name, season))
-                                .setDisplayItem(InventoryMenuUtils.createCustomSkull(cp2.getUniqueId()))
-                                .setCloseOnAction(false));
+                        if (cp2 != null) {
+                            container.addMenuItem(InventoryMenuAPI.createItem()
+                                    .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + cp2.getName() + " " + cp2.getRatings().getDisplayElo(name, season))
+                                    .setDescription(ChatColor.GRAY + "Rank: " + cp2.getRatings().getDisplayDivision(name, season) + ChatColor.YELLOW + " (#" + (i + container.getPageItemTotal() * page + 1) + ")\n"
+                                            + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp2.getRatings().getWins(name, season) + "\n"
+                                            + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp2.getRatings().getLosses(name, season) + "\n"
+                                            + ChatColor.GRAY + "Win Rate: " + cp2.getRatings().getWinPercent(name, season))
+                                    .setDisplayItem(InventoryMenuUtils.createCustomSkull(cp2.getUniqueId()))
+                                    .setCloseOnAction(false));
+                        } else {
+                            container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Invalid Player"));
+                        }
                     }
                 });
     

@@ -6,7 +6,11 @@
 
 package com.spleefleague.core.world.game;
 
+import com.google.common.collect.Sets;
+import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.*;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketAdapter;
@@ -14,11 +18,14 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.util.variable.RaycastResult;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -26,11 +33,10 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Snow;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Consumer;
-import org.bukkit.util.Vector;
 
 /**
  * @author NickM13
@@ -48,6 +54,25 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
             this.delay = delay;
             this.fakeBlock = fakeBlock;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FutureBlock that = (FutureBlock) o;
+
+            if (delay != that.delay) return false;
+            return Objects.equals(fakeBlock, that.fakeBlock);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (delay ^ (delay >>> 32));
+            result = 31 * result + (fakeBlock != null ? fakeBlock.hashCode() : 0);
+            return result;
+        }
+
     }
 
     /**
@@ -65,25 +90,38 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
 
     protected final Set<Material> breakTools;
     protected final Set<Material> breakables;
-    protected boolean edittable;
+    protected final Set<Material> unbreakables;
+    protected boolean editable;
     
     protected final BukkitTask projectileCollideTask;
-    protected Map<Integer, GameProjectile> projectiles;
+    protected Map<UUID, GameProjectile> projectiles;
     
     protected BukkitTask futureBlockTask;
-    protected final Map<BlockPosition, FutureBlock> futureBlocks;
+    protected final Map<BlockPosition, SortedSet<FutureBlock>> futureBlocks;
+
+    protected final Map<BlockPosition, FakeBlock> baseBlocks;
+    protected final Map<BlockPosition, Long> baseBreakTimes;
+    private static final Long AIR_REGEN = 15 * 1000L;
+    private static final Long CONNECT_REGEN = 30 * 1000L;
+    private static final Long RAND_REGEN = 30 * 1000L;
     
     protected final BukkitTask playerBlastTask;
     protected final List<PlayerBlast> playerBlasts;
+
+    protected final List<BukkitTask> gameTasks;
     
     protected boolean showSpectators;
+    protected final Map<UUID, CorePlayer> targetSpectatorMap = new HashMap<>();
     
     public GameWorld(World world) {
-        super(world, GameWorldPlayer.class);
+        super(1, world, GameWorldPlayer.class);
         breakTools = new HashSet<>();
         breakables = new HashSet<>();
-        edittable = false;
+        unbreakables = Sets.newHashSet(Material.CYAN_CONCRETE, Material.WHITE_STAINED_GLASS);
+        editable = false;
         futureBlocks = new HashMap<>();
+        baseBlocks = new HashMap<>();
+        baseBreakTimes = new HashMap<>();
         projectiles = new HashMap<>();
         
         projectileCollideTask = Bukkit.getScheduler()
@@ -96,28 +134,70 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         playerBlastTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updatePlayerBlasts, 0L, 2L);
+
+        gameTasks = new ArrayList<>();
         
         futureBlockTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updateFutureBlocks, 0L, 2L);
-        
-        addPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
+
+        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
                 Entity entity = packet.getEntityModifier(event).read(0);
-                if (projectiles.containsKey(entity.getEntityId()) &&
+                if (projectiles.containsKey(entity.getUniqueId()) &&
                         !getPlayerMap().containsKey(event.getPlayer().getUniqueId())) {
                     event.setCancelled(true);
                 }
             }
         });
+
+        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.ENTITY_DESTROY) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                PacketContainer packet = event.getPacket();
+                int[] entityIds = packet.getIntegerArrays().read(0);
+                List<Integer> uncancelled = new ArrayList<>();
+                for (int id : entityIds) {
+                    net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
+                    if (entity instanceof EntityPlayer) {
+
+                    } else {
+                        uncancelled.add(id);
+                    }
+                }
+                int[] newIdArray = new int[uncancelled.size()];
+                for (int i = 0; i < uncancelled.size(); i++) {
+                    newIdArray[i] = uncancelled.get(i);
+                }
+                packet.getIntegerArrays().write(0, newIdArray);
+            }
+        });
     }
+    
+    @Override
     public void destroy() {
         super.destroy();
+        projectileCollideTask.cancel();
         futureBlockTask.cancel();
         playerBlastTask.cancel();
         clearProjectiles();
+    }
+    
+    @Override
+    public void clear() {
+        super.clear();
+        reset();
+    }
+
+    public void reset() {
+        futureBlocks.clear();
+        clearProjectiles();
+    }
+
+    public void runTask(BukkitTask task) {
+        gameTasks.add(task);
     }
     
     /**
@@ -132,7 +212,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
         if (!fakeBlocks.containsKey(pos) || fakeBlocks.get(pos).getBlockData().getMaterial().isAir()) return false;
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
-        if (edittable
+        if (editable
                 && breakables.contains(fakeBlocks.get(pos).getBlockData().getMaterial())
                 && breakTools.contains(heldItem.getType())) {
             for (FakeWorldPlayer fwp : playerMap.values()) {
@@ -145,6 +225,22 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
             updateBlock(pos);
         }
         return true;
+    }
+
+    @Override
+    public boolean breakBlock(BlockPosition pos, CorePlayer cp) {
+        FakeBlock fb = fakeBlocks.get(pos);
+        if (fb != null && !unbreakables.contains(fb.getBlockData().getMaterial()) && super.breakBlock(pos, cp)) {
+            futureBlocks.remove(pos);
+            if (cp != null && cp.getBattleState() == BattleState.BATTLER) {
+                cp.getBattle().onBlockBreak(cp);
+            }
+            if (baseBlocks.containsKey(pos)) {
+                baseBreakTimes.put(pos, System.currentTimeMillis() + (long) (Math.random() * RAND_REGEN));
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -161,44 +257,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     }
 
     protected void updateProjectiles() {
-        Iterator<Map.Entry<Integer, GameProjectile>> pit = projectiles.entrySet().iterator();
-        while (pit.hasNext()) {
-            GameProjectile projectile = pit.next().getValue();
-            List<RaycastResult> result = projectile.cast();
-            projectile.getEntity().setVelocity(projectile.getEntity().getVelocity().multiply(projectile.getDrag()));
-            for (RaycastResult rr : result) {
-                if (fakeBlocks.containsKey(rr.blockPos)) {
-                    FakeBlock fb = fakeBlocks.get(rr.blockPos);
-                    if (!fb.getBlockData().getMaterial().equals(Material.AIR)) {
-                        breakBlocks(rr.blockPos, projectile.getProjectile().power);
-                        projectile.bounce();
-                        if (!projectile.hasBounces()) {
-                            projectile.getEntity().remove();
-                            break;
-                        } else {
-                            if (projectile.doesBounce()) {
-                                projectile.getEntity().teleport(new Location(projectile.getEntity().getWorld(),
-                                        rr.intersection.getX(),
-                                        rr.intersection.getY(),
-                                        rr.intersection.getZ()));
-                                projectile.setLastLoc();
-                                switch (rr.axis) {
-                                    case 1: projectile.getEntity().setVelocity(projectile.getEntity().getVelocity().multiply(new Vector(-projectile.getBouncePower(), 1.0, 1.0))); break;
-                                    case 2: projectile.getEntity().setVelocity(projectile.getEntity().getVelocity().multiply(new Vector(1.0, -projectile.getBouncePower(), 1.0))); break;
-                                    case 3: projectile.getEntity().setVelocity(projectile.getEntity().getVelocity().multiply(new Vector(1.0, 1.0, -projectile.getBouncePower()))); break;
-                                }
-                                break;
-                            } else {
-                                projectile.getEntity().setVelocity(projectile.getEntity().getVelocity().multiply(-projectile.getBouncePower()));
-                            }
-                        }
-                    }
-                }
-            }
-            if (projectile.getEntity().isDead()) {
-                pit.remove();
-            }
-        }
+        projectiles.entrySet().removeIf(uuidGameProjectileEntry -> !uuidGameProjectileEntry.getValue().getEntity().isAlive());
     }
 
     protected void updatePlayerBlasts() {
@@ -216,19 +275,23 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     }
 
     protected void updateFutureBlocks() {
-        Iterator<Map.Entry<BlockPosition, GameWorld.FutureBlock>> it = futureBlocks.entrySet().iterator();
+        Iterator<Map.Entry<BlockPosition, SortedSet<FutureBlock>>> it = futureBlocks.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<BlockPosition, GameWorld.FutureBlock> e = it.next();
-            e.getValue().delay -= 2;
-            if (e.getValue().delay <= 0) {
-                setBlock(e.getKey(), e.getValue().fakeBlock.getBlockData());
-                updateBlock(e.getKey());
-                it.remove();
-            } else if (e.getValue().delay < 15 && e.getValue().fakeBlock.getBlockData().getMaterial().equals(Material.SNOW_BLOCK)) {
-                Snow snow = (Snow) Material.SNOW.createBlockData();
-                snow.setLayers((int)(8 - (e.getValue().delay / 2)));
-                setBlock(e.getKey(), snow);
-                updateBlock(e.getKey());
+            Map.Entry<BlockPosition, SortedSet<FutureBlock>> futureList = it.next();
+            Iterator<FutureBlock> fbit = futureList.getValue().iterator();
+            while (fbit.hasNext()) {
+                FutureBlock futureBlock = fbit.next();
+                futureBlock.delay -= 2;
+                if (futureBlock.delay <= 0) {
+                    setBlock(futureList.getKey(), futureBlock.fakeBlock.getBlockData());
+                    updateBlock(futureList.getKey());
+                    fbit.remove();
+                } else if (futureBlock.delay < 7 && futureBlock.fakeBlock.getBlockData().getMaterial().equals(Material.SNOW_BLOCK)) {
+                    Snow snow = (Snow) Material.SNOW.createBlockData();
+                    snow.setLayers((int)(8 - futureBlock.delay));
+                    setBlock(futureList.getKey(), snow);
+                    updateBlock(futureList.getKey());
+                }
             }
         }
     }
@@ -239,46 +302,54 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     
     public void clearProjectiles() {
         for (GameProjectile gp : projectiles.values()) {
-            gp.getEntity().remove();
+            gp.getEntity().killEntity();
         }
+        projectiles.clear();
+        for (BukkitTask task : gameTasks) {
+            task.cancel();
+        }
+        gameTasks.clear();
+        futureBlocks.clear();
     }
-    
-    public void shootProjectile(CorePlayer cp, FakeProjectile projectileType) {
-        if (projectileType.entityType.getEntityClass() == null) return;
-        // TODO: Rewrite this, very chunky
-        Location handLocation = cp.getPlayer().getEyeLocation().clone()
-                .add(cp.getPlayer().getLocation().getDirection()
-                        .crossProduct(new Vector(0, 1, 0)).normalize()
-                        .multiply(0.15).add(new Vector(0, -0.15, 0)));
-        for (int i = 0; i < projectileType.count; i++) {
-            Consumer<? extends Entity> consumer = (Entity e) -> {
-                GameProjectile gp = new GameProjectile(e, projectileType);
-                projectiles.put(e.getEntityId(), gp);
-            };
-            Entity entity = getWorld().spawn(handLocation,
-                    projectileType.entityType.getEntityClass(),
-                    (Consumer) consumer);
-            projectiles.get(entity.getEntityId()).setShooter(cp.getPlayer());
-            Random rand = new Random();
-            entity.setVelocity(cp.getPlayer().getLocation()
-                    .getDirection()
-                    .add(new Vector(
-                            (rand.nextDouble() - 0.5) * projectileType.spread,
-                            (rand.nextDouble() - 0.5) * projectileType.spread,
-                            (rand.nextDouble() - 0.5) * projectileType.spread))
-                    .normalize().multiply(projectileType.range * 0.25));
-            entity.setGravity(projectileType.gravity);
+
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats fakeProjectile) {
+        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
+        try {
+            for (int i = 0; i < fakeProjectile.count; i++) {
+                net.minecraft.server.v1_15_R1.Entity entity = fakeProjectile.entityClass
+                        .getDeclaredConstructor(GameWorld.class, CorePlayer.class, ProjectileStats.class)
+                        .newInstance(this, shooter, fakeProjectile);
+                projectiles.put(entity.getUniqueID(), new GameProjectile(entity, fakeProjectile));
+                ((CraftWorld) getWorld()).getHandle().addEntity(entity);
+                entities.add(entity);
+            }
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException exception) {
+            CoreLogger.logError(exception);
         }
-        getPlayerMap().values().forEach(gwp -> {
-            gwp.getPlayer().playSound(cp.getPlayer().getLocation(), Sound.ENTITY_SNOWBALL_THROW, 1, 1);
-        });
+        return entities;
+    }
+
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(Location location, ProjectileStats fakeProjectile) {
+        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
+        try {
+            for (int i = 0; i < fakeProjectile.count; i++) {
+                net.minecraft.server.v1_15_R1.Entity entity = fakeProjectile.entityClass
+                        .getDeclaredConstructor(GameWorld.class, Location.class, ProjectileStats.class)
+                        .newInstance(this, location, fakeProjectile);
+                projectiles.put(entity.getUniqueID(), new GameProjectile(entity, fakeProjectile));
+                ((CraftWorld) getWorld()).getHandle().addEntity(entity);
+                entities.add(entity);
+            }
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException exception) {
+            CoreLogger.logError(exception);
+        }
+        return entities;
     }
     
     public void doFailBlast(CorePlayer cp) {
         playerBlasts.add(new PlayerBlast(cp.getPlayer().getLocation(), 20));
-        getPlayerMap().values().forEach(gwp -> {
-            gwp.getPlayer().playSound(gwp.getPlayer().getLocation(), Sound.ENTITY_DOLPHIN_DEATH, 15, 1);
-        });
+        getPlayerMap().values().forEach(gwp ->
+                gwp.getPlayer().playSound(gwp.getPlayer().getLocation(), Sound.ENTITY_DOLPHIN_DEATH, 15, 1));
     }
     
     public void addBreakTool(Material tool) {
@@ -290,70 +361,167 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     }
     
     public void setEditable(boolean editable) {
-        this.edittable = editable;
+        this.editable = editable;
     }
 
-    public boolean chipBlock(BlockPosition pos, int amount) {
-        FakeBlock fb = fakeBlocks.get(pos);
-        breakBlock(pos, null);
-        /*
-        if (fakeBlocks.containsKey(pos)
-                && (fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.SNOW)
-                || fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.SNOW_BLOCK))) {
-            players.values().forEach(gwp -> {
-                gwp.getPlayer().spawnParticle(Particle.BLOCK_DUST, pos.toLocation(world).add(0.5, 0.5, 0.5), amount * 2, 0.25, 0.25, 0.25, fakeBlocks.get(pos).getBlockData());
-                gwp.getPlayer().playSound(pos.toLocation(world), fakeBlocks.get(pos).getBreakSound(), amount * 0.1f, 1);
-            });
-            int layers = 8;
-            if (fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.SNOW)) {
-                layers = ((Snow) fakeBlocks.get(pos).getBlockData()).getLayers();
-            }
-            layers -= amount;
-            if (layers <= 0) {
-                setBlock(pos, Material.AIR.createBlockData(), false);
-            } else {
-                Snow snow = (Snow) Material.SNOW.createBlockData();
-                snow.setLayers(layers);
-                setBlock(pos, snow);
-            }
-            return true;
-        }
-        */
-        return false;
-    }
-
-    public void fixSpectators(CorePlayer target) {
-        System.out.println("fixSpectators");
+    public boolean isEditable() {
+        return editable;
     }
 
     public void setSpectator(CorePlayer spectator, CorePlayer target) {
         spectator.getPlayer().teleport(target.getPlayer().getLocation());
+        spectator.getPlayer().setGameMode(GameMode.SPECTATOR);
+        spectator.getPlayer().setSpectatorTarget(target.getPlayer());
+    }
+
+    public Set<Material> getBreakables() {
+        return breakables;
     }
 
     /**
-     * Sets a block to spawn in the future based on its distance
-     * from the blocks
+     * Sets a block to spawn after a delay based on its distance
+     * from the positions
      *
-     * @param pos Block Position
+     * @param blockPos Block Position
      * @param blockData Block Data
      * @param secondsPerBlock Seconds per block distance from locations
-     * @param locations Locations
+     * @param positions Positions
      */
-    public void setBlockDelayed(BlockPosition pos, BlockData blockData, double secondsPerBlock, List<Location> locations) {
+    public void setBlockDelayed(BlockPosition blockPos, BlockData blockData, double secondsPerBlock, List<Position> positions) {
+        if (futureBlocks.containsKey(blockPos)) return;
         Random random = new Random();
         double closest = -1;
-        for (Location loc : locations) {
-            double d = loc.distance(new Location(getWorld(), pos.getX(), (pos.getY() - loc.getY()) * 8 + loc.getY(), pos.getZ()));
+        for (Position pos : positions) {
+            double d = pos.distance(new Position(blockPos.getX(), (blockPos.getY() - pos.getY()) * 8 + pos.getY(), blockPos.getZ()));
             if (d < closest || closest < 0) {
                 closest = d;
             }
         }
         closest -= 6;
         if (closest < 0) {
-            setBlock(pos, blockData);
+            setBlock(blockPos, blockData);
         } else {
             closest += random.nextInt(3);
-            futureBlocks.put(pos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(blockData)));
+            //futureBlocks.put(blockPos, new FutureBlock((long) ((closest) * secondsPerBlock * 20D), new FakeBlock(blockData)));
+            setBlockDelayed(blockPos, blockData, (long) (closest * secondsPerBlock * 20D));
+        }
+    }
+
+    /**
+     * Sets a block to spawn after a delay
+     *
+     * @param blockPos Block Position
+     * @param blockData Block Data
+     * @param delayTicks Ticks to delay by
+     */
+    public void setBlockDelayed(BlockPosition blockPos, BlockData blockData, long delayTicks) {
+        futureBlocks.put(blockPos, new TreeSet<>((l, r) -> (int) (l.delay - r.delay)));
+        futureBlocks.get(blockPos).add(new FutureBlock(delayTicks, new FakeBlock(blockData)));
+    }
+
+    /**
+     * Adds a block to the blockPos list spawn after a delay
+     *
+     * @param blockPos Block Position
+     * @param blockData Block Data
+     * @param delayTicks Ticks to delay by
+     */
+    public void addBlockDelayed(BlockPosition blockPos, BlockData blockData, long delayTicks) {
+        if (!futureBlocks.containsKey(blockPos)) {
+            futureBlocks.put(blockPos, new TreeSet<>((l, r) -> (int) (l.delay - r.delay)));
+        }
+        futureBlocks.get(blockPos).add(new FutureBlock(delayTicks, new FakeBlock(blockData)));
+    }
+
+    public void clearBlockDelayed(BlockPosition blockPos) {
+        futureBlocks.put(blockPos, new TreeSet<>((l, r) -> (int) (l.delay - r.delay)));
+    }
+
+    public Map<BlockPosition, FakeBlock> getBaseBlocks() {
+        return baseBlocks;
+    }
+
+    public void setBaseBlocks(Map<BlockPosition, FakeBlock> blocks) {
+        baseBlocks.putAll(blocks);
+    }
+
+    public FakeBlock getBaseBlock(BlockPosition pos) {
+        return baseBlocks.get(pos);
+    }
+
+    public void regenerateBlocks(BlockPosition pos, double radius) {
+        double dx, dy, dz;
+        for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
+            dx = ((double)x) / radius;
+            for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
+                dy = ((double)y) / radius;
+                for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
+                    dz = ((double)z) / radius;
+                    double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    if (dist < 1) {
+                        BlockPosition pos2 = pos.add(new BlockPosition(x, y, z));
+                        FakeBlock fb = baseBlocks.get(pos2);
+                        if (fb != null && (!fakeBlocks.containsKey(pos2) || fakeBlocks.get(pos2).getBlockData().getMaterial().isAir())) {
+                            setBlock(pos2, fb.getBlockData());
+                            baseBreakTimes.remove(pos);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static final Set<BlockPosition> relatives = Sets.newHashSet(
+            new BlockPosition(-1, 0, 0),
+            new BlockPosition(1, 0, 0),
+            new BlockPosition(0, -1, 0),
+            new BlockPosition(0, 1, 0),
+            new BlockPosition(0, 0, -1),
+            new BlockPosition(0, 0, 1)
+    );
+
+    private boolean isConnected(BlockPosition pos) {
+        for (BlockPosition relative : relatives) {
+            FakeBlock fb = fakeBlocks.get(pos.add(relative));
+            if (fb != null && !fb.getBlockData().getMaterial().isAir()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void performBaseBreakRegen() {
+        Iterator<Map.Entry<BlockPosition, Long>> it = baseBreakTimes.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<BlockPosition, Long> entry = it.next();
+            if (System.currentTimeMillis() - entry.getValue() > AIR_REGEN ||
+                    (System.currentTimeMillis() - entry.getValue() > CONNECT_REGEN && isConnected(entry.getKey()))) {
+                setBlock(entry.getKey(), baseBlocks.get(entry.getKey()).getBlockData());
+                it.remove();
+            }
+        }
+    }
+
+    public Map<BlockPosition, Long> getBaseBreakTimes() {
+        return baseBreakTimes;
+    }
+
+    /**
+     * Sets a fake block status in the world with the option to
+     * instantly update and display or not
+     *
+     * @param pos          Block Position
+     * @param blockData    Block Data
+     * @param ignoreUpdate Should Send Packet
+     */
+    @Override
+    public void setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
+        super.setBlock(pos, blockData, ignoreUpdate);
+    }
+
+    public void sendPacket(PacketContainer packet) {
+        for (GameWorldPlayer gwp : playerMap.values()) {
+            Core.sendPacket(gwp.getPlayer(), packet);
         }
     }
 
