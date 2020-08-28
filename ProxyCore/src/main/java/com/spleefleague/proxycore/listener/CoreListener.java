@@ -3,7 +3,7 @@ package com.spleefleague.proxycore.listener;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
+import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -52,7 +52,7 @@ public class CoreListener implements Listener {
                 for (int i = 0; i < playerCount; i++) {
                     UUID player = UUID.fromString(input.readUTF());
                     int score = input.readInt();
-                    LeaderboardManager.get(mode).getLeaderboards().get(season).setPlayerScore(player, score);
+                    Leaderboards.get(mode).getLeaderboards().get(season).setPlayerScore(player, score);
                 }
                 for (Map.Entry<String, ServerInfo> entry : ProxyCore.getInstance().getProxy().getServers().entrySet()) {
                     entry.getValue().sendData("slcore:score", event.getData());

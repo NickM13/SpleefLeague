@@ -34,10 +34,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import com.spleefleague.core.util.variable.TpCoord;
-import net.minecraft.server.v1_15_R1.CommandListenerWrapper;
-import net.minecraft.server.v1_15_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R1.CommandListenerWrapper;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent;
 import org.bukkit.command.Command;
-import org.bukkit.craftbukkit.v1_15_R1.command.CraftBlockCommandSender;
+import org.bukkit.craftbukkit.v1_16_R1.command.CraftBlockCommandSender;
 
 /**
  * @author NickM13
@@ -175,6 +175,7 @@ public class CoreCommand extends Command {
         if ((!cpa.allowOffline() && cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE)
                 || (!cpa.allowCrossServer() && cp.getOnlineState() == DBPlayer.OnlineState.OTHER)
                 || (!cpa.allowSelf() && sender != null && sender.equals(cp))) {
+            System.out.println(cp.getOnlineState().toString());
             cs.sendMessage(Chat.ERROR + "Invalid player");
             return false;
         }

@@ -9,7 +9,7 @@ package com.spleefleague.core.world.game.projectile;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -18,7 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 public class ProjectileStats extends DBEntity {
 
-    public Class<? extends net.minecraft.server.v1_15_R1.Entity> entityClass = FakeEntitySnowball.class;
+    public Class<? extends net.minecraft.server.v1_16_R1.Entity> entityClass = FakeEntitySnowball.class;
     @DBField public Integer customModelData = 0;
     @DBField public Double fireRange = 6D;
     @DBField public Integer fireCooldown = 0;
@@ -27,7 +27,8 @@ public class ProjectileStats extends DBEntity {
     @DBField public Integer bounces = 0;
     @DBField public Double bounciness = 0.3;
     @DBField public Integer lifeTicks = 100;
-    @DBField public Integer spread = 0;
+    @DBField public Integer hSpread = 0;
+    @DBField public Integer vSpread = 0;
     @DBField public Double drag = 1D;
     @DBField public Boolean gravity = true;
     @DBField public Integer count = 1;
@@ -36,7 +37,7 @@ public class ProjectileStats extends DBEntity {
     @DBField public Double hitKnockback = 0D;
     @DBField public Double size = 0D;
     @Deprecated @DBField public Double fireKnockback = 0D;
-    private net.minecraft.server.v1_15_R1.ItemStack projectileItem;
+    private net.minecraft.server.v1_16_R1.ItemStack projectileItem;
     
     public ProjectileStats() {
 
@@ -50,7 +51,7 @@ public class ProjectileStats extends DBEntity {
         projectileItem = CraftItemStack.asNMSCopy(itemStack);
     }
 
-    public net.minecraft.server.v1_15_R1.ItemStack getProjectileItem() {
+    public net.minecraft.server.v1_16_R1.ItemStack getProjectileItem() {
         return projectileItem;
     }
     

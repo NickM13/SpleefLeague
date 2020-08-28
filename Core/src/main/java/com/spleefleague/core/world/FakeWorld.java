@@ -15,8 +15,8 @@ import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import net.minecraft.server.v1_15_R1.EnumDirection;
-import net.minecraft.server.v1_15_R1.PacketPlayInUseItem;
+import net.minecraft.server.v1_16_R1.EnumDirection;
+import net.minecraft.server.v1_16_R1.PacketPlayInUseItem;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -96,7 +96,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             public void onPacketReceiving(PacketEvent event) {
                 PacketPlayInUseItem packetPlayInUseItem = (PacketPlayInUseItem) event.getPacket().getHandle();
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                net.minecraft.server.v1_15_R1.BlockPosition nmsBlockPosition = packetPlayInUseItem.c().getBlockPosition();
+                net.minecraft.server.v1_16_R1.BlockPosition nmsBlockPosition = packetPlayInUseItem.c().getBlockPosition();
                 BlockPosition blockPosition = new BlockPosition(nmsBlockPosition.getX(), nmsBlockPosition.getY(), nmsBlockPosition.getZ());
                 EnumDirection direction = packetPlayInUseItem.c().getDirection();
                 BlockPosition blockRelative = blockPosition.add(new BlockPosition(direction.getAdjacentX(), direction.getAdjacentY(), direction.getAdjacentZ()));
@@ -153,7 +153,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                     }
                 }
                 if (fakeBlocks.size() > 0) {
-                    PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(chunkCoord, fakeBlocks);
+                    PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                            chunkCoord,
+                            fakeBlocks);
                     Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
                 }
                 loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
@@ -281,11 +283,11 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
             if (!cp.equals(cp2)) {
                 if (!playerMap.containsKey(cp2.getPlayer().getUniqueId())) {
-                    cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
-                    cp2.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
+                    //cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
+                    //cp2.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
                 } else {
-                    cp.getPlayer().showPlayer(Core.getInstance(), cp2.getPlayer());
-                    cp2.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
+                    //cp.getPlayer().showPlayer(Core.getInstance(), cp2.getPlayer());
+                    //cp2.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
                 }
             }
         }
@@ -325,7 +327,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             }
             if (fakeBlocks.size() > 0) {
-                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), fakeBlocks);
+                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                        entry.getKey(),
+                        fakeBlocks);
                 Core.sendPacket(cp, multiBlockChangePacket);
             }
         }
@@ -805,7 +809,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             }
             if (fakeBlocks.size() > 0) {
-                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), fakeBlocks);
+                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                        entry.getKey(),
+                        fakeBlocks);
                 Core.sendPacket(cp, multiBlockChangePacket);
             }
         }

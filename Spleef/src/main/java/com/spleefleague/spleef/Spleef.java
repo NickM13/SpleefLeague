@@ -19,6 +19,7 @@ import com.spleefleague.spleef.commands.*;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.bonanza.BonanzaSpleefArena;
@@ -58,11 +59,13 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         
         // Load Spleef gamemodes
         SpleefMode.init();
+        AbilityUtils.init();
 
         addBattleManager(SpleefMode.BONANZA.getBattleMode());
         addBattleManager(SpleefMode.CLASSIC.getBattleMode());
         addBattleManager(SpleefMode.MULTI.getBattleMode());
         addBattleManager(SpleefMode.POWER.getBattleMode());
+        addBattleManager(SpleefMode.POWER_TRAINING.getBattleMode());
         addBattleManager(SpleefMode.TEAM.getBattleMode());
         
         initMenu();
@@ -104,11 +107,11 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         
         spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 0, 2);
         spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 1, 3);
-        BonanzaSpleefArena.createMenu(2, 2);
-        TeamSpleefArena.createMenu(3, 3);
-        ClassicSpleefArena.createMenu(4, 2);
-        MultiSpleefArena.createMenu(5, 3);
-        PowerSpleefArena.createMenu(6, 2);
+        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 2, 2);
+        ClassicSpleefArena.createMenu(3, 3);
+        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 4, 2);
+        PowerSpleefArena.createMenu(5, 3);
+        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 6, 2);
         spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 7, 3);
         spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 8, 2);
 

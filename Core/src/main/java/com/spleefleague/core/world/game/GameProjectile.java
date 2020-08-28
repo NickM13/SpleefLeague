@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import net.minecraft.server.v1_15_R1.AxisAlignedBB;
+import net.minecraft.server.v1_16_R1.AxisAlignedBB;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
@@ -23,14 +23,14 @@ import org.bukkit.util.Vector;
 public class GameProjectile {
 
     Point lastLoc = null;
-    net.minecraft.server.v1_15_R1.Entity entity;
+    net.minecraft.server.v1_16_R1.Entity entity;
     Player shooter;
     ProjectileStats type;
     int bounces = 1;
     double bouncePower = 0.3;
     double drag = 1;
     
-    public GameProjectile(net.minecraft.server.v1_15_R1.Entity entity, ProjectileStats type) {
+    public GameProjectile(net.minecraft.server.v1_16_R1.Entity entity, ProjectileStats type) {
         this.entity = entity;
         this.type = type;
         this.bounces = type.bounces;
@@ -66,7 +66,7 @@ public class GameProjectile {
         this.shooter = shooter;
     }
     
-    public net.minecraft.server.v1_15_R1.Entity getEntity() {
+    public net.minecraft.server.v1_16_R1.Entity getEntity() {
         return entity;
     }
     

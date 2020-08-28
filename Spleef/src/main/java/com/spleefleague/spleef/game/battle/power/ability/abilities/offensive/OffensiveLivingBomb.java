@@ -7,6 +7,7 @@ import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -69,7 +70,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
                     }
                 }
             }
-            psp.getPlayer().setVelocity(psp.getPlayer().getVelocity().setY(1.5));
+            AbilityUtils.startFling(psp, new Vector(0, 1.5, 0), 0.2);
             psp.getPowerValueMap().put("livingbomb", false);
             return;
         }

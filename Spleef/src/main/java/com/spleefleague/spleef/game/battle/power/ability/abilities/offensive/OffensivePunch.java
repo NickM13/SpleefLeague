@@ -5,8 +5,10 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
 import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.mobility.MobilityHookshot;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -24,6 +26,19 @@ public class OffensivePunch extends AbilityOffensive {
 
     private static final double REMAIN = 5;
     private static final double POWER = 2;
+
+    private static final ProjectileStats projectileStats = new ProjectileStats();
+
+    static {
+        projectileStats.lifeTicks = 10;
+        projectileStats.fireRange = 5D;
+        projectileStats.collidable = false;
+        projectileStats.noClip = true;
+        projectileStats.count = 10;
+        projectileStats.hSpread = 40;
+        projectileStats.vSpread = 40;
+        projectileStats.customModelData = 1;
+    }
 
     public OffensivePunch() {
         super(7, 1, 10, 0.25D);
@@ -129,6 +144,9 @@ public class OffensivePunch extends AbilityOffensive {
             CoreUtils.knockbackEntity(target.getPlayer(), psp.getPlayer().getLocation().getDirection(), POWER);
             deactivatePunch(psp);
             psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_BEE_STING, 1, 1);
+            Location loc = target.getPlayer().getEyeLocation().clone();
+            loc.setDirection(psp.getPlayer().getLocation().getDirection());
+            psp.getBattle().getGameWorld().shootProjectile(loc, projectileStats);
         }
     }
 

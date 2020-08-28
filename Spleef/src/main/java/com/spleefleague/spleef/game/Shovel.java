@@ -22,12 +22,12 @@ import com.spleefleague.spleef.Spleef;
 import java.util.Set;
 
 import com.spleefleague.spleef.util.SpleefUtils;
-import net.minecraft.server.v1_15_R1.NBTTagCompound;
-import net.minecraft.server.v1_15_R1.NBTTagList;
-import net.minecraft.server.v1_15_R1.NBTTagString;
+import net.minecraft.server.v1_16_R1.NBTTagCompound;
+import net.minecraft.server.v1_16_R1.NBTTagList;
+import net.minecraft.server.v1_16_R1.NBTTagString;
 import org.bson.Document;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -222,7 +222,7 @@ public class Shovel extends Holdable {
      * @return Shovel ItemStack
      */
     public ItemStack getGameItem() {
-        net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getDisplayItem());
+        net.minecraft.server.v1_16_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getDisplayItem());
         NBTTagCompound tagCompound = nmsItemStack.hasTag() ? nmsItemStack.getTag() : new NBTTagCompound();
         tagCompound.set("CanDestroy", canDestroyTags);
         nmsItemStack.setTag(tagCompound);

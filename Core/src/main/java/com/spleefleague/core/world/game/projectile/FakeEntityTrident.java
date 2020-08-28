@@ -6,14 +6,14 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.game.GameWorld;
-import net.minecraft.server.v1_15_R1.EntityHuman;
-import net.minecraft.server.v1_15_R1.EntityThrownTrident;
-import net.minecraft.server.v1_15_R1.EntityTypes;
-import net.minecraft.server.v1_15_R1.MovingObjectPosition;
-import net.minecraft.server.v1_15_R1.Vec3D;
+import net.minecraft.server.v1_16_R1.EntityHuman;
+import net.minecraft.server.v1_16_R1.EntityThrownTrident;
+import net.minecraft.server.v1_16_R1.EntityTypes;
+import net.minecraft.server.v1_16_R1.MovingObjectPosition;
+import net.minecraft.server.v1_16_R1.Vec3D;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -46,9 +46,11 @@ public class FakeEntityTrident extends EntityThrownTrident {
 
         Random rand = new Random();
         Location lookLoc = shooter.getPlayer().getLocation().clone();
-        if (projectileStats.spread > 0) {
-            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.spread) - (projectileStats.spread / 2.f));
-            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.spread) - (projectileStats.spread / 2.f));
+        if (projectileStats.hSpread > 0) {
+            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
+        }
+        if (projectileStats.vSpread > 0) {
+            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
         }
         Vector direction = lookLoc.getDirection().normalize().multiply(projectileStats.fireRange * 0.25);
         setMot(new Vec3D(direction.getX(), direction.getY(), direction.getZ()));

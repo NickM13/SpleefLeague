@@ -95,7 +95,7 @@ public class LeaderboardCollection {
                                             + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp2.getRatings().getWins(name, season) + "\n"
                                             + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp2.getRatings().getLosses(name, season) + "\n"
                                             + ChatColor.GRAY + "Win Rate: " + cp2.getRatings().getWinPercent(name, season))
-                                    .setDisplayItem(InventoryMenuUtils.createCustomSkull(cp2.getUniqueId()))
+                                    .setDisplayItem(InventoryMenuUtils.createCustomSkullOrDefault(cp2.getUniqueId()))
                                     .setCloseOnAction(false));
                         } else {
                             container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Invalid Player"));

@@ -35,21 +35,21 @@ public class BattlePluginListener implements PluginMessageListener {
      */
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, @NotNull byte[] bytes) {
-        if ("battle:start".equals(channel)) {
+        if (channel.equals("battle:start")) {
             ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
             BattleMode mode = BattleMode.get(input.readUTF());
             String query = input.readUTF();
             Arena arena = Arenas.get(input.readUTF(), mode);
             int playerCount = input.readInt();
-            List<CorePlayer> players = new ArrayList<>();
+            List<UUID> players = new ArrayList<>();
             for (int i = 0; i < playerCount; i++) {
-                players.add(Core.getInstance().getPlayers().getOffline(UUID.fromString(input.readUTF())));
+                players.add(UUID.fromString(input.readUTF()));
             }
             try {
                 Battle<?> battle = mode.getBattleClass()
                         .getDeclaredConstructor(List.class, Arena.class)
                         .newInstance(players, arena);
-                battle.startBattle();
+                //battle.startBattle();
                 Core.getInstance().getBattleManager(mode).startMatch(battle);
                 mode.addBattle(battle);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {

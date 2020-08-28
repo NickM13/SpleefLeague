@@ -88,7 +88,7 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
      }
      */
 
-    private static final double BURST_DELAY = 3D;
+    private static final double BURST_DELAY = 1.5D;
     private static final double BURST_RADIUS = 5D;
 
     public static class MeltingProjectile extends FakeEntitySnowball {
@@ -147,7 +147,7 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
     @Override
     public String getDescription() {
         return Chat.DESCRIPTION + "Throw a sticky bomb, latching onto the first terrain hit. After " +
-                Chat.STAT + "1.5" +
+                Chat.STAT + BURST_DELAY +
                 Chat.DESCRIPTION + " seconds, detonate in a large radius.";
     }
 

@@ -5,24 +5,30 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
-import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
+import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import com.spleefleague.proxycore.game.queue.QueueManager;
 import com.spleefleague.proxycore.listener.BattleListener;
 import com.spleefleague.proxycore.listener.ConnectionListener;
 import com.spleefleague.proxycore.listener.CoreListener;
 import com.spleefleague.proxycore.listener.PartyListener;
+import com.spleefleague.proxycore.listener.QueueListener;
 import com.spleefleague.proxycore.listener.RefreshListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyPlayerManager;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +39,10 @@ import java.util.logging.Logger;
 public class ProxyCore extends Plugin {
 
     private static ProxyCore instance;
+
+    private static final List<ServerInfo> lobbyServers = new ArrayList<>();
+    private static final List<ServerInfo> minigameServers = new ArrayList<>();
+    private static ScheduledTask serverPingTask;
 
     public static ProxyCore getInstance() {
         return instance;
@@ -57,30 +67,51 @@ public class ProxyCore extends Plugin {
         getProxy().getPluginManager().registerListener(this, new BattleListener());
         getProxy().getPluginManager().registerListener(this, new CoreListener());
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
-        getProxy().getPluginManager().registerListener(this, new RefreshListener());
         getProxy().getPluginManager().registerListener(this, new PartyListener());
+        getProxy().getPluginManager().registerListener(this, new QueueListener());
+        getProxy().getPluginManager().registerListener(this, new RefreshListener());
 
         playerManager.init();
-        LeaderboardManager.init();
+        Leaderboards.init();
         QueueManager.init();
         ArenaManager.init();
+
+        serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            lobbyServers.clear();
+            minigameServers.clear();
+            for (ServerInfo server : getProxy().getServers().values()) {
+                if (server.getName().toLowerCase().startsWith("lobby")) {
+                    server.ping((serverPing, throwable) -> {
+                        if (serverPing != null) {
+                            lobbyServers.add(server);
+                        }
+                    });
+                } else if (server.getName().toLowerCase().startsWith("minigame")) {
+                    server.ping((serverPing, throwable) -> {
+                        if (serverPing != null) {
+                            minigameServers.add(server);
+                        }
+                    });
+                }
+            }
+            // TODO: Probably increase this value on release?
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
     public void onDisable() {
         playerManager.close();
-        LeaderboardManager.close();
+        Leaderboards.close();
         QueueManager.close();
+        serverPingTask.cancel();
     }
 
     public List<ServerInfo> getLobbyServers() {
-        List<ServerInfo> servers = new ArrayList<>();
-        for (ServerInfo server : getProxy().getServers().values()) {
-            if (server.getName().toLowerCase().startsWith("lobby")) {
+        return lobbyServers;
+    }
 
-            }
-        }
-        return servers;
+    public List<ServerInfo> getMinigameServers() {
+        return minigameServers;
     }
 
     /**
@@ -122,12 +153,26 @@ public class ProxyCore extends Plugin {
         return playerManager;
     }
 
+    public static void sendMessage(String text) {
+        getInstance().getPlayers().getAll().forEach(pcp -> pcp.getPlayer().sendMessage(new TextComponent(text)));
+    }
+
+    public static void sendMessage(TextComponent text) {
+        getInstance().getPlayers().getAll().forEach(pcp -> pcp.getPlayer().sendMessage(text));
+    }
+
+    public static String getChatTag() {
+        return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    }
+
     public static void sendMessage(ProxyCorePlayer pcp, String text) {
-        pcp.getPlayer().sendMessage(new TextComponent(text));
+        pcp.getPlayer().sendMessage(new TextComponent(getChatTag() + text));
     }
 
     public static void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
-        pcp.getPlayer().sendMessage(text);
+        TextComponent textComp = new TextComponent(getChatTag());
+        textComp.addExtra(text);
+        pcp.getPlayer().sendMessage(textComp);
     }
 
     public static void sendError(ProxyCorePlayer pcp, String text) {

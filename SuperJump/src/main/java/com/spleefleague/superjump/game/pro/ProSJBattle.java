@@ -16,6 +16,7 @@ import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.util.Jumps_old.Jump;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.spleefleague.superjump.game.SJMode;
 
@@ -33,7 +34,7 @@ public class ProSJBattle extends SoloBattle<ProSJPlayer> {
     protected Point nextJumpPoint;
     protected int forwardVision = 1;
 
-    public ProSJBattle(List<CorePlayer> players, Arena arena) {
+    public ProSJBattle(List<UUID> players, Arena arena) {
         super(SuperJump.getInstance(), players, arena, ProSJPlayer.class, SJMode.PRO.getBattleMode());
     }
     
@@ -74,12 +75,7 @@ public class ProSJBattle extends SoloBattle<ProSJPlayer> {
     protected void endRound(ProSJPlayer proSJPlayer) {
     
     }
-    
-    @Override
-    protected void endBattle(ProSJPlayer proSJPlayer) {
-    
-    }
-    
+
     @Override
     public void reset() {
     

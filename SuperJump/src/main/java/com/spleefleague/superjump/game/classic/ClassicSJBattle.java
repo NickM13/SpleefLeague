@@ -13,13 +13,14 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.SuperJump;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
     
-    public ClassicSJBattle(List<CorePlayer> players, Arena arena, BattleMode battleMode) {
+    public ClassicSJBattle(List<UUID> players, Arena arena, BattleMode battleMode) {
         super(SuperJump.getInstance(), players, arena, ClassicSJPlayer.class, battleMode);
     }
     

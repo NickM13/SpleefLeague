@@ -6,6 +6,9 @@
 
 package com.spleefleague.core.game.battle;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatGroup;
@@ -28,6 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -68,7 +72,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected List<Position> spawns = new ArrayList<>();
 
     // Collections for players
-    protected final List<CorePlayer> waitingPlayers = new ArrayList<>();
+    protected final List<UUID> waitingPlayers = new ArrayList<>();
     protected final Set<CorePlayer> players = new HashSet<>();
     protected final Set<CorePlayer> spectators = new HashSet<>();
     protected final Map<CorePlayer, BP> battlers = new HashMap<>();
@@ -79,6 +83,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     
     // Ongoing battle stats
     protected boolean ongoing;
+    protected boolean finished = false;
     protected boolean waiting = true;
     protected long startedTime;
     protected long roundStartTime = 0;
@@ -88,7 +93,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected static final int COUNTDOWN = 3;
     protected int countdown = 0;
 
-    public Battle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public Battle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         this.plugin = plugin;
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
@@ -110,12 +115,13 @@ public abstract class Battle<BP extends BattlePlayer> {
             arena.incrementMatches();
             battleMode.addBattle(this);
             startedTime = System.currentTimeMillis();
-            ongoing = true;
+            battlers.keySet().forEach(cp -> addPlayer(cp, BattleState.BATTLER));
             setupBattleRequests();
             setupBaseSettings();
             setupBattlers();
             setupScoreboard();
             sendStartMessage();
+            ongoing = true;
             startRound();
         }
     }
@@ -223,7 +229,6 @@ public abstract class Battle<BP extends BattlePlayer> {
                 c.setAccessible(true);
                 BP bp = c.newInstance(cp2, this);
                 bp.setSpawn(getSpawn(battlers.size()).toLocation(arena.getWorld()));
-                addPlayer(cp2, BattleState.BATTLER);
                 battlers.put(cp2, bp);
                 sortedBattlers.add(bp);
                 //spawnBattler(bp);
@@ -267,7 +272,13 @@ public abstract class Battle<BP extends BattlePlayer> {
     /**
      * @return Ongoing Battle State
      */
-    public boolean isOngoing() { return ongoing; }
+    public boolean isOngoing() {
+        return ongoing;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
 
     public boolean isWaiting() {
         return waiting;
@@ -407,49 +418,51 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param e Player Move Event
      */
     public final void onMove(CorePlayer cp, PlayerMoveEvent e) {
-        if (cp.getBattleState() == BattleState.BATTLER) {
-            BP bp = battlers.get(cp);
-            if (!bp.isFallen()) {
-                if (!isRoundStarted()) {
-                    if (frozen || true) {
-                        e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
-                                e.getFrom().getX(),
-                                e.getFrom().getY(),
-                                e.getFrom().getZ(),
-                                e.getTo().getYaw(),
-                                e.getTo().getPitch()));
-                    } else if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
-                        e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
-                                e.getTo().getX(),
-                                e.getFrom().getY(),
-                                e.getTo().getZ(),
-                                e.getTo().getYaw(),
-                                e.getTo().getPitch()));
+        if (ongoing) {
+            if (cp.getBattleState() == BattleState.BATTLER) {
+                BP bp = battlers.get(cp);
+                if (!bp.isFallen()) {
+                    if (!isRoundStarted()) {
+                        if (frozen || true) {
+                            e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
+                                    e.getFrom().getX(),
+                                    e.getFrom().getY(),
+                                    e.getFrom().getZ(),
+                                    e.getTo().getYaw(),
+                                    e.getTo().getPitch()));
+                        } else if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
+                            e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
+                                    e.getTo().getX(),
+                                    e.getFrom().getY(),
+                                    e.getTo().getZ(),
+                                    e.getTo().getYaw(),
+                                    e.getTo().getPitch()));
+                        }
+                    } else if (e.getPlayer().getLocation().getBlock().isLiquid() || !isInBorder(cp)) {
+                        failBattler(cp);
+                    } else if (isInGoal(cp)) {
+                        winBattler(cp);
+                    } else {
+                        checkCheckpoints(cp);
                     }
-                } else if (e.getPlayer().getLocation().getBlock().isLiquid() || !isInBorder(cp)) {
-                    failBattler(cp);
-                } else if (isInGoal(cp)) {
-                    winBattler(cp);
                 } else {
-                    checkCheckpoints(cp);
+                    if (!isInSpectatorBorder(cp)) {
+                        e.setTo(getClosestBattler(cp).getPlayer().getLocation());
+                    }
                 }
-            } else {
-                if (!isInSpectatorBorder(cp)) {
-                    e.setTo(getClosestBattler(cp).getPlayer().getLocation());
+            } else if (cp.getBattleState() == BattleState.SPECTATOR) {
+                if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) &&
+                        !cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR) &&
+                        arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
+                    onSpectatorEnter(cp);
                 }
-            }
-        } else if (cp.getBattleState() == BattleState.SPECTATOR) {
-            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) &&
-                    !cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR) &&
-                    arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
-                onSpectatorEnter(cp);
-            }
-        } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
-            if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
-                onGlobalSpectatorEnter(cp);
-            }
-            if (!isInGlobalSpectatorBorder(cp)) {
-                removeSpectator(cp);
+            } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
+                if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
+                    onGlobalSpectatorEnter(cp);
+                }
+                if (!isInGlobalSpectatorBorder(cp)) {
+                    removeSpectator(cp);
+                }
             }
         }
     }
@@ -551,7 +564,7 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     public void cancel() {
         chatGroup.sendMessage("Your match was cancelled by a moderator");
-        endBattle();
+        destroy();
     }
     
     /**
@@ -599,7 +612,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             gameWorld.removePlayer(cp);
             players.remove(cp);
             cp.leaveBattle(arena.getPostGameWarp());
-            Core.getInstance().returnToHub(cp);
+            //Core.getInstance().returnToHub(cp);
             return true;
         }
         return false;
@@ -617,12 +630,12 @@ public abstract class Battle<BP extends BattlePlayer> {
      *
      * @param winner Winner
      */
-    protected abstract void endBattle(BP winner);
+    public abstract void endBattle(BP winner);
     
     /**
      * Ends a battle, removes all players, destroys game world
      */
-    public final void endBattle() {
+    public final void destroy() {
         Set<CorePlayer> _players = new HashSet<>(players);
         for (CorePlayer cp : _players) {
             removePlayer(cp);
@@ -631,6 +644,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         battleMode.removeBattle(this);
         gameWorld.destroy();
         ongoing = false;
+        finished = true;
     }
 
     /**
@@ -917,16 +931,18 @@ public abstract class Battle<BP extends BattlePlayer> {
     }
 
     public void checkWaiting() {
-        Iterator<CorePlayer> it = waitingPlayers.iterator();
+        Iterator<UUID> it = waitingPlayers.iterator();
         while (it.hasNext()) {
-            CorePlayer cp = it.next();
-            if (cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
+            CorePlayer cp = Core.getInstance().getPlayers().get(it.next());
+            if (cp != null && cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
                 addBattler(cp);
                 it.remove();
             }
         }
-        waiting = !waitingPlayers.isEmpty();
-        startBattle();
+        if (waitingPlayers.isEmpty()) {
+            waiting = false;
+            Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::startBattle, 60L);
+        }
     }
 
     /**
@@ -935,7 +951,7 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Counts down the start of a round
      */
     public void doCountdown() {
-        if (!waiting) {
+        if (!waiting && ongoing) {
             if (countdown >= 0) {
                 if (countdown == 0) {
                     sendPlayerTitle(ChatColor.GREEN + "Go!", "", 5, 10, 5);

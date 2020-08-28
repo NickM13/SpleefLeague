@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_16_R1.EntityPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -33,7 +33,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Snow;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -49,7 +49,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     protected static class FutureBlock {
         public long delay;
         public FakeBlock fakeBlock;
-        
+
         public FutureBlock(long delay, FakeBlock fakeBlock) {
             this.delay = delay;
             this.fakeBlock = fakeBlock;
@@ -81,7 +81,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     protected static class PlayerBlast {
         Location loc;
         int time;
-        
+
         PlayerBlast(Location loc, int time) {
             this.loc = loc;
             this.time = time;
@@ -92,10 +92,10 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     protected final Set<Material> breakables;
     protected final Set<Material> unbreakables;
     protected boolean editable;
-    
+
     protected final BukkitTask projectileCollideTask;
     protected Map<UUID, GameProjectile> projectiles;
-    
+
     protected BukkitTask futureBlockTask;
     protected final Map<BlockPosition, SortedSet<FutureBlock>> futureBlocks;
 
@@ -104,15 +104,16 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     private static final Long AIR_REGEN = 15 * 1000L;
     private static final Long CONNECT_REGEN = 30 * 1000L;
     private static final Long RAND_REGEN = 30 * 1000L;
-    
+    private double regenSpeed = 1;
+
     protected final BukkitTask playerBlastTask;
     protected final List<PlayerBlast> playerBlasts;
 
     protected final List<BukkitTask> gameTasks;
-    
+
     protected boolean showSpectators;
     protected final Map<UUID, CorePlayer> targetSpectatorMap = new HashMap<>();
-    
+
     public GameWorld(World world) {
         super(1, world, GameWorldPlayer.class);
         breakTools = new HashSet<>();
@@ -123,20 +124,20 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         baseBlocks = new HashMap<>();
         baseBreakTimes = new HashMap<>();
         projectiles = new HashMap<>();
-        
+
         projectileCollideTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updateProjectiles, 0L, 1L);
-        
+
         showSpectators = true;
-        
+
         playerBlasts = new ArrayList<>();
         playerBlastTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updatePlayerBlasts, 0L, 2L);
 
         gameTasks = new ArrayList<>();
-        
+
         futureBlockTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updateFutureBlocks, 0L, 2L);
@@ -153,6 +154,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
             }
         });
 
+                /*
         Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.ENTITY_DESTROY) {
             @Override
             public void onPacketSending(PacketEvent event) {
@@ -160,7 +162,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 int[] entityIds = packet.getIntegerArrays().read(0);
                 List<Integer> uncancelled = new ArrayList<>();
                 for (int id : entityIds) {
-                    net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
+                    net.minecraft.server.v1_16_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
                     if (entity instanceof EntityPlayer) {
 
                     } else {
@@ -174,8 +176,9 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 packet.getIntegerArrays().write(0, newIdArray);
             }
         });
+                */
     }
-    
+
     @Override
     public void destroy() {
         super.destroy();
@@ -184,7 +187,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         playerBlastTask.cancel();
         clearProjectiles();
     }
-    
+
     @Override
     public void clear() {
         super.clear();
@@ -199,7 +202,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     public void runTask(BukkitTask task) {
         gameTasks.add(task);
     }
-    
+
     /**
      * Attempt to break a block if the player is holding the right item
      * and the block is a breakable block, if fails send a fake packet
@@ -299,7 +302,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     public void setShowSpectators(boolean state) {
         showSpectators = state;
     }
-    
+
     public void clearProjectiles() {
         for (GameProjectile gp : projectiles.values()) {
             gp.getEntity().killEntity();
@@ -312,11 +315,11 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         futureBlocks.clear();
     }
 
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats fakeProjectile) {
-        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
+    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats fakeProjectile) {
+        List<net.minecraft.server.v1_16_R1.Entity> entities = new ArrayList<>();
         try {
             for (int i = 0; i < fakeProjectile.count; i++) {
-                net.minecraft.server.v1_15_R1.Entity entity = fakeProjectile.entityClass
+                net.minecraft.server.v1_16_R1.Entity entity = fakeProjectile.entityClass
                         .getDeclaredConstructor(GameWorld.class, CorePlayer.class, ProjectileStats.class)
                         .newInstance(this, shooter, fakeProjectile);
                 projectiles.put(entity.getUniqueID(), new GameProjectile(entity, fakeProjectile));
@@ -329,11 +332,11 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return entities;
     }
 
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(Location location, ProjectileStats fakeProjectile) {
-        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
+    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectile(Location location, ProjectileStats fakeProjectile) {
+        List<net.minecraft.server.v1_16_R1.Entity> entities = new ArrayList<>();
         try {
             for (int i = 0; i < fakeProjectile.count; i++) {
-                net.minecraft.server.v1_15_R1.Entity entity = fakeProjectile.entityClass
+                net.minecraft.server.v1_16_R1.Entity entity = fakeProjectile.entityClass
                         .getDeclaredConstructor(GameWorld.class, Location.class, ProjectileStats.class)
                         .newInstance(this, location, fakeProjectile);
                 projectiles.put(entity.getUniqueID(), new GameProjectile(entity, fakeProjectile));
@@ -441,6 +444,10 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return baseBlocks;
     }
 
+    public void clearBaseBlocks() {
+        baseBlocks.clear();
+    }
+
     public void setBaseBlocks(Map<BlockPosition, FakeBlock> blocks) {
         baseBlocks.putAll(blocks);
     }
@@ -490,12 +497,16 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return false;
     }
 
+    public void setRegenSpeed(double regenSpeed) {
+        this.regenSpeed = regenSpeed;
+    }
+
     public void performBaseBreakRegen() {
         Iterator<Map.Entry<BlockPosition, Long>> it = baseBreakTimes.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<BlockPosition, Long> entry = it.next();
-            if (System.currentTimeMillis() - entry.getValue() > AIR_REGEN ||
-                    (System.currentTimeMillis() - entry.getValue() > CONNECT_REGEN && isConnected(entry.getKey()))) {
+            if (System.currentTimeMillis() - entry.getValue() > AIR_REGEN / regenSpeed ||
+                    (System.currentTimeMillis() - entry.getValue() > CONNECT_REGEN / regenSpeed && isConnected(entry.getKey()))) {
                 setBlock(entry.getKey(), baseBlocks.get(entry.getKey()).getBlockData());
                 it.remove();
             }

@@ -68,6 +68,7 @@ public class BattleMode {
             boolean joinOngoing,
             Class<? extends Battle<?>> battleClass) {
         battleGameModes.put(name, new BattleMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, battleClass));
+        System.out.println(name);
     }
     
     public static BattleMode get(String name) {

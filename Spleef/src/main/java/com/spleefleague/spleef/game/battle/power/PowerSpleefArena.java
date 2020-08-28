@@ -17,6 +17,7 @@ import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -50,9 +51,12 @@ public class PowerSpleefArena {
                     });
                 });
 
-        menuItem.getLinkedChest().addStaticItem(AbilityOffensive.createMenu(), 1, 4);
+        menuItem.getLinkedChest().addStaticItem(PowerTrainingArena.createMenu(), 0, 4);
+
+        menuItem.getLinkedChest().addStaticItem(AbilityOffensive.createMenu(), 2, 4);
         menuItem.getLinkedChest().addStaticItem(AbilityUtility.createMenu(), 4, 4);
-        menuItem.getLinkedChest().addStaticItem(AbilityMobility.createMenu(), 7, 4);
+        menuItem.getLinkedChest().addStaticItem(AbilityMobility.createMenu(), 6, 4);
+
         Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
     }
     

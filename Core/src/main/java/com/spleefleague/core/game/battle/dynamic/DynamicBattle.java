@@ -1,6 +1,5 @@
 package com.spleefleague.core.game.battle.dynamic;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -16,6 +15,7 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -26,7 +26,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected static final int MAX_SHOWN = 5;
     protected int playToPoints = 5;
     
-    public DynamicBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public DynamicBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
     }
     
@@ -133,13 +133,13 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      * @param winner Winner
      */
     @Override
-    protected void endBattle(BP winner) {
+    public void endBattle(BP winner) {
         applyEloChange(winner);
         getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
                 + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                 + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " all other players in "
                 + Chat.GAMEMODE + getMode().getDisplayName());
-        endBattle();
+        destroy();
     }
     
     /**

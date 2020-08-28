@@ -155,7 +155,7 @@ public abstract class Leaderboard extends DBEntity {
     }
 
     /**
-     * Sorts a map of players with new scores into the leaderboard
+     * Sorts a map of players with new scores into the leaderboard, see elo decay
      *
      * @param oldScores Score Map of Score, Player Set
      * @param newScores Score Map of Score, Player Set

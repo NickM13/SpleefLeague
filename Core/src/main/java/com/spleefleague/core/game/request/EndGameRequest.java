@@ -27,7 +27,7 @@ public class EndGameRequest extends BattleRequest {
      */
     @Override
     protected void meetsRequirement() {
-        battle.endBattle();
+        battle.endBattle(null);
     }
     
 }

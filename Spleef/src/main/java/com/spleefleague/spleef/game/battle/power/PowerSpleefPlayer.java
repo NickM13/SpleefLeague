@@ -4,6 +4,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
@@ -42,28 +43,53 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
 
     public PowerSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
+        updatePowers();
+    }
+
+    public void updatePowers() {
+        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
+        chooseOffensive();
+        chooseUtility();
+        chooseMobililty();
+        for (Ability.Type type : Ability.Type.values()) {
+            cooldowns.put(type, 0D);
+        }
+    }
+
+    public void chooseOffensive() {
+        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveOffensive() != null) {
             offensive = sp.getActiveOffensive();
         } else {
             offensive = (AbilityOffensive) Abilities.getAbilityRandom(Ability.Type.OFFENSIVE);
-            Spleef.getInstance().sendMessage(cp, "You've been assigned a random &cOffensive &7power: &c" + offensive.getDisplayName());
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &cOffensive &7power: &c" + offensive.getDisplayName());
         }
+        offensive.reset(this);
+        getPlayer().setCooldown(Ability.Type.OFFENSIVE.getMaterial(), 0);
+    }
+
+    public void chooseUtility() {
+        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveUtility() != null) {
             utility = sp.getActiveUtility();
         } else {
             utility = (AbilityUtility) Abilities.getAbilityRandom(Ability.Type.UTILITY);
-            Spleef.getInstance().sendMessage(cp, "You've been assigned a random &9Utility &7power: &9" + utility.getDisplayName());
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &9Utility &7power: &9" + utility.getDisplayName());
         }
+        utility.reset(this);
+        getPlayer().setCooldown(Ability.Type.UTILITY.getMaterial(), 0);
+    }
+
+    public void chooseMobililty() {
+        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveMobility() != null) {
             mobility = sp.getActiveMobility();
         } else {
             mobility = (AbilityMobility) Abilities.getAbilityRandom(Ability.Type.MOBILITY);
-            Spleef.getInstance().sendMessage(cp, "You've been assigned a random &aMobility &7power: &a" + mobility.getDisplayName());
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &aMobility &7power: &a" + mobility.getDisplayName());
         }
-        for (Ability.Type type : Ability.Type.values()) {
-            cooldowns.put(type, 0D);
-        }
+        mobility.reset(this);
+        getPlayer().setCooldown(Ability.Type.MOBILITY.getMaterial(), 0);
     }
 
     @Override
@@ -84,8 +110,21 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         blocksBrokenRound = 0;
     }
 
+    @Deprecated
     public Map<String, Object> getPowerValueMap() {
         return powerValueMap;
+    }
+
+    public <T extends Object> T getPowerValue(Class<T> clazz, String key) {
+        return (T) powerValueMap.get(key);
+    }
+
+    public <T extends Object> T getPowerValue(Class<T> clazz, String key, T def) {
+        return (T) powerValueMap.getOrDefault(key, def);
+    }
+
+    public void setPowerValue(String key, Object value) {
+        powerValueMap.put(key, value);
     }
 
     public AbilityUtility getUtility() {

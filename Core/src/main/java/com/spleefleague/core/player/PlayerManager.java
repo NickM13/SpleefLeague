@@ -19,9 +19,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
@@ -175,6 +177,10 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
         return playerList.values();
     }
 
+    public TreeSet<String> getAllNames() {
+        return playerList.values().stream().map(DBPlayer::getName).collect(Collectors.toCollection(TreeSet::new));
+    }
+
     /**
      * Get all players that are not vanished
      *
@@ -204,6 +210,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
      * @return DBPlayer
      */
     private P load(UUID uuid, String username) {
+        playerList.remove(uuid);
         if (playerList.get(uuid) == null) {
             try {
                 P p = playerClass.getDeclaredConstructor().newInstance();
@@ -276,7 +283,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
     private void quit(Player player) {
         if (playerList.containsKey(player.getUniqueId())) {
             save(playerList.get(player.getUniqueId()));
-            playerList.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OFFLINE);
+            playerList.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
         }
         P p = onlinePlayerList.remove(player.getUniqueId());
         if (p != null) {
@@ -378,7 +385,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
                         } else {
                             p.newPlayer(uuid, offlinePlayer.getName());
                         }
-                        p.setOnline(DBPlayer.OnlineState.OFFLINE);
+                        p.setOnline(DBPlayer.OnlineState.OTHER);
                         playerList.put(p.getUniqueId(), p);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
                         Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);

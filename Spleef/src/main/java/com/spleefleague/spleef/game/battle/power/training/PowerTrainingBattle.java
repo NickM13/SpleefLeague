@@ -4,13 +4,12 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.spleef.game.battle.power;
+package com.spleefleague.spleef.game.battle.power.training;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.BattleUtils;
-import com.spleefleague.core.game.battle.versus.VersusBattle;
+import com.spleefleague.core.game.battle.solo.SoloBattle;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
@@ -35,24 +34,45 @@ import java.util.UUID;
 /**
  * @author NickM13
  */
-public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
+public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
 
-    private BuildStructure randomField;
+    private BuildStructure currField;
+    private int currFieldIndex = 0;
+    private int regenSpeed = 0;
+    private boolean cooldowns;
 
-    public PowerSpleefBattle(List<UUID> players, Arena arena) {
-        super(Spleef.getInstance(), players, arena, PowerSpleefPlayer.class, SpleefMode.POWER.getBattleMode());
+    public PowerTrainingBattle(List<UUID> players, Arena arena) {
+        super(Spleef.getInstance(), players, arena, PowerTrainingPlayer.class, SpleefMode.POWER.getBattleMode());
     }
-    
+
+    @Override
+    protected void sendStartMessage() {
+        Spleef.getInstance().sendMessage(battler.getCorePlayer(), "You have joined Power Training");
+    }
+
+    @Override
+    protected void setupBattleRequests() {
+
+    }
+
     /**
      * Initialize base battle settings such as GameWorld tools and Scoreboard values
      */
     @Override
     protected void setupBaseSettings() {
         SpleefUtils.setupBaseSettings(this);
-        randomField = BuildStructures.getRandom("spleef:power");
+        setupField();
+    }
+
+    private void setupField() {
+        gameWorld.clear();
+        List<BuildStructure> fields = BuildStructures.getAll("spleef:power");
+        if (currFieldIndex >= fields.size()) currFieldIndex = 0;
+        currField = BuildStructures.getAll("spleef:power").get(currFieldIndex);
+        gameWorld.clearBaseBlocks();
         gameWorld.setBaseBlocks(
                 FakeUtils.translateBlocks(
-                        FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
+                        FakeUtils.rotateBlocks(currField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
                         getArena().getOrigin().toBlockPosition()));
     }
 
@@ -61,48 +81,83 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
 
     @Override
     protected void setupScoreboard() {
-        chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
-        chatGroup.addTeam("time", "  00:00:00");
-        chatGroup.addTeam("p1", "  " + Chat.PLAYER_NAME + ChatColor.BOLD + sortedBattlers.get(0).getCorePlayer().getName());
-        chatGroup.addTeam("p1score", "");
+        chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + "Training");
+        chatGroup.addTeam("time", "00:00:00");
+        chatGroup.addTeam("p1", Chat.PLAYER_NAME + ChatColor.BOLD + sortedBattlers.get(0).getCorePlayer().getName());
         chatGroup.addTeam("p1o", "");
         chatGroup.addTeam("p1u", "");
         chatGroup.addTeam("p1m", "");
-        chatGroup.addTeam("l1", "");
-        chatGroup.addTeam("p2", "  " + Chat.PLAYER_NAME + ChatColor.BOLD + sortedBattlers.get(1).getCorePlayer().getName());
-        chatGroup.addTeam("p2score", "");
-        chatGroup.addTeam("p2o", "");
-        chatGroup.addTeam("p2u", "");
-        chatGroup.addTeam("p2m", "");
     }
 
     @Override
     public void updateScoreboard() {
-        this.chatGroup.setTeamDisplayName("time", "  " + Chat.DEFAULT + getRuntimeStringNoMillis());
-        chatGroup.setTeamDisplayName("p1score", BattleUtils.toScoreSquares(sortedBattlers.get(0), playToPoints));
+        this.chatGroup.setTeamDisplayName("time", Chat.DEFAULT + getRuntimeStringNoMillis());
         chatGroup.setTeamDisplayName("p1o", LB + Ability.Type.OFFENSIVE.getColor() + sortedBattlers.get(0).getOffensiveName() + RB);
         chatGroup.setTeamDisplayName("p1u", LB + Ability.Type.UTILITY.getColor() + sortedBattlers.get(0).getUtilityName() + RB);
         chatGroup.setTeamDisplayName("p1m", LB + Ability.Type.MOBILITY.getColor() + sortedBattlers.get(0).getMobilityName() + RB);
-        chatGroup.setTeamDisplayName("p2score", BattleUtils.toScoreSquares(sortedBattlers.get(1), playToPoints));
-        chatGroup.setTeamDisplayName("p2o", LB + Ability.Type.OFFENSIVE.getColor() + sortedBattlers.get(1).getOffensiveName() + RB);
-        chatGroup.setTeamDisplayName("p2u", LB + Ability.Type.UTILITY.getColor() + sortedBattlers.get(1).getUtilityName() + RB);
-        chatGroup.setTeamDisplayName("p2m", LB + Ability.Type.MOBILITY.getColor() + sortedBattlers.get(1).getMobilityName() + RB);
+    }
+
+    public void updatePowers() {
+        for (PowerTrainingPlayer ptp : battlers.values()) {
+            ptp.updatePowers();
+            ptp.getCorePlayer().refreshHotbar();
+        }
+    }
+
+    public void nextField() {
+        currFieldIndex++;
+        setupField();
+        fillField();
+    }
+
+    public int getRegenSpeed() {
+        return regenSpeed;
+    }
+
+    public void nextRegenSpeed() {
+        regenSpeed++;
+        if (regenSpeed > 3) {
+            regenSpeed = 0;
+        }
+        gameWorld.setRegenSpeed(Math.pow(2, regenSpeed));
+    }
+
+    public int getCurrFieldIndex() {
+        return currFieldIndex;
+    }
+
+    public boolean isCooldownEnabled() {
+        return cooldowns;
+    }
+
+    public void setCooldownEnabled(boolean enabled) {
+        cooldowns = enabled;
     }
 
     @Override
     public void fillField() {
         BuildStructures.getNames();
-        SpleefUtils.fillFieldFast(this, randomField);
+        SpleefUtils.fillFieldFast(this, currField);
     }
-    
+
+    @Override
+    protected void saveBattlerStats(PowerTrainingPlayer powerTrainingPlayer) {
+
+    }
+
+    @Override
+    protected void endRound(PowerTrainingPlayer powerTrainingPlayer) {
+
+    }
+
     @Override
     public void reset() {
         fillField();
     }
-    
+
     @Override
     public void updateField() {
-        for (PowerSpleefPlayer psp : battlers.values()) {
+        for (PowerTrainingPlayer psp : battlers.values()) {
             psp.updateAbilities();
         }
         gameWorld.performBaseBreakRegen();
@@ -111,7 +166,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     @Override
     public void startRound() {
         super.startRound();
-        for (PowerSpleefPlayer psp : battlers.values()) {
+        for (PowerTrainingPlayer psp : battlers.values()) {
             psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
             NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("biogra.nbs"), 0.2f);
         }
@@ -161,27 +216,17 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     }
 
     @Override
-    public void endBattle(PowerSpleefPlayer winner) {
-        for (PowerSpleefPlayer psp : battlers.values()) {
+    public void endBattle(PowerTrainingPlayer winner) {
+        for (PowerTrainingPlayer psp : battlers.values()) {
+            Spleef.getInstance().sendMessage(psp.getCorePlayer(), "You have left Power Training");
             Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), psp::resetCooldowns, 2L);
         }
+        super.destroy();
         super.endBattle(winner);
     }
 
     @Override
     protected void failBattler(CorePlayer cp) {
-        for (PowerSpleefPlayer psp : sortedBattlers) {
-            if (!psp.getCorePlayer().equals(cp)) {
-                psp.addRoundWin();
-                if (psp.getRoundWins() >= playToPoints) {
-                    endBattle(psp);
-                    return;
-                } else if (psp.getRoundWins() == playToPoints - 1) {
-                    chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + psp.getCorePlayer().getName(), "", 5, 20, 5);
-                }
-            }
-        }
-
         gameWorld.doFailBlast(cp);
         battlers.get(cp).respawn();
 

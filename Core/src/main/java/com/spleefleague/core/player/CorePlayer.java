@@ -8,9 +8,7 @@ package com.spleefleague.core.player;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
@@ -23,10 +21,13 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.menu.*;
+import com.spleefleague.core.menu.InventoryMenuContainer;
+import com.spleefleague.core.menu.InventoryMenuContainerAnvil;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
+import com.spleefleague.core.menu.InventoryMenuDialog;
+import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.Party;
@@ -43,14 +44,20 @@ import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.coreapi.database.annotation.DBField;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.RatedPlayer;
-import net.md_5.bungee.api.chat.*;
-import net.minecraft.server.v1_15_R1.EntityPlayer;
-import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.server.v1_16_R1.EntityPlayer;
 import org.bson.Document;
-import org.bukkit.*;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -62,7 +69,16 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -85,11 +101,16 @@ public class CorePlayer extends RatedPlayer {
     @DBField private List<TempRank> tempRanks;
     
     @DBField private Boolean vanished;
-    @DBField private Integer coins;
+    @DBField private Integer coins = 0;
+    @DBField private Integer commonOre = 0;
+    @DBField private Integer rareOre = 0;
+    @DBField private Integer epicOre = 0;
+    @DBField private Integer legendaryOre = 0;
+    @DBField private Integer mythicOre = 0;
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    @DBField private CorePlayerOptions options = new CorePlayerOptions();
-    @DBField private CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
+    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
     
     /**
      * Non-database variables
@@ -100,7 +121,7 @@ public class CorePlayer extends RatedPlayer {
     private long urlTime;
 
     // Current inventory menu page
-    private Map<String, Object> menuTags = new HashMap<>();
+    private final Map<String, Object> menuTags = new HashMap<>();
     // Current inventory menu
     private InventoryMenuContainer inventoryMenuContainer;
     // Current selected chat channel to send messages in
@@ -123,11 +144,14 @@ public class CorePlayer extends RatedPlayer {
     private BattleState battleState;
     private final PregameState pregameState;
     private GlobalZone globalZone;
+    @DBField
+    private final PlayerRatings ratings = new PlayerRatings();
 
     /**
      * Constructor for CorePlayer
      */
     public CorePlayer() {
+        super();
         this.chatChannel = ChatChannel.getDefaultChannel();
         this.lastLocation = null;
         this.checkpoint = null;
@@ -135,7 +159,6 @@ public class CorePlayer extends RatedPlayer {
         this.tempRanks = new ArrayList<>();
         this.vanished = false;
         this.party = null;
-        this.coins = 0;
         this.lastAction = System.currentTimeMillis();
         this.afk = false;
         this.afkWarned = false;
@@ -146,6 +169,7 @@ public class CorePlayer extends RatedPlayer {
     }
     
     public CorePlayer(Player player) {
+        super();
         this.uuid = player.getUniqueId();
         this.username = player.getName();
         this.battleState = BattleState.NONE;
@@ -182,12 +206,14 @@ public class CorePlayer extends RatedPlayer {
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
+        ratings.setOwner(this);
         super.init();
     }
     
     @Override
     public void initOffline() {
         collectibles.setOwner(this);
+        ratings.setOwner(this);
         super.initOffline();
     }
     
@@ -240,6 +266,16 @@ public class CorePlayer extends RatedPlayer {
         output.writeUTF(getUniqueId().toString());
         output.writeInt(getRatings().getElo(mode, season) + amt);
         Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "slcore:score", output.toByteArray());
+    }
+
+    /**
+     * Get all ratings object of a Core Player
+     *
+     * @return Core Player Ratings
+     * @see PlayerRatings
+     */
+    public PlayerRatings getRatings() {
+        return ratings;
     }
 
     /**
@@ -455,6 +491,46 @@ public class CorePlayer extends RatedPlayer {
         this.coins += coins;
     }
 
+    public int getCommonOre() {
+        return commonOre;
+    }
+
+    public void addCommonOre(int ores) {
+        this.commonOre += ores;
+    }
+
+    public int getRareOre() {
+        return rareOre;
+    }
+
+    public void addRareOre(int ores) {
+        this.rareOre += ores;
+    }
+
+    public int getEpicOre() {
+        return epicOre;
+    }
+
+    public void addEpicOre(int ores) {
+        this.epicOre += ores;
+    }
+
+    public int getLegendaryOre() {
+        return legendaryOre;
+    }
+
+    public void addLegendaryOre(int ores) {
+        this.legendaryOre += ores;
+    }
+
+    public int getMythicOre() {
+        return mythicOre;
+    }
+
+    public void addMythicOre(int ores) {
+        this.mythicOre += ores;
+    }
+
     /**
      * @return Skull of player
      */
@@ -545,21 +621,7 @@ public class CorePlayer extends RatedPlayer {
         PersonalScoreboard.updatePlayerRank(this);
         getPlayer().setOp(getRank().getHasOp());
 
-        PacketPlayOutPlayerInfo packetPlayOutPlayerInfo = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME,
-                ((CraftPlayer) getPlayer()).getHandle());
-
-
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, packetPlayOutPlayerInfo);
-
-        packet.getPlayerInfoAction().write(0, EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME);
-        List<PlayerInfoData> pidList = Lists.newArrayList(new PlayerInfoData(
-                WrappedGameProfile.fromPlayer(getPlayer()),
-                1,
-                EnumWrappers.NativeGameMode.fromBukkit(getPlayer().getGameMode()),
-                WrappedChatComponent.fromText(getDisplayName())));
-
-        //packet.getPlayerInfoDataLists().write(0, pidList);
-        //Core.sendPacketAll(packet);
+        getPlayer().setPlayerListName(getDisplayName());
 
         permissions.getPermissions().clear();
         
@@ -686,7 +748,7 @@ public class CorePlayer extends RatedPlayer {
     /**
      * Returns the coordinates of the chunk the player is in
      *
-     * @return
+     * @return Chunk Coordinate
      */
     public ChunkCoord getChunkCoord() {
         return new ChunkCoord(getLocation().getChunk().getX(), getLocation().getChunk().getZ());
@@ -834,26 +896,21 @@ public class CorePlayer extends RatedPlayer {
         return globalZone;
     }
 
-    private GlobalZone zoneChange = null;
     private boolean isChanging = false;
     public void setGlobalZone(GlobalZone globalZone) {
         if (!isInGlobal()) return;
         if (!globalZone.equals(this.globalZone)) {
-            this.zoneChange = globalZone;
             if (!isChanging) {
                 isChanging = true;
-                //Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                    if (this.zoneChange.equals(globalZone) && !isInGlobal()) {
-                        this.globalZone = this.zoneChange;
-                        sendTitle(globalZone.getName(), "", 15, 50, 15);
-                        if (!globalZone.isWild()) {
-                            //getPlayer().playSound(getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.25f, 1.5f);
-                        }
+                if (!isInGlobal()) {
+                    this.globalZone = globalZone;
+                    sendTitle(globalZone.getName(), "", 15, 50, 15);
+                    if (!globalZone.isWild()) {
+                        //getPlayer().playSound(getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.25f, 1.5f);
                     }
-                    zoneChange = null;
-                    isChanging = false;
-                    updateLeaves();
-                //}, 80L);
+                }
+                isChanging = false;
+                updateLeaves();
             }
         }
         sendHotbarText(globalZone.getName());
@@ -898,6 +955,22 @@ public class CorePlayer extends RatedPlayer {
         return chatChannel;
     }
 
+    @Override
+    public void setOnline(OnlineState state) {
+        if (this.onlineState == OnlineState.OFFLINE) {
+            if (state != OnlineState.OFFLINE) {
+                // Player coming online
+                Core.getInstance().sendMessage(getDisplayName() + " has come online.");
+            }
+        } else {
+            if (state == OnlineState.OFFLINE) {
+                // Player going offline
+                Core.getInstance().sendMessage(getDisplayName() + " has gone offline.");
+            }
+        }
+        super.setOnline(state);
+    }
+
     /**
      * Send unformatted message to player
      *
@@ -936,18 +1009,10 @@ public class CorePlayer extends RatedPlayer {
         Core.sendPacket(this, packet);
     }
 
-    public int getInvSwap() {
-        return invSwap;
-    }
-    
     public void addInvSwap() {
         invSwap++;
     }
-    
-    public void removeInvSwap() {
-        invSwap--;
-    }
-    
+
     private int invSwap = 0;
     /**
      * Set player's current InventoryMenuContainer
@@ -1066,7 +1131,7 @@ public class CorePlayer extends RatedPlayer {
     public <T> T getMenuTag(String name, Class<T> clazz) {
         if (menuTags.containsKey(name)
                 && clazz.isAssignableFrom(menuTags.get(name).getClass())) {
-            return (T) menuTags.get(name);
+            return clazz.cast(menuTags.get(name));
         }
         return null;
     }
@@ -1107,27 +1172,6 @@ public class CorePlayer extends RatedPlayer {
         return str;
     }
 
-    /**
-     * @return Banned?
-     */
-    public Infraction checkBan() {
-        Infraction latestban = Infraction.getMostRecent(getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
-        
-        if (latestban == null)
-            return null;
-        
-        switch (latestban.getType()) {
-            case UNBAN:
-                if (latestban.isExpired())
-                    return null;
-            case BAN:
-                return latestban;
-            case TEMPBAN:
-            default:
-                return null;
-        }
-    }
-    
     /**
      * Whether a player is available to join a fake world, returns
      * false if they are either currently in a battle, build world,
@@ -1267,7 +1311,7 @@ public class CorePlayer extends RatedPlayer {
     /**
      * Returns item in main hand
      *
-     * @return
+     * @return ItemStack
      */
     public final ItemStack getHeldItem() {
         return getPlayer().getInventory().getItemInMainHand();
@@ -1276,7 +1320,7 @@ public class CorePlayer extends RatedPlayer {
     /**
      * Sets an item the player's main hand
      * 
-     * @param itemStack
+     * @param itemStack Held Item
      */
     public final void setHeldItem(ItemStack itemStack) {
         getPlayer().getInventory().setItemInMainHand(itemStack);

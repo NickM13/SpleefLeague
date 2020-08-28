@@ -18,13 +18,14 @@ public class OffensiveStarCannon extends AbilityOffensive {
         boltStats.customModelData = 1;
         boltStats.fireRange = 5D;
         boltStats.count = 15;
-        boltStats.spread = 30;
+        boltStats.hSpread = 30;
+        boltStats.vSpread = 30;
         boltStats.collidable = true;
         boltStats.hitKnockback = 1D;
     }
 
     public OffensiveStarCannon() {
-        super(2, 10D);
+        super(2, 12D);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.spleefleague.proxycore.player;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.statistics.Ratings;
-import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
+import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import org.bson.Document;
 
 import java.util.HashMap;
@@ -101,7 +101,7 @@ public class ProxyPlayerRatings extends PlayerRatings {
             modeRatingsMap.put(mode, new Ratings(mode));
         }
         modeRatingsMap.get(mode).get(season).addElo(owner, amt);
-        LeaderboardManager.get(mode).getActive().setPlayerScore(owner.getUniqueId(),
+        Leaderboards.get(mode).getActive().setPlayerScore(owner.getUniqueId(),
                 modeRatingsMap.get(mode).get(season).getElo());
     }
 

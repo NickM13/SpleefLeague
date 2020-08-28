@@ -13,13 +13,14 @@ import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class PartySJBattle extends DynamicBattle<PartySJPlayer> {
 
-    public PartySJBattle(List<CorePlayer> players, Arena arena) {
+    public PartySJBattle(List<UUID> players, Arena arena) {
         super(SuperJump.getInstance(), players, arena, PartySJPlayer.class, SJMode.PARTY.getBattleMode());
     }
     

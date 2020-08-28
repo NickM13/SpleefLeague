@@ -109,9 +109,12 @@ public class ConnectionListener implements Listener {
                 1,
                 EnumWrappers.NativeGameMode.fromBukkit(cp.getPlayer().getGameMode()),
                 WrappedChatComponent.fromText(cp.getDisplayName())));
-        packet.getPlayerInfoDataLists().write(0, playerInfoDataList);
+
+        // TODO: Fix this
+        /*packet.getPlayerInfoDataLists().write(0, playerInfoDataList);
         
         Core.sendPacketAll(packet);
+         */
     }
     
     @EventHandler(priority = EventPriority.HIGH)

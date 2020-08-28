@@ -1,8 +1,9 @@
 package com.spleefleague.proxycore.player;
 
+import com.spleefleague.coreapi.player.PlayerRatings;
+import com.spleefleague.coreapi.player.PlayerStatistics;
 import com.spleefleague.coreapi.player.RatedPlayer;
 import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -14,18 +15,22 @@ public class ProxyCorePlayer extends RatedPlayer {
 
     private ServerInfo currentServer = null;
     private ProxyParty party = null;
+    private ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
+    private boolean inBattle = false;
 
     public ProxyCorePlayer() {
-        ratings = new ProxyPlayerRatings();
+
     }
 
     @Override
     public void init() {
+        proxyRatings.setOwner(this);
         super.init();
     }
 
     @Override
     public void initOffline() {
+        proxyRatings.setOwner(this);
         super.initOffline();
     }
 
@@ -46,8 +51,12 @@ public class ProxyCorePlayer extends RatedPlayer {
         return ProxyCore.getInstance().getProxy().getPlayer(uuid);
     }
 
-    public boolean canJoinBattle() {
-        return true;
+    public boolean isInBattle() {
+        return inBattle;
+    }
+
+    public void setInBattle(boolean inBattle) {
+        this.inBattle = inBattle;
     }
 
     public void setParty(ProxyParty party) {
@@ -56,6 +65,10 @@ public class ProxyCorePlayer extends RatedPlayer {
 
     public ProxyParty getParty() {
         return party;
+    }
+
+    public ProxyPlayerRatings getProxyRatings() {
+        return proxyRatings;
     }
 
 }

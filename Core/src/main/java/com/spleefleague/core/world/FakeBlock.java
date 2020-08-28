@@ -7,11 +7,11 @@
 package com.spleefleague.core.world;
 
 import com.google.common.collect.Lists;
-import net.minecraft.server.v1_15_R1.SoundEffectType;
+import net.minecraft.server.v1_16_R1.SoundEffectType;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_15_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_16_R1.block.data.CraftBlockData;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -29,18 +29,18 @@ public class FakeBlock {
     private static List<Sound> getSounds(Material material) {
         try {
             BlockData blockData = material.createBlockData();
-            net.minecraft.server.v1_15_R1.IBlockData nmsBlockData = ((CraftBlockData) blockData).getState();
-            net.minecraft.server.v1_15_R1.SoundEffectType nmsSoundEffectType = nmsBlockData.r();
+            net.minecraft.server.v1_16_R1.IBlockData nmsBlockData = ((CraftBlockData) blockData).getState();
+            net.minecraft.server.v1_16_R1.SoundEffectType nmsSoundEffectType = nmsBlockData.getStepSound();
 
-            net.minecraft.server.v1_15_R1.SoundEffect nmsBreakSound = nmsSoundEffectType.d();
+            net.minecraft.server.v1_16_R1.SoundEffect nmsBreakSound = nmsSoundEffectType.d();
 
-            net.minecraft.server.v1_15_R1.SoundEffect nmsPlaceSound = nmsSoundEffectType.e();
+            net.minecraft.server.v1_16_R1.SoundEffect nmsPlaceSound = nmsSoundEffectType.e();
         
-            Field keyField = net.minecraft.server.v1_15_R1.SoundEffect.class.getDeclaredField("a");
+            Field keyField = net.minecraft.server.v1_16_R1.SoundEffect.class.getDeclaredField("b");
             keyField.setAccessible(true);
     
-            net.minecraft.server.v1_15_R1.MinecraftKey nmsBreakString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsBreakSound);
-            net.minecraft.server.v1_15_R1.MinecraftKey nmsPlaceString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsPlaceSound);
+            net.minecraft.server.v1_16_R1.MinecraftKey nmsBreakString = (net.minecraft.server.v1_16_R1.MinecraftKey) keyField.get(nmsBreakSound);
+            net.minecraft.server.v1_16_R1.MinecraftKey nmsPlaceString = (net.minecraft.server.v1_16_R1.MinecraftKey) keyField.get(nmsPlaceSound);
         
             return Lists.newArrayList(Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()),
                     Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()));

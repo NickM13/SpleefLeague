@@ -12,10 +12,10 @@ public class QueuePlayer {
     String query;
     long joinTime;
 
-    public QueuePlayer(ProxyCorePlayer pcp, String param) {
-        if (param == null || param.equals("")) param = "*";
+    public QueuePlayer(ProxyCorePlayer pcp, String query) {
+        if (query == null || query.equals("")) query = "*";
         this.pcp = pcp;
-        this.query = param;
+        this.query = query;
         this.joinTime = System.currentTimeMillis();
     }
 

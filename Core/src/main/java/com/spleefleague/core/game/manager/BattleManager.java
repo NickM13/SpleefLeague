@@ -7,11 +7,9 @@
 package com.spleefleague.core.game.manager;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.queue.QueueContainer;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
@@ -72,7 +70,7 @@ public abstract class BattleManager {
             while (bit.hasNext()) {
                 b = bit.next();
                 if (b != null) {
-                    if (!b.isOngoing()) {
+                    if (b.isFinished()) {
                         bit.remove();
                     } else {
                         b.doCountdown();
@@ -87,8 +85,10 @@ public abstract class BattleManager {
                 b = bit.next();
                 if (b != null) {
                     if (!b.isWaiting()) {
-                        b.updateScoreboard();
-                        b.updateExperience();
+                        if (b.isOngoing()) {
+                            b.updateScoreboard();
+                            b.updateExperience();
+                        }
                     } else {
                         b.checkWaiting();
                     }
@@ -100,7 +100,7 @@ public abstract class BattleManager {
             Battle<?> b;
             while (bit.hasNext()) {
                 b = bit.next();
-                if (b != null && !b.isWaiting()) {
+                if (b != null && b.isOngoing()) {
                     b.updateField();
                 }
             }
@@ -112,7 +112,7 @@ public abstract class BattleManager {
      */
     public void close() {
         for (Battle<?> battle : battles) {
-            battle.endBattle();
+            battle.destroy();
         }
         battles.clear();
     }
@@ -145,9 +145,11 @@ public abstract class BattleManager {
     }
     
     public abstract void startMatch(List<CorePlayer> corePlayers, String name);
+
     public void startMatch(Battle<?> battle) {
         battles.add(battle);
     }
+
     public void endMatch(Battle<?> battle) {
         battles.remove(battle);
     }

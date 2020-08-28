@@ -116,7 +116,7 @@ public class MobilityJetpack extends AbilityMobility {
      */
     @Override
     public boolean onUse(PowerSpleefPlayer psp) {
-        if ((double) psp.getPowerValueMap().get("jetpacking") >= 0D) {
+        if ((double) psp.getPowerValueMap().getOrDefault("jetpacking", 0) >= 0D) {
             disableJetpack(psp);
         } else {
             if ((double) psp.getPowerValueMap().get("fuel") > 0) {

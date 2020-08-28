@@ -6,12 +6,17 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.world.build.BuildWorld;
+import org.bukkit.Bukkit;
+
+import java.util.Objects;
 
 /**
  * @author NickM13
@@ -34,6 +39,7 @@ public class LeaveCommand extends CoreCommand {
         } else if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");
         } else {
+            sender.getPlayer().sendPluginMessage(Core.getInstance(), "queue:leaveall", ByteStreams.newDataOutput().toByteArray());
             error(sender, "You have nothing to leave!");
         }
     }

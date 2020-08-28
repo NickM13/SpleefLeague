@@ -10,11 +10,9 @@ import com.spleefleague.coreapi.database.variable.DBPlayer;
 public abstract class RatedPlayer extends DBPlayer {
 
     @DBField protected PlayerStatistics statistics;
-    @DBField protected PlayerRatings ratings;
 
     public RatedPlayer() {
         statistics = new PlayerStatistics();
-        ratings = new PlayerRatings();
     }
 
     /**
@@ -24,13 +22,11 @@ public abstract class RatedPlayer extends DBPlayer {
     @Override
     public void init() {
         statistics.setOwner(this);
-        ratings.setOwner(this);
     }
 
     @Override
     public void initOffline() {
         statistics.setOwner(this);
-        ratings.setOwner(this);
     }
 
     /**
@@ -49,16 +45,6 @@ public abstract class RatedPlayer extends DBPlayer {
      */
     public PlayerStatistics getStatistics() {
         return statistics;
-    }
-
-    /**
-     * Get all ratings object of a Core Player
-     *
-     * @return Core Player Ratings
-     * @see PlayerRatings
-     */
-    public PlayerRatings getRatings() {
-        return ratings;
     }
 
     public void updateLeaderboard(String mode, int season) {

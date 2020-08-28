@@ -4,9 +4,13 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefBattle;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.utility.*;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.mobility.*;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.offensive.*;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +25,7 @@ import java.util.TreeMap;
  */
 public class Abilities {
 
-    private static Map<Ability.Type, SortedMap<String, Ability>> abilityMap = new HashMap<>();
+    private static final Map<Ability.Type, SortedMap<String, Ability>> abilityMap = new HashMap<>();
 
     public static void init() {
         for (Ability.Type type : Ability.Type.values()) {
@@ -83,6 +87,41 @@ public class Abilities {
                         cp.getBattle().getBattler(cp) != null &&
                         ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility() != null)
                 .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility() != null);
+
+
+
+        InventoryMenuAPI.createItemHotbar(Ability.Type.MOBILITY.getSlot(), "pstMobilityItem")
+                .setName(cp -> "&a&l" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayName() + " (Place Block)")
+                .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                .setDescription(cp -> "&6&lClick to Change!\n\n" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getFullDescription())
+                .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
+                        cp.getBattle() instanceof PowerTrainingBattle &&
+                        cp.getBattle().getBattler(cp) != null &&
+                        ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility() != null)
+                .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility() != null)
+                .setLinkedContainer(AbilityMobility.createNewMenu().getLinkedChest());
+
+        InventoryMenuAPI.createItemHotbar(Ability.Type.OFFENSIVE.getSlot(), "pstOffensiveItem")
+                .setName(cp -> "&c&l" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getOffensive().getDisplayName() + " (Drop Item)")
+                .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getOffensive().getDisplayItem())
+                .setDescription(cp -> "&6&lClick to Change!\n\n" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getOffensive().getFullDescription())
+                .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
+                        cp.getBattle() instanceof PowerTrainingBattle &&
+                        cp.getBattle().getBattler(cp) != null &&
+                        ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getOffensive() != null)
+                .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getOffensive() != null)
+                .setLinkedContainer(AbilityOffensive.createNewMenu().getLinkedChest());
+
+        InventoryMenuAPI.createItemHotbar(Ability.Type.UTILITY.getSlot(), "pstUtilityItem")
+                .setName(cp -> "&9&l" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility().getDisplayName() + " (Swap Item)")
+                .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility().getDisplayItem())
+                .setDescription(cp -> "&6&lClick to Change!\n\n" + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility().getFullDescription())
+                .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
+                        cp.getBattle() instanceof PowerTrainingBattle &&
+                        cp.getBattle().getBattler(cp) != null &&
+                        ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility() != null)
+                .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getUtility() != null)
+                .setLinkedContainer(AbilityUtility.createNewMenu().getLinkedChest());
     }
 
     private static void addAbility(Ability ability) {

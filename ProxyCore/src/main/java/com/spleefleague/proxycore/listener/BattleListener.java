@@ -5,7 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.BattleManager;
-import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
+import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.PluginMessageEvent;
@@ -39,7 +39,7 @@ public class BattleListener implements Listener {
     }
 
     @EventHandler
-    public void onBattleStart(PluginMessageEvent event) {
+    public void onBattleMessage(PluginMessageEvent event) {
         switch (event.getTag()) {
             case "battle:end": {
                 ServerInfo lobby = ProxyCore.getInstance().getLobbyServers().get(0);
@@ -53,12 +53,12 @@ public class BattleListener implements Listener {
                     ByteArrayDataOutput scoreOut = ByteStreams.newDataOutput();
                     scoreOut.writeUTF(modeName);
                     scoreOut.writeInt(season);
-                    scoreOut.write(playerCount);
+                    scoreOut.writeInt(playerCount);
                     for (int i = 0; i < playerCount; i++) {
                         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(UUID.fromString(input.readUTF()));
                         players.add(pcp);
                         int score = input.readInt();
-                        LeaderboardManager.get(modeName).getLeaderboards().get(season).setPlayerScore(pcp.getUniqueId(), score);
+                        Leaderboards.get(modeName).getLeaderboards().get(season).setPlayerScore(pcp.getUniqueId(), score);
                         scoreOut.writeUTF(pcp.getUniqueId().toString());
                         scoreOut.writeInt(score);
                     }
@@ -77,7 +77,12 @@ public class BattleListener implements Listener {
                 }
                 for (ProxyCorePlayer pcp : players) {
                     pcp.getPlayer().connect(lobby);
+                    pcp.setInBattle(false);
                 }
+            }
+                break;
+            case "battle:remove": {
+
             }
                 break;
         }

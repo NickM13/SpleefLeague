@@ -27,13 +27,14 @@ import org.bukkit.Material;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     
-    public EndlessSJBattle(List<CorePlayer> players, Arena arena) {
+    public EndlessSJBattle(List<UUID> players, Arena arena) {
         super(SuperJump.getInstance(), players, arena, EndlessSJPlayer.class, SJMode.ENDLESS.getBattleMode());
     }
     
@@ -160,11 +161,6 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     }
     
     @Override
-    protected void endBattle(EndlessSJPlayer endlessSJPlayer) {
-        endBattle();
-    }
-    
-    @Override
     public void updateScoreboard() {
         chatGroup.setTeamDisplayName("TodayPersonal", " Personal: " + battler.getLevel());
         chatGroup.setTeamDisplayName("TodayServer", " Server: ");
@@ -202,7 +198,7 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     
     @Override
     protected void leaveBattler(CorePlayer cp) {
-        endBattle();
+        super.endBattle(null);
     }
     
     /*

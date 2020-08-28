@@ -1,10 +1,12 @@
 package com.spleefleague.proxycore.player;
 
 import com.mongodb.client.MongoCollection;
+import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.proxycore.ProxyCore;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.bson.Document;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerJoin(ProxiedPlayer pp) {
         load(pp);
+        //ProxyCore.sendMessage(Chat.PLAYER_NAME + pp.getDisplayName() + " has logged in");
     }
 
     private void load(ProxiedPlayer pp) {
@@ -59,6 +62,11 @@ public class ProxyPlayerManager {
 
     public void onPlayerQuit(ProxiedPlayer pp) {
         //save(players.remove(pp.getUniqueId()));
+        //ProxyCore.sendMessage(Chat.PLAYER_NAME + pp.getDisplayName() + " has logged out");
+    }
+
+    public Collection<ProxyCorePlayer> getAll() {
+        return players.values();
     }
 
     public ProxyCorePlayer get(UUID uuid) {

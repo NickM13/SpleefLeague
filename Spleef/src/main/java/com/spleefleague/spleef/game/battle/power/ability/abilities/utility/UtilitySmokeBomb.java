@@ -12,7 +12,7 @@ import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
-import net.minecraft.server.v1_15_R1.MovingObjectPosition;
+import net.minecraft.server.v1_16_R1.MovingObjectPosition;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;

@@ -58,7 +58,8 @@ public class OptionsMenu {
 
             menuItem.getLinkedChest()
                     .addMenuItem(chatOptionsItem);
-            
+
+            /*
             // Post Game Warping
             InventoryMenuItemOption postGameItem = (InventoryMenuItemOption) InventoryMenuAPI
                     .createItemOption(cp -> { return cp.getOptions().getOption(CorePlayerOptions.CPOptions.POST_GAME_WARP); })
@@ -72,6 +73,7 @@ public class OptionsMenu {
             
             menuItem.getLinkedChest()
                     .addMenuItem(postGameItem);
+             */
         }
         return menuItem;
     }

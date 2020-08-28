@@ -1,14 +1,23 @@
 package com.spleefleague.core.game.battle.solo;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
+import org.bukkit.Bukkit;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -18,7 +27,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected BP battler;
     
-    public SoloBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public SoloBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
     }
     
@@ -98,7 +107,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
-    
+        endBattle(null);
     }
     
     /**
@@ -134,5 +143,23 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      * @param playTo Play To Value
      */
     public void setPlayTo(int playTo) { }
+
+    /**
+     * End a battle with a determined winner
+     *
+     * @param winner Winner
+     */
+    @Override
+    public void endBattle(BP winner) {
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        output.writeUTF(getMode().getName());   // Mode Name
+        output.writeBoolean(false);
+        output.writeInt(battlers.values().size());
+        for (BattlePlayer bp : battlers.values()) {
+            output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
+        }
+        destroy();
+        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:end", output.toByteArray());
+    }
     
 }

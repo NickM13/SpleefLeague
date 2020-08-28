@@ -19,6 +19,7 @@ import org.bukkit.Location;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -29,7 +30,7 @@ public class BonanzaSpleefBattle extends BonanzaBattle<BonanzaSpleefPlayer> {
     protected long fieldResetTime = 0;
     protected BonanzaSpleefPlayer bountyPlayer = null;
     
-    public BonanzaSpleefBattle(List<CorePlayer> players,
+    public BonanzaSpleefBattle(List<UUID> players,
                                Arena arena) {
         super(Spleef.getInstance(), players, arena, BonanzaSpleefPlayer.class, SpleefMode.BONANZA.getBattleMode());
     }
@@ -102,7 +103,7 @@ public class BonanzaSpleefBattle extends BonanzaBattle<BonanzaSpleefPlayer> {
     }
 
     @Override
-    protected void endBattle(BonanzaSpleefPlayer winner) {
+    public void endBattle(BonanzaSpleefPlayer winner) {
 
     }
 

@@ -20,22 +20,36 @@ public class QueueListener implements Listener {
         ProxyCore.getInstance().getProxy().registerChannel("queue:join");
         ProxyCore.getInstance().getProxy().registerChannel("queue:leave");
         ProxyCore.getInstance().getProxy().registerChannel("queue:leaveall");
+        ProxyCore.getInstance().getProxy().registerChannel("queue:solo");
     }
 
     @EventHandler
     public void onChatPluginMessage(PluginMessageEvent event) {
-        if (event.getTag().startsWith("queue")) {
+        if (event.getTag().startsWith("queue:")) {
             ByteArrayDataInput input = ByteStreams.newDataInput(event.getData());
             UUID player = UUID.fromString(input.readUTF());
-            if (event.getTag().equals("queue:join")) {
-                String mode = input.readUTF();
-                String param = input.readUTF();
-                QueueManager.joinQueue(player, mode, param);
-            } else if (event.getTag().equals("queue:leave")) {
-                String mode = input.readUTF();
-                QueueManager.leaveQueue(player, mode);
-            } else if (event.getTag().equals("queue:leaveall")) {
-                QueueManager.leaveAllQueues(player);
+            switch (event.getTag()) {
+                case "queue:join": {
+                    String mode = input.readUTF();
+                    String param = input.readUTF();
+                    QueueManager.joinQueue(player, mode, param);
+                    break;
+                }
+                case "queue:leave": {
+                    String mode = input.readUTF();
+                    QueueManager.leaveQueue(player, mode);
+                    break;
+                }
+                case "queue:leaveall": {
+                    QueueManager.leaveAllQueues(player);
+                    break;
+                }
+                case "queue:solo": {
+                    String mode = input.readUTF();
+                    String param = input.readUTF();
+                    QueueManager.joinSolo(player, mode, param);
+                    break;
+                }
             }
         }
     }

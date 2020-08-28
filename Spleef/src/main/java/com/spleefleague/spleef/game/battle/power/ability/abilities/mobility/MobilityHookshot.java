@@ -1,12 +1,8 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
 import com.spleefleague.core.world.FakeUtils;
@@ -15,11 +11,12 @@ import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.offensive.OffensiveBoomerang;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -159,36 +156,22 @@ public class MobilityHookshot extends AbilityMobility {
     @Override
     public void update(PowerSpleefPlayer psp) {
         HookshotProjectile hookshot = (HookshotProjectile) psp.getPowerValueMap().get("hookshot");
-        double hookshotTime = (double) psp.getPowerValueMap().get("hookshottime");
-        Vector hookshotDir = (Vector) psp.getPowerValueMap().get("hookshotdir");
-        if (hookshot != null) {
-            if (hookshot.isHooked()) {
-                if (hookshot.isAlive()) {
-                    psp.getPlayer().setGravity(false);
-                    Vector dir = hookshot.getHookPos().subtract(psp.getPlayer().getLocation().toVector()).normalize();
-                    if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) < 0.2) {
-                        psp.getPlayer().setVelocity(new Vector(0, 0, 0));
-                    } else {
-                        if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) > 1.25) {
-                            psp.getBattle().getGameWorld().breakBlocks(psp.getPlayer().getBoundingBox().expand(0.15, 0., 0.15, 0.15, 0.15, 0.15));
-                        }
-                        psp.getPlayer().setVelocity(dir.multiply(Math.min(1.1, hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) / 5.)));
-                    }
+        if (hookshot != null && hookshot.isHooked()) {
+            if (hookshot.isAlive()) {
+                psp.getPlayer().setGravity(false);
+                Vector dir = hookshot.getHookPos().subtract(psp.getPlayer().getLocation().toVector()).normalize();
+                if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) < 0.2) {
+                    psp.getPlayer().setVelocity(new Vector(0, 0, 0));
                 } else {
-                    psp.getPowerValueMap().put("hookshot", null);
-                    psp.getPlayer().setGravity(true);
-                    applyCooldown(psp);
+                    if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) > 1.25) {
+                        psp.getBattle().getGameWorld().breakBlocks(psp.getPlayer().getBoundingBox().expand(0.15, 0., 0.15, 0.15, 0.15, 0.15));
+                    }
+                    psp.getPlayer().setVelocity(dir.multiply(Math.min(1.1, hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) / 5.)));
                 }
-            }
-        }
-        if (hookshotTime >= 0) {
-            if (hookshotTime < psp.getBattle().getRoundTime()) {
-                psp.getPowerValueMap().put("hookshottime", -1D);
-                psp.getPowerValueMap().put("hookshotdir", null);
-                psp.getPlayer().setGravity(true);
             } else {
-                psp.getPlayer().setVelocity(hookshotDir.clone().multiply(1.2));
-                psp.getBattle().getGameWorld().breakBlocks(psp.getPlayer().getBoundingBox().expand(0.15, -0.05, 0.15, 0.15, 0.15, 0.15));
+                psp.getPowerValueMap().put("hookshot", null);
+                psp.getPlayer().setGravity(true);
+                applyCooldown(psp);
             }
         }
     }
@@ -209,12 +192,9 @@ public class MobilityHookshot extends AbilityMobility {
             return false;
         } else {
             psp.getPowerValueMap().put("hookshot", null);
-            psp.getPlayer().setGravity(true);
-            psp.getPowerValueMap().put("hookshottime", psp.getBattle().getRoundTime() + 0.3);
             Location facing = psp.getPlayer().getLocation().clone();
             facing.setPitch(Math.max(-60, Math.min(60, facing.getPitch())));
-            psp.getPowerValueMap().put("hookshotdir", facing.getDirection());
-            psp.getPlayer().setVelocity(facing.getDirection().clone().normalize().multiply(1.1));
+            AbilityUtils.startFling(psp, facing.getDirection(), 0.3);
             Entity hookedEntity = hookshot.getHookedEntity();
             if (hookedEntity != null) {
                 if (hookedEntity instanceof Player) {
@@ -244,6 +224,7 @@ public class MobilityHookshot extends AbilityMobility {
         psp.getPowerValueMap().put("hookshottime", -1D);
         psp.getPowerValueMap().put("hookshotdir", null);
         psp.getPlayer().setGravity(true);
+        AbilityUtils.stopFling(psp);
     }
 
 }

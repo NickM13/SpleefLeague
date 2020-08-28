@@ -2,6 +2,8 @@ package com.spleefleague.spleef.game.battle.power.ability;
 
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingPlayer;
 import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -159,9 +161,13 @@ public abstract class Ability {
     }
 
     protected void applyCooldown(PowerSpleefPlayer psp) {
-        double newCooldown = Math.max(psp.getBattle().getRoundTime(), psp.getCooldown(type)) + cooldown;
-        psp.setCooldown(type, newCooldown);
-        psp.getPlayer().setCooldown(type.getMaterial(), (int) (20 * Math.max(globalCooldown, newCooldown - (psp.getBattle().getRoundTime()) - (cooldown * (charges - 1)))));
+        if (psp instanceof PowerTrainingPlayer && !((PowerTrainingBattle) psp.getBattle()).isCooldownEnabled()) {
+            applyCooldown(psp, 1);
+        } else {
+            double newCooldown = Math.max(psp.getBattle().getRoundTime(), psp.getCooldown(type)) + cooldown;
+            psp.setCooldown(type, newCooldown);
+            psp.getPlayer().setCooldown(type.getMaterial(), (int) (20 * Math.max(globalCooldown, newCooldown - (psp.getBattle().getRoundTime()) - (cooldown * (charges - 1)))));
+        }
     }
 
     protected void applyCooldown(PowerSpleefPlayer psp, double cooldown) {

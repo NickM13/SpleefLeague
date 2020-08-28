@@ -20,13 +20,14 @@ import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.ChatColor;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
 
-    public ClassicSpleefBattle(List<CorePlayer> players, Arena arena) {
+    public ClassicSpleefBattle(List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), players, arena, ClassicSpleefPlayer.class, SpleefMode.CLASSIC.getBattleMode());
     }
 

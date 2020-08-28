@@ -266,18 +266,19 @@ public class Core extends CorePlugin<CorePlayer> {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle()
                         && cp.getBuildWorld() == cp2.getBuildWorld()) {
-                    cp.getPlayer().showPlayer(this, cp2.getPlayer());
-                    if (!cp.isVanished())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
-                    else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    //cp.getPlayer().showPlayer(this, cp2.getPlayer());
+                    //if (!cp.isVanished())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    //else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
-                    cp.getPlayer().hidePlayer(this, cp2.getPlayer());
-                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    //cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    //cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 }
             }
         }
     }
 
     public void returnToHub(CorePlayer cp) {
+        /*
         Player p = cp.getPlayer();
         if (p != null) {
             ByteArrayDataOutput output = ByteStreams.newDataOutput();
@@ -289,6 +290,7 @@ public class Core extends CorePlugin<CorePlayer> {
                 p.sendPluginMessage(Core.getInstance(), "BungeeCord", output.toByteArray());
             }, 20L);
         }
+        */
     }
 
     /**
@@ -316,13 +318,17 @@ public class Core extends CorePlugin<CorePlayer> {
                                         WrappedChatComponent.fromText(cp.getDisplayName()))));
                                  */
                             } else {
+                                /*
                                 pe.setCancelled(true);
+                                 */
                             }
                             break;
                         case REMOVE_PLAYER:
                             cp = Core.getInstance().getPlayers().get(packet.getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID());
                             if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE && !cp.isVanished()) {
+                                /*
                                 pe.setCancelled(true);
+                                 */
                             }
                             break;
                         default: break;
@@ -691,6 +697,16 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public void sendTell(CorePlayer sender, CorePlayer target, String msg) {
         sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
+
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        output.writeUTF(sender.getUniqueId().toString());
+        output.writeUTF(target.getUniqueId().toString());
+        output.writeUTF(msg);
+
+        sender.getPlayer().sendPluginMessage(Core.getInstance(), "slcore:tell", output.toByteArray());
+    }
+
+    public void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
         target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
         target.setReply(sender.getPlayer());
         target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
@@ -704,7 +720,7 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public void broadcast(String msg) {
         String title, subtitle;
-        String[] msgs = msg.split("/");
+        String[] msgs = msg.split("\\n");
         title = msgs[0];
         subtitle = msgs.length > 1 ? msgs[1] : "";
         Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);

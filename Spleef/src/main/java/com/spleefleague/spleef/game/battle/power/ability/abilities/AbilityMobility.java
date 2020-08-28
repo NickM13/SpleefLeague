@@ -7,24 +7,33 @@ import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.player.SpleefPlayer;
-import org.bukkit.Material;
 
 /**
  * @author NickM13
  * @since 5/17/2020
  */
 public abstract class AbilityMobility extends Ability {
-    
+
+    private static InventoryMenuItem menuItem = null;
+
     public static InventoryMenuItem createMenu() {
+        if (menuItem == null) {
+            menuItem = createNewMenu();
+        }
+        return menuItem;
+    }
+
+    public static InventoryMenuItem createNewMenu() {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&a&lMobility Power (Place Block)")
                 .setDescription(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     return "Select a mobility power from a selection of &c" +
-                        Abilities.getAbilities(Type.MOBILITY).size() +
-                        " &7unique abilities. Only one mobility ability may be equipped at once." +
-                        "\n\n&7&lCurrently Equipped: &6" +
-                            (sp.getActiveMobility() != null ? sp.getActiveMobility().getDisplayName() : "Random Power"); })
+                            Abilities.getAbilities(Type.MOBILITY).size() +
+                            " &7unique abilities. Only one mobility ability may be equipped at once." +
+                            "\n\n&7&lCurrently Equipped: &6" +
+                            (sp.getActiveMobility() != null ? sp.getActiveMobility().getDisplayName() : "Random Power");
+                })
                 .setDisplayItem(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     if (sp.getActiveMobility() != null) {
@@ -40,11 +49,11 @@ public abstract class AbilityMobility extends Ability {
                     container.clearUnsorted();
                     int i = 0;
                     container.addMenuItem(InventoryMenuAPI.createItem()
-                            .setName(Type.MOBILITY.getColor() + "Random Power")
-                            .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.MOBILITY.getMaterial(), 11))
-                            .setDescription("Select a random mobility power for your next match!")
-                            .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveMobility(""))
-                            .setCloseOnAction(false),
+                                    .setName(Type.MOBILITY.getColor() + "Random Power")
+                                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.MOBILITY.getMaterial(), 11))
+                                    .setDescription("Select a random mobility power for your next match!")
+                                    .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveMobility(""))
+                                    .setCloseOnAction(false),
                             0);
                     for (Ability ability : Abilities.getAbilities(Type.MOBILITY).values()) {
                         container.addMenuItem(InventoryMenuAPI.createItem()

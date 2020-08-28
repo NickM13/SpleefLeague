@@ -14,13 +14,14 @@ import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     
-    public ClassicSpleggBattle(List<CorePlayer> players, Arena arena) {
+    public ClassicSpleggBattle(List<UUID> players, Arena arena) {
         super(Splegg.getInstance(), players, arena, ClassicSpleggPlayer.class, SpleggMode.CLASSIC.getBattleMode());
     }
     

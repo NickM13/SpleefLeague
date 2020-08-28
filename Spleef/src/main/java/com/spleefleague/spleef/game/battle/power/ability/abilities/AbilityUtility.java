@@ -14,16 +14,26 @@ import com.spleefleague.spleef.player.SpleefPlayer;
  */
 public abstract class AbilityUtility extends Ability {
 
+    private static InventoryMenuItem menuItem;
+
     public static InventoryMenuItem createMenu() {
+        if (menuItem == null) {
+            menuItem = createNewMenu();
+        }
+        return menuItem;
+    }
+
+    public static InventoryMenuItem createNewMenu() {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&9&lUtility Power (Swap Item)")
                 .setDescription(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     return "Select a utility power from a selection of &c" +
-                        Abilities.getAbilities(Type.UTILITY).size() +
-                        " &7unique abilities. Only one utility ability may be equipped at once." +
-                        "\n\n&7&lCurrently Equipped: &6" +
-                        (sp.getActiveUtility() != null ? sp.getActiveUtility().getDisplayName() : "Random Power"); })
+                            Abilities.getAbilities(Type.UTILITY).size() +
+                            " &7unique abilities. Only one utility ability may be equipped at once." +
+                            "\n\n&7&lCurrently Equipped: &6" +
+                            (sp.getActiveUtility() != null ? sp.getActiveUtility().getDisplayName() : "Random Power");
+                })
                 .setDisplayItem(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     if (sp.getActiveUtility() != null) {
@@ -39,11 +49,11 @@ public abstract class AbilityUtility extends Ability {
                     container.clearUnsorted();
                     int i = 0;
                     container.addMenuItem(InventoryMenuAPI.createItem()
-                            .setName(Type.UTILITY.getColor() + "Random Power")
-                            .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.UTILITY.getMaterial(), 11))
-                            .setDescription("Select a random utility power for your next match!")
-                            .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveUtility(""))
-                            .setCloseOnAction(false),
+                                    .setName(Type.UTILITY.getColor() + "Random Power")
+                                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.UTILITY.getMaterial(), 11))
+                                    .setDescription("Select a random utility power for your next match!")
+                                    .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveUtility(""))
+                                    .setCloseOnAction(false),
                             0);
                     for (Ability ability : Abilities.getAbilities(Type.UTILITY).values()) {
                         container.addMenuItem(InventoryMenuAPI.createItem()

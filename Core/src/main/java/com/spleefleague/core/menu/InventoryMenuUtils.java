@@ -164,5 +164,9 @@ public class InventoryMenuUtils {
         skull.setItemMeta(skullMeta);
         return skull;
     }
+
+    public static ItemStack createCustomSkullOrDefault(UUID uuid) {
+        return InventoryMenuSkullManager.getPlayerSkull(uuid);
+    }
     
 }

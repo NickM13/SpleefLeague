@@ -7,7 +7,6 @@ import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.player.SpleefPlayer;
-import org.bukkit.Material;
 
 /**
  * @author NickM13
@@ -15,16 +14,26 @@ import org.bukkit.Material;
  */
 public abstract class AbilityOffensive extends Ability {
 
+    private static InventoryMenuItem menuItem;
+
     public static InventoryMenuItem createMenu() {
+        if (menuItem == null) {
+            menuItem = createNewMenu();
+        }
+        return menuItem;
+    }
+
+    public static InventoryMenuItem createNewMenu() {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&c&lOffensive Power (Drop Item)")
                 .setDescription(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     return "Select an offensive power from a selection of &c" +
-                        Abilities.getAbilities(Type.OFFENSIVE).size() +
-                        " &7unique abilities. Only one offensive ability may be equipped at once." +
-                        "\n\n&7&lCurrently Equipped: &6" +
-                                (sp.getActiveOffensive() != null ? sp.getActiveOffensive().getDisplayName() : "Random Power"); })
+                            Abilities.getAbilities(Type.OFFENSIVE).size() +
+                            " &7unique abilities. Only one offensive ability may be equipped at once." +
+                            "\n\n&7&lCurrently Equipped: &6" +
+                            (sp.getActiveOffensive() != null ? sp.getActiveOffensive().getDisplayName() : "Random Power");
+                })
                 .setDisplayItem(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
                     if (sp.getActiveOffensive() != null) {
@@ -40,11 +49,11 @@ public abstract class AbilityOffensive extends Ability {
                     container.clearUnsorted();
                     int i = 0;
                     container.addMenuItem(InventoryMenuAPI.createItem()
-                            .setName(Type.OFFENSIVE.getColor() + "Random Power")
-                            .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.OFFENSIVE.getMaterial(), 11))
-                            .setDescription("Select a random offensive power for your next match!")
-                            .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveOffensive(""))
-                            .setCloseOnAction(false),
+                                    .setName(Type.OFFENSIVE.getColor() + "Random Power")
+                                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Type.OFFENSIVE.getMaterial(), 11))
+                                    .setDescription("Select a random offensive power for your next match!")
+                                    .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveOffensive(""))
+                                    .setCloseOnAction(false),
                             0);
                     for (Ability ability : Abilities.getAbilities(Type.OFFENSIVE).values()) {
                         container.addMenuItem(InventoryMenuAPI.createItem()

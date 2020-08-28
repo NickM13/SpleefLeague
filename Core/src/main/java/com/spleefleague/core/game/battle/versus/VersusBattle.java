@@ -5,7 +5,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
@@ -23,6 +22,7 @@ import org.bukkit.ChatColor;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -32,7 +32,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected int playToPoints = 5;
     
-    public VersusBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public VersusBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
     }
     
@@ -134,6 +134,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void updateExperience() {
     
     }
+
+    protected void onScorePoint(BP winner) {
+        chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " has scored a point!");
+    }
     
     /**
      * End a round with a determined winner
@@ -149,8 +153,11 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
         winner.addRoundWin();
         if (winner.getRoundWins() < playToPoints) {
-            chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
+            onScorePoint(winner);
             startRound();
+            if (winner.getRoundWins() == playToPoints - 1) {
+                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 10, 5);
+            }
         } else {
             endBattle(winner);
         }
@@ -191,56 +198,64 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      * @param winner Winner
      */
     @Override
-    protected void endBattle(BP winner) {
-        if (winner == null) {
-            endBattle();
-            return;
-        }
-        BP loser = null;
-        for (CorePlayer cp : battlers.keySet()) {
-            if (cp != null && !cp.equals(winner.getCorePlayer())) {
-                loser = battlers.get(cp);
-                break;
-            }
-        }
+    public void endBattle(BP winner) {
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeUTF(getMode().getName());   // Mode Name
-        if (loser == null) {
-            output.writeBoolean(false);         // Rating Change
+        if (winner == null) {
+            output.writeBoolean(false);
+            output.writeInt(battlers.values().size());
             for (BattlePlayer bp : battlers.values()) {
                 output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
             }
-            loser = winner;
-            getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                    + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                    + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
-                    + Chat.PLAYER_NAME + loser.getPlayer().getName()
-                    + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                    + Chat.DEFAULT + " in "
-                    + Chat.GAMEMODE + getMode().getDisplayName() + " "
-                    + Chat.DEFAULT + "("
-                    + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                    + Chat.DEFAULT + ")");
+            getPlugin().sendMessage(Chat.DEFAULT + "Battle between "
+                    + Chat.PLAYER_NAME + CoreUtils.mergePlayerNames(battlers.keySet())
+                    + Chat.DEFAULT + " was peacefully concluded.");
         } else {
-            output.writeBoolean(true);              // Rating Change
-            output.writeInt(getMode().getSeason()); // Mode Season
-            applyEloChange(winner);
-            for (BattlePlayer bp : battlers.values()) {
-                output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
-                output.writeInt(bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()));
+            BP loser = null;
+            for (CorePlayer cp : battlers.keySet()) {
+                if (cp != null && !cp.equals(winner.getCorePlayer())) {
+                    loser = battlers.get(cp);
+                    break;
+                }
             }
-            getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                    + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                    + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
-                    + Chat.PLAYER_NAME + loser.getPlayer().getName()
-                    + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                    + Chat.DEFAULT + " in "
-                    + Chat.GAMEMODE + getMode().getDisplayName() + " "
-                    + Chat.DEFAULT + "("
-                    + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                    + Chat.DEFAULT + ")");
+            if (loser == null) {
+                output.writeBoolean(false);         // Rating Change
+                for (BattlePlayer bp : battlers.values()) {
+                    output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
+                }
+                loser = winner;
+                getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                        + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                        + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
+                        + Chat.PLAYER_NAME + loser.getPlayer().getName()
+                        + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                        + Chat.DEFAULT + " in "
+                        + Chat.GAMEMODE + getMode().getDisplayName() + " "
+                        + Chat.DEFAULT + "("
+                        + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
+                        + Chat.DEFAULT + ")");
+            } else {
+                output.writeBoolean(true);              // Rating Change
+                output.writeInt(getMode().getSeason()); // Mode Season
+                applyEloChange(winner);
+                output.writeInt(battlers.size());
+                for (BattlePlayer bp : battlers.values()) {
+                    output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
+                    output.writeInt(bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()));
+                }
+                getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                        + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                        + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
+                        + Chat.PLAYER_NAME + loser.getPlayer().getName()
+                        + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                        + Chat.DEFAULT + " in "
+                        + Chat.GAMEMODE + getMode().getDisplayName() + " "
+                        + Chat.DEFAULT + "("
+                        + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
+                        + Chat.DEFAULT + ")");
+            }
         }
-        endBattle();
+        destroy();
         Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:end", output.toByteArray());
     }
     

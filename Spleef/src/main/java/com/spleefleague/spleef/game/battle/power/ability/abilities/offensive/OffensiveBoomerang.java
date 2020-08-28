@@ -9,10 +9,8 @@ import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
-import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
@@ -94,7 +92,7 @@ public class OffensiveBoomerang extends AbilityOffensive {
     }
 
     public OffensiveBoomerang() {
-        super(12, 5);
+        super(12, 4D);
     }
 
     @Override

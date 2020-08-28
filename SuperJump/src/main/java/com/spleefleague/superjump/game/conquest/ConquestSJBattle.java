@@ -12,13 +12,14 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class ConquestSJBattle extends SoloBattle<ConquestSJPlayer> {
 
-    public ConquestSJBattle(List<CorePlayer> players, Arena arena) {
+    public ConquestSJBattle(List<UUID> players, Arena arena) {
         super(SuperJump.getInstance(), players, arena, ConquestSJPlayer.class, SJMode.CONQUEST.getBattleMode());
     }
     
@@ -71,11 +72,6 @@ public class ConquestSJBattle extends SoloBattle<ConquestSJPlayer> {
     
     @Override
     protected void endRound(ConquestSJPlayer conquestSJPlayer) {
-    
-    }
-    
-    @Override
-    protected void endBattle(ConquestSJPlayer conquestSJPlayer) {
     
     }
     

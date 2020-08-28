@@ -7,6 +7,8 @@
 package com.spleefleague.spleef.game;
 
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 import com.spleefleague.spleef.game.battle.team.*;
 import com.spleefleague.spleef.game.battle.power.*;
 import com.spleefleague.spleef.game.battle.multi.*;
@@ -22,6 +24,7 @@ public enum SpleefMode {
     TEAM,
     MULTI,
     POWER,
+    POWER_TRAINING,
     WC,
     BONANZA;
     
@@ -33,6 +36,7 @@ public enum SpleefMode {
         BattleMode.addArenaMode(MULTI.getName(), "Multispleef", 2, 32, BattleMode.TeamStyle.DYNAMIC, true, MultiSpleefBattle.class);
         BattleMode.addArenaMode(BONANZA.getName(), "Bonanza Spleef", 0, 0, BattleMode.TeamStyle.BONANZA, true, BonanzaSpleefBattle.class);
         BattleMode.addArenaMode(POWER.getName(), "Power Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, PowerSpleefBattle.class);
+        BattleMode.addArenaMode(POWER_TRAINING.getName(), "Power Training", 1, 1, BattleMode.TeamStyle.SOLO, false, PowerTrainingBattle.class);
         BattleMode.addArenaMode(WC.getName(), "SWC", 2, 2, BattleMode.TeamStyle.VERSUS, false, null);
     }
     

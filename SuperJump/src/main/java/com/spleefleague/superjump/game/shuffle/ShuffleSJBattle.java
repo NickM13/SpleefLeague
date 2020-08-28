@@ -13,13 +13,14 @@ import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class ShuffleSJBattle extends VersusBattle<ShuffleSJPlayer> {
 
-    public ShuffleSJBattle(List<CorePlayer> players, Arena arena) {
+    public ShuffleSJBattle(List<UUID> players, Arena arena) {
         super(SuperJump.getInstance(), players, arena, ShuffleSJPlayer.class, SJMode.SHUFFLE.getBattleMode());
     }
     

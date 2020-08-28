@@ -13,14 +13,14 @@ import com.spleefleague.core.util.variable.RaycastResult;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.GameWorldPlayer;
-import net.minecraft.server.v1_15_R1.EntitySnowball;
-import net.minecraft.server.v1_15_R1.EntityTypes;
-import net.minecraft.server.v1_15_R1.MovingObjectPosition;
-import net.minecraft.server.v1_15_R1.Vec3D;
+import net.minecraft.server.v1_16_R1.EntitySnowball;
+import net.minecraft.server.v1_16_R1.EntityTypes;
+import net.minecraft.server.v1_16_R1.MovingObjectPosition;
+import net.minecraft.server.v1_16_R1.Vec3D;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
@@ -66,9 +66,46 @@ public class FakeEntitySnowball extends EntitySnowball {
 
         Random rand = new Random();
         Location lookLoc = shooter.getPlayer().getLocation().clone();
-        if (projectileStats.spread > 0) {
-            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.spread) - (projectileStats.spread / 2.f));
-            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.spread) - (projectileStats.spread / 2.f));
+        if (projectileStats.hSpread > 0) {
+            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
+        }
+        if (projectileStats.vSpread > 0) {
+            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
+        }
+        Vector direction = lookLoc.getDirection().normalize().multiply(projectileStats.fireRange * 0.25);
+        setMot(new Vec3D(direction.getX(), direction.getY(), direction.getZ()));
+
+        lastLoc = new Point(getPositionVector());
+
+        setNoGravity(!projectileStats.gravity);
+        this.bounces = projectileStats.bounces;
+        this.noclip = projectileStats.noClip;
+        this.lifeTicks = projectileStats.lifeTicks;
+    }
+
+    public FakeEntitySnowball(GameWorld gameWorld, Location location, ProjectileStats projectileStats) {
+        super(EntityTypes.SNOWBALL, ((CraftWorld) gameWorld.getWorld()).getHandle());
+        this.cpShooter = null;
+
+        this.gameWorld = gameWorld;
+        this.projectileStats = projectileStats;
+        this.size = new Vector(this.projectileStats.size, this.projectileStats.size, this.projectileStats.size);
+
+        ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelData));
+
+        Location handLocation = location.clone()
+                .add(location.getDirection()
+                        .crossProduct(new Vector(0, 1, 0)).normalize()
+                        .multiply(0.15).add(new Vector(0, -0.15, 0)));
+        setPositionRotation(handLocation.getX(), handLocation.getY(), handLocation.getZ(), pitch, yaw);
+
+        Random rand = new Random();
+        Location lookLoc = location.clone();
+        if (projectileStats.hSpread > 0) {
+            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
+        }
+        if (projectileStats.vSpread > 0) {
+            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
         }
         Vector direction = lookLoc.getDirection().normalize().multiply(projectileStats.fireRange * 0.25);
         setMot(new Vec3D(direction.getX(), direction.getY(), direction.getZ()));
@@ -304,5 +341,16 @@ public class FakeEntitySnowball extends EntitySnowball {
             return super.aC();
         }
     }
+    /*
+    @Override
+    public boolean aF() {
+        if (projectileStats.noClip) {
+            this.inWater = false;
+            return false;
+        } else {
+            return super.aF();
+        }
+    }
+     */
 
 }

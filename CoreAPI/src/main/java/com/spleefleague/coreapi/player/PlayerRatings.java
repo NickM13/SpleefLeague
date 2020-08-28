@@ -15,12 +15,11 @@ import java.util.Map;
  */
 public class PlayerRatings extends DBVariable<Document> {
 
-    protected final Map<String, Ratings> modeRatingsMap;
-    protected RatedPlayer owner;
+    protected final Map<String, Ratings> modeRatingsMap = new HashMap<>();
+    protected RatedPlayer owner = null;
 
     public PlayerRatings() {
-        this.modeRatingsMap = new HashMap<>();
-        this.owner = null;
+
     }
 
     public void setOwner(RatedPlayer owner) {
@@ -90,6 +89,9 @@ public class PlayerRatings extends DBVariable<Document> {
     }
 
     public void setRating(String mode, int season, int elo) {
+        if (!modeRatingsMap.containsKey(mode)) {
+            modeRatingsMap.put(mode, new Ratings());
+        }
         if (modeRatingsMap.get(mode).get(season).setElo(elo)) {
             addWin(mode, season);
         } else {

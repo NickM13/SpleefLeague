@@ -35,7 +35,7 @@ public abstract class DBPlayer extends DBEntity {
         OFFLINE
     }
 
-    protected OnlineState onlineState;
+    protected OnlineState onlineState = OnlineState.OFFLINE;
     
     protected DBPlayer() {
 
@@ -108,7 +108,7 @@ public abstract class DBPlayer extends DBEntity {
     /**
      * @param state Online state
      */
-    public final void setOnline(OnlineState state) {
+    public void setOnline(OnlineState state) {
         onlineState = state;
     }
 
