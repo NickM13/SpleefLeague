@@ -6,50 +6,46 @@
 
 package com.spleefleague.superjump.game;
 
-import com.spleefleague.core.game.ArenaMode;
+import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.superjump.game.conquest.*;
 import com.spleefleague.superjump.game.endless.*;
 import com.spleefleague.superjump.game.party.*;
 import com.spleefleague.superjump.game.practice.*;
 import com.spleefleague.superjump.game.pro.*;
-import com.spleefleague.superjump.game.versus.classic.*;
-import com.spleefleague.superjump.game.versus.shuffle.*;
+import com.spleefleague.superjump.game.classic.*;
+import com.spleefleague.superjump.game.shuffle.ShuffleSJBattle;
 
 /**
  * @author NickM13
  */
 public enum SJMode {
     
-    CLASSIC(true),
-    SHUFFLE(true),
-    CONQUEST(true),
-    ENDLESS(true),
-    PARTY(true),
-    PRACTICE(true),
-    PRO(true);
+    CLASSIC,
+    SHUFFLE,
+    CONQUEST,
+    ENDLESS,
+    PARTY,
+    PRACTICE,
+    PRO;
     
-    private final boolean queue;
+    private static final String prefix = "sj:";
     
     public static void init() {
-        ArenaMode.addArenaMode("SJ_CLASSIC", "SuperJump: Classic", 2, 2, ArenaMode.TeamStyle.MULTI_STATIC, false, ClassicSJArena.class, ClassicSJBattle.class);
-        ArenaMode.addArenaMode("SJ_SHUFFLE", "SuperJump: Shuffle", 2, 2, ArenaMode.TeamStyle.MULTI_STATIC, false, ShuffleSJArena.class, ShuffleSJBattle.class);
-        ArenaMode.addArenaMode("SJ_CONQUEST", "SuperJump: Conquest", 1, 1, ArenaMode.TeamStyle.SOLO, false, ConquestSJArena.class, ConquestSJBattle.class);
-        ArenaMode.addArenaMode("SJ_ENDLESS", "SuperJump: Endless", 1, 1, ArenaMode.TeamStyle.SOLO, false, EndlessSJArena.class, EndlessSJBattle.class);
-        ArenaMode.addArenaMode("SJ_PARTY", "SuperJump: Party", 2, 2, ArenaMode.TeamStyle.MULTI_STATIC, false, PartySJArena.class, PartySJBattle.class);
-        ArenaMode.addArenaMode("SJ_PRACTICE", "SuperJump: Practice", 1, 1, ArenaMode.TeamStyle.SOLO, false, PracticeSJArena.class, PracticeSJBattle.class);
-        ArenaMode.addArenaMode("SJ_PRO", "SuperJump: Pro", 1, 1, ArenaMode.TeamStyle.SOLO, false, ProSJArena.class, ProSJBattle.class);
+        BattleMode.addArenaMode(CLASSIC.getName(), "SuperJump: Classic", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSJBattle.class);
+        BattleMode.addArenaMode(SHUFFLE.getName(), "SuperJump: Shuffle", 2, 2, BattleMode.TeamStyle.VERSUS, false, ShuffleSJBattle.class);
+        BattleMode.addArenaMode(CONQUEST.getName(), "SuperJump: Conquest", 1, 1, BattleMode.TeamStyle.SOLO, false, ConquestSJBattle.class);
+        BattleMode.addArenaMode(ENDLESS.getName(), "SuperJump: Endless", 1, 1, BattleMode.TeamStyle.SOLO, false, EndlessSJBattle.class);
+        BattleMode.addArenaMode(PARTY.getName(), "SuperJump: Party", 2, 2, BattleMode.TeamStyle.VERSUS, false, PartySJBattle.class);
+        BattleMode.addArenaMode(PRACTICE.getName(), "SuperJump: Practice", 1, 1, BattleMode.TeamStyle.SOLO, false, PracticeSJBattle.class);
+        BattleMode.addArenaMode(PRO.getName(), "SuperJump: Pro", 1, 1, BattleMode.TeamStyle.SOLO, false, ProSJBattle.class);
     }
     
-    private SJMode(boolean queue) {
-        this.queue = queue;
+    public String getName() {
+        return prefix + name().toLowerCase();
     }
-    
-    public ArenaMode getArenaMode() {
-        return ArenaMode.getArenaMode("SJ_" + this.name());
-    }
-    
-    public boolean hasQueue() {
-        return queue;
+
+    public BattleMode getBattleMode() {
+        return BattleMode.get(getName());
     }
     
 }

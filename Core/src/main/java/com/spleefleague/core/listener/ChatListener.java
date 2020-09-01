@@ -6,10 +6,16 @@
 
 package com.spleefleague.core.listener;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.chat.ChatEmoticons;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
+
+import java.util.Map;
 import java.util.regex.Pattern;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -29,36 +35,42 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChatMessageSend(AsyncPlayerChatEvent e) {
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
-        
+
         if (e.getMessage().length() > GOGOGADGET.length() + 1 && e.getMessage().substring(0, GOGOGADGET.length()).equalsIgnoreCase(GOGOGADGET)) {
             Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
                 Bukkit.dispatchCommand(e.getPlayer(), e.getMessage().substring(GOGOGADGET.length()));
             });
         }
-        
+
         String formattedMessage = e.getMessage();
+        boolean url = false;
         if (URL_PATTERN.matcher(ChatColor.stripColor(e.getMessage().replace(" ", ""))).matches()) {
-            System.out.println("That was a url");
-            if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR)) {
-                System.out.println("No permission");
+            if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
                 e.setCancelled(true);
-                Core.sendMessageToPlayer(cp, "Please ask for permission to send a url");
-                System.out.println(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
+                Core.getInstance().sendMessage(cp, "Please ask for permission to send a url");
+                Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
+                CoreLogger.logInfo(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 return;
             }
-        } else if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
-                !cp.getRank().hasPermission(Rank.MODERATOR)) {
-            formattedMessage = e.getMessage().toLowerCase().trim();
-            formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
-            if (!formattedMessage.endsWith(".")
-                    && !formattedMessage.endsWith("!")
-                    && !formattedMessage.endsWith("?")) {
-                formattedMessage += "!";
+            url = true;
+        } else {
+            if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
+                    !cp.getRank().hasPermission(Rank.MODERATOR)) {
+                formattedMessage = e.getMessage().toLowerCase().trim();
+                formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
+                if (!formattedMessage.endsWith(".")
+                        && !formattedMessage.endsWith("!")
+                        && !formattedMessage.endsWith("?")) {
+                    formattedMessage += "!";
+                }
+            }
+            for (Map.Entry<String, String> entry : ChatEmoticons.getEmoticons().entrySet()) {
+                formattedMessage = formattedMessage.replaceAll(entry.getKey(), entry.getValue());
             }
         }
         
-        Chat.sendMessage(cp, formattedMessage);
-        System.out.println("<" + cp.getPlayer().getName() + "> " + e.getMessage());
+        Chat.sendMessage(cp, formattedMessage, url);
+        CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + e.getMessage());
         
         e.setCancelled(true);
     }

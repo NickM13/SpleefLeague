@@ -7,12 +7,13 @@
 package com.spleefleague.core.chat.ticket;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBField;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.database.DBEntity;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -149,6 +150,7 @@ public class Ticket extends DBEntity {
         if (!open) return;
         open = false;
         Chat.sendMessageToPlayer(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + " Your ticket has been closed.");
+        
         Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), Chat.TICKET_PREFIX + "[Ticket: " + getSenderPlayer().getDisplayName() + Chat.TICKET_PREFIX + "]" + Chat.TICKET_ISSUE + " Ticket closed.");
     }
     

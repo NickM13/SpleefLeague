@@ -7,10 +7,10 @@
 package com.spleefleague.superjump.game.pro;
 
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.superjump.SuperJump;
-import com.spleefleague.superjump.game.SJArena;
 import com.spleefleague.superjump.game.SJMode;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,11 +19,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * @author NickM13
  */
-public class ProSJArena extends SJArena {
-    
-    public ProSJArena() {
-        mode = SJMode.PRO.getArenaMode();
-    }
+public class ProSJArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
@@ -33,20 +29,18 @@ public class ProSJArena extends SJArena {
                 .setDisplayItem(Material.DIAMOND_AXE, 23)
                 .createLinkedContainer("Pro SuperJump Menu");
         
-        menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getBattleMode(), cp)));
         
-        getArenas(SJMode.PRO.getArenaMode()).forEach((String s, Arena arena) -> menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
-                .setName(arena.getDisplayName())
+        Arenas.getAll(SJMode.PRO.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+                .setName(arena.getName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getArenaMode(), SuperJump.getInstance().getPlayers().get(cp), arena))));
+                .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getBattleMode(), cp, arena))));
         
-        menuItem.getLinkedContainer().addMenuItem(menuItem, 0);
-        
-        SuperJump.getInstance().getSJMenuItem().getLinkedContainer().addMenuItem(menuItem, x, y);
+        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addMenuItem(menuItem, x, y);
     }
 
 }

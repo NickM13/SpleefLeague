@@ -17,8 +17,8 @@ public class TimeUtils {
     /**
      * Greatest common denom time to string
      * Takes milliseconds
-     * @param age
-     * @return 
+     * @param age Age in millis
+     * @return Formatted String
     */
     public static String gcdTimeToString(long age) {
         String timeStr = "";
@@ -42,18 +42,18 @@ public class TimeUtils {
     
     // Time to string
     public static String timeToString(long age) {
-        String timeStr = "";
+        StringBuilder timeStr = new StringBuilder();
         long seconds = age / 1000L;
         
         long time = 1;
         for (int i = 0; i < times.length; i++) {
             if (time > seconds) break;
             long res = (seconds % (time * times[i])) / time;
-            timeStr = res + " " + names[i] + (res > 1 ? "s" : "") + (timeStr.length() > 0 ? ", " : " ") + timeStr;
+            timeStr.insert(0, res + " " + names[i] + (res > 1 ? "s" : "") + (timeStr.length() > 0 ? ", " : " "));
             time *= times[i];
         }
         
-        return timeStr;
+        return timeStr.toString();
     }
     
     public static long toMillis(String time) {

@@ -6,82 +6,103 @@
 
 package com.spleefleague.superjump.game.endless;
 
-import com.spleefleague.core.Core;
+import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.core.util.Day;
+import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.battle.solo.SoloBattle;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.util.Direction;
 import com.spleefleague.core.util.TimeUtils;
-import com.spleefleague.core.util.database.DBPlayer;
-import com.spleefleague.core.world.FakeBlock;
-import com.spleefleague.superjump.game.SJBattle;
-import com.spleefleague.superjump.player.SuperJumpPlayer;
-import java.time.LocalDate;
+import com.spleefleague.core.util.variable.Day;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.core.util.variable.Position;
+import com.spleefleague.superjump.SuperJump;
+import com.spleefleague.superjump.game.SJMode;
+import com.spleefleague.superjump.util.SJUtils;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
-public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
-
-    private final SuperJumpPlayer endlessPlayer;
+public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     
-    public EndlessSJBattle(List<DBPlayer> players, EndlessSJArena arena) {
-        super(players, arena);
-        endlessPlayer = battlers.keySet().iterator().next();
+    public EndlessSJBattle(List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), players, arena, EndlessSJPlayer.class, SJMode.ENDLESS.getBattleMode());
     }
     
     @Override
-    protected void startBattle() {
+    protected void fillField() {
+        getGameWorld().clear();
+        Position spawn = arena.getSpawns().get(0);
+        Dimension border = arena.getBorders().get(0).expand(-1);
+        Direction facing = Direction.fromYaw((int) spawn.getYaw());
+
+        int rightMin = 0, rightMax = 0, upMin, upMax;
+
+        switch (facing) {
+            case NORTH:
+                rightMin = (int) (border.getLow().x - spawn.getX());
+                rightMax = (int) (border.getHigh().x - spawn.getX());
+                break;
+            case SOUTH:
+                rightMin = (int) (border.getHigh().x - spawn.getX());
+                rightMax = (int) (border.getLow().x - spawn.getX());
+                break;
+            case EAST:
+                rightMin = (int) (border.getLow().z - spawn.getX());
+                rightMax = (int) (border.getHigh().z - spawn.getX());
+                break;
+            case WEST:
+                rightMin = (int) (border.getHigh().z - spawn.getX());
+                rightMax = (int) (border.getLow().z - spawn.getX());
+                break;
+        }
+        upMin = (int) (border.getLow().y - spawn.getY());
+        upMax = (int) (border.getHigh().y - spawn.getY());
+
+        Iterator<BlockPosition> bpit = SJUtils.generateJumpsFrom(this,
+                25,
+                spawn.toBlockPosition().add(new BlockPosition(0, -1, 0)),
+                rightMin,
+                rightMax,
+                upMin,
+                upMax,
+                facing,
+                battler.getLevel() / 50D,
+                new Random(Day.getDailyRandom() + battler.getLevel())).iterator();
+        while (bpit.hasNext()) {
+            BlockPosition pos = bpit.next();
+            if (!bpit.hasNext()) {
+                getGameWorld().setBlock(pos, Material.REDSTONE_LAMP.createBlockData());
+                Dimension goal = new Dimension(new Point(pos.getX(), pos.getY(), pos.getZ()), new Point(pos.getX() + 1, pos.getY() + 1.1, pos.getZ() + 1));
+                setGoals(Lists.newArrayList(goal));
+            } else {
+                getGameWorld().setBlockDelayed(pos, Material.WHITE_CONCRETE.createBlockData(), 0.05, arena.getSpawns());
+            }
+        }
+    }
+    
+    /*
+    @Override
+    public void startBattle() {
         if (getResetTime() <= 0) {
             for (BattlePlayer bp : battlers.values()) {
-                Core.getInstance().sendMessage(bp.player, "Endless is currently disabled, try again in " + TimeUtils.gcdTimeToString(Day.getTomorrowMillis()));
+                Core.getInstance().sendMessage(bp.getDBPlayer(), "Endless is currently disabled, try again in " + TimeUtils.gcdTimeToString(Day.getTomorrowMillis()));
             }
             endBattle();
             return;
         }
         super.startBattle();
-        //chatGroup.addTeam("Level", Chat.SCORE + "Level");
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.SUPERJUMP), "A " +
-                Chat.GAMEMODE + getMode().getDisplayName() + " " +
-                Chat.DEFAULT + "match between " +
-                playersFormatted +
-                Chat.DEFAULT + " has begun on " +
-                Chat.GAMEMAP + arena.getDisplayName());
-        for (BattlePlayer bp : battlers.values()) {
-            bp.player.joinBattle(this, BattleState.BATTLER);
-            
-            bp.player.getPlayer().getInventory().setHeldItemSlot(0);
-            bp.player.getPlayer().getInventory().clear();
-            
-            bp.player.getPlayer().setGameMode(GameMode.SURVIVAL);
-            
-            chatGroup.addPlayer(bp.player);
-        }
-        chatGroup.setScoreboardName(ChatColor.GREEN + "" + ChatColor.BOLD + "ENDLESS");
-        chatGroup.addTeam("Today", ChatColor.WHITE + "" + ChatColor.BOLD + "Today");
-        chatGroup.addTeam("TodayPersonal", " Personal: ");
-        chatGroup.addTeam("TodayServer", " Server: ");
-        chatGroup.addTeam("0", " ");
-        chatGroup.addTeam("Record", ChatColor.WHITE + "" + ChatColor.BOLD + "Record");
-        chatGroup.addTeam("RecordPersonal", " Personal: ");
-        chatGroup.addTeam("RecordServer", " Server: ");
-        chatGroup.addTeam("1", " ");
-        chatGroup.addTeam("Time", ChatColor.WHITE + "" + ChatColor.BOLD + "Time");
-        chatGroup.addTeam("TimeReset", " Reset In: ");
     }
-    
-    @Override
-    public void endBattle() {
-        super.endBattle();
-        endlessPlayer.getEndlessStats().addTime(getLevelTime() / 1000);
-    }
+    */
     
     private long getResetTime() {
         // 5 minute head start
@@ -97,20 +118,101 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
     }
     
     @Override
-    public void updateExperience() {
-        chatGroup.setExperience((getLevelTime() % 1000) / 1000.f, (int)(getLevelTime() / 1000));
+    protected void setupBattleRequests() {
+    
+    }
+    
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+    }
+    
+    @Override
+    protected void sendStartMessage() {
+        getPlugin().sendMessage(battler.getCorePlayer(), "You're now playing " + getMode().getDisplayName() + "!");
+    }
+    
+    @Override
+    protected void setupScoreboard() {
+        chatGroup.setScoreboardName(ChatColor.GREEN + "" + ChatColor.BOLD + "ENDLESS");
+        chatGroup.addTeam("Today", ChatColor.WHITE + "" + ChatColor.BOLD + "Today");
+        chatGroup.addTeam("TodayPersonal", " Personal: ");
+        chatGroup.addTeam("TodayServer", " Server: ");
+        chatGroup.addTeam("0", " ");
+        chatGroup.addTeam("Record", ChatColor.WHITE + "" + ChatColor.BOLD + "Record");
+        chatGroup.addTeam("RecordPersonal", " Personal: ");
+        chatGroup.addTeam("RecordServer", " Server: ");
+        chatGroup.addTeam("1", " ");
+        chatGroup.addTeam("Time", ChatColor.WHITE + "" + ChatColor.BOLD + "Time");
+        chatGroup.addTeam("TimeReset", " Reset In: ");
+        updateScoreboard();
+    }
+    
+    @Override
+    protected void saveBattlerStats(EndlessSJPlayer endlessSJPlayer) {
+        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").add("endless:playTime", endlessSJPlayer.getLevel());
+        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").add("endless:falls", endlessSJPlayer.getFalls());
+        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").compare("endless:bestLevel", "endless:level");
+    }
+    
+    @Override
+    protected void endRound(EndlessSJPlayer endlessSJPlayer) {
+    
     }
     
     @Override
     public void updateScoreboard() {
+        chatGroup.setTeamDisplayName("TodayPersonal", " Personal: " + battler.getLevel());
+        chatGroup.setTeamDisplayName("TodayServer", " Server: ");
+        chatGroup.setTeamDisplayName("RecordPersonal", " Personal: ");
+        chatGroup.setTeamDisplayName("RecordServer", " Server: ");
+        chatGroup.setTeamDisplayName("TimeReset", " Reset In: ");
+        for (CorePlayer cp : players) {
+            cp.sendHotbarText(ChatColor.WHITE + getRuntimeString());
+        }
+    }
+    
+    @Override
+    protected void failBattler(CorePlayer cp) {
+        battler.respawn();
+        battler.addFall();
+    }
+    
+    @Override
+    protected void winBattler(CorePlayer cp) {
+        battler.addRoundWin();
+        battler.respawn();
+        fillField();
+        //startRound();
+    }
+    
+    @Override
+    public void reset() {
+        battler.respawn();
+    }
+    
+    @Override
+    public void surrender(CorePlayer cp) {
+        leaveBattler(cp);
+    }
+    
+    @Override
+    protected void leaveBattler(CorePlayer cp) {
+        super.endBattle(null);
+    }
+    
+    /*
+    @Override
+    public void updateScoreboard() {
         BattlePlayer bp = battlers.values().iterator().next();
-        chatGroup.setTeamDisplayName("TodayPersonal", ChatColor.AQUA + " Personal: " + bp.player.getEndlessStats().getLevel() +
-                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), bp.player.getUniqueId())) + "]");
+        SuperJumpPlayer sjp = SuperJump.getInstance().getPlayers().get(bp.getCorePlayer());
+        chatGroup.setTeamDisplayName("TodayPersonal", ChatColor.AQUA + " Personal: " + sjp.getEndlessStats().getLevel() +
+                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), sjp.getUniqueId())) + "]");
         chatGroup.setTeamDisplayName("TodayServer", ChatColor.AQUA + " Server: " +
                 Leaderboard.getLeadingPlayerName(EndlessSJArena.EndlessLeaderboard.DAILY.getName()) +
                 ChatColor.AQUA + "[" + Leaderboard.getLeadingPlayerScore(EndlessSJArena.EndlessLeaderboard.DAILY.getName()) + "]");
-        chatGroup.setTeamDisplayName("RecordPersonal", ChatColor.AQUA + " Personal: " + bp.player.getEndlessStats().getHighestLevel() +
-                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.BEST.getName(), bp.player.getUniqueId())) + "]");
+        chatGroup.setTeamDisplayName("RecordPersonal", ChatColor.AQUA + " Personal: " + sjp.getEndlessStats().getHighestLevel() +
+                "[" + CoreUtils.getPlaceSuffixed(Leaderboard.getPlace(EndlessSJArena.EndlessLeaderboard.BEST.getName(), sjp.getUniqueId())) + "]");
         chatGroup.setTeamDisplayName("RecordServer", ChatColor.AQUA + " Server: " +
                 Leaderboard.getLeadingPlayerName(EndlessSJArena.EndlessLeaderboard.BEST.getName()) +
                 ChatColor.AQUA + "[" + Leaderboard.getLeadingPlayerScore(EndlessSJArena.EndlessLeaderboard.BEST.getName()) + "]");
@@ -119,6 +221,7 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         if (getResetTime() <= 0) {
             endBattle();
         }
+        */
         
         /*
         sidebar.getScore(" Personal: " + ChatColor.GOLD + players.get(0).getEndlessLevel() 
@@ -134,7 +237,13 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         sidebar.getScore(ChatColor.BOLD + "Time").setScore(1);
         sidebar.getScore(" Level: " + ChatColor.GOLD + levelTime).setScore(0); // "Remove this" - Sinsie, probably
         sidebar.getScore(" Reset In: " + ChatColor.GOLD + resetTime).setScore(0);
+    }
         */
+    
+        /*
+    @Override
+    public void updateExperience() {
+        //chatGroup.setExperience((getLevelTime() % 1000) / 1000.f, (int)(getLevelTime() / 1000));
     }
     
     @Override
@@ -148,34 +257,31 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         random = new Random(LocalDate.now().getDayOfYear());
         random = new Random(random.nextInt() + endlessPlayer.getEndlessStats().getLevel());
         List<FakeBlock> fakeBlocks = generate1(getSpawn(0), arena.getJumpCount(), difficulty, false);
-        
-        Iterator<FakeBlock> it = fakeBlocks.iterator();
-        while (it.hasNext()) {
-            FakeBlock fb = it.next();
+
+        for (FakeBlock fb : fakeBlocks) {
             gameWorld.setBlock(fb.getBlockPosition(), fb.getBlockData());
         }
     }
-    
+         */
+
+    /*
     @Override
-    public void releasePlayers() {
-        super.releasePlayers();
-    }
-    
-    @Override
-    protected void failPlayer(SuperJumpPlayer sjp) {
-        super.failPlayer(sjp);
+    protected void failPlayer(DBPlayer dbp) {
+        super.failPlayer(dbp);
         endlessPlayer.getEndlessStats().incrementFalls();
     }
-    
+     */
+
+    /*
     @Override
-    protected void winPlayer(SuperJumpPlayer sjp) {
+    protected void winPlayer(DBPlayer dbp) {
         resetPlayers();
         gameWorld.clear();
         fillField();
         doCountdown();
         String completeMessage;
         
-        float levelTime = Math.floorDiv(getLevelTime(), 10) / 100.f;
+        float levelTime = Math.floorDiv(getLevelTime(), 10L) / 100.f;
         if(levelTime < 30)      completeMessage = "" + ChatColor.GREEN;
         else if(levelTime < 60) completeMessage = "" + ChatColor.YELLOW;
         else                    completeMessage = "" + ChatColor.RED;
@@ -187,10 +293,6 @@ public class EndlessSJBattle extends SJBattle<EndlessSJArena> {
         
         timeLastLap = System.currentTimeMillis();
     }
-    
-    @Override
-    public void doCountdown() {
-        super.doCountdown();
-    }
+     */
 
 }

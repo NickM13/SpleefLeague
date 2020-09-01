@@ -6,18 +6,29 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.Day;
-import com.spleefleague.core.util.database.DBPlayer;
-import com.spleefleague.superjump.game.SJBattle;
-import com.spleefleague.superjump.game.SJMode;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 
 /**
  * @author NickM13
  */
-public class SuperJumpPlayer extends DBPlayer<SJBattle> {
+public class SuperJumpPlayer extends DBPlayer {
     
+    @Override
+    public void init() {
+    
+    }
+    
+    @Override
+    public void initOffline() {
+    
+    }
+    
+    @Override
+    public void close() {
+    
+    }
+    
+    /*
     @DBField
     protected Integer points;
     @DBField
@@ -41,9 +52,19 @@ public class SuperJumpPlayer extends DBPlayer<SJBattle> {
     @Override
     public void init() {
         endlessStats.setPlayer(this);
-        conquestStats.setPlayer(this);
+        //conquestStats.setPlayer(this);
     }
     
+    @Override
+    public void initOffline() {
+    
+    }
+    
+    @Override
+    public void close() {
+
+    }
+
     public int getPoints() {
         return points;
     }
@@ -63,11 +84,6 @@ public class SuperJumpPlayer extends DBPlayer<SJBattle> {
     public ConquestStats getConquestStats() {
         return conquestStats;
     }
-    
-    @Override
-    public void printStats(DBPlayer dbp) {
-        dbp.getPlayer().sendMessage(Chat.DEFAULT + "[" + Chat.GAMEMODE + SJMode.ENDLESS.getArenaMode().getDisplayName() + Chat.DEFAULT + "]: " +
-                Chat.ELO + endlessStats.getHighestLevel());
-    }
-    
+    */
+
 }

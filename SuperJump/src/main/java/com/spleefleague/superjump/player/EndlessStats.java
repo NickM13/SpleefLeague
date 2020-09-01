@@ -6,18 +6,14 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.core.game.Leaderboard;
-import com.spleefleague.core.util.Day;
-import com.spleefleague.core.util.database.DBVariable;
-import com.spleefleague.core.util.database.DatabaseUtil;
-import com.spleefleague.superjump.game.SJMode;
-import com.spleefleague.superjump.game.endless.EndlessSJArena;
+import com.spleefleague.core.util.variable.Day;
+import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bson.Document;
 
 /**
  * @author NickM13
  */
-public class EndlessStats implements DBVariable<Document> {
+public class EndlessStats extends DBVariable<Document> {
     // Days since epoch time
     private Integer day;
     
@@ -74,8 +70,6 @@ public class EndlessStats implements DBVariable<Document> {
     public void incrementLevel() {
         level++;
         if (level > highestLevel) setHighestLevel(level);
-        Leaderboard.setPlayerScore(EndlessSJArena.EndlessLeaderboard.DAILY.getName(), sjp.getUniqueId(), level);
-        Leaderboard.setPlayerScore(EndlessSJArena.EndlessLeaderboard.BEST.getName(), sjp.getUniqueId(), highestLevel);
     }
     
     public void incrementFalls() {

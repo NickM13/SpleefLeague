@@ -5,3 +5,6 @@ out/
 *.prefs
 *.classpath
 *.project
+*.bat
+*.xml
+!pom.xml

@@ -6,22 +6,13 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.util.database.DBVariable;
-import com.spleefleague.superjump.game.conquest.ConquestSJArena;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.bson.Document;
-
 /**
  * @author NickM13
  */
-public class ConquestStats implements DBVariable<List<Document>> {
+public class ConquestStats {
     
-    public class ConquestScore {
+    /*
+    public static class ConquestScore {
         double bestTime;
         int totalRuns;
         
@@ -47,7 +38,7 @@ public class ConquestStats implements DBVariable<List<Document>> {
         this.sjp = sjp;
     }
     
-    public RecordState tryNewTime(ConquestSJArena arena, double time) {
+    public RecordState tryNewTime(Arena arena, double time) {
         if (conquestScores.containsKey(arena.getName())) {
             conquestScores.get(arena.getName()).totalRuns++;
             if (time < conquestScores.get(arena.getName()).bestTime) {
@@ -104,5 +95,6 @@ public class ConquestStats implements DBVariable<List<Document>> {
         
         return docs;
     }
+     */
     
 }

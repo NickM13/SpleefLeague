@@ -6,331 +6,543 @@
 
 package com.spleefleague.core.game;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.Dimension;
-import com.spleefleague.core.util.Position;
-import com.spleefleague.core.util.database.DBEntity;
-import com.spleefleague.core.world.GameWorld;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Position;
+import com.spleefleague.core.world.build.BuildStructure;
+import com.spleefleague.core.world.build.BuildStructures;
+import com.spleefleague.core.world.game.GameWorld;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 /**
+ * Arena is a set of variables loaded from a specified Database<br>
+ * Arena is Used in Battle<br>
+ * <br>
+ * Arena Document:<br>
+ * {<br>
+ *     identifier:      <i>required</i>, Identifier name for commands<br>
+ *     name:            <i>required</i>, Display name
+ *     description:     <i>optional</i>, Description for arena<br>
+ *     teamCount:       <i>optional</i>, Used for dynamically sized modes, number of teams (if team size is 1 this is number of players)<br>
+ *     rated:           <i>optional</i>, Default true, Whether arena will apply an elo rating or not afterward<br>
+ *     queued:          <i>optional</i>, Default true, If false, this arena can only be entered through challenges<br>
+ *     paused:          <i>optional</i>, Default false, If true, arena cannot be played on<br>
+ *     borders:         <i>optional</i>, List of dimensions that the arena is contained in<br>
+ *     goals:           <i>optional</i>, List of dimensions that the arena defines as end points (SuperJump)<br>
+ *     spectatorSpawn:  <i>optional</i>, Spawn location of spectators<br>
+ *     modes:           <i>required</i>, List of mode names<br>
+ *     spawns:          <i>optional</i>, List of spawn positions for battlers<br>
+ *     checkpoints:     <i>optional</i>, List of checkpoint positions<br>
+ *     structures:      <i>optional</i>, List of build structure names<br>
+ * }
+ *
  * @author NickM13
  */
 public class Arena extends DBEntity {
-    
-    private static final Map<ArenaMode, Map<String, Arena>> ARENAS = new HashMap<>();
-    
-    @DBField
-    protected String creator;
-    // name is just displayName without spaces
-    protected String displayName;
-    protected String name;
-    @DBField
-    protected String description;
-    @DBField
-    protected Boolean isDefault;
-    
-    protected ArenaMode mode;
-    
-    @DBField
-    protected Boolean paused;
-    
-    protected World world;
-    
-    @DBField
-    protected Integer teamCount;
-    @DBField
-    protected Integer teamSize = 1;
-    
-    protected List<Location> spawns = new ArrayList<>();
-    @DBField
-    protected Boolean tpBackSpectators;
-    protected Location spectatorSpawn = null;
-    
-    // Border is used for boundaries of match
-    protected List<Dimension> border = new ArrayList<>();
-    
-    // Fake worlds are for spleef and superjump, real worlds allow for
-    // projectiles to interact with blocks
+
+    @DBField protected String name;
+    @DBField protected String description = "";
+
+    @DBField protected Set<String> modes;
+
+    @DBField protected Boolean paused = false;
+
+    protected World world = Core.DEFAULT_WORLD;
+
+    @DBField protected Integer teamCount = 1;
+    @DBField protected Integer teamSize = 1;
+
+    protected List<Position> spawns = new ArrayList<>();
+    protected List<Position> checkpoints = new ArrayList<>();
+    @DBField protected Position spectatorSpawn = null;
+
+    @DBField protected Material displayItem = Material.MAP;
+
+    protected List<Dimension> borders = new ArrayList<>();
+
+    protected List<Dimension> goals = new ArrayList<>();
+
+    @DBField protected Set<String> structures;
+    @DBField protected Position origin = new Position();
+
     protected int ongoingMatches = 0;
     protected int ongoingQueues = 0;
-    
-    @DBLoad(fieldname="border")
-    protected void loadBorder(Document doc) {
-        Dimension dim = new Dimension();
-        dim.load(doc);
-        border.add(dim);
+
+    public Arena() {
+
     }
-    @DBLoad(fieldname="border")
-    protected void loadBorders(List<Document> docs) {
-        docs.forEach(doc -> {
-            Dimension dim = new Dimension();
-            dim.load(doc);
-            border.add(dim);
-        });
+
+    public Arena(String identifier, String name) {
+        this.identifier = identifier;
+        setName(name);
+        modes = new HashSet<>();
+        structures = new HashSet<>();
+        paused = false;
     }
-    
-    public String getCreator() {
-        return creator;
+
+    public void cloneFrom(Arena from) {
+        this.name = from.getName() + "_copy";
+        this.description = from.getDescription();
+        this.modes = Sets.newHashSet(from.getModes());
+        this.paused = from.isPaused();
+        this.teamCount = from.getTeamCount();
+        this.teamSize = from.getTeamSize();
+        this.spawns = Lists.newArrayList(from.getSpawns());
+        this.checkpoints = Lists.newArrayList(from.getCheckpoints());
+        this.spectatorSpawn = new Position(from.getSpectatorSpawn());
+        this.displayItem = from.getDisplayItem();
+        this.borders = Lists.newArrayList(from.getBorders());
+        this.goals = Lists.newArrayList(from.getGoals());
+        this.structures = Sets.newHashSet(from.getStructureNames());
+        this.origin = from.getOrigin();
     }
-    @DBLoad(fieldname="name")
-    protected void setName(String displayName) {
-        this.displayName = displayName;
-        name = displayName.replaceAll("\\s", "");
+
+    @DBSave(fieldName="borders")
+    private List<Document> saveBorders() {
+        return borders
+                .stream()
+                .map(Dimension::save)
+                .collect(Collectors.toList());
     }
+
+    @DBLoad(fieldName ="borders")
+    private void loadBorders(List<Document> docs) {
+        docs.forEach(doc -> borders.add(new Dimension(doc)));
+    }
+
+    @DBSave(fieldName="goals")
+    private List<Document> saveGoals() {
+        return goals
+                .stream()
+                .map(Dimension::save)
+                .collect(Collectors.toList());
+    }
+
+    @DBLoad(fieldName ="goals")
+    private void loadGoals(List<Document> docs) {
+        docs.forEach(doc -> goals.add(new Dimension(doc)));
+    }
+
+    @DBLoad(fieldName ="spawns")
+    private void loadSpawns(List<List<?>> spawnLists) {
+        for (List<?> spawnList : spawnLists) {
+            spawns.add(new Position(spawnList));
+        }
+    }
+
+    @DBSave(fieldName ="spawns")
+    private List<List<?>> saveSpawns() {
+        List<List<?>> spawnLists = new ArrayList<>();
+        for (Position spawn : spawns) {
+            spawnLists.add(spawn.save());
+        }
+        return spawnLists;
+    }
+
+    @DBLoad(fieldName ="checkpoints")
+    private void loadCheckpoints(List<List<?>> checkpointLists) {
+        for (List<?> checkpointList : checkpointLists) {
+            checkpoints.add(new Position(checkpointList));
+        }
+    }
+
+    @DBSave(fieldName ="checkpoints")
+    private List<List<?>> saveCheckpoints() {
+        List<List<?>> checkpointList = new ArrayList<>();
+        for (Position checkpoint : checkpoints) {
+            checkpointList.add(checkpoint.save());
+        }
+        return checkpointList;
+    }
+
+    /**
+     * Set the name and displayName of an arena
+     *
+     * @param displayName Display name
+     */
+    public void setName(String displayName) {
+        this.name = displayName;
+    }
+
+    /**
+     * Get the display name of an arena
+     *
+     * @return Arena Display Name
+     */
     public String getName() {
         return name;
     }
-    public String getDisplayName() {
-        return displayName;
-    }
+
+    /**
+     * Returns the formatted descriptoin of an arena, including
+     * number of players in queue and number of ongoing matches
+     *
+     * @return Description
+     */
     public String getDescription() {
         String desc = description;
-        desc += "\n" + "Queued: " + getOngoingQueues();
-        desc += "\n" + "Matches: " + getOngoingMatches();
+        desc += "\n\n&7&lIn Queue: &6" + getOngoingQueues();
+        //desc += "\n&6Matches: " + getOngoingMatches();
         return desc;
     }
-    
+
+    public void setDescription(String description) {
+        this.description = description;
+        Arenas.saveArenaDB(this);
+    }
+
+    public Material getDisplayItem() {
+        return displayItem;
+    }
+
+    public void setDisplayItem(Material displayItem) {
+        this.displayItem = displayItem;
+        Arenas.saveArenaDB(this);
+    }
+
+    /**
+     * Return the modes this arena is used in
+     *
+     * @return Set of Modes
+     */
+    public Set<String> getModes() {
+        return modes;
+    }
+
+    public boolean addMode(String mode) {
+        return modes.add(mode);
+    }
+
+    public boolean removeMode(String mode) {
+        return modes.remove(mode);
+    }
+
+    /**
+     * Get the required number of players per team
+     *
+     * @return Team Size
+     */
     public int getTeamSize() {
         return teamSize;
     }
-    
+
+    public boolean setTeamSize(int teamSize) {
+        if (teamSize > 0 && teamSize <= 8) {
+            this.teamSize = teamSize;
+            Arenas.saveArenaDB(this);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the required number of teams (or players if teamSize = 1)
+     *
+     * @return Team Size
+     */
+    public int getTeamCount() {
+        return teamCount;
+    }
+
+    public void setTeamCount(int teamCount) {
+        this.teamCount = teamCount;
+        Arenas.saveArenaDB(this);
+    }
+
+    /**
+     * Get the borders of this arena
+     *
+     * @return Dimension List
+     */
     public List<Dimension> getBorders() {
-        return border;
+        return borders;
     }
-    
-    public int getDifficulty() {
-        return 0;
+
+    public void addBorder(Dimension border) {
+        borders.add(border);
+        Arenas.saveArenaDB(this);
     }
-    
-    @DBLoad(fieldname="world")
-    protected void setWorld(String worldName) {
-        if (worldName == null || worldName.equals("")) {
-            world = Core.DEFAULT_WORLD;
-        } else {
-            world = Bukkit.getWorld(worldName);
-            if (world == null) {
-                world = Core.DEFAULT_WORLD;
-            }
-        }
-        for (Location spawn : spawns) {
-            spawn.setWorld(world);
-        }
-        if (spectatorSpawn != null) spectatorSpawn.setWorld(world);
+
+    public void removeBorder(int id) {
+        borders.remove(id);
+        Arenas.saveArenaDB(this);
     }
-    @DBLoad(fieldname="spectatorSpawn")
-    protected void setSpectatorSpawn(Position pos) {
-        spectatorSpawn = pos.asLocation(world != null ? world : Core.DEFAULT_WORLD);
+
+    /**
+     * Get the borders of this arena
+     *
+     * @return Dimension List
+     */
+    public List<Dimension> getGoals() {
+        return goals;
     }
-    
-    public boolean hasTpBackSpectators() {
-        return tpBackSpectators;
+
+    public void addGoal(Dimension goal) {
+        goals.add(goal);
+        Arenas.saveArenaDB(this);
     }
+
+    public void removeGoal(int id) {
+        goals.remove(id);
+        Arenas.saveArenaDB(this);
+    }
+
+    /**
+     * Set the location where Spectators are spawned
+     *
+     * @param pos Spectator Spawn
+     */
+    public void setSpectatorSpawn(Position pos) {
+        spectatorSpawn = pos;
+        Arenas.saveArenaDB(this);
+    }
+
+    /**
+     * Get the location where Spectators are spawned
+     *
+     * @return Spectator Spawn
+     */
     public Location getSpectatorSpawn() {
-        return spectatorSpawn;
+        Position pos = spectatorSpawn;
+        return pos != null ? pos.toLocation(getWorld()) : null;
     }
-    
-    protected void setMode(String mode) {
-        this.mode = ArenaMode.getArenaMode(mode);
+
+    /**
+     * For determining whether players should be in GM3 on spectating
+     *
+     * @return Whether spectatorSpawn exists
+     */
+    public boolean hasSpectatorSpawn() {
+        return spectatorSpawn != null;
     }
-    public ArenaMode getMode() {
-        return mode;
-    }
-    
+
+    /**
+     * Set arena's pause state
+     *
+     * @param state Paused
+     */
     public void setPaused(boolean state) {
         paused = state;
     }
-    public boolean isPaused() {
+
+    /**
+     * Whether arena's queues are paused or not
+     *
+     * @return Paused
+     */
+    private boolean isPaused() {
         return paused;
     }
-    
+
+    /**
+     * Get the world that this arena is played in
+     *
+     * @return World
+     */
     public World getWorld() {
-        if (world == null) {
-            return spawns.get(0).getWorld();
-        } else {
-            return world;
-        }
+        return world == null ? Core.DEFAULT_WORLD : world;
     }
-    
+
+    /**
+     * Add ongoing match
+     */
     public void incrementMatches() {
         ongoingMatches++;
     }
+
+    /**
+     * Subtract ongoing match
+     */
     public void decrementMatches() {
         ongoingMatches--;
     }
+
+    /**
+     * @return Ongoing Matches
+     */
     public int getOngoingMatches() {
         return ongoingMatches;
     }
+
+    /**
+     * Returns whether arena can be used, for disabling arenas
+     * during maintenance times
+     *
+     * @return Arena Availability
+     */
     public boolean isAvailable() {
-        return true;
+        return !isPaused();
     }
-    
+
+    /**
+     * Add queued player
+     */
     public void incrementQueues() {
         ongoingQueues++;
     }
+
+    /**
+     * Subtract queued player
+     */
     public void decrementQueues() {
         ongoingQueues--;
     }
+
+    /**
+     * Get total number of queued players for this arena
+     *
+     * @return Queued Players
+     */
     public int getOngoingQueues() {
         return ongoingQueues;
     }
-    
+
+    /**
+     * Create a GameWorld for this arena to be build in
+     *
+     * @return New GameWorld
+     */
     public GameWorld createGameWorld() {
         return new GameWorld(getWorld());
     }
 
-    public List<Location> getSpawns() {
+    /**
+     * @return Battler Spawns List
+     */
+    public List<Position> getSpawns() {
         return spawns;
     }
-    
-    @DBLoad(fieldname="spawns")
-    protected void loadSpawns(List<List> spawnList) {
-        for (List spawn : spawnList) {
-            Position pos = new Position();
-            pos.load(spawn);
-            if (world != null) spawns.add(pos.asLocation(world));
-            else spawns.add(pos.asLocation(Core.DEFAULT_WORLD));
-        }
-    }
-    
-    public InventoryMenuItem createMenu(Consumer<CorePlayer> queueAction) {
-        return InventoryMenuAPI.createItem()
-                .setName(getDisplayName())
-                .setDescription(cp -> getDescription())
-                .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
-                .setAction(queueAction);
-    }
-    
-    public Location getPostGameWarp() {
-        return spectatorSpawn;
-    }
-    
-    public static Map<String, Arena> getUnpausedArenas(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode))
-            return Collections.EMPTY_MAP;
-        Map<String, Arena> arenas = new TreeMap<>();
-        
-        for (Map.Entry<String, Arena> arena : ARENAS.get(mode).entrySet()) {
-            if (!arena.getValue().isPaused()) {
-                arenas.put(arena.getKey(), arena.getValue());
-            }
-        }
-        
-        return arenas;
-    }
-    
-    public static Map<String, Arena> getArenas(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) 
-            return Collections.EMPTY_MAP;
-        return ARENAS.get(mode);
-    }
-    
-    public static Set<String> getArenaNames(ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) {
-            return Collections.EMPTY_SET;
-        }
-        Set<String> arenas = new HashSet<>();
-        for (Map.Entry<String, Arena> arena : ARENAS.get(mode).entrySet()) {
-            if (!arena.getValue().isPaused()) {
-                arenas.add(arena.getKey());
-            }
-        }
-        return arenas;
+
+    public void removeSpawn(int index) {
+        spawns.remove(index);
+        Arenas.saveArenaDB(this);
     }
 
-    public static Arena getRandomArena(ArenaMode mode) {
-        Map<String, Arena> arenas = getUnpausedArenas(mode);
-        if (arenas.isEmpty()) return null;
-        Random generator = new Random();
-        Object[] values = arenas.values().toArray();
-        return (Arena)(values[generator.nextInt(values.length)]);
+    public void addSpawn(Position spawnPos) {
+        spawns.add(spawnPos);
+        Arenas.saveArenaDB(this);
     }
-    
-    public static Arena getByName(String name, ArenaMode mode) {
-        if (name == null) return null;
-        Map<String, Arena> arenas = ARENAS.get(mode);
-        if (arenas != null) {
-            if (name.equals("")) {
-                return getRandomArena(mode);
-            } else {
-                return arenas.get(name.toLowerCase());
-            }
-        }
-        return null;
+
+    public boolean insertSpawn(Position spawnPos, int index) {
+        if (index < 0 || index > spawns.size()) return false;
+        spawns.add(index, spawnPos);
+        Arenas.saveArenaDB(this);
+        return true;
     }
-    
-    protected static boolean loadArena(Document arenaDoc, ArenaMode mode) {
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        try {
-            Arena arena = mode.getArenaClass().newInstance();
-            arena.load(arenaDoc);
-            ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
+
+    /**
+     * @return Checkpoint Position List
+     */
+    public List<Position> getCheckpoints() {
+        return checkpoints;
+    }
+
+    public void removeCheckpoint(int index) {
+        checkpoints.remove(index);
+        Arenas.saveArenaDB(this);
+    }
+
+    public void addCheckpoint(Position spawnPos) {
+        checkpoints.add(spawnPos);
+        Arenas.saveArenaDB(this);
+    }
+
+    public boolean insertCheckpoint(Position spawnPos, int index) {
+        if (index < 0 || index > checkpoints.size()) return false;
+        checkpoints.add(index, spawnPos);
+        Arenas.saveArenaDB(this);
+        return true;
+    }
+
+    /**
+     * Create a menu item for this arena
+     *
+     * @param queueAction Click Action
+     * @return Inventory Menu Item
+     */
+    public InventoryMenuItem createMenu(Consumer<CorePlayer> queueAction) {
+        return InventoryMenuAPI.createItem()
+                .setName("&a&l" + getName())
+                .setDescription(cp -> getDescription())
+                .setDisplayItem(cp -> new ItemStack(displayItem))
+                .setAction(queueAction);
+    }
+
+    /**
+     * Get the location for players after a game ends
+     * used if they have Arena PostWarp enabled
+     *
+     * TODO: Right now this is just spectatorSpawn, should it be changed?
+     *
+     * @return Post Game Location
+     */
+    public Location getPostGameWarp() {
+        if (spectatorSpawn == null) return null;
+        return spectatorSpawn.toLocation(world);
+    }
+
+    public boolean addStructure(String structureName) {
+        if (structures.add(structureName)) {
+            Arenas.saveArenaDB(this);
             return true;
-        } catch (InstantiationException | IllegalAccessException ex) {
-            Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
-    
-    protected static int loadArenas(Iterator<Document> itArena, ArenaMode mode) {
-        if (mode == null || mode.getArenaClass() == null) return 0;
-        int successCounter = 0;
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        while (itArena.hasNext()) {
-            Document adoc = itArena.next();
-            try {
-                Arena arena = mode.getArenaClass().newInstance();
-                arena.load(adoc);
-                arena.getMode().addRequiredTeamSize(arena.getTeamSize());
-                ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
-                successCounter++;
-            } catch (InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
+    public boolean removeStructure(String structureName) {
+        if (structures.remove(structureName)) {
+            Arenas.saveArenaDB(this);
+            return true;
         }
-        return successCounter;
+        return false;
     }
-    
-    protected static int loadArenas(List<Document> arenaDocs, ArenaMode mode) {
-        if (mode == null || mode.getArenaClass() == null) return 0;
-        int successCounter = 0;
-        if (!ARENAS.containsKey(mode)) ARENAS.put(mode, new TreeMap<>());
-        for (Document adoc : arenaDocs) {
-            try {
-                Arena arena = mode.getArenaClass().newInstance();
-                arena.load(adoc);
-                arena.getMode().addRequiredTeamSize(arena.getTeamSize());
-                ARENAS.get(mode).put(arena.getName().toLowerCase(), arena);
-                successCounter++;
-            } catch (InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(Arena.class.getName()).log(Level.SEVERE, null, ex);
-                ex.printStackTrace();
-            }
+
+    public Set<String> getStructureNames() {
+        return structures;
+    }
+
+    /**
+     * Get the Build Structures for this arena
+     *
+     * @return List of Build Structures
+     */
+    public List<BuildStructure> getStructures() {
+        List<BuildStructure> buildStructures = new ArrayList<BuildStructure>();
+        for (String structure : structures) {
+            buildStructures.add(BuildStructures.get(structure));
         }
-        return successCounter;
+        return buildStructures;
     }
-    
+
+    public void setOrigin(Position position) {
+        origin = position;
+        Arenas.saveArenaDB(this);
+    }
+
+    public Position getOrigin() {
+        return origin;
+    }
+
 }

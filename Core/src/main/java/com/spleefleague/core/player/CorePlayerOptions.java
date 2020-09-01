@@ -7,22 +7,59 @@
 package com.spleefleague.core.player;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.annotation.DBField;
-import com.spleefleague.core.annotation.DBLoad;
-import com.spleefleague.core.annotation.DBSave;
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.util.database.DBEntity;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
  */
 public class CorePlayerOptions extends DBEntity {
+
+    public static class PlayerOptions {
+
+        public static class Option {
+
+            public String displayName;
+            public ItemStack displayItem;
+
+            public Option(String displayName, ItemStack displayItem) {
+                this.displayName = displayName;
+                this.displayItem = displayItem;
+            }
+        }
+
+        protected List<Option> options;
+
+        public PlayerOptions() {
+            options = new ArrayList<>();
+        }
+
+        public void addOption(String displayName, ItemStack displayItem) {
+            options.add(new Option(displayName, displayItem));
+        }
+
+        public List<Option> getOptions() {
+            return options;
+        }
+
+        public int getOptionCount() {
+            return options.size();
+        }
+
+    }
     
     public enum CPOptions {
         POST_GAME_WARP
@@ -30,23 +67,13 @@ public class CorePlayerOptions extends DBEntity {
     
     protected static Map<String, PlayerOptions> optionMap;
     
-    protected class PostGamePlacement extends PlayerOptions {
-        
-        public PostGamePlacement() {
-            addOption("Spawn", InventoryMenuAPI.createCustomItem(Material.ACACIA_PLANKS));
-            addOption("Last Location", InventoryMenuAPI.createCustomItem(Material.DARK_OAK_BOAT));
-            addOption("Arena", InventoryMenuAPI.createCustomItem(Material.GRAY_DYE));
-        }
-        
-    }
-    
     public static void init() {
         optionMap = new HashMap<>();
         
         PlayerOptions postGameWarp = new PlayerOptions();
-        postGameWarp.addOption("Spawn", InventoryMenuAPI.createCustomItem(Material.ACACIA_PLANKS));
-        postGameWarp.addOption("Last Location", InventoryMenuAPI.createCustomItem(Material.DARK_OAK_BOAT));
-        postGameWarp.addOption("Arena", InventoryMenuAPI.createCustomItem(Material.GRAY_DYE));
+        postGameWarp.addOption("Spawn", InventoryMenuUtils.createCustomItem(Material.ACACIA_PLANKS));
+        postGameWarp.addOption("Last Location", InventoryMenuUtils.createCustomItem(Material.DARK_OAK_BOAT));
+        postGameWarp.addOption("Arena", InventoryMenuUtils.createCustomItem(Material.GRAY_DYE));
         optionMap.put(CPOptions.POST_GAME_WARP.name(), postGameWarp);
     }
     
@@ -54,8 +81,7 @@ public class CorePlayerOptions extends DBEntity {
         return optionMap.get(name);
     }
     
-    @DBField
-    protected Map<String, Integer> optionManager;
+    @DBField protected Map<String, Integer> optionManager;
     
     protected Set<String> disabledChannels;
     
@@ -80,11 +106,11 @@ public class CorePlayerOptions extends DBEntity {
         return optionManager.get(cpo.name());
     }
     
-    @DBSave(fieldname="disabledChats")
+    @DBSave(fieldName ="disabledChats")
     protected List<String> saveDisabledChatChannels() {
         return Lists.newArrayList(disabledChannels);
     }
-    @DBLoad(fieldname="disabledChats")
+    @DBLoad(fieldName ="disabledChats")
     protected void loadDisabledChatChannels(List<String> channels) {
         for (String c : channels) {
             disabledChannels.add(c.toLowerCase());

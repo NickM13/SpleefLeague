@@ -8,8 +8,9 @@ package com.spleefleague.core.menu;
 
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.Rank;
+import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,7 +35,7 @@ public class InventoryMenuItem {
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
     protected InventoryMenuContainer linkedContainer;
-    protected InventoryMenuContainer parentContainer;
+    protected InventoryMenuContainerChest parentContainer;
     
     public InventoryMenuItem() {
         minRank = Rank.DEFAULT;
@@ -49,6 +50,10 @@ public class InventoryMenuItem {
         action = null;
         linkedContainer = null;
     }
+
+    public String toString(CorePlayer cp) {
+        return nameFun.apply(cp);
+    }
     
     public InventoryMenuItem setName(String name) {
         this.nameFun = (cp) -> name;
@@ -60,7 +65,7 @@ public class InventoryMenuItem {
     }
     
     public InventoryMenuItem setDescription(String description) {
-        this.descriptionFun = (cp) -> description;
+        this.descriptionFun = (cp) -> Chat.colorize(description);
         return this;
     }
     public InventoryMenuItem setDescription(Function<CorePlayer, String> descriptionFun) {
@@ -69,11 +74,11 @@ public class InventoryMenuItem {
     }
     public InventoryMenuItem setDescription(List<String> lore) {
         this.descriptionFun = cp -> {
-            String description = "";
+            StringBuilder description = new StringBuilder();
             for (String line : lore) {
-                description += line;
+                description.append(line);
             }
-            return description;
+            return description.toString();
         };
         return this;
     }
@@ -82,8 +87,8 @@ public class InventoryMenuItem {
         this.displayItemFun = (cp) -> new ItemStack(material);
         return this;
     }
-    public InventoryMenuItem setDisplayItem(Material material, int damage) {
-        this.displayItemFun = (cp) -> InventoryMenuAPI.createCustomItem(material, damage);
+    public InventoryMenuItem setDisplayItem(Material material, int customModelData) {
+        this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, customModelData);
         return this;
     }
     public InventoryMenuItem setDisplayItem(ItemStack displayItem) {
@@ -107,32 +112,37 @@ public class InventoryMenuItem {
     public boolean hasLinkedContainer() {
         return linkedContainer != null;
     }
+
     /**
-     * Returns linked container, creates one if doesn't exist
-     * @return 
+     * Returns currently linked container
+     * @return Menu Container
      */
-    public InventoryMenuContainer getLinkedContainer() {
-        if (linkedContainer == null) createLinkedContainer("");
-        return linkedContainer;
+    public InventoryMenuContainerChest getLinkedChest() {
+        return (InventoryMenuContainerChest) linkedContainer;
     }
-    public InventoryMenuContainer setLinkedContainer(InventoryMenuContainer container) {
+    public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {
         linkedContainer = container;
-        if (parentContainer != null)
-            linkedContainer.setParentContainer(parentContainer);
-        return linkedContainer;
+        if (parentContainer != null) {
+            if (linkedContainer instanceof InventoryMenuContainerChest) {
+                ((InventoryMenuContainerChest) linkedContainer).setParent(parentContainer);
+            }
+        }
+        return this;
     }
     public InventoryMenuItem createLinkedContainer(String title) {
-        InventoryMenuContainer container = InventoryMenuAPI.createContainer();
-        container.setTitle(title);
-        setLinkedContainer(container);
+        setLinkedContainer(InventoryMenuAPI.createContainer()
+                .setTitle(title));
         return this;
     }
     
-    public void setParentContainer(InventoryMenuContainer container) {
+    public InventoryMenuItem setParent(InventoryMenuContainerChest container) {
         parentContainer = container;
         if (hasLinkedContainer()) {
-            linkedContainer.setParentContainer(parentContainer);
+            if (linkedContainer instanceof InventoryMenuContainerChest) {
+                ((InventoryMenuContainerChest) linkedContainer).setParent(parentContainer);
+            }
         }
+        return this;
     }
     
     public InventoryMenuItem setVisibility(Function<CorePlayer, Boolean> visibilityFun) {
@@ -164,20 +174,21 @@ public class InventoryMenuItem {
     
     protected List<String> getWrappedDescription(CorePlayer cp) {
         if (descriptionFun != null) {
-            return Chat.wrapDescription("\n" + descriptionFun.apply(cp));
+            return ChatUtils.wrapDescription("\n" + Chat.colorize(descriptionFun.apply(cp)));
         } else {
             return Lists.newArrayList();
         }
     }
     
     public ItemStack createItem(CorePlayer cp) {
-        ItemStack item = displayItemFun.apply(cp);
+        ItemStack item = displayItemFun.apply(cp).clone();
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(Chat.MENU_NAME + nameFun.apply(cp));
-        //meta.addAttributeModifier(Attribute.BACKGROUND_COLOR, AttributeModifier.deserialize(map));
-        meta.setLore(getWrappedDescription(cp));
-        meta.addItemFlags(ItemFlag.values());
-        item.setItemMeta(meta);
+        if (meta != null) {
+            meta.setDisplayName(Chat.MENU_NAME + Chat.colorize(nameFun.apply(cp)));
+            meta.setLore(getWrappedDescription(cp));
+            meta.addItemFlags(ItemFlag.values());
+            item.setItemMeta(meta);
+        }
         return item;
     }
     
@@ -185,11 +196,7 @@ public class InventoryMenuItem {
         return closeOnAction;
     }
     public void callAction(CorePlayer cp) {
-        if (action != null) action.accept(cp);
-    }
-    
-    public boolean isHotbarItem() {
-        return false;
+        if (action != null && isAvailable(cp)) action.accept(cp);
     }
     
 }

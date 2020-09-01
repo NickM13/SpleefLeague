@@ -17,13 +17,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.*;
 
 /**
  * @author NickM13
@@ -45,6 +39,15 @@ public class AfkListener implements Listener {
     @EventHandler(priority=EventPriority.LOWEST)
     public void onChat(AsyncPlayerChatEvent e) {
         setLastAction(e.getPlayer());
+    }
+
+    @EventHandler(priority=EventPriority.LOWEST)
+    public void onCommandSend(PlayerCommandPreprocessEvent e) {
+        if (e.getMessage().trim().equalsIgnoreCase("/afk")) {
+            e.setCancelled(setLastAction(e.getPlayer()));
+        } else {
+            setLastAction(e.getPlayer());
+        }
     }
     
     @EventHandler(priority=EventPriority.LOWEST)
@@ -96,7 +99,7 @@ public class AfkListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent e) {
         e.setCancelled(setLastAction(e.getWhoClicked().getName()));
     }
-    
+
     @EventHandler(priority=EventPriority.LOWEST)
     public void onInventoryInteract(InventoryClickEvent e) {
         e.setCancelled(setLastAction(e.getWhoClicked().getName()));

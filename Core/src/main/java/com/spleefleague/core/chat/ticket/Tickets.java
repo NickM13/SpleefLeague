@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
 import org.bson.Document;
 import org.bukkit.Bukkit;
 
@@ -29,14 +29,14 @@ public class Tickets {
     protected static Map<UUID, Ticket> openTickets = new HashMap<>();
     protected static List<Ticket> allTickets = new ArrayList<>();
     protected static Map<UUID, List<Ticket>> playerTickets = new HashMap<>();
-    protected static MongoCollection ticketCollection;
+    protected static MongoCollection<Document> ticketCollection;
     protected static Set<Ticket> newTickets;
     
     public static void init() {
         ticketCollection = Core.getInstance().getPluginDB().getCollection("Tickets");
         newTickets = new HashSet<>();
         
-        MongoCursor<Document> mc = ticketCollection.find().iterator();
+        MongoCursor<Document> mc = ticketCollection.find().cursor();
         
         while (mc.hasNext()) {
             Document doc = mc.next();
@@ -64,9 +64,11 @@ public class Tickets {
     }
     
     public static void save() {
-        ticketCollection.insertMany(newTickets.stream()
-                .map(ticket -> ticket.save())
-                .collect(Collectors.toList()));
+        List<Document> docs = new ArrayList<>();
+        for (Ticket ticket : newTickets) {
+            docs.add(ticket.toDocument());
+        }
+        if (!docs.isEmpty()) ticketCollection.insertMany(docs);
         newTickets.clear();
     }
     

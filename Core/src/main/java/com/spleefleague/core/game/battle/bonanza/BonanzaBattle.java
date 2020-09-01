@@ -1,0 +1,149 @@
+package com.spleefleague.core.game.battle.bonanza;
+
+import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.battle.BattlePlayer;
+import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.plugin.CorePlugin;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * @author NickM13
+ * @since 4/24/2020
+ */
+public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> {
+    
+    public BonanzaBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, players, arena, battlePlayerClass, battleMode);
+    }
+    
+    /**
+     * Initialize base battle settings such as GameWorld tools and Scoreboard values
+     */
+    @Override
+    protected void setupBaseSettings() {
+    
+    }
+    
+    /**
+     * Initialize the players, called in startBattle()
+     */
+    @Override
+    protected void setupBattlers() {
+    
+    }
+    
+    /**
+     * Send a message on the start of a battle
+     */
+    @Override
+    protected void sendStartMessage() {
+    
+    }
+    
+    @Override
+    protected void fillField() {
+    
+    }
+    
+    /**
+     * Called when a battler joins mid-game (if available)
+     *
+     * @param cp Core Player
+     */
+    @Override
+    protected void joinBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * End a round with a determined winner
+     *
+     * @param winner Winner
+     */
+    @Override
+    protected void endRound(BP winner) {
+    
+    }
+    
+    /**
+     * End a battle with a determined winner
+     *
+     * @param winner Winner
+     */
+    @Override
+    public void endBattle(BP winner) {
+    
+    }
+    
+    /**
+     * Called when a battler leaves boundaries
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void failBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called when a player surrenders (/ff, /leave)
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    public void surrender(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called when a battler wants to leave (/leave, /ff)
+     *
+     * @param cp Battler CorePlayer
+     */
+    @Override
+    protected void leaveBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called every 1 second or on score updates
+     * Updates the player scoreboards
+     */
+    @Override
+    public void updateScoreboard() {
+    
+    }
+    
+    /**
+     * Called every 1/10 second
+     * Updates the field on occasion for events such as
+     * auto-regenerating maps
+     */
+    @Override
+    public void updateField() {
+    
+    }
+    
+    /**
+     * Updates the experience bar of players in the game
+     */
+    @Override
+    public void updateExperience() {
+    
+    }
+
+}

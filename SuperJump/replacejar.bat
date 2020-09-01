@@ -1,0 +1,1 @@
+xcopy C:\Users\NickM\Documents\GitHub\SpleefLeagueRework\SpleefLeague\SuperJump\out\artifacts\SuperJump_jar\SuperJump.jar C:\Users\NickM\Documents\SpleefLeague\Server\plugins /Y
