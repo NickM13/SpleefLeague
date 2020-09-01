@@ -8,6 +8,7 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -17,7 +18,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     
     protected TeamBattleTeam teams;
     
-    public TeamBattle(CorePlugin<?> plugin, List<CorePlayer> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public TeamBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
     }
     
@@ -84,7 +85,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      * @param winner Winner
      */
     @Override
-    protected void endBattle(BP winner) {
+    public void endBattle(BP winner) {
     
     }
     
@@ -95,6 +96,16 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      */
     @Override
     protected void failBattler(CorePlayer cp) {
+    
+    }
+    
+    /**
+     * Called when a battler enters a goal area
+     *
+     * @param cp CorePlayer
+     */
+    @Override
+    protected void winBattler(CorePlayer cp) {
     
     }
     

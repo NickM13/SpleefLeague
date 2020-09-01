@@ -6,8 +6,8 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.util.List;
@@ -16,10 +16,10 @@ import org.bukkit.Bukkit;
 /**
  * @author NickM13
  */
-public class SudoCommand extends CommandTemplate {
+public class SudoCommand extends CoreCommand {
     
     public SudoCommand() {
-        super(SudoCommand.class, "sudo", Rank.DEVELOPER);
+        super("sudo", Rank.DEVELOPER);
     }
     
     @CommandAnnotation

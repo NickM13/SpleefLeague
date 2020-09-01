@@ -7,149 +7,95 @@
 package com.spleefleague.core.util.variable;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bson.Document;
-import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
  */
 public class Warp extends DBEntity {
     
-    private static final Map<String, Warp> warps = new TreeMap<>();
-    private static final Map<String, Set<String>> folders = new TreeMap<>();
+    private static final SortedMap<String, Warp> warps = new TreeMap<>();
     private static MongoCollection<Document> warpCollection;
-    
-    private static final String DEFAULT_FOLDER = "..";
+    private static final SortedMap<String, SortedSet<String>> folders = new TreeMap<>();
+    private static final String DEFAULT_FOLDER = ".";
     
     /**
      * Loads all warps from the Warps collection
      */
     public static void init() {
         warpCollection = Core.getInstance().getPluginDB().getCollection("Warps");
-        MongoCursor<Document> it = warpCollection.find().iterator();
-        createFolder(DEFAULT_FOLDER);
-        while (it.hasNext()) {
-            Document doc = it.next();
+        folders.put(DEFAULT_FOLDER, new TreeSet<>());
+        for (Document doc : warpCollection.find()) {
             Warp warp = new Warp();
             warp.load(doc);
-            createFolder(warp.getFolder());
-            folders.get(warp.getFolder()).add(warp.getName().toLowerCase());
-            warps.put(warp.getName().toLowerCase(), warp);
+            warps.put(warp.getIdentifier(), warp);
         }
     }
-    
-    /**
-     * Creates a warp menu of warps available to a player
-     *
-     * @return Menu Container
-     */
-    public static InventoryMenuContainerChest createAvailableWarpMenu() {
-        return InventoryMenuAPI.createContainer()
-                .setTitle("Warp Menu")
+
+    public static InventoryMenuContainerChest createMenuContainer(String folderName) {
+        InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
+                .setTitle(cp -> " Folder " + cp.getMenuTag("folderName", String.class))
+                .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp) -> {
+                    cp.setMenuTag("folderName", folderName == null ? DEFAULT_FOLDER : folderName);
+                    cp.setMenuTag("warpPage", 0);
+                })
+                .setRefreshAction((container, cp) -> {
                     container.clearUnsorted();
-                    for (Map.Entry<String, Set<String>> folder1 : folders.entrySet()) {
-                        InventoryMenuItem folderMenu = InventoryMenuAPI.createItem()
-                                .setName(folder1.getKey())
-                                .setDisplayItem(Material.CHEST_MINECART)
-                                .setDescription("Open Warp Folder")
-                                .createLinkedContainer(folder1.getKey());
-                        for (String warpName : folder1.getValue()) {
-                            folderMenu.getLinkedContainer()
-                                    .addMenuItem(InventoryMenuAPI.createItem()
-                                    .setDisplayItem(warps.get(warpName).getDisplayItem())
-                                    .setName(warps.get(warpName).getName())
-                                    .setAction(cp2 -> cp2.warp(warps.get(warpName))));
-                        }
-                        container.addMenuItem(folderMenu);
+                    int page = cp.getMenuTag("warpPage", Integer.class);
+                    SortedSet<String> warpNames = folders.get(cp.getMenuTag("folderName", String.class));
+                    for (String warpName : warpNames) {
+                        Warp warp = warps.get(warpName);
+                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + warp.getName())
+                                .setDisplayItem(Material.SAND)
+                                .setAction(cp2 -> cp2.warp(warp)));
                     }
                 });
+
+        menuContainer.addStaticItem(InventoryMenuAPI.createItem()
+                        .setName(ChatColor.RED + "" + ChatColor.BOLD + "Previous Page")
+                        .setDescription("")
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem()),
+                2, 4)
+                .setVisibility(cp -> cp.getMenuTag("warpPage", Integer.class) > 0)
+                .setAction(cp -> cp.setMenuTag("warpPage", cp.getMenuTag("warpPage", Integer.class) - 1))
+                .setCloseOnAction(false);
+
+        menuContainer.addStaticItem(InventoryMenuAPI.createItem()
+                        .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Page")
+                        .setDescription("")
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem()),
+                6, 4)
+                .setVisibility(cp -> cp.getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
+                .setAction(cp -> cp.setMenuTag("warpPage", cp.getMenuTag("warpPage", Integer.class) + 1))
+                .setCloseOnAction(false);
+
+        return menuContainer;
     }
-    
-    /**
-     * Saves all warps that were changed
-     */
+
     public static void close() {
-        if (warpCollection == null) return;
-        
-        for (HashMap.Entry<String, Warp> w : warps.entrySet()) {
-            if (w.getValue().hasChanged) {
-                List<Object> loc = LocationConverter.save(w.getValue().location);
-                if (loc != null) {
-                    if (warpCollection.find(new Document("name", w.getValue().name)).first() != null) {
-                        warpCollection.deleteMany(new Document("name", w.getValue().name));
-                    }
-                    warpCollection.insertOne(w.getValue().save());
-                }
-            }
-        }
-    }
-    
-    /**
-     * Creates a new folder if it doesn't already exist to keep warps in
-     *
-     * @param folder Folder
-     */
-    public static void createFolder(String folder) {
-        if (folders.containsKey(folder.toLowerCase())) return;
-        folders.put(folder, new TreeSet<>());
-    }
-    
-    /**
-     * Deletes a folder and moves all contained warps to DEFAULT_FOLDER
-     *
-     * @param folder Folder
-     * @return Success
-     */
-    public static boolean deleteFolder(String folder) {
-        if (folder.equals(DEFAULT_FOLDER)) {
-            return false;
-        }
-        Set<String> warpNames = new HashSet<>(folders.get(folder.toLowerCase()));
-        for (String warpName : warpNames) {
-            moveWarp(warpName, DEFAULT_FOLDER);
-        }
-        folders.remove(folder.toLowerCase());
-        return true;
-    }
-    
-    /**
-     * Moves a warp to a folder
-     *
-     * @param warpName Warp Name
-     * @param folder Folder
-     */
-    public static void moveWarp(String warpName, String folder) {
-        folder = folder.toLowerCase();
-        if (!folders.containsKey(folder)) folders.put(folder, new HashSet<>());
-        Warp warp = getWarp(warpName);
-        folders.get(warp.getFolder()).remove(warpName);
-        folders.get(folder).add(warpName);
-        warp.setFolder(folder);
+
     }
     
     /**
@@ -159,26 +105,13 @@ public class Warp extends DBEntity {
      * @return Warp Name Set
      */
     public static Set<String> getWarpNames(CorePlayer cp) {
-        Set<String> warpFiled = new HashSet<>();
-        for (Warp w : warps.values()) {
-            if (w.isAvailable(cp)) {
-                if (w.getFolder().equals(DEFAULT_FOLDER)) {
-                    warpFiled.add(w.getName());
-                } else {
-                    warpFiled.add(w.getFolder() + ":" + w.getName());
-                }
+        Set<String> warpNames = new HashSet<>();
+        for (Warp warp : warps.values()) {
+            if (warp.isAvailable(cp)) {
+                warpNames.add(warp.getIdentifier());
             }
         }
-        return warpFiled;
-    }
-    
-    /**
-     * Returns all folder names, used in command tab completes
-     *
-     * @return Folder Name Set
-     */
-    public static Set<String> getWarpFolders() {
-        return folders.keySet();
+        return warpNames;
     }
     
     /**
@@ -186,18 +119,17 @@ public class Warp extends DBEntity {
      *
      * @return Warp Name Set
      */
-    public static Set<Warp> getWarps() {
-        return Sets.newHashSet(warps.values());
+    public static Set<Warp> getWarps(String folderName) {
+        return new TreeSet<>(folders.get(folderName).stream().map(warps::get).collect(Collectors.toSet()));
     }
     
     /**
-     * Returns all warps in a folder in TextComponent format to allow
+     * Returns all warps in TextComponent format to allow
      * clicking on links names to warp instead of having to type the warp name
      *
-     * @param folder Folder
      * @return Text Component
      */
-    public static TextComponent getWarpsFormatted(String folder) {
+    public static TextComponent getWarpsFormatted() {
         TextComponent message = new TextComponent("");
         TextComponent warpstr;
         
@@ -205,17 +137,15 @@ public class Warp extends DBEntity {
         
         boolean first = true;
         while (wit.hasNext()) {
-            Warp warp = wit.next().getValue();
-            if (warp.getFolder().equalsIgnoreCase(folder)) {
-                if (!first) {
-                    message.addExtra(new TextComponent(", "));
-                } else first = false;
-                warpstr = new TextComponent(warp.name);
-                warpstr.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to warp to '" + warpstr.getText() + "'").create()));
-                warpstr.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warp " + warp.name));
-                warpstr.setColor(Chat.getColor("DEFAULT").asBungee());
-                message.addExtra(warpstr);
-            }
+        Warp warp = wit.next().getValue();
+            if (!first) {
+                message.addExtra(new TextComponent(", "));
+            } else first = false;
+            warpstr = new TextComponent(warp.getIdentifier());
+            warpstr.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to warp to '" + warpstr.getText() + "'").create()));
+            warpstr.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warp " + warp.getIdentifier()));
+            warpstr.setColor(Chat.getColor("DEFAULT").asBungee());
+            message.addExtra(warpstr);
         }
         
         return message;
@@ -228,127 +158,107 @@ public class Warp extends DBEntity {
      * @return Warp
      */
     public static Warp getWarp(String name) {
-        String[] a = name.split(":", 2);
-        return warps.get(a[a.length-1].toLowerCase());
+        return warps.get(name);
     }
     
     /**
-     * Get all warps in a folder
+     * Creates a warp by a name at a location
      *
-     * @param folderName Folder Name
-     * @return Warp Set
-     */
-    public static Set<Warp> getWarps(String folderName) {
-        Set<Warp> folderedWarps = new HashSet<>();
-        Set<String> folder = folders.get(folderName);
-        if (folder != null) {
-            for (String name : folder) {
-                folderedWarps.add(warps.get(name));
-            }
-        }
-        return folderedWarps;
-    }
-    
-    /**
-     * Creates a warp by a name at a location, folder can be
-     * set using a : to split, e.g /setwarp fold:newwarp
-     *
-     * @param name Warp Name
+     * @param identifier Warp Name
      * @param loc Location
      */
-    public static void setWarp(String name, Location loc) {
-        String warpfolder = DEFAULT_FOLDER;
-        String warpname = name;
-        if (name.contains(":")) {
-            warpfolder = name.split(":")[0];
-            warpname = name.split(":")[1];
-            if (warpfolder.isEmpty() || warpname.isEmpty()) {
-                return;
+    public static int setWarp(String identifier, Location loc) {
+        if (identifier.contains(":")) {
+            String[] args = identifier.split(":", 2);
+            if (args[0].isEmpty() || args[1].isEmpty()) {
+                return 1;
             }
         }
-        Warp warp = new Warp(warpname, loc, warpfolder);
-        warp.hasChanged = true;
-        warps.put(warpname.toLowerCase(), warp);
-        if (!warpfolder.equals(DEFAULT_FOLDER)) {
-            folders.get(warpfolder).add(warp.getName());
+        if (warps.containsKey(identifier)) {
+            delWarp(identifier);
+            return 2;
         }
+        Warp warp = new Warp(identifier, loc);
+        warps.put(warp.getIdentifier(), warp);
+        warp.save(warpCollection);
+        return 0;
     }
     
     /**
      * Deletes a warp by name
      *
-     * @param name Warp Name
+     * @param identifier Warp Name
      * @return Success
      */
-    public static boolean delWarp(String name) {
-        if (warps.containsKey(name.toLowerCase())) {
-            warpCollection.deleteOne(new Document("name", warps.get(name.toLowerCase()).name));
-            warps.remove(name.toLowerCase());
+    public static boolean delWarp(String identifier) {
+        if (warps.containsKey(identifier)) {
+            Warp warp = warps.remove(identifier);
+            warp.unsave(warpCollection);
+            folders.get(warp.getFolder()).remove(identifier);
+            if (folders.get(warp.getFolder()).isEmpty() && !warp.getFolder().equals(DEFAULT_FOLDER)) {
+                folders.remove(warp.getFolder());
+            }
             return true;
         }
         return false;
     }
-    
-    @DBField
-    public String name;
+
     @DBField(serializer=LocationConverter.class)
     public Location location;
-    @DBField
-    public String folder;
-    public boolean hasChanged;
-    public ItemStack displayItem;
-    @DBField
-    public UUID uuid;
+    protected String warpName;
+    protected String folderName = null;
     
-    private Warp() {
-    
+    public Warp() {
+
     }
-    private Warp(String name, Location location, String folder) {
-        this.name = name;
+
+    public Warp(String identifier, Location location) {
+        this.identifier = identifier;
         this.location = location;
-        this.hasChanged = false;
-        if (folder == null)     this.folder = DEFAULT_FOLDER;
-        else                    this.folder = folder;
+        initFolder();
     }
     
     @Override
     public void afterLoad() {
-        if (uuid != null) {
-            this.displayItem = InventoryMenuUtils.createCustomSkull(uuid);
-        } else {
-            displayItem = new ItemStack(Material.PLAYER_HEAD);
+        initFolder();
+    }
+
+    private void initFolder() {
+        if (identifier.contains(":")) {
+            String[] args = identifier.split(":", 2);
+            if (!args[0].isEmpty() && !args[1].isEmpty()) {
+                folderName = args[0];
+                warpName = args[1];
+                if (!folders.containsKey(folderName)) {
+                    folders.put(folderName, new TreeSet<>());
+                }
+                folders.get(folderName).add(identifier);
+                return;
+            }
         }
+        warpName = identifier;
+        folderName = DEFAULT_FOLDER;
+        folders.get(folderName).add(identifier);
     }
-    
+
     public String getName() {
-        return name;
+        return warpName;
     }
+
+    public String getFolder() {
+        return folderName;
+    }
+
     public Location getLocation() {
         return location;
     }
-    public void setFolder(String folder) {
-        this.folder = folder;
-        hasChanged = true;
-    }
-    public String getFolder() {
-        return folder;
-    }
     public boolean isAvailable(CorePlayer cp) {
-        Rank rank = Rank.getRank(folder);
+        Rank rank = Rank.getRank(folderName);
         if (rank == null) {
             return cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER));
         } else {
             return cp.getRank().hasPermission(rank);
         }
     }
-    public ItemStack getDisplayItem() {
-        if (displayItem == null) return new ItemStack(Material.PLAYER_HEAD);
-        return displayItem;
-    }
-    public void setDisplayItem(String username) {
-        hasChanged = true;
-        this.uuid = Bukkit.getOfflinePlayer(username).getUniqueId();
-        this.displayItem = InventoryMenuUtils.createCustomSkull(this.uuid);
-    }
-    
+
 }

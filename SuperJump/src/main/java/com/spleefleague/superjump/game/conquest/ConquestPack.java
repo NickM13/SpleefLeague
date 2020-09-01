@@ -7,12 +7,13 @@
 package com.spleefleague.superjump.game.conquest;
 
 import com.mongodb.client.MongoCursor;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
@@ -71,27 +72,32 @@ public class ConquestPack extends DBEntity {
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .createLinkedContainer("CQ Pack: " + name);
         
-        for (String a : arenas) {
-            Arena arena = Arena.getByName(a, SJMode.CONQUEST.getArenaMode());
-            menu.getLinkedContainer()
-                    .addMenuItem(InventoryMenuAPI.createItem()
-                    .setName(arena.getName())
-                    .setDescription(cp -> {
-                        String desc = arena.getDescription() + "\n";
-                        SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(cp);
-                        desc += sjp.getConquestStats().getDescription((ConquestSJArena) arena);
-                        return desc;
-                        })
-                    .setDisplayItem(cp -> {
-                        SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(cp);
-                        switch (sjp.getConquestStats().getStars((ConquestSJArena) arena)) {
+        for (String arenaName : arenas) {
+            Arena arena = Arenas.get(arenaName, SJMode.CONQUEST.getBattleMode());
+            if (arena != null) {
+                menu.getLinkedChest()
+                        .addMenuItem(InventoryMenuAPI.createItem()
+                                .setName(arena.getName())
+                                .setDescription(cp -> {
+                                    String desc = arena.getDescription() + "\n";
+                                    SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(cp);
+                                    //desc += sjp.getConquestStats().getDescription(arena);
+                                    return desc;
+                                })
+                                .setDisplayItem(cp -> {
+                                    SuperJumpPlayer sjp = (SuperJumpPlayer) SuperJump.getInstance().getPlayers().get(cp);
+                        /*
+                        switch (sjp.getConquestStats().getStars(arena)) {
                             case 3: return InventoryMenuUtils.createCustomItem(Material.DIAMOND_AXE, 16);
                             case 2: return InventoryMenuUtils.createCustomItem(Material.DIAMOND_AXE, 17);
                             case 1: return InventoryMenuUtils.createCustomItem(Material.DIAMOND_AXE, 18);
                             default: return InventoryMenuUtils.createCustomItem(Material.DIAMOND_AXE, 19);
                         }
-                        }))
-                    .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CONQUEST.getArenaMode(), cp, arena));
+                         */
+                                    return InventoryMenuUtils.createCustomItem(Material.DIAMOND_AXE, 16);
+                                }))
+                        .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.CONQUEST.getBattleMode(), cp, arena));
+            }
         }
         
         return menu;

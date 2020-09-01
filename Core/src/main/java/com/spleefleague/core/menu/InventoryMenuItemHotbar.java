@@ -66,6 +66,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
                                 && hotbarItem.createItem(cp).equals(itemStack)
                                 && hotbarItem.getSlot() == i) {
                             currentHotbarItems.add(hotbarItem.getHotbarTag());
+                            cp.getPlayer().getInventory().setItem(i, hotbarItem.createItem(cp));
                             continue;
                         }
                         cp.getPlayer().getInventory().setItem(i, null);
@@ -191,8 +192,8 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
     
     @Override
     public void callAction(CorePlayer cp) {
-        if (getLinkedContainer() != null) {
-            cp.setInventoryMenuChest(getLinkedContainer(), true);
+        if (getLinkedChest() != null) {
+            cp.setInventoryMenuChest(getLinkedChest(), true);
         }
         super.callAction(cp);
     }

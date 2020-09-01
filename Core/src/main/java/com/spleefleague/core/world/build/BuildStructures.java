@@ -42,7 +42,7 @@ public class BuildStructures {
             if (fieldCol.find(new Document("name", structure.getName())).first() != null) {
                 fieldCol.deleteMany(new Document("name", structure.getName()));
             }
-            fieldCol.insertOne(structure.save());
+            fieldCol.insertOne(structure.toDocument());
         }
     }
     
@@ -76,7 +76,23 @@ public class BuildStructures {
     public static BuildStructure get(String fieldName) {
         return STRUCTURES.get(fieldName);
     }
-    
+
+    public static List<BuildStructure> getAll(String startStr) {
+        List<BuildStructure> structures = new ArrayList<>();
+        for (BuildStructure structure : STRUCTURES.values()) {
+            if (structure.getName().startsWith(startStr)) {
+                structures.add(structure);
+            }
+        }
+        return structures;
+    }
+
+    public static BuildStructure getRandom(String startStr) {
+        List<BuildStructure> structures = getAll(startStr);
+        if (structures.isEmpty()) return null;
+        return structures.get(new Random().nextInt(structures.size()));
+    }
+
     public static Set<String> getNames() {
         return STRUCTURES.keySet();
     }

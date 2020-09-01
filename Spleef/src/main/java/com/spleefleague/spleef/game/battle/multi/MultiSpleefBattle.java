@@ -15,20 +15,21 @@ import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.util.SpleefUtils;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class MultiSpleefBattle extends DynamicBattle<MultiSpleefPlayer> {
     
-    public MultiSpleefBattle(List<CorePlayer> players,
+    public MultiSpleefBattle(List<UUID> players,
                              Arena arena) {
         super(Spleef.getInstance(), players, arena, MultiSpleefPlayer.class, SpleefMode.MULTI.getBattleMode());
     }
     
     @Override
     public void fillField() {
-        SpleefUtils.fillFieldFast(this);
+        SpleefUtils.fillFieldFast(this, null);
     }
     
     @Override

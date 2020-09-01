@@ -9,17 +9,17 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class BroadcastCommand extends CommandTemplate {
+public class BroadcastCommand extends CoreCommand {
     
     public BroadcastCommand() {
-        super(BroadcastCommand.class, "broadcast", Rank.DEVELOPER);
+        super("broadcast", Rank.DEVELOPER);
         setUsage("/broadcast <message>");
         setDescription("Send a message through the broadcast channel");
     }

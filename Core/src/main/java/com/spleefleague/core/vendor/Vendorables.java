@@ -60,13 +60,17 @@ public class Vendorables {
     public static void unregister(String type, String identifier) {
         VENDORABLE_MAP.get(type).remove(identifier);
     }
+
+    public static void unregister(Class<? extends Vendorable> clazz, String identifier) {
+        unregister(Vendorable.getTypeName(clazz), identifier);
+    }
     
     public static Map<String, Vendorable> getAll(String type) {
         return VENDORABLE_MAP.get(type);
     }
     
-    public static Map<String, Vendorable> getAll(Class<? extends Vendorable> clazz) {
-        return VENDORABLE_MAP.getOrDefault(Vendorable.getTypeName(clazz), new HashMap<>());
+    public static <T extends Vendorable> Map<String, T> getAll(Class<T> clazz) {
+        return (Map<String, T>) VENDORABLE_MAP.getOrDefault(Vendorable.getTypeName(clazz), new HashMap<>());
     }
     
     public static Vendorable get(ItemStack itemStack) {
@@ -84,12 +88,21 @@ public class Vendorables {
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static <T extends Vendorable> T get(Class<T> clazz, String identifier) {
         String typeName = Vendorable.getTypeName(clazz);
         if (VENDORABLE_MAP.containsKey(typeName)) {
             return (T) VENDORABLE_MAP.get(typeName).get(identifier);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Vendorable> T get(Class<T> clazz, ItemStack item) {
+        String typeName = Vendorable.getTypeName(clazz);
+        if (VENDORABLE_MAP.containsKey(typeName)) {
+            return (T) VENDORABLE_MAP.get(typeName).get(Vendorables.getIdentifierNbt(item));
         }
         return null;
     }

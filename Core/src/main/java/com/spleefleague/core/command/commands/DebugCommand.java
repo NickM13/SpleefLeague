@@ -6,57 +6,75 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.command.annotation.HelperArg;
+import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.core.util.variable.RaycastResult;
-import java.util.List;
 
-import com.spleefleague.core.world.FakeWorld;
+import com.spleefleague.core.util.variable.Warp;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.Snowball;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Sound;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author NickM13
  */
-public class DebugCommand extends CommandTemplate {
+public class DebugCommand extends CoreCommand {
     
     public DebugCommand() {
-        super(DebugCommand.class, "debug", Rank.DEVELOPER);
+        super("debug", Rank.DEVELOPER);
         setUsage("/debug " + ChatColor.MAGIC + "[hope u no read]");
         setDescription("debu" + ChatColor.MAGIC + "g more read?");
     }
     
     @CommandAnnotation
-    public void debug(CorePlayer sender) {
-        /*
-        Snowball snowball = sender.getPlayer().launchProjectile(Snowball.class);
-        Point point = new Point(snowball.getLocation());
-        List<RaycastResult> result = point.cast(sender.getPlayer().getLocation().getDirection(), 10);
-        result.forEach(r -> {
-            BlockPosition bp = r.blockPos;
-            Material mat;
-            switch (r.axis) {
-                case 1:
-                    mat = Material.RED_CONCRETE;
-                    break;
-                case 2:
-                    mat = Material.GREEN_CONCRETE;
-                    break;
-                case 3:
-                    mat = Material.BLUE_CONCRETE;
-                    break;
-                default: mat = Material.YELLOW_CONCRETE;
+    public void debug(CorePlayer sender, @HelperArg("<pitch>") Double pitch, @Nullable @HelperArg("[startsWith]") String startsWith) {
+        TextComponent message = new TextComponent("");
+        TextComponent soundStr;
+
+        int i = 0;
+        int split = 20;
+        for (Sound sound : Sound.values()) {
+            if (startsWith != null && sound.toString().toLowerCase().startsWith(startsWith.toLowerCase())) {
+                if (i > 0) {
+                    message.addExtra(", ");
+                }
+                soundStr = new TextComponent(sound.toString().toLowerCase().replaceFirst("entity_", "").replaceFirst("block_", "").replaceFirst("item_", "").replaceFirst("ui_", "").replaceFirst("music_", "").replaceAll("_", "."));
+                soundStr.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to play sound '" + sound.toString() + "' at pitch " + pitch).create()));
+                soundStr.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/debug play " + pitch + " " + sound.toString()));
+                soundStr.setColor(Chat.getColor("DEFAULT").asBungee());
+                message.addExtra(soundStr);
+                i++;
+                if (i > split) {
+                    sender.sendMessage(message);
+                    message = new TextComponent("");
+                    i = 0;
+                }
             }
-            sender.getPlayer().getWorld().getBlockAt(new Location(sender.getLocation().getWorld(), (double)bp.getX(), (double)bp.getY(), (double)bp.getZ())).setBlockData(mat.createBlockData());
-        });
-        */
-        success(sender, "Nice try.  No.  Correction.  Terrible try.");
+        }
+        if (i > 0) {
+            sender.sendMessage(message);
+        }
+    }
+
+    @CommandAnnotation(hidden = true)
+    public void debug(CorePlayer sender,
+                      @LiteralArg("play") String l,
+                      Double pitch,
+                      String name) {
+        sender.getPlayer().playSound(sender.getPlayer().getLocation(), Sound.valueOf(name), 1, pitch.floatValue());
     }
     
 }

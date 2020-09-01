@@ -2,7 +2,6 @@ package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -36,7 +35,7 @@ public class Vendors {
             Vendor vendor = new Vendor();
             vendor.load(doc);
             vendor.refreshEntities();
-            vendors.put(vendor.getName().toLowerCase(), vendor);
+            vendors.put(vendor.getIdentifier(), vendor);
         });
     }
     
@@ -49,13 +48,11 @@ public class Vendors {
                 vendorCollection.deleteMany(new Document());
             }
             List<Document> docs = new ArrayList<>();
-            vendors.values().forEach(v -> docs.add(v.save()));
+            vendors.values().forEach(v -> docs.add(v.toDocument()));
             if (!docs.isEmpty()) {
                 vendorCollection.insertMany(docs);
             }
-        } catch (IllegalAccessError | NoClassDefFoundError ignored) {
-        
-        }
+        } catch (IllegalAccessError | NoClassDefFoundError ignored) { }
     }
     
     /**
@@ -96,13 +93,13 @@ public class Vendors {
      */
     public static boolean deleteVendor(Vendor vendor) {
         if (vendor == null) return false;
-        vendorCollection.deleteMany(new Document("name", vendor.getName()));
+        vendorCollection.deleteMany(new Document("name", vendor.getDisplayName()));
         vendor.getEntities().forEach(entityUuid -> {
             Entity entity = Bukkit.getEntity(entityUuid);
             if (entity != null)
                 clearEntityVendor(entity);
         });
-        vendors.remove(vendor.getName());
+        vendors.remove(vendor.getDisplayName());
         return true;
     }
     
@@ -112,8 +109,8 @@ public class Vendors {
      * @param vendor Vendor item
      */
     public static void save(Vendor vendor) {
-        vendorCollection.deleteMany(new Document("name", vendor.getName()));
-        vendorCollection.insertOne(vendor.save());
+        vendorCollection.deleteMany(new Document("name", vendor.getDisplayName()));
+        vendorCollection.insertOne(vendor.toDocument());
     }
     
     /**

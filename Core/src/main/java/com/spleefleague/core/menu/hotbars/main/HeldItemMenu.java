@@ -10,6 +10,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.rank.Rank;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,17 +23,17 @@ public class HeldItemMenu {
     
     public static void init() {
         menuItem = InventoryMenuAPI.createItem()
-                .setName("Held Item")
+                .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Held Item")
                 .setDisplayItem(Material.BAKED_POTATO)
                 .setDescription("Change your held item")
                 .setAvailability(cp -> cp.getRank().hasPermission(Rank.DONOR_1))
                 .createLinkedContainer("Held Item");
     
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .setOpenAction((container, cp1) -> {
                     container.clearUnsorted();
                     
-                    menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
+                    menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                             .setName("None")
                             .setDescription("")
                             .setDisplayItem(Material.BAKED_POTATO)
@@ -49,7 +50,7 @@ public class HeldItemMenu {
                     }
                 });
     
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addStaticItem(InventoryMenuAPI.createItem()
                         .setName("Held Item")
                         .setDescription(cp -> cp.getCollectibles().hasHeldItem()

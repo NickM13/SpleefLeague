@@ -6,17 +6,17 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class PingCommand extends CommandTemplate {
+public class PingCommand extends CoreCommand {
 
     public PingCommand() {
-        super(PingCommand.class, "ping", Rank.DEFAULT);
+        super("ping", Rank.DEFAULT);
         setUsage("/ping [player]");
         setDescription("Get the ping of a player");
     }

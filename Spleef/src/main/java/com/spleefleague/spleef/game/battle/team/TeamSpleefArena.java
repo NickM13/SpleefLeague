@@ -9,8 +9,11 @@ package com.spleefleague.spleef.game.battle.team;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.arena.Arenas;
+import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
+import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
@@ -22,13 +25,12 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  */
 public class TeamSpleefArena {
-    
+
     public static void createMenu(int x, int y) {
-        String mainColor = ChatColor.YELLOW + "" + ChatColor.BOLD;
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .createLinkedContainer("Team Spleef Menu")
-                .setName(mainColor + "Team Spleef")
-                .setDescription("United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode.")
+                .setName("&6&lTeam Spleef")
+                .setDescription("United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode." +
+                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.TEAM.getBattleMode()).getCurrentlyPlaying())
                 .setAvailability(cp -> {
                     Party party = cp.getParty();
                     if (party == null) {
@@ -41,26 +43,40 @@ public class TeamSpleefArena {
                     }
                     return true;
                 })
-                .setDisplayItem(Material.LEATHER_HELMET, 56);
+                .setDisplayItem(Material.LEATHER_HELMET, 56)
+                .createLinkedContainer("Team Spleef Menu");
         
-        menuItem.getLinkedContainer().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
                 .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp)));
         
-        Arenas.getAll(SpleefMode.TEAM.getBattleMode()).values().forEach(arena -> menuItem.getLinkedContainer()
+        Arenas.getAll(SpleefMode.TEAM.getBattleMode()).values().forEach(arena -> menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(arena.getDisplayName())
+                        .setName(arena.getName())
                         .setVisibility(cp -> {
                             Party party = cp.getParty();
                             return party != null
                                     && (party.getPlayers().size() == arena.getTeamSize());
                         })
                         .setDescription(cp -> arena.getDescription())
-                        .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
+                        .setDisplayItem(cp -> new ItemStack(Material.FILLED_MAP))
                         .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp, arena))));
         
-        Spleef.getInstance().getSpleefMenu().getLinkedContainer().addMenuItem(menuItem, x, y);
+        Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+    }
+    
+    public static void initLeaderboard(int x, int y) {
+        LeaderboardCollection leaderboard = Leaderboards.get(SpleefMode.TEAM.getName());
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+                .setName("&6&lTeam Spleef")
+                .setDescription("View the top players of Team Spleef!")
+                .setDisplayItem(Material.LEATHER_HELMET, 56)
+                .setLinkedContainer(leaderboard.createMenuContainer());
+        
+        LeaderboardMenu.getItem()
+                .getLinkedChest()
+                .addMenuItem(menuItem, x, y);
     }
     
 }

@@ -23,7 +23,7 @@ public class PetMenu {
                 .setDisplayItem(Material.FOX_SPAWN_EGG)
                 .createLinkedContainer("Pets Menu");
         
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
                     for (Vendorable vendorable : Vendorables.getAll(Pet.class).values()) {

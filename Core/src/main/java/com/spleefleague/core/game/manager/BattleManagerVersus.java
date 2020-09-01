@@ -6,16 +6,16 @@
 
 package com.spleefleague.core.game.manager;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.queue.PlayerQueue;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -25,91 +25,49 @@ import java.util.List;
  * @author NickM13
  */
 public class BattleManagerVersus extends BattleManager {
-    
-    protected PlayerQueue queue;
 
     public BattleManagerVersus(BattleMode mode) {
         super(mode);
-        
-        queue = new PlayerQueue();
-        queue.initialize(displayName, this, false);
-    }
-    
-    private ArrayList<CorePlayer> gatherPlayers(int num, int teamSize) {
-        ArrayList<CorePlayer> gatheredPlayers = new ArrayList<>();
-        ArrayList<CorePlayer> cplayers = queue.getMatchedPlayers(num, teamSize);
-        if (cplayers == null) return null;
-        for (CorePlayer cp : cplayers) {
-            gatheredPlayers.add(cp);
-            if (gatheredPlayers.size() == num) return gatheredPlayers;
-        }
-        return null;
-    }
-    
-    @Override
-    public int queuePlayer(CorePlayer cp) {
-        queue.queuePlayer(cp);
-        return 0;
-    }
-    
-    @Override
-    public int queuePlayer(CorePlayer cp, Arena arena) {
-        if (arena == null) {
-            return queuePlayer(cp);
-        } else {
-            if (!arena.isAvailable()) {
-                Core.getInstance().sendMessage(cp, arena.getDisplayName() + " is currently disabled.");
-                return 3;
-            } else {
-                queue.queuePlayer(cp, arena);
-                return 0;
-            }
-        }
-    }
-
-    @Override
-    public void checkQueue() {
-        for (int size : this.mode.getRequiredTeamSizes()) {
-            if (queue.getQueueSize() >= this.mode.getRequiredTeams()) {
-                ArrayList<CorePlayer> players = gatherPlayers(this.mode.getRequiredTeams(), size);
-                if (players != null) {
-                    startMatch(players, queue.getLastArenaName());
-                }
-            }
-        }
     }
     
     @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);
         if (arena == null) {
-            CoreLogger.logError("Tried to start match on null arena " + arenaName);
+            CoreLogger.logError("", new NullPointerException("Null arena: " + arenaName));
             return;
         }
         Battle<?> battle;
         for (CorePlayer cp : players) {
-            Party party = cp.getParty();
-            if (party != null) {
-                party.leave(cp);
-            }
-            if (cp.isInBattle()) {
+            if (!cp.canJoinBattle()) {
                 Core.getInstance().unqueuePlayerGlobally(cp);
                 return;
             }
         }
         try {
             if (arena.isAvailable()) {
+                ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+                output.writeUTF(mode.getName());
+                output.writeUTF(arena.getIdentifier());
+
+                output.writeInt(players.size());
                 for (CorePlayer cp : players) {
                     Core.getInstance().unqueuePlayerGlobally(cp);
+                    output.writeUTF(cp.getUniqueId().toString());
                 }
+
+                players.get(0).getPlayer().sendPluginMessage(Core.getInstance(), "battle:start", output.toByteArray());
+                /*
                 battle = battleClass
                         .getDeclaredConstructor(List.class, Arena.class)
                         .newInstance(players, arena);
                 battle.startBattle();
                 battles.add(battle);
+                 */
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception exception) {
+            CoreLogger.logError(exception);
         }
     }
 

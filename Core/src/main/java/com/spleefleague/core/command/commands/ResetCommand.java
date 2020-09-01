@@ -7,19 +7,18 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class ResetCommand extends CommandTemplate {
+public class ResetCommand extends CoreCommand {
     
     public ResetCommand() {
-        super(ResetCommand.class, "reset", Rank.DEFAULT);
+        super("reset", Rank.DEFAULT);
     }
     
     @CommandAnnotation

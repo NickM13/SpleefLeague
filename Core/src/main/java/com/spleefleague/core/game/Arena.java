@@ -9,37 +9,28 @@ package com.spleefleague.core.game;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Position;
-import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -51,71 +42,83 @@ import org.bukkit.inventory.ItemStack;
  * <br>
  * Arena Document:<br>
  * {<br>
- *     name:            <i>required</i>, Identifier and display name for arena<br>
+ *     identifier:      <i>required</i>, Identifier name for commands<br>
+ *     name:            <i>required</i>, Display name
  *     description:     <i>optional</i>, Description for arena<br>
  *     teamCount:       <i>optional</i>, Used for dynamically sized modes, number of teams (if team size is 1 this is number of players)<br>
  *     rated:           <i>optional</i>, Default true, Whether arena will apply an elo rating or not afterward<br>
  *     queued:          <i>optional</i>, Default true, If false, this arena can only be entered through challenges<br>
  *     paused:          <i>optional</i>, Default false, If true, arena cannot be played on<br>
- *     border:          <i>optional</i>, List of dimensions that the arena is contained in<br>
+ *     borders:         <i>optional</i>, List of dimensions that the arena is contained in<br>
+ *     goals:           <i>optional</i>, List of dimensions that the arena defines as end points (SuperJump)<br>
  *     spectatorSpawn:  <i>optional</i>, Spawn location of spectators<br>
  *     modes:           <i>required</i>, List of mode names<br>
- *     spawns:          <i>optional</i>, List of spawn locations for battlers<br>
+ *     spawns:          <i>optional</i>, List of spawn positions for battlers<br>
+ *     checkpoints:     <i>optional</i>, List of checkpoint positions<br>
  *     structures:      <i>optional</i>, List of build structure names<br>
  * }
  *
  * @author NickM13
  */
 public class Arena extends DBEntity {
-    
-    protected String displayName;
-    protected String name; // name is just displayName without spaces for indexing with commands
+
+    @DBField protected String name;
     @DBField protected String description = "";
-    
+
     @DBField protected Set<String> modes;
-    
+
     @DBField protected Boolean paused = false;
-    
+
     protected World world = Core.DEFAULT_WORLD;
-    
+
     @DBField protected Integer teamCount = 1;
     @DBField protected Integer teamSize = 1;
-    
-    protected List<Location> spawns = new ArrayList<>();
-    protected Location spectatorSpawn = null;
-    
+
+    protected List<Position> spawns = new ArrayList<>();
+    protected List<Position> checkpoints = new ArrayList<>();
+    @DBField protected Position spectatorSpawn = null;
+
+    @DBField protected Material displayItem = Material.MAP;
+
     protected List<Dimension> borders = new ArrayList<>();
-    private static final int SPECTATOR_EXPAND = 20;
-    protected List<Dimension> spectatorBorders = new ArrayList<>();
-    private static final int GLOBAL_SPECTATOR_EXPAND = 40;
-    protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
-    
+
+    protected List<Dimension> goals = new ArrayList<>();
+
     @DBField protected Set<String> structures;
-    
+    @DBField protected Position origin = new Position();
+
     protected int ongoingMatches = 0;
     protected int ongoingQueues = 0;
-    
+
     public Arena() {
-    
+
     }
-    
-    public Arena(String name) {
+
+    public Arena(String identifier, String name) {
+        this.identifier = identifier;
         setName(name);
         modes = new HashSet<>();
         structures = new HashSet<>();
         paused = false;
     }
 
-    @DBLoad(fieldName ="borders")
-    private void loadBorders(List<Document> docs) {
-        docs.forEach(doc -> {
-            Dimension dim = new Dimension();
-            dim.load(doc);
-            borders.add(dim);
-        });
-        refreshSpectatorBorders();
+    public void cloneFrom(Arena from) {
+        this.name = from.getName() + "_copy";
+        this.description = from.getDescription();
+        this.modes = Sets.newHashSet(from.getModes());
+        this.paused = from.isPaused();
+        this.teamCount = from.getTeamCount();
+        this.teamSize = from.getTeamSize();
+        this.spawns = Lists.newArrayList(from.getSpawns());
+        this.checkpoints = Lists.newArrayList(from.getCheckpoints());
+        this.spectatorSpawn = new Position(from.getSpectatorSpawn());
+        this.displayItem = from.getDisplayItem();
+        this.borders = Lists.newArrayList(from.getBorders());
+        this.goals = Lists.newArrayList(from.getGoals());
+        this.structures = Sets.newHashSet(from.getStructureNames());
+        this.origin = from.getOrigin();
     }
-    
+
     @DBSave(fieldName="borders")
     private List<Document> saveBorders() {
         return borders
@@ -123,44 +126,73 @@ public class Arena extends DBEntity {
                 .map(Dimension::save)
                 .collect(Collectors.toList());
     }
-    
-    private void refreshSpectatorBorders() {
-        spectatorBorders.clear();
-        globalSpectatorBorders.clear();
-        for (Dimension dim : borders) {
-            spectatorBorders.add(dim.expand(SPECTATOR_EXPAND));
-            globalSpectatorBorders.add(dim.expand(GLOBAL_SPECTATOR_EXPAND));
+
+    @DBLoad(fieldName ="borders")
+    private void loadBorders(List<Document> docs) {
+        docs.forEach(doc -> borders.add(new Dimension(doc)));
+    }
+
+    @DBSave(fieldName="goals")
+    private List<Document> saveGoals() {
+        return goals
+                .stream()
+                .map(Dimension::save)
+                .collect(Collectors.toList());
+    }
+
+    @DBLoad(fieldName ="goals")
+    private void loadGoals(List<Document> docs) {
+        docs.forEach(doc -> goals.add(new Dimension(doc)));
+    }
+
+    @DBLoad(fieldName ="spawns")
+    private void loadSpawns(List<List<?>> spawnLists) {
+        for (List<?> spawnList : spawnLists) {
+            spawns.add(new Position(spawnList));
         }
     }
-    
+
+    @DBSave(fieldName ="spawns")
+    private List<List<?>> saveSpawns() {
+        List<List<?>> spawnLists = new ArrayList<>();
+        for (Position spawn : spawns) {
+            spawnLists.add(spawn.save());
+        }
+        return spawnLists;
+    }
+
+    @DBLoad(fieldName ="checkpoints")
+    private void loadCheckpoints(List<List<?>> checkpointLists) {
+        for (List<?> checkpointList : checkpointLists) {
+            checkpoints.add(new Position(checkpointList));
+        }
+    }
+
+    @DBSave(fieldName ="checkpoints")
+    private List<List<?>> saveCheckpoints() {
+        List<List<?>> checkpointList = new ArrayList<>();
+        for (Position checkpoint : checkpoints) {
+            checkpointList.add(checkpoint.save());
+        }
+        return checkpointList;
+    }
+
     /**
      * Set the name and displayName of an arena
      *
      * @param displayName Display name
      */
-    @DBLoad(fieldName ="name")
     public void setName(String displayName) {
-        this.displayName = displayName;
-        name = displayName.replaceAll("\\s", "");
+        this.name = displayName;
     }
 
     /**
-     * Get the name of an arena used for indexing (no spaces)
-     *
-     * @return Arena Name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Get the displayName of an arena (includes spaces)
+     * Get the display name of an arena
      *
      * @return Arena Display Name
      */
-    @DBSave(fieldName = "name")
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
 
     /**
@@ -171,11 +203,25 @@ public class Arena extends DBEntity {
      */
     public String getDescription() {
         String desc = description;
-        desc += "\n" + "Queued: " + getOngoingQueues();
-        desc += "\n" + "Matches: " + getOngoingMatches();
+        desc += "\n\n&7&lIn Queue: &6" + getOngoingQueues();
+        //desc += "\n&6Matches: " + getOngoingMatches();
         return desc;
     }
-    
+
+    public void setDescription(String description) {
+        this.description = description;
+        Arenas.saveArenaDB(this);
+    }
+
+    public Material getDisplayItem() {
+        return displayItem;
+    }
+
+    public void setDisplayItem(Material displayItem) {
+        this.displayItem = displayItem;
+        Arenas.saveArenaDB(this);
+    }
+
     /**
      * Return the modes this arena is used in
      *
@@ -184,11 +230,11 @@ public class Arena extends DBEntity {
     public Set<String> getModes() {
         return modes;
     }
-    
+
     public boolean addMode(String mode) {
         return modes.add(mode);
     }
-    
+
     public boolean removeMode(String mode) {
         return modes.remove(mode);
     }
@@ -201,12 +247,16 @@ public class Arena extends DBEntity {
     public int getTeamSize() {
         return teamSize;
     }
-    
-    public void setTeamSize(int teamSize) {
-        this.teamSize = teamSize;
-        Arenas.saveArenaDB(this);
+
+    public boolean setTeamSize(int teamSize) {
+        if (teamSize > 0 && teamSize <= 8) {
+            this.teamSize = teamSize;
+            Arenas.saveArenaDB(this);
+            return true;
+        }
+        return false;
     }
-    
+
     /**
      * Get the required number of teams (or players if teamSize = 1)
      *
@@ -215,12 +265,12 @@ public class Arena extends DBEntity {
     public int getTeamCount() {
         return teamCount;
     }
-    
+
     public void setTeamCount(int teamCount) {
         this.teamCount = teamCount;
         Arenas.saveArenaDB(this);
     }
-    
+
     /**
      * Get the borders of this arena
      *
@@ -229,65 +279,56 @@ public class Arena extends DBEntity {
     public List<Dimension> getBorders() {
         return borders;
     }
-    
+
     public void addBorder(Dimension border) {
         borders.add(border);
-        refreshSpectatorBorders();
         Arenas.saveArenaDB(this);
     }
-    
+
     public void removeBorder(int id) {
         borders.remove(id);
         Arenas.saveArenaDB(this);
     }
-    
+
     /**
-     * Get the borders for spectators of this arena
+     * Get the borders of this arena
      *
      * @return Dimension List
      */
-    public List<Dimension> getSpectatorBorders() {
-        return spectatorBorders;
-    }
-    
-    /**
-     * Get the area that players will begin auto spectating nearby
-     *
-     * @return Dimension List
-     */
-    public List<Dimension> getGlobalSpectatorBorders() {
-        return globalSpectatorBorders;
+    public List<Dimension> getGoals() {
+        return goals;
     }
 
-    @DBLoad(fieldName="spectatorSpawn")
-    private void loadSpectatorSpawn(Position pos) {
-        if (pos == null) {
-            spectatorSpawn = null;
-        } else {
-            spectatorSpawn = pos.asLocation(world != null ? world : Core.DEFAULT_WORLD);
-        }
+    public void addGoal(Dimension goal) {
+        goals.add(goal);
+        Arenas.saveArenaDB(this);
     }
-    
-    @DBSave(fieldName="spectatorSpawn")
-    private Position saveSpectatorSpawn() {
-        if (spectatorSpawn == null) return null;
-        return new Position(spectatorSpawn);
-    }
-    
-    public void setSpectatorSpawn(Location loc) {
-        spectatorSpawn = loc;
+
+    public void removeGoal(int id) {
+        goals.remove(id);
         Arenas.saveArenaDB(this);
     }
 
     /**
-     * Get the location Spectators are teleported to
+     * Set the location where Spectators are spawned
+     *
+     * @param pos Spectator Spawn
+     */
+    public void setSpectatorSpawn(Position pos) {
+        spectatorSpawn = pos;
+        Arenas.saveArenaDB(this);
+    }
+
+    /**
+     * Get the location where Spectators are spawned
      *
      * @return Spectator Spawn
      */
     public Location getSpectatorSpawn() {
-        return spectatorSpawn;
+        Position pos = spectatorSpawn;
+        return pos != null ? pos.toLocation(getWorld()) : null;
     }
-    
+
     /**
      * For determining whether players should be in GM3 on spectating
      *
@@ -321,11 +362,7 @@ public class Arena extends DBEntity {
      * @return World
      */
     public World getWorld() {
-        if (world == null) {
-            return spawns.get(0).getWorld();
-        } else {
-            return world;
-        }
+        return world == null ? Core.DEFAULT_WORLD : world;
     }
 
     /**
@@ -392,49 +429,51 @@ public class Arena extends DBEntity {
     }
 
     /**
-     * Possible spawn locations for battlers
-     *
-     * @return Spawn List
+     * @return Battler Spawns List
      */
-    public List<Location> getSpawns() {
+    public List<Position> getSpawns() {
         return spawns;
     }
-    
+
     public void removeSpawn(int index) {
         spawns.remove(index);
         Arenas.saveArenaDB(this);
     }
-    
-    public void addSpawn(Location spawnLoc) {
-        spawns.add(spawnLoc);
+
+    public void addSpawn(Position spawnPos) {
+        spawns.add(spawnPos);
         Arenas.saveArenaDB(this);
     }
-    
-    public boolean insertSpawn(Location spawnLoc, int index) {
+
+    public boolean insertSpawn(Position spawnPos, int index) {
         if (index < 0 || index > spawns.size()) return false;
-        spawns.add(index, spawnLoc);
+        spawns.add(index, spawnPos);
         Arenas.saveArenaDB(this);
         return true;
     }
-    
-    @DBLoad(fieldName ="spawns")
-    private void loadSpawns(List<List<?>> spawnLists) {
-        for (List<?> spawnList : spawnLists) {
-            Position pos = new Position();
-            pos.load(spawnList);
-            if (world != null) spawns.add(pos.asLocation(world));
-            else spawns.add(pos.asLocation(Core.DEFAULT_WORLD));
-        }
+
+    /**
+     * @return Checkpoint Position List
+     */
+    public List<Position> getCheckpoints() {
+        return checkpoints;
     }
-    
-    @DBSave(fieldName ="spawns")
-    private List<List<?>> saveSpawns() {
-        List<List<?>> spawnLists = new ArrayList<>();
-        for (Location spawn : spawns) {
-            Position pos = new Position(spawn);
-            spawnLists.add(pos.save());
-        }
-        return spawnLists;
+
+    public void removeCheckpoint(int index) {
+        checkpoints.remove(index);
+        Arenas.saveArenaDB(this);
+    }
+
+    public void addCheckpoint(Position spawnPos) {
+        checkpoints.add(spawnPos);
+        Arenas.saveArenaDB(this);
+    }
+
+    public boolean insertCheckpoint(Position spawnPos, int index) {
+        if (index < 0 || index > checkpoints.size()) return false;
+        checkpoints.add(index, spawnPos);
+        Arenas.saveArenaDB(this);
+        return true;
     }
 
     /**
@@ -445,9 +484,9 @@ public class Arena extends DBEntity {
      */
     public InventoryMenuItem createMenu(Consumer<CorePlayer> queueAction) {
         return InventoryMenuAPI.createItem()
-                .setName(getDisplayName())
+                .setName("&a&l" + getName())
                 .setDescription(cp -> getDescription())
-                .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
+                .setDisplayItem(cp -> new ItemStack(displayItem))
                 .setAction(queueAction);
     }
 
@@ -460,9 +499,10 @@ public class Arena extends DBEntity {
      * @return Post Game Location
      */
     public Location getPostGameWarp() {
-        return spectatorSpawn;
+        if (spectatorSpawn == null) return null;
+        return spectatorSpawn.toLocation(world);
     }
-    
+
     public boolean addStructure(String structureName) {
         if (structures.add(structureName)) {
             Arenas.saveArenaDB(this);
@@ -470,7 +510,7 @@ public class Arena extends DBEntity {
         }
         return false;
     }
-    
+
     public boolean removeStructure(String structureName) {
         if (structures.remove(structureName)) {
             Arenas.saveArenaDB(this);
@@ -478,11 +518,11 @@ public class Arena extends DBEntity {
         }
         return false;
     }
-    
+
     public Set<String> getStructureNames() {
         return structures;
     }
-    
+
     /**
      * Get the Build Structures for this arena
      *
@@ -495,5 +535,14 @@ public class Arena extends DBEntity {
         }
         return buildStructures;
     }
-    
+
+    public void setOrigin(Position position) {
+        origin = position;
+        Arenas.saveArenaDB(this);
+    }
+
+    public Position getOrigin() {
+        return origin;
+    }
+
 }

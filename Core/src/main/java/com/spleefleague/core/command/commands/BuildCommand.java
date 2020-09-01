@@ -2,7 +2,7 @@ package com.spleefleague.core.command.commands;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -19,10 +19,10 @@ import java.util.Set;
  * @author NickM13
  * @since 4/26/2020
  */
-public class BuildCommand extends CommandTemplate {
+public class BuildCommand extends CoreCommand {
     
     public BuildCommand() {
-        super(BuildCommand.class, "build", Rank.DEVELOPER);
+        super("build", Rank.DEVELOPER);
         setDescription("For building structures used in fake worlds");
         setOptions("structures", cp -> BuildStructures.getNames());
         setOptions("materials", (cp) -> getMaterialNames());
@@ -150,12 +150,15 @@ public class BuildCommand extends CommandTemplate {
             @LiteralArg("clone") String l,
             @OptionArg(listName="structures") String structureName,
             @HelperArg("<structureName>") String newName) {
-        BuildStructure structure = sender.getBuildWorld().getStructure();
+        BuildStructure structure = BuildStructures.get(structureName);
         if (!structure.isUnderConstruction()) {
             if (BuildStructures.create(sender, newName)) {
                 BuildStructure clone = BuildStructures.get(newName);
-                structure.getFakeBlocks().forEach(clone::setBlock);
                 clone.setOriginPos(structure.getOriginPos());
+                structure.getFakeBlocks().forEach((pos, fb) -> {
+                    clone.setBlock(pos.add(structure.getOriginPos()), fb);
+                });
+                BuildStructures.save(clone);
                 success(sender, "Cloned structure to " + newName);
             } else {
                 error(sender, "Structure already exists!");

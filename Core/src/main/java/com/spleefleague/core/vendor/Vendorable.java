@@ -1,13 +1,14 @@
 package com.spleefleague.core.vendor;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -31,7 +32,7 @@ import java.util.UUID;
  * @author NickM13
  * @since 4/18/2020
  */
-public abstract class Vendorable extends DBEntity {
+public abstract class Vendorable extends DBEntity implements Cloneable {
     
     private static final Map<String, Class<? extends Vendorable>> REGISTERED_TYPES = new HashMap<>();
     
@@ -84,13 +85,12 @@ public abstract class Vendorable extends DBEntity {
     public static final String typeNbt = "ventype";
     public static final String identifierNbt = "vendintifier";
     
-    protected final String type;
-    @DBField protected String identifier;
-    @DBField protected String name;
-    @DBField protected String description;
+    @DBField protected String type;
+    @DBField protected String name = "";
+    @DBField protected String description = "";
     @DBField protected Material material;
     @DBField protected Document nbts;
-    @DBField protected Integer coinCost;
+    @DBField protected Integer coinCost = 0;
     
     private final InventoryMenuItem vendorMenuItem;
     private ItemStack displayItem;
@@ -132,13 +132,15 @@ public abstract class Vendorable extends DBEntity {
     }
     
     /**
-     * Sets the identifying String of this vendorable
+     * Sets the identifying String of this vendorable<br>
+     * Should only be used when cloning
      *
      * @param identifier Identifier String
      */
-    public final void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setIdentifier(String identifier) {
+        super.setIdentifier(identifier);
         updateDisplayItem();
+        saveChanges();
     }
     
     /**
@@ -156,8 +158,9 @@ public abstract class Vendorable extends DBEntity {
      * @param name Display Name
      */
     public final void setName(String name) {
-        this.name = name;
+        this.name = Chat.colorize(name);
         updateDisplayItem();
+        saveChanges();
     }
     
     /**
@@ -165,7 +168,7 @@ public abstract class Vendorable extends DBEntity {
      *
      * @return Description
      */
-    public final String getDescription() {
+    public String getDescription() {
         return description;
     }
     
@@ -175,8 +178,9 @@ public abstract class Vendorable extends DBEntity {
      * @param description Description
      */
     public final void setDescription(String description) {
-        this.description = description;
+        this.description = Chat.colorize(description);
         updateDisplayItem();
+        saveChanges();
     }
     
     /**
@@ -198,10 +202,31 @@ public abstract class Vendorable extends DBEntity {
     public final Material getMaterial() {
         return material;
     }
-    
-    public final void setDamageNbt(int damage) {
-        nbts.append("Damage", damage);
+
+    public final Integer getCustomModelDataNbt() {
+        return nbts.get("CustomModelData", Integer.class);
+    }
+
+    public final void setCustomModelDataNbt(int customModelData) {
+        nbts.put("CustomModelData", customModelData);
         updateDisplayItem();
+        saveChanges();
+    }
+
+    public final String getSkullOwnerNbt() {
+        return nbts.get("SkullOwner", String.class);
+    }
+
+    public final void setCustomModelDataNbt(String skullOwner) {
+        nbts.put("SkullOwner", skullOwner);
+        updateDisplayItem();
+        saveChanges();
+    }
+
+    public final void setDamageNbt(int damage) {
+        nbts.put("Damage", damage);
+        updateDisplayItem();
+        saveChanges();
     }
     
     public final Integer getDamageNbt() {
@@ -225,7 +250,12 @@ public abstract class Vendorable extends DBEntity {
     public final void setCoinCost(int coinCost) {
         this.coinCost = coinCost;
         updateDisplayItem();
+        saveChanges();
     }
+
+    public abstract void saveChanges();
+
+    public abstract void unsave();
     
     /**
      * Make sure to call this whenever a change has been made
@@ -259,7 +289,7 @@ public abstract class Vendorable extends DBEntity {
      * @return Can Purchase
      */
     public final boolean canPurchase(CorePlayer cp) {
-        return (cp.getCoins() >= getCoinCost() && isAvailableToPurchase(cp));
+        return (cp.getPurse().getCoins().getAmount() >= getCoinCost() && isAvailableToPurchase(cp));
     }
     
     /**
@@ -307,14 +337,16 @@ public abstract class Vendorable extends DBEntity {
                     if (itemMeta instanceof SkullMeta) {
                         ((SkullMeta) itemMeta).setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString((String) nbt.getValue())));
                     }
+                } else if (nbt.getKey().equalsIgnoreCase("custommodeldata")) {
+                    itemMeta.setCustomModelData((Integer) nbt.getValue());
                 } else {
-                    CoreLogger.logError("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324");
+                    CoreLogger.logError("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324", null);
                 }
             }
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(name);
-            itemMeta.setLore(ChatUtils.wrapDescription(description));
+            itemMeta.setLore(ChatUtils.wrapDescription(getDescription()));
             itemMeta.getPersistentDataContainer().set(
                     new NamespacedKey(Core.getInstance(), identifierNbt),
                     PersistentDataType.STRING,

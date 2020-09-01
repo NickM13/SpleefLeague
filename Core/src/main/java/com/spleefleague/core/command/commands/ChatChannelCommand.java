@@ -6,7 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.ChatChannel;
@@ -22,7 +22,7 @@ import com.spleefleague.core.command.annotation.OptionArg;
 /**
  * @author NickM13
  */
-public class ChatChannelCommand extends CommandTemplate {
+public class ChatChannelCommand extends CoreCommand {
 
     private class QuickChat {
         ChatChannel cc;
@@ -43,7 +43,7 @@ public class ChatChannelCommand extends CommandTemplate {
     private final List<QuickChat> quickChats = new ArrayList<>();
     
     public ChatChannelCommand() {
-        super(ChatChannelCommand.class, "chatchannels", Rank.DEFAULT);
+        super("chatchannels", Rank.DEFAULT);
         this.addAlias("cc");
         newQuickChat(ChatChannel.getChannel(Channel.GLOBAL), "global", "Global Chat");
         newQuickChat(ChatChannel.getChannel(Channel.PARTY), "party", "Party Chat");

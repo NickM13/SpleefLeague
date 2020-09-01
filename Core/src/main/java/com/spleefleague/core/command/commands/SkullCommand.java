@@ -7,7 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Material;
@@ -19,10 +19,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 /**
  * @author NickM13
  */
-public class SkullCommand extends CommandTemplate {
+public class SkullCommand extends CoreCommand {
     
     public SkullCommand() {
-        super(SkullCommand.class, "skull", Rank.SENIOR_MODERATOR);
+        super("skull", Rank.SENIOR_MODERATOR);
         setUsage("/skull <player>");
         setDescription("Get head of a player");
     }

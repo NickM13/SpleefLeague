@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -16,10 +16,10 @@ import com.spleefleague.core.player.rank.Rank;
 /**
  * @author NickM13
  */
-public class LeaderboardCommand extends CommandTemplate {
+public class LeaderboardCommand extends CoreCommand {
     
     public LeaderboardCommand() {
-        super(LeaderboardCommand.class, "leaderboard", Rank.DEVELOPER);
+        super("leaderboard", Rank.DEVELOPER);
         //setOptions("leaderboards", cp -> Leaderboards.getLeaderboardNames());
     }
     

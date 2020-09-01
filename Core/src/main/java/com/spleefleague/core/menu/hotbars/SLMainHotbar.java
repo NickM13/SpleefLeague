@@ -3,11 +3,11 @@ package com.spleefleague.core.menu.hotbars;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.*;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -18,43 +18,43 @@ public class SLMainHotbar {
     private static InventoryMenuItemHotbar menuItem = null;
     
     public static void init() {
-        menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(0, "mainmenu")
+        menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(0, "mainMenu")
                 .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "SpleefLeague Menu")
-                .setDisplayItem(new ItemStack(Material.COMPASS))
-                .setAvailability(CorePlayer::isInGlobal)
+                .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.COMPASS, 1))
+                .setAvailability(CorePlayer::isMenuAvailable)
                 .createLinkedContainer("SpleefLeague Menu");
     
         // Collectibles
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(CollectiblesMenu.getItem(), 0, 2);
     
         // Profile
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(ProfileMenu.getItem(), 1, 2);
     
         // Held Item Selection
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(HeldItemMenu.getItem(), 0, 3);
     
         // Leaderboards
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(LeaderboardMenu.getItem(), 7, 2);
     
         // Options
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(OptionsMenu.getItem(), 7, 3);
     
         // Donor Related
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(DonorMenu.getItem(), 8, 2);
         
         // Server Credits
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(CreditsMenu.getItem(), 8, 3);
     
         // Moderator Tools
-        menuItem.getLinkedContainer()
-                .addMenuItem(ModeratorMenu.getItem(), 8, 1);
+        menuItem.getLinkedChest()
+                .addMenuItem(StaffToolsMenu.getItem(), 8, 1);
     }
     
     /**

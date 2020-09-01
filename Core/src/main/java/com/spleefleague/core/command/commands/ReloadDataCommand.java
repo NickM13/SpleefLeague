@@ -7,7 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -15,10 +15,10 @@ import com.spleefleague.core.player.rank.Rank;
 /**
  * @author NickM13
  */
-public class ReloadDataCommand extends CommandTemplate {
+public class ReloadDataCommand extends CoreCommand {
     
     public ReloadDataCommand() {
-        super(ReloadDataCommand.class, "reloaddata", Rank.DEVELOPER);
+        super("reloaddata", Rank.DEVELOPER);
     }
     
     @CommandAnnotation

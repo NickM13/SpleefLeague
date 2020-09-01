@@ -9,28 +9,67 @@ package com.spleefleague.core.listener;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.vendor.Vendors;
 import org.bukkit.GameMode;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 /**
  * @author NickM13
  */
 public class BattleListener implements Listener {
-    
+
     @EventHandler
     public void onSlotChange(PlayerItemHeldEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        //CorePlugin.getBattleGlobal(dbp.getPlayer()).onSlotChange(dbp, event.getNewSlot());
+        if (cp.getBattleState() == BattleState.BATTLER) {
+            cp.getBattle().onSlotChange(cp, event.getNewSlot());
+        }
+    }
+
+    @EventHandler
+    public void onDropItem(PlayerDropItemEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp.getBattleState() == BattleState.BATTLER) {
+            cp.getBattle().onDropItem(cp);
+        }
+    }
+
+    @EventHandler
+    public void onSwapItem(PlayerSwapHandItemsEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp.getBattleState() == BattleState.BATTLER) {
+            cp.getBattle().onSwapItem(cp);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp.getBattleState() == BattleState.BATTLER) {
+            if (event.isSneaking()) {
+                cp.getBattle().onStartSneak(cp);
+            } else {
+                cp.getBattle().onStopSneak(cp);
+            }
+        }
     }
 
     /**
@@ -72,9 +111,21 @@ public class BattleListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (cp.isInBattle()) {
+        if (cp.getBattleState() == BattleState.BATTLER) {
             if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 cp.getBattle().onRightClick(cp);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+            CorePlayer cp = Core.getInstance().getPlayers().get((Player) event.getDamager());
+            CorePlayer target = Core.getInstance().getPlayers().get((Player) event.getEntity());
+            if (cp.getBattleState() == BattleState.BATTLER && target.getBattleState() == BattleState.BATTLER) {
+                cp.getBattle().onPlayerPunch(cp, target);
+                cp.getBattle().onPlayerHit(cp, target);
             }
         }
     }

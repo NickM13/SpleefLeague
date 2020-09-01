@@ -6,11 +6,11 @@
 
 package com.spleefleague.core.util.variable;
 
-import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.database.variable.DBVariable;
+import com.comphenix.protocol.wrappers.BlockPosition;
 import java.util.List;
+
+import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bson.Document;
-import org.bukkit.Location;
 
 /**
  * @author NickM13
@@ -30,6 +30,16 @@ public class Dimension extends DBVariable<Document> {
         low = new Point();
         high = new Point();
         equalize(p1, p2);
+    }
+    public Dimension(Position p1, Position p2) {
+        low = new Point();
+        high = new Point();
+        equalize(new Point(p1.getX(), p1.getY(), p1.getZ()), new Point(p2.getX(), p2.getY(), p2.getZ()));
+    }
+    public Dimension(Document doc) {
+        low = new Point();
+        high = new Point();
+        load(doc);
     }
     
     /**
@@ -101,6 +111,12 @@ public class Dimension extends DBVariable<Document> {
                 p.z >= low.z && p.z <= high.z);
     }
     
+    public boolean isContained(BlockPosition pos) {
+        return (pos.getX() >= low.x && pos.getX() <= high.x &&
+                pos.getY() >= low.y && pos.getY() <= high.y &&
+                pos.getZ() >= low.z && pos.getZ() <= high.z);
+    }
+    
     /**
      * Returns a new dimension with expanded boundaries
      *
@@ -164,4 +180,27 @@ public class Dimension extends DBVariable<Document> {
     public String toString() {
         return "(" + low + ", " + high + ")";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Dimension dimension = (Dimension) o;
+
+        if (!low.equals(dimension.low)) return false;
+        return high.equals(dimension.high);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = low.hashCode();
+        result = 31 * result + high.hashCode();
+        return result;
+    }
+
+    public String toCommandFormat() {
+        return low.x + " " + low.y + " " + low.z + " " + high.x + " " + high.y + " " + high.z;
+    }
+
 }

@@ -6,18 +6,18 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class MenuCommand extends CommandTemplate {
+public class MenuCommand extends CoreCommand {
     
     public MenuCommand() {
-        super(MenuCommand.class, "menu", Rank.DEFAULT);
+        super("menu", Rank.DEFAULT);
     }
     
     @CommandAnnotation

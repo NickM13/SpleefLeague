@@ -9,6 +9,8 @@ package com.spleefleague.core.menu.hotbars.main;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -28,39 +30,14 @@ public class LeaderboardMenu {
         if (menuItem == null) {
             // Options Menus
             menuItem = InventoryMenuAPI.createItem()
-                    .setName("Leaderboards")
+                    .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Leaderboards")
                     .setDisplayItem(new ItemStack(Material.OAK_SIGN))
                     .setDescription("View the Top Players of SpleefLeague!")
                     .createLinkedContainer("Leaderboards");
-            /*
-            menuItem.getLinkedContainer()
-                    .setOpenAction((container, cp) -> {
-                        container.clearUnsorted();
-                        int i = 0;
-                        for (Map.Entry<String, Leaderboard> lb : Leaderboards.getLeaderboards().entrySet()) {
-                            InventoryMenuItem leaderboardItem = InventoryMenuAPI.createItem()
-                                    .setName(lb.getValue().getDisplayName())
-                                    .setDisplayItem(lb.getValue().getDisplayItem())
-                                    .setDescription(lb.getValue().getDescription())
-                                    .createLinkedContainer(lb.getValue().getDisplayName());
-                            leaderboardItem.getLinkedContainer()
-                                    .setOpenAction((container2, cp2) -> {
-                                            container2.clearUnsorted();
-                                            int j = 0;
-                                            for (UUID uuid : lb.getValue().getPlayers()) {
-                                                CorePlayer cp3 = Core.getInstance().getPlayers().getOffline(uuid);
-                                                container2.addMenuItem(InventoryMenuAPI.createItem()
-                                                        .setName(p -> cp3.getDisplayName() + " #" + lb.getValue().getPlaceOf(uuid))
-                                                        .setDisplayItem(p -> InventoryMenuUtils.createCustomSkull(cp3.getUniqueId()))
-                                                        .setCloseOnAction(false));
-                                                j++;
-                                            }
-                                    });
-                            container.addMenuItem(leaderboardItem);
-                            i++;
-                        }
-                    });
-            */
+            
+            for (int i = 0; i < menuItem.getLinkedChest().getPageItemTotal() / 2; i++) {
+                menuItem.getLinkedChest().addStaticItem(InventoryMenuUtils.createLockedMenuItem("Other"), i * 2 + 9);
+            }
         }
         return menuItem;
     }

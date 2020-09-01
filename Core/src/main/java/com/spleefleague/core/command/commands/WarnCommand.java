@@ -7,8 +7,8 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.OfflinePlayer;
@@ -17,10 +17,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author NickM13
  */
-public class WarnCommand extends CommandTemplate {
+public class WarnCommand extends CoreCommand {
     
     public WarnCommand() {
-        super(WarnCommand.class, "warn", Rank.MODERATOR);
+        super("warn", Rank.MODERATOR);
     }
     
     @CommandAnnotation

@@ -6,9 +6,9 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -21,10 +21,10 @@ import java.util.Set;
 /**
  * @author NickM13
  */
-public class RequestCommand extends CommandTemplate {
+public class RequestCommand extends CoreCommand {
     
     public RequestCommand() {
-        super(RequestCommand.class, "request", Rank.DEFAULT);
+        super("request", Rank.DEFAULT);
         setUsage("Sends requests while in battle");
         setOptions("requests", RequestCommand::getAvailableRequests);
     }

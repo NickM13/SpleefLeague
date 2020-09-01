@@ -13,13 +13,14 @@ import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
     
-    public TeamSpleefBattle(List<CorePlayer> players, Arena arena) {
+    public TeamSpleefBattle(List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), players, arena, TeamSpleefPlayer.class, SpleefMode.TEAM.getBattleMode());
     }
     
@@ -49,7 +50,7 @@ public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
     }
 
     @Override
-    protected void endBattle(TeamSpleefPlayer winner) {
+    public void endBattle(TeamSpleefPlayer winner) {
 
     }
     

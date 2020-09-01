@@ -5,30 +5,22 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
 import org.bson.Document;
+import org.bukkit.Material;
 
 /**
  * @author NickM13
  * @since 4/20/2020
  */
 public class Hat extends Collectible {
-    
-    private static MongoCollection<Document> hatCol;
-    
+
     /**
      * Load hats from the SpleefLeague:Hats collection
      */
     public static void init() {
         Vendorable.registerVendorableType(Hat.class);
-        
-        hatCol = Core.getInstance().getPluginDB().getCollection("Hats");
-        
-        for (Document doc : hatCol.find()) {
-            Hat hat = new Hat();
-            hat.load(doc);
-        }
     
         InventoryMenuAPI.createItemHotbar(39, "Hat")
                 .setName(cp -> cp.getCollectibles().getActive(Hat.class).getName())
@@ -36,16 +28,22 @@ public class Hat extends Collectible {
                 .setDescription(cp -> cp.getCollectibles().getActive(Hat.class).getDescription())
                 .setAvailability(cp -> !cp.isInBattle() && cp.getCollectibles().hasActive(Hat.class));
     }
-    
-    /**
-     * Not implemented yet
-     */
+
     public static void close() {
     
     }
+
+    private static final Material DEFAULT_HAT_MAT = Material.BARRIER;
     
     public Hat() {
         super();
+    }
+
+    public Hat(String identifier, String name) {
+        super();
+        this.identifier = identifier;
+        this.name = name;
+        this.material = DEFAULT_HAT_MAT;
     }
     
     /**

@@ -1,8 +1,8 @@
 package com.spleefleague.core.player.rank;
 
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
-import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 
 /**
  * @author NickM
@@ -19,7 +19,7 @@ public class PermRank extends DBEntity {
 
     @DBSave(fieldName="rankName")
     private String saveRank() {
-        return rank.getName();
+        return rank.getIdentifier();
     }
 
     public PermRank() {

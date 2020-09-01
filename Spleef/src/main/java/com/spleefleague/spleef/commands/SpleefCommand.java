@@ -7,7 +7,7 @@
 package com.spleefleague.spleef.commands;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.BattleMode;
@@ -18,28 +18,39 @@ import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author NickM13
  */
-public class SpleefCommand extends CommandTemplate {
+public class SpleefCommand extends CoreCommand {
     
     public SpleefCommand() {
-        super(SpleefCommand.class, "spleef", Rank.DEFAULT);
+        super("spleef", Rank.DEFAULT);
         this.addAlias("s");
         this.setOptions("classicArenas",    cp -> Arenas.getUnpaused(SpleefMode.CLASSIC.getBattleMode()).keySet());
         this.setOptions("multiArenas",      cp -> Arenas.getUnpaused(SpleefMode.MULTI.getBattleMode()).keySet());
         this.setOptions("powerArenas",      cp -> Arenas.getUnpaused(SpleefMode.POWER.getBattleMode()).keySet());
         this.setOptions("teamArenas",       cp -> Arenas.getUnpaused(SpleefMode.TEAM.getBattleMode()).keySet());
         this.setOptions("wcArenas",         cp -> Arenas.getUnpaused(SpleefMode.WC.getBattleMode()).keySet());
+        this.setOptions("modeNames",        cp -> modeNames());
         setContainer("spleef");
     }
+
+    private static Set<String> modeNames() {
+        Set<String> names = new HashSet<>();
+        for (SpleefMode mode : SpleefMode.values()) {
+            names.add(mode.getName());
+        }
+        return names;
+    }
     
-    @CommandAnnotation(minRank="DEVELOPER")
+    @CommandAnnotation(minRank = "DEVELOPER")
     public void spleefMatch(CorePlayer sender,
             @LiteralArg("m") String l,
-            @HelperArg("<mode>") String spleefMode,
+            @OptionArg(listName="modeNames") String spleefMode,
             @HelperArg("<arena>") String arenaName,
             @HelperArg("<players>") String playerNames) {
         BattleMode mode;

@@ -19,7 +19,7 @@ public class ChatUtils {
         
         int whitePxSize = (centerPos * 2 - msgPxSize);
         int spaceCount = whitePxSize / 2 / (DefaultFontInfo.SPACE.getLength() + 1);
-        
+
         centered.append(Strings.repeat(' ', spaceCount));
         centered.append(message);
         
@@ -71,7 +71,7 @@ public class ChatUtils {
     
     private static ArrayList<String> wrapDesc(String message) {
         ArrayList<String> msgs = new ArrayList<>();
-        StringBuilder line = new StringBuilder();
+        StringBuilder line = new StringBuilder(Chat.DEFAULT);
         StringBuilder word = new StringBuilder();
     
         int msgPxSize = 0;
@@ -96,8 +96,8 @@ public class ChatUtils {
                         line.append(word);
                         word = new StringBuilder();
                     }
-                    msgs.add(prevColor + line);
-                    line = new StringBuilder();
+                    msgs.add(line.toString());
+                    line = new StringBuilder(prevColor);
                 }
                 msgPxSize += change;
                 if (c == ' ') {
@@ -112,7 +112,7 @@ public class ChatUtils {
             line.append(word);
         }
         if (line.length() > 0) {
-            msgs.add(prevColor + line);
+            msgs.add(line.toString());
         }
         if (msgs.isEmpty()) {
             msgs.add("");
@@ -127,8 +127,9 @@ public class ChatUtils {
         
         ArrayList<String> msgs = new ArrayList<>();
         
-        for (String m : messageSplit)
+        for (String m : messageSplit) {
             msgs.addAll(wrapDesc(m));
+        }
         
         return msgs;
     }

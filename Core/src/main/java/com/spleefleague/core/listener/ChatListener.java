@@ -35,14 +35,15 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChatMessageSend(AsyncPlayerChatEvent e) {
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
-        
+
         if (e.getMessage().length() > GOGOGADGET.length() + 1 && e.getMessage().substring(0, GOGOGADGET.length()).equalsIgnoreCase(GOGOGADGET)) {
             Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
                 Bukkit.dispatchCommand(e.getPlayer(), e.getMessage().substring(GOGOGADGET.length()));
             });
         }
-        
+
         String formattedMessage = e.getMessage();
+        boolean url = false;
         if (URL_PATTERN.matcher(ChatColor.stripColor(e.getMessage().replace(" ", ""))).matches()) {
             if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
                 e.setCancelled(true);
@@ -51,21 +52,24 @@ public class ChatListener implements Listener {
                 CoreLogger.logInfo(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 return;
             }
-        } else if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
-                !cp.getRank().hasPermission(Rank.MODERATOR)) {
-            formattedMessage = e.getMessage().toLowerCase().trim();
-            formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
-            if (!formattedMessage.endsWith(".")
-                    && !formattedMessage.endsWith("!")
-                    && !formattedMessage.endsWith("?")) {
-                formattedMessage += "!";
+            url = true;
+        } else {
+            if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
+                    !cp.getRank().hasPermission(Rank.MODERATOR)) {
+                formattedMessage = e.getMessage().toLowerCase().trim();
+                formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
+                if (!formattedMessage.endsWith(".")
+                        && !formattedMessage.endsWith("!")
+                        && !formattedMessage.endsWith("?")) {
+                    formattedMessage += "!";
+                }
+            }
+            for (Map.Entry<String, String> entry : ChatEmoticons.getEmoticons().entrySet()) {
+                formattedMessage = formattedMessage.replaceAll(entry.getKey(), entry.getValue());
             }
         }
-        for (Map.Entry<String, String> entry : ChatEmoticons.getEmoticons().entrySet()) {
-            formattedMessage = formattedMessage.replaceAll(entry.getKey(), entry.getValue());
-        }
         
-        Chat.sendMessage(cp, formattedMessage);
+        Chat.sendMessage(cp, formattedMessage, url);
         CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + e.getMessage());
         
         e.setCancelled(true);

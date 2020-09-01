@@ -2,11 +2,12 @@ package com.spleefleague.core.world.build;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
-import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -22,11 +23,11 @@ import java.util.*;
  */
 public class BuildStructure extends DBEntity {
     
-    @DBField
-    private String name;
+    @DBField private String name;
     private final Map<BlockPosition, FakeBlock> fakeBlocks = new HashMap<>();
-    private BlockPosition originPos;
+    @DBField private Position origin;
     private BuildWorld constructor = null;
+    private BlockPosition low, high;
 
     public BuildStructure() {
 
@@ -34,23 +35,9 @@ public class BuildStructure extends DBEntity {
 
     public BuildStructure(String name, BlockPosition originPos) {
         this.name = name;
-        this.originPos = originPos;
-    }
-    
-    @DBSave(fieldName = "origin")
-    protected List<Integer> saveOriginPos() {
-        return Lists.newArrayList(
-                originPos.getX(),
-                originPos.getY(),
-                originPos.getZ());
-    }
-    
-    @DBLoad(fieldName = "origin")
-    protected void loadOriginPos(List<Integer> origin) {
-        originPos = new BlockPosition(
-                origin.get(0),
-                origin.get(1),
-                origin.get(2));
+        this.origin = new Position(originPos.getX(), originPos.getY(), originPos.getZ());
+        this.low = new BlockPosition(0, 0, 0);
+        this.high = new BlockPosition(0, 0, 0);
     }
 
     @DBSave(fieldName = "blocks")
@@ -96,6 +83,19 @@ public class BuildStructure extends DBEntity {
                 for (List<Integer> block : blocks) {
                     pos = new BlockPosition(block.get(0), block.get(1), block.get(2));
                     blockData = palette.get(block.get(3));
+                    if (fakeBlocks.isEmpty()) {
+                        low = new BlockPosition(pos.getX(), pos.getY(), pos.getZ());
+                        high = new BlockPosition(pos.getX(), pos.getY(), pos.getZ());
+                    } else {
+                        low = new BlockPosition(
+                                Math.min(pos.getX(), low.getX()),
+                                Math.min(pos.getY(), low.getY()),
+                                Math.min(pos.getZ(), low.getZ()));
+                        high = new BlockPosition(
+                                Math.max(pos.getX(), high.getX()),
+                                Math.max(pos.getY(), high.getY()),
+                                Math.max(pos.getZ(), high.getZ()));
+                    }
                     fakeBlocks.put(pos, new FakeBlock(blockData));
                 }
             }
@@ -125,11 +125,15 @@ public class BuildStructure extends DBEntity {
     }
     
     public BlockPosition getOriginPos() {
-        return originPos;
+        return origin.toBlockPosition();
     }
     
     public void setOriginPos(BlockPosition originPos) {
-        this.originPos = originPos;
+        this.origin = new Position(originPos.getX(), originPos.getY(), originPos.getZ());
+    }
+
+    public BlockPosition getCenter() {
+        return (high.subtract(low)).divide(2);
     }
 
 }

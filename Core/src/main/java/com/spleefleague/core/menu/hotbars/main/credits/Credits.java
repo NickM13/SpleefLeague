@@ -7,11 +7,12 @@
 package com.spleefleague.core.menu.hotbars.main.credits;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 
 /**

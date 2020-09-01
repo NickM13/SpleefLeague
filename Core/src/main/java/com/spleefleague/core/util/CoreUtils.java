@@ -7,10 +7,18 @@
 package com.spleefleague.core.util;
 
 import com.google.common.collect.Sets;
+import com.spleefleague.core.Core;
+import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author NickM13
@@ -37,8 +45,8 @@ public class CoreUtils {
         return str;
     }
     
-    public static Set<String> enumToSet(Class<? extends Enum<?>> clazz) {
-        return Sets.newHashSet(Arrays.stream(clazz.getEnumConstants()).map(Enum::name).toArray(String[]::new));
+    public static Set<String> enumToStrSet(Class<? extends Enum<?>> clazz, boolean forceLower) {
+        return Sets.newHashSet(Arrays.stream(clazz.getEnumConstants()).map(e -> forceLower ? e.name().toLowerCase() : e.name()).toArray(String[]::new));
     }
     
     /**
@@ -75,6 +83,10 @@ public class CoreUtils {
             formatted.append(cp.getDisplayName());
         }
         return formatted.toString();
+    }
+
+    public static void knockbackEntity(Entity entity, Vector direction, double power) {
+        entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
     }
     
 }

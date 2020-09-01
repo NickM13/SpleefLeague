@@ -6,19 +6,24 @@
 
 package com.spleefleague.superjump.game.pro;
 
+import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.battle.solo.SoloBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
-import com.spleefleague.superjump.game.Jumps.Jump;
-import com.spleefleague.superjump.game.SJBattle;
+import com.spleefleague.superjump.SuperJump;
+import com.spleefleague.superjump.util.Jumps_old.Jump;
+
 import java.util.List;
-import org.bukkit.Material;
+import java.util.UUID;
+
+import com.spleefleague.superjump.game.SJMode;
 
 /**
  * @author NickM13
  */
-public class ProSJBattle extends SJBattle<ProSJArena> {
+public class ProSJBattle extends SoloBattle<ProSJPlayer> {
     
     protected List<FakeBlock> fakeBlocks;
     
@@ -29,12 +34,23 @@ public class ProSJBattle extends SJBattle<ProSJArena> {
     protected Point nextJumpPoint;
     protected int forwardVision = 1;
 
-    public ProSJBattle(List<CorePlayer> players, ProSJArena arena) {
-        super(players, arena);
+    public ProSJBattle(List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), players, arena, ProSJPlayer.class, SJMode.PRO.getBattleMode());
+    }
+    
+    @Override
+    protected void setupBattleRequests() {
+    
+    }
+    
+    @Override
+    protected void setupScoreboard() {
+    
     }
     
     @Override
     protected void fillField() {
+        /*
         float difficulty;
         fakeBlocks = generate1(getSpawn(0), totalJumps, 3, true);
         
@@ -47,31 +63,27 @@ public class ProSJBattle extends SJBattle<ProSJArena> {
         FakeBlock fb = fakeBlocks.get(nextJumpIndex);
         goals.clear();
         goals.add(new Dimension(new Point(fb.getBlockPosition().toVector()).add(-0.3, 0, -0.3), new Point(fb.getBlockPosition().toVector()).add(1.3, 4, 1.3)));
+         */
     }
     
     @Override
-    protected void winPlayer(CorePlayer cp) {
-        //resetPlayers();
-        //gameWorld.clear();
-        //fillField();
+    protected void saveBattlerStats(ProSJPlayer proSJPlayer) {
+    
+    }
+    
+    @Override
+    protected void endRound(ProSJPlayer proSJPlayer) {
+    
+    }
 
-        nextJumpIndex++;
-        if (nextJumpIndex < totalJumps) {
-            FakeBlock fb;
-            if (nextJumpIndex + forwardVision < totalJumps) {
-                fb = fakeBlocks.get(nextJumpIndex + forwardVision);
-                gameWorld.setBlock(fb.getBlockPosition(), fb.getBlockData());
-            }
-            fb = fakeBlocks.get(nextJumpIndex - 1);
-            gameWorld.setBlock(fb.getBlockPosition(), fb.getBlockData());
-            fb = fakeBlocks.get(nextJumpIndex);
-            gameWorld.setBlock(fb.getBlockPosition(), Material.REDSTONE_LAMP.createBlockData());
-            goals.clear();
-            goals.add(new Dimension(new Point(fb.getBlockPosition().toVector()).add(-0.3, 0, -0.3), new Point(fb.getBlockPosition().toVector()).add(1.3, 4, 1.3)));
-        } else {
-            chatGroup.sendMessage("You completed SJ Pro (" + arena.getName() + ") in " + this.getRuntimeString());
-            endBattle();
-        }
+    @Override
+    public void reset() {
+    
+    }
+    
+    @Override
+    public void setPlayTo(int i) {
+    
     }
 
 }

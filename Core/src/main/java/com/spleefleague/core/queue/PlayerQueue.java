@@ -111,7 +111,7 @@ public class PlayerQueue {
                 Core.getInstance().sendMessage(cp, "You are already in queue for " +
                         Chat.GAMEMODE + this.name +
                         Chat.TAG_BRACE + " (" +
-                        Chat.GAMEMAP + arena.getDisplayName() +
+                        Chat.GAMEMAP + arena.getName() +
                         Chat.TAG_BRACE + ")");
             } else {
                 if (players.get(id).arena != null)
@@ -121,7 +121,7 @@ public class PlayerQueue {
                 Core.getInstance().sendMessage(cp, "You have joined the queue for " +
                         Chat.GAMEMODE + this.name +
                         Chat.TAG_BRACE + " (" +
-                        Chat.GAMEMAP + arena.getDisplayName() +
+                        Chat.GAMEMAP + arena.getName() +
                         Chat.TAG_BRACE + ")");
             }
             return false;
@@ -129,7 +129,7 @@ public class PlayerQueue {
         Core.getInstance().sendMessage(cp, "You have joined the queue for " +
                 Chat.GAMEMODE + this.name +
                 Chat.TAG_BRACE + " (" +
-                Chat.GAMEMAP + arena.getDisplayName() +
+                Chat.GAMEMAP + arena.getName() +
                 Chat.TAG_BRACE + ")");
         players.add(new QueuePlayer(cp, arena));
         arena.incrementQueues();
@@ -149,7 +149,7 @@ public class PlayerQueue {
         }
         return false;
     }
-    public void unqueuePlayers(ArrayList<CorePlayer> cps) {
+    public void unqueuePlayers(List<CorePlayer> cps) {
         Iterator<CorePlayer> pit = cps.iterator();
         while (pit.hasNext()) {
             unqueuePlayer(pit.next());
@@ -163,7 +163,7 @@ public class PlayerQueue {
     public CorePlayer getPlayerFirst() {
         return players.get(0).cp;
     }
-    private boolean matchAfter(int partySize, StringBuilder arenaName, int start, int remaining, ArrayList<QueuePlayer> list) {
+    private boolean matchAfter(int partySize, StringBuilder arenaName, int start, int remaining, List<QueuePlayer> list) {
         if (remaining <= 0) {
             return true;
         }
@@ -200,9 +200,9 @@ public class PlayerQueue {
         }
         return false;
     }
-    public ArrayList<CorePlayer> getMatchedPlayers(int count, int teamSize) {
-        ArrayList<CorePlayer> cps = new ArrayList<>();
-        ArrayList<QueuePlayer> queuePlayers = new ArrayList<>();
+    public List<CorePlayer> getMatchedPlayers(int count, int teamSize) {
+        List<CorePlayer> cps = new ArrayList<>();
+        List<QueuePlayer> queuePlayers = new ArrayList<>();
         ListIterator<QueuePlayer> pit = this.players.listIterator();
         
         while (pit.hasNext()) {

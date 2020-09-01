@@ -4,6 +4,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 /**
@@ -16,15 +17,15 @@ public class CollectiblesMenu {
     
     public static void init() {
         menuItem = InventoryMenuAPI.createItem()
-                .setName("Collectibles")
+                .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Collectibles")
                 .setDescription("Collection of Collectibles!")
                 .setDisplayItem(Material.CHEST)
                 .createLinkedContainer("Collectibles Menu");
     
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(PetMenu.getItem(), 5, 2);
         
-        menuItem.getLinkedContainer()
+        menuItem.getLinkedChest()
                 .addMenuItem(HatMenu.getItem(), 3, 2);
     }
     

@@ -42,7 +42,9 @@ public class Party {
                     }));
     
     public static Party createParty(CorePlayer cp) {
-        return new Party(cp);
+        Party party = new Party(cp);
+
+        return party;
     }
     
     private CorePlayer owner;

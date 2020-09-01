@@ -7,19 +7,18 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.game.request.PlayToRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class PlayToCommand extends CommandTemplate {
+public class PlayToCommand extends CoreCommand {
     
     public PlayToCommand() {
-        super(PlayToCommand.class, "playto", Rank.DEFAULT);
+        super("playto", Rank.DEFAULT);
     }
     
     @CommandAnnotation

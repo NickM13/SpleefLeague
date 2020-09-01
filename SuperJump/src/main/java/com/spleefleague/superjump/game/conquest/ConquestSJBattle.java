@@ -6,23 +6,24 @@
 
 package com.spleefleague.superjump.game.conquest;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.Arena;
+import com.spleefleague.core.game.battle.solo.SoloBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.SuperJump;
-import com.spleefleague.superjump.game.SJBattle;
-import com.spleefleague.superjump.player.SuperJumpPlayer;
+import com.spleefleague.superjump.game.SJMode;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
-public class ConquestSJBattle extends SJBattle<ConquestSJArena> {
+public class ConquestSJBattle extends SoloBattle<ConquestSJPlayer> {
 
-    public ConquestSJBattle(List<CorePlayer> players, ConquestSJArena arena) {
-        super(players, arena);
+    public ConquestSJBattle(List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), players, arena, ConquestSJPlayer.class, SJMode.CONQUEST.getBattleMode());
     }
     
+    /*
     @Override
     protected void winPlayer(CorePlayer cp) {
         SuperJumpPlayer sjp = SuperJump.getInstance().getPlayers().get(cp);
@@ -52,5 +53,35 @@ public class ConquestSJBattle extends SJBattle<ConquestSJArena> {
         }
         endBattle();
     }
-
+     */
+    
+    @Override
+    protected void setupBattleRequests() {
+    
+    }
+    
+    @Override
+    protected void setupScoreboard() {
+    
+    }
+    
+    @Override
+    protected void saveBattlerStats(ConquestSJPlayer conquestSJPlayer) {
+    
+    }
+    
+    @Override
+    protected void endRound(ConquestSJPlayer conquestSJPlayer) {
+    
+    }
+    
+    @Override
+    public void reset() {
+    
+    }
+    
+    @Override
+    public void setPlayTo(int i) {
+    
+    }
 }

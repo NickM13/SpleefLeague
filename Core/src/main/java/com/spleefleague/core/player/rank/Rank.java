@@ -8,12 +8,12 @@ package com.spleefleague.core.player.rank;
 
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.database.annotation.DBField;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.database.variable.DBEntity;
 
 import java.util.*;
 
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -37,9 +37,7 @@ public class Rank extends DBEntity {
                         DONOR_1,
                         DONOR_2,
                         DONOR_3;
-    
-    @DBField
-    private String name;
+
     @DBField
     private String displayName;
     
@@ -58,12 +56,9 @@ public class Rank extends DBEntity {
     private Rank() {
         
     }
-    
-    public String getName() {
-        return name;
-    }
-    public String getNameShort() {
-        return name.substring(0, Math.min(name.length(), 16));
+
+    public String getIdentifierShort() {
+        return identifier.substring(0, Math.min(identifier.length(), 16));
     }
     public String getDisplayName() {
         return Chat.RANK + displayName + Chat.DEFAULT;
@@ -116,8 +111,8 @@ public class Rank extends DBEntity {
     }
     public boolean hasAdditionalRank(String ranks) {
         String[] rankArray = ranks.split(",");
-        for (String r : rankArray) {
-            if (this.getName().equalsIgnoreCase(r)) {
+        for (String rank : rankArray) {
+            if (getIdentifier().equalsIgnoreCase(rank)) {
                 return true;
             }
         }
@@ -175,32 +170,30 @@ public class Rank extends DBEntity {
         while (dbc.hasNext()) {
             Rank rank = new Rank();
             rank.load(dbc.next());
-            ranks.put(rank.getName().toUpperCase(), rank);
+            ranks.put(rank.getIdentifier().toUpperCase(), rank);
         }
         
         Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         Set<Team> teams = mainScoreboard.getTeams();
         teams.forEach(Team::unregister);
         initScoreboard(mainScoreboard);
-        
-        // Probably redo this at some point, just here to
-        // make setting up command ranks easier
-        DEFAULT = ranks.get("DEFAULT");
-        ADMIN = ranks.get("ADMIN");
-        DEVELOPER = ranks.get("DEVELOPER");
-        MODERATOR = ranks.get("MODERATOR");
-        SENIOR_MODERATOR = ranks.get("SENIOR_MODERATOR");
-        BUILDER = ranks.get("BUILDER");
-        ORGANIZER = ranks.get("ORGANIZER");
-        VIP = ranks.get("VIP");
-        DONOR_1 = ranks.get("$");
-        DONOR_2 = ranks.get("$$");
-        DONOR_3 = ranks.get("$$$");
+
+        DEFAULT =           ranks.get("DEFAULT");
+        ADMIN =             ranks.get("ADMIN");
+        DEVELOPER =         ranks.get("DEVELOPER");
+        MODERATOR =         ranks.get("MODERATOR");
+        SENIOR_MODERATOR =  ranks.get("SENIOR_MODERATOR");
+        BUILDER =           ranks.get("BUILDER");
+        ORGANIZER =         ranks.get("ORGANIZER");
+        VIP =               ranks.get("VIP");
+        DONOR_1 =           ranks.get("DONOR_1");
+        DONOR_2 =           ranks.get("DONOR_2");
+        DONOR_3 =           ranks.get("DONOR_3");
     }
     
     public static void initScoreboard(Scoreboard scoreboard) {
         for (Rank rank : ranks.values()) {
-            Team team = scoreboard.registerNewTeam(rank.getNameShort());
+            Team team = scoreboard.registerNewTeam(rank.getIdentifierShort());
             team.setColor(rank.getColor());
             if (rank.getDisplayNameUnformatted().length() > 0)
                 team.setPrefix("[" + rank.getDisplayNameUnformatted() + "] ");

@@ -6,8 +6,8 @@
 
 package com.spleefleague.core.player.rank;
 
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.variable.DBEntity;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 
 /**
  * @author NickM13

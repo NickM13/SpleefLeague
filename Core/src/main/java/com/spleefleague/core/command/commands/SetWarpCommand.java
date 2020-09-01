@@ -6,9 +6,10 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.variable.Warp;
@@ -16,10 +17,10 @@ import com.spleefleague.core.util.variable.Warp;
 /**
  * @author NickM13
  */
-public class SetWarpCommand extends CommandTemplate {
+public class SetWarpCommand extends CoreCommand {
 
     public SetWarpCommand() {
-        super(SetWarpCommand.class, "setwarp", Rank.MODERATOR, Rank.BUILDER);
+        super("setwarp", Rank.MODERATOR, Rank.BUILDER);
         setUsage("/setwarp <name>");
         setDescription("Set a warp");
         setContainer("warp");

@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.TimeUtils;
@@ -19,10 +19,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author NickM13
  */
-public class TempBanCommand extends CommandTemplate {
+public class TempBanCommand extends CoreCommand {
     
     public TempBanCommand() {
-        super(TempBanCommand.class, "tempban", Rank.MODERATOR);
+        super("tempban", Rank.MODERATOR);
         setUsage("/tempban <player> <seconds> [reason]");
         setDescription("Temporarily ban a player from the server");
     }

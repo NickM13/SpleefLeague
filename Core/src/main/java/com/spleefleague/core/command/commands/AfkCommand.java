@@ -7,17 +7,17 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class AfkCommand extends CommandTemplate {
+public class AfkCommand extends CoreCommand {
     
     public AfkCommand() {
-        super(AfkCommand.class, "afk", Rank.DEFAULT);
+        super("afk", Rank.DEFAULT);
         setUsage("/afk");
     }
     

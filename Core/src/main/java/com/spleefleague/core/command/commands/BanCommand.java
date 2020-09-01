@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import javax.annotation.Nullable;
@@ -18,10 +18,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author NickM13
  */
-public class BanCommand extends CommandTemplate {
+public class BanCommand extends CoreCommand {
     
     public BanCommand() {
-        super(BanCommand.class, "ban", Rank.MODERATOR);
+        super("ban", Rank.MODERATOR);
         setUsage("/ban <player> [reason]");
         setDescription("Ban a player from the server");
     }

@@ -3,7 +3,8 @@ package com.spleefleague.core.world.global;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeWorld;
-import com.spleefleague.core.world.global.biome.GlobalBiome;
+import com.spleefleague.core.world.global.lock.GlobalLock;
+import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
 import org.bukkit.World;
 
 /**
@@ -17,11 +18,12 @@ import org.bukkit.World;
 public class GlobalWorld extends FakeWorld<GlobalWorldPlayer> {
 
     public static void init() {
-        GlobalBiome.init();
+        GlobalVehicle.init();
+        GlobalLock.init();
     }
     
     public GlobalWorld(World world) {
-        super(world, GlobalWorldPlayer.class);
+        super(-1, world, GlobalWorldPlayer.class);
     }
     
     @Override
@@ -37,4 +39,5 @@ public class GlobalWorld extends FakeWorld<GlobalWorldPlayer> {
         updateBlock(pos);
         return true;
     }
+
 }

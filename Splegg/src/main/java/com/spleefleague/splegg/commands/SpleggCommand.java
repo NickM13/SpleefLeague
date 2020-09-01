@@ -7,9 +7,8 @@
 package com.spleefleague.splegg.commands;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
-import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -21,12 +20,12 @@ import javax.annotation.Nullable;
 /**
  * @author NickM13
  */
-public class SpleggCommand extends CommandTemplate {
+public class SpleggCommand extends CoreCommand {
 
     public SpleggCommand() {
-        super(SpleggCommand.class, "splegg", Rank.DEFAULT);
+        super("splegg", Rank.DEFAULT);
         this.setOptions("classicArenas", cp -> Arenas.getAll(SpleggMode.CLASSIC.getBattleMode()).keySet());
-        this.setOptions("multiArenas", cp -> Arenas.getAll(SpleggMode.MULTI.getBattleMode()).keySet());
+        this.setContainer("splegg");
     }
 
     public void splegg(CorePlayer sender) {
@@ -34,7 +33,7 @@ public class SpleggCommand extends CommandTemplate {
     }
 
     @CommandAnnotation(minRank="DEVELOPER")
-    public void spleefDebug(CorePlayer sender,
+    public void spleggDebug(CorePlayer sender,
                             @LiteralArg("debug") String l) {
         Splegg.getInstance().getBattleManager(SpleggMode.CLASSIC.getBattleMode()).startMatch(Lists.newArrayList(sender, sender), "temple");
     }
@@ -42,11 +41,6 @@ public class SpleggCommand extends CommandTemplate {
     @CommandAnnotation
     public void spleggClassic(CorePlayer sender, @LiteralArg("classic") String l, @Nullable @OptionArg(listName="classicArenas") String arena) {
         Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getBattleMode(), sender, Arenas.get(arena, SpleggMode.CLASSIC.getBattleMode()));
-    }
-
-    @CommandAnnotation
-    public void spleggMulti(CorePlayer sender, @LiteralArg("multi") String l, @Nullable @OptionArg(listName="multiArenas") String arena) {
-        Splegg.getInstance().queuePlayer(SpleggMode.MULTI.getBattleMode(), sender, Arenas.get(arena, SpleggMode.MULTI.getBattleMode()));
     }
 
 }

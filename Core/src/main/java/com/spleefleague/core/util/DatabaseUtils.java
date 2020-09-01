@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.spleefleague.core.database.variable.DBVariable;
+import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 

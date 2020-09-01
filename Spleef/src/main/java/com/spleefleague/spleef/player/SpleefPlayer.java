@@ -6,72 +6,78 @@
 
 package com.spleefleague.spleef.player;
 
-import com.google.common.collect.Lists;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
-import com.spleefleague.core.database.variable.DBPlayer;
-import com.spleefleague.spleef.game.battle.power.Power;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.spleefleague.core.Core;
+import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.Abilities;
+import com.spleefleague.spleef.game.battle.power.ability.Ability;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 
 /**
  * @author NickM13
  */
 public class SpleefPlayer extends DBPlayer {
-    
-    private static final Integer BASE_RATING = 1000;
-    
-    //@DBField
-    protected Integer[] activePowers = new Integer[4];
+
+    @DBField protected String activeUtility = "";
+    @DBField protected String activeOffensive = "";
+    @DBField protected String activeMobility = "";
     
     public SpleefPlayer() {
         super();
-        for (int i = 0; i < 4; i++) {
-            activePowers[i] = Power.getDefaultPower(i).getDamage();
-        }
     }
 
     @Override
     public void init() {
-    
+
     }
     
     @Override
     public void initOffline() {
-    
+
     }
     
     @Override
     public void close() { }
-    
-    @DBLoad(fieldName="activePowers")
-    private void loadActivePowers(List<Integer> powers) {
-        if (powers == null) return;
-        for (int i = 0; i < Math.min(4, powers.size()); i++) {
-            activePowers[i] = powers.get(i);
+
+    public void setActiveUtility(String powerName) {
+        activeUtility = powerName;
+        Battle<?> battle = Core.getInstance().getPlayers().get(this).getBattle();
+        if (battle instanceof PowerTrainingBattle) {
+            ((PowerTrainingBattle) battle).updatePowers();
         }
     }
-    
-    @DBSave(fieldName="activePowers")
-    private List<Integer> saveActivePowers() {
-        return Lists.newArrayList(activePowers);
-    }
-    
-    public void setActivePower(int slot, int powerId) {
-        activePowers[slot] = powerId;
-    }
-    
-    public Power getActivePower(int slot) {
-        return Power.getPower(slot, activePowers[slot]);
-    }
-    
-    public List<Power> getActivePowers() {
-        List<Power> powers = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            powers.add(Power.getPower(i, activePowers[i]));
+
+    public void setActiveOffensive(String powerName) {
+        activeOffensive = powerName;
+        Battle<?> battle = Core.getInstance().getPlayers().get(this).getBattle();
+        if (battle instanceof PowerTrainingBattle) {
+            ((PowerTrainingBattle) battle).updatePowers();
         }
-        return powers;
+    }
+
+    public void setActiveMobility(String powerName) {
+        activeMobility = powerName;
+        Battle<?> battle = Core.getInstance().getPlayers().get(this).getBattle();
+        if (battle instanceof PowerTrainingBattle) {
+            ((PowerTrainingBattle) battle).updatePowers();
+        }
+    }
+
+    public AbilityUtility getActiveUtility() {
+        return (AbilityUtility) Abilities.getAbility(Ability.Type.UTILITY, activeUtility);
+    }
+
+    public AbilityOffensive getActiveOffensive() {
+        return (AbilityOffensive) Abilities.getAbility(Ability.Type.OFFENSIVE, activeOffensive);
+    }
+
+    public AbilityMobility getActiveMobility() {
+        return (AbilityMobility) Abilities.getAbility(Ability.Type.MOBILITY, activeMobility);
     }
     
 }

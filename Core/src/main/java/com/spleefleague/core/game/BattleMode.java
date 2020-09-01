@@ -10,11 +10,10 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.arena.ArenaBuilder;
 import com.spleefleague.core.game.arena.Arenas;
-import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import org.bukkit.Material;
+import com.spleefleague.core.game.battle.Battle;
 
 import java.util.*;
 
@@ -69,6 +68,7 @@ public class BattleMode {
             boolean joinOngoing,
             Class<? extends Battle<?>> battleClass) {
         battleGameModes.put(name, new BattleMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, battleClass));
+        System.out.println(name);
     }
     
     public static BattleMode get(String name) {

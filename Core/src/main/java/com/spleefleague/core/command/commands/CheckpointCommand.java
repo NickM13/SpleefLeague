@@ -6,18 +6,18 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.CommandTemplate;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
 /**
  * @author NickM13
  */
-public class CheckpointCommand extends CommandTemplate {
+public class CheckpointCommand extends CoreCommand {
     
     public CheckpointCommand() {
-        super(CheckpointCommand.class, "checkpoint", Rank.DEFAULT);
+        super("checkpoint", Rank.DEFAULT);
         setUsage("/checkpoint");
         setDescription("Teleport to your checkpoint");
     }

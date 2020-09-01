@@ -8,11 +8,10 @@ package com.spleefleague.core.chat;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
-import com.spleefleague.core.database.variable.DBPlayer;
 
 import java.util.*;
 
-import joptsimple.internal.Strings;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.Team;
 
@@ -54,7 +53,7 @@ public class ChatGroup {
         scoreboardName = name;
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
-            ps.getObjective().setDisplayName(name);
+            ps.getSideBar().setDisplayName(name);
         }
     }
     
@@ -136,7 +135,7 @@ public class ChatGroup {
             team.setPrefix(ss.displayName);
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             for (String sscore : sortedScores) {
-                ps.getObjective().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
+                ps.getSideBar().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
             }
         }
     }
@@ -155,6 +154,7 @@ public class ChatGroup {
             } else {
                 scores.get(next).score = i;
             }
+            i--;
         }
         
         for (CorePlayer cp : players) {
@@ -165,7 +165,7 @@ public class ChatGroup {
                 ps.getScoreboard().resetScores(str);
             }
             for (String sscore : sortedScores) {
-                ps.getObjective().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
+                ps.getSideBar().getScore(scores.get(sscore).name).setScore(scores.get(sscore).score);
             }
         }
     }
@@ -215,12 +215,12 @@ public class ChatGroup {
     /**
      * Does not store name locally, only sent to specified player
      * 
-     * @param dbp DBPlayer
+     * @param cp CorePlayer
      * @param name Identifier
      * @param displayName Display Name
      */
-    public void setTeamDisplayNamePersonal(DBPlayer dbp, String name, String displayName) {
-        Team team = PersonalScoreboard.getScoreboard(dbp.getUniqueId()).getScoreboard().getTeam(scores.get(name).name);
+    public void setTeamDisplayNamePersonal(CorePlayer cp, String name, String displayName) {
+        Team team = PersonalScoreboard.getScoreboard(cp.getUniqueId()).getScoreboard().getTeam(scores.get(name).name);
         if (team != null)
             team.setPrefix(displayName);
     }
@@ -238,10 +238,10 @@ public class ChatGroup {
     public void setTeamScore(String name, int score) {
         SimpleScore ss = scores.get(name);
         ss.score = score;
-        for (DBPlayer dbp : players) {
+        for (CorePlayer dbp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
             
-            ps.getObjective().getScore(ss.name).setScore(ss.score);
+            ps.getSideBar().getScore(ss.name).setScore(ss.score);
         }
     }
     
@@ -251,9 +251,10 @@ public class ChatGroup {
      * @param progress Progress 0 to 1
      * @param level Level
      */
+    @Deprecated
     public void setExperience(float progress, int level) {
-        for (DBPlayer dbp : players) {
-            //dbp.getPlayer().sendExperienceChange(progress, level);
+        for (CorePlayer cp : players) {
+            cp.getPlayer().sendExperienceChange(progress, level);
         }
     }
     
@@ -267,7 +268,7 @@ public class ChatGroup {
         players.add(cp);
         
         PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
-        ps.getObjective().setDisplayName(scoreboardName);
+        ps.getSideBar().setDisplayName(scoreboardName);
         for (SimpleScore ss : scores.values()) {
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
             if (team == null) {
@@ -278,11 +279,11 @@ public class ChatGroup {
             team.setDisplayName(ss.displayName);
             team.setPrefix(ss.displayName);
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-            ps.getObjective().getScore(ss.name).setScore(ss.score);
+            ps.getSideBar().getScore(ss.name).setScore(ss.score);
             int i = sortedScores.size() - 1;
             for (String sscore : sortedScores) {
                 scores.get(sscore).score = i;
-                ps.getObjective().getScore(scores.get(sscore).name).setScore(i);
+                ps.getSideBar().getScore(scores.get(sscore).name).setScore(i);
                 i--;
             }
         }
@@ -322,8 +323,8 @@ public class ChatGroup {
      * @param fadeOut Ticks
      */
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        for (DBPlayer dbp : players) {
-            dbp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        for (CorePlayer cp : players) {
+            Bukkit.getPlayer(cp.getUniqueId()).sendTitle(title, subtitle, fadeIn, stay, fadeOut);
         }
     }
     

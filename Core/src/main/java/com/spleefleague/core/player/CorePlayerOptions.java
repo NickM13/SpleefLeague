@@ -7,11 +7,8 @@
 package com.spleefleague.core.player;
 
 import com.google.common.collect.Lists;
-import com.spleefleague.core.database.annotation.DBField;
-import com.spleefleague.core.database.annotation.DBLoad;
-import com.spleefleague.core.database.annotation.DBSave;
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.database.variable.DBEntity;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,12 +16,50 @@ import java.util.Map;
 import java.util.Set;
 
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
  */
 public class CorePlayerOptions extends DBEntity {
+
+    public static class PlayerOptions {
+
+        public static class Option {
+
+            public String displayName;
+            public ItemStack displayItem;
+
+            public Option(String displayName, ItemStack displayItem) {
+                this.displayName = displayName;
+                this.displayItem = displayItem;
+            }
+        }
+
+        protected List<Option> options;
+
+        public PlayerOptions() {
+            options = new ArrayList<>();
+        }
+
+        public void addOption(String displayName, ItemStack displayItem) {
+            options.add(new Option(displayName, displayItem));
+        }
+
+        public List<Option> getOptions() {
+            return options;
+        }
+
+        public int getOptionCount() {
+            return options.size();
+        }
+
+    }
     
     public enum CPOptions {
         POST_GAME_WARP
@@ -46,8 +81,7 @@ public class CorePlayerOptions extends DBEntity {
         return optionMap.get(name);
     }
     
-    @DBField
-    protected Map<String, Integer> optionManager;
+    @DBField protected Map<String, Integer> optionManager;
     
     protected Set<String> disabledChannels;
     

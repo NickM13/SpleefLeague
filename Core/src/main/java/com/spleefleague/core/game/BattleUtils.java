@@ -1,6 +1,9 @@
 package com.spleefleague.core.game;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.battle.BattlePlayer;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
@@ -23,7 +26,7 @@ public class BattleUtils {
 
     private static final String[] defeatedSynonyms = {"defeated", "clobbered", "smashed",
             "pulverized", "clanked", "whapped", "wam jam'd", "destroyed", "ended the career of",
-            "wang jangled", "cracked", "stolen elo from", "cheated in their match against", "given a new one to",
+            "wang jangled", "cracked", "stolen elo from",
             "bested"};
 
     /**
@@ -33,6 +36,25 @@ public class BattleUtils {
     public static String randomDefeatSynonym() {
         Random r = new Random();
         return defeatedSynonyms[r.nextInt(defeatedSynonyms.length)];
+    }
+
+    private static char[] POINT_ANIM = {/*'─', */'═', '╪', '▓', '█'};
+
+    public static String toScoreSquares(BattlePlayer bp, int playToPoints) {
+        StringBuilder stringBuilder = new StringBuilder(Chat.SCORE);
+        for (int i = 0; i < bp.getRoundWins(); i++) {
+            if (i == bp.getRoundWins() - 1) {
+                long time = System.currentTimeMillis() - bp.getLastWin();
+                stringBuilder.append(POINT_ANIM[(int) Math.min(POINT_ANIM.length - 1, time / 150)]);
+            } else {
+                stringBuilder.append("█");
+            }
+        }
+        stringBuilder.append(Chat.DEFAULT);
+        for (int i = bp.getRoundWins(); i < playToPoints; i++) {
+            stringBuilder.append("─");
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -61,19 +83,13 @@ public class BattleUtils {
      *
      * @param gameWorld Game World
      * @param material Material
-     * @param locs Locations
+     * @param positions Positions
      */
-    public static void fillDome(GameWorld gameWorld, Material material, List<Location> locs) {
-        for (Location loc : locs) {
+    public static void fillDome(GameWorld gameWorld, Material material, List<Position> positions) {
+        for (Position pos : positions) {
             BuildStructure dome = BuildStructures.get("dome");
             for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
-                gameWorld.setBlock(
-                        entry.getKey().add(
-                        new BlockPosition(
-                                loc.getBlockX(),
-                                loc.getBlockY(),
-                                loc.getBlockZ())),
-                        entry.getValue().getBlockData());
+                gameWorld.setBlock(entry.getKey().add(pos.toBlockPosition()), entry.getValue().getBlockData());
             }
         }
     }
@@ -82,19 +98,13 @@ public class BattleUtils {
      * Remove an area around a list of locations
      *
      * @param gameWorld Game World
-     * @param locs Locations
+     * @param positions Positions
      */
-    public static void clearDome(GameWorld gameWorld, List<Location> locs) {
-        for (Location loc : locs) {
+    public static void clearDome(GameWorld gameWorld, List<Position> positions) {
+        for (Position pos : positions) {
             BuildStructure dome = BuildStructures.get("dome");
             for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
-                gameWorld.breakBlock(
-                        entry.getKey().add(
-                        new BlockPosition(
-                                loc.getBlockX(),
-                                loc.getBlockY(),
-                                loc.getBlockZ())),
-                        null);
+                gameWorld.breakBlock(entry.getKey().add(pos.toBlockPosition()), null);
             }
         }
     }

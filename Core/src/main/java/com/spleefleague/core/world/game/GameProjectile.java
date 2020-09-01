@@ -6,34 +6,33 @@
 
 package com.spleefleague.core.world.game;
 
+import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.core.util.variable.RaycastResult;
-import java.util.Collections;
+
+import java.util.ArrayList;
 import java.util.List;
 
-import com.spleefleague.core.world.FakeProjectile;
-import org.bukkit.entity.Entity;
+import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import net.minecraft.server.v1_16_R1.AxisAlignedBB;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 /**
  * @author NickM13
  */
 public class GameProjectile {
-    
-    BoundingBox lastLoc;
-    Entity entity;
+
+    Point lastLoc = null;
+    net.minecraft.server.v1_16_R1.Entity entity;
     Player shooter;
-    FakeProjectile type;
+    ProjectileStats type;
     int bounces = 1;
     double bouncePower = 0.3;
     double drag = 1;
     
-    public GameProjectile(Entity entity, FakeProjectile type) {
+    public GameProjectile(net.minecraft.server.v1_16_R1.Entity entity, ProjectileStats type) {
         this.entity = entity;
         this.type = type;
-        this.lastLoc = entity.getBoundingBox().clone();
         this.bounces = type.bounces;
         this.bouncePower = type.bounciness;
         this.drag = type.drag;
@@ -52,14 +51,14 @@ public class GameProjectile {
     }
     
     public boolean hasBounces() {
-        return bounces > 0;
+        return bounces >= 0;
     }
     
     public double getBouncePower() {
         return bouncePower;
     }
     
-    public FakeProjectile getProjectile() {
+    public ProjectileStats getProjectile() {
         return type;
     }
     
@@ -67,23 +66,28 @@ public class GameProjectile {
         this.shooter = shooter;
     }
     
-    public Entity getEntity() {
+    public net.minecraft.server.v1_16_R1.Entity getEntity() {
         return entity;
     }
     
-    public List<RaycastResult> cast() {
+    public List<BlockRaycastResult> cast() {
         if (lastLoc != null) {
-            Vector direction = entity.getLocation().toVector().subtract(lastLoc.getCenter());
-            lastLoc = entity.getBoundingBox().clone();
-            return new Point(lastLoc.getCenter()).cast(direction, direction.length());
+            Vector pos = new Vector(entity.getPositionVector().getX(), entity.getPositionVector().getY(), entity.getPositionVector().getZ());
+            Vector direction = pos.subtract(lastLoc.toVector());
+            setLastLoc();
+            return lastLoc.castBlocks(direction, direction.length());
         } else {
-            lastLoc = entity.getBoundingBox().clone();
-            return Collections.EMPTY_LIST;
+            setLastLoc();
+            return new ArrayList<>();
         }
     }
     
     public void setLastLoc() {
-        lastLoc = entity.getBoundingBox().clone();
+        AxisAlignedBB bb = entity.getBoundingBox();
+        lastLoc = new Point(
+                (bb.maxX - bb.minX) / 2D + bb.minX,
+                (bb.maxY - bb.minY) / 2D + bb.minY,
+                (bb.maxZ - bb.minZ) / 2D + bb.minZ);
     }
     
 }

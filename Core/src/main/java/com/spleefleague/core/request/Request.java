@@ -17,14 +17,14 @@ public abstract class Request {
     protected long timeout;
     
     public Request() {
-        this.timeout = System.currentTimeMillis() + 10 * 1000;
+        this.timeout = System.currentTimeMillis() + 120 * 1000;
     }
     
     public void setTag(String tag) {
         this.tag = tag;
     }
     
-    public boolean isTimedout() {
+    public boolean isExpired() {
         return timeout < System.currentTimeMillis();
     }
     

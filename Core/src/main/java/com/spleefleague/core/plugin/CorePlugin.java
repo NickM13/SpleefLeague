@@ -6,30 +6,41 @@
 
 package com.spleefleague.core.plugin;
 
+import com.google.common.collect.Iterables;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
+import com.spleefleague.core.logger.CoreLoggerFilter;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.PlayerManager;
-import com.spleefleague.core.database.variable.DBPlayer;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.spleefleague.coreapi.database.variable.DBPlayer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.apache.logging.log4j.LogManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.annotation.Nullable;
 
 /**
  * CorePlugin is the base class for all SpleefLeague plugins,
@@ -42,7 +53,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     
     private static final Set<CorePlugin<?>> plugins = new HashSet<>();
-    
+
+    protected static Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
+
     // For quick referencing in tab command auto completes
     protected static Set<String> ingamePlayerNames = new HashSet<>();
     
@@ -51,8 +64,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     
     // Map of all players in the database and their UUIDs (loaded as they connect)
     protected PlayerManager<P> playerManager;
-    
-    protected Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
+
     
     protected boolean running = false;
 
@@ -62,6 +74,19 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     @Override
     public final void onEnable() {
         init();
+
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:connection", playerManager);
+
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:chat");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:refresh");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:start");
+
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:solo");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:join");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:leave");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:leaveall");
+
         if (playerManager != null) playerManager.initOnline();
         running = true;
         plugins.add(this);
@@ -73,10 +98,11 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * that should be in the server's folder
      */
     public static void initMongo() {
+        org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
+        coreLogger.addFilter(new CoreLoggerFilter());
+        //Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
+        //mongoLogger.setLevel(Level.SEVERE);
         try {
-            Logger mongoLogger = Logger.getLogger("org.mongodb.driver.cluster");
-            mongoLogger.setLevel(Level.SEVERE);
-            
             Properties mongoProps = new Properties();
             String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
             FileInputStream file = new FileInputStream(mongoPath);
@@ -138,7 +164,17 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp) {
-        battleManagers.get(mode).queuePlayer(cp);
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+        output.writeUTF(cp.getIdentifier());
+        output.writeUTF(mode.getName());
+        output.writeUTF("arena:*");
+
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
+            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:solo", output.toByteArray());
+        } else {
+            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:join", output.toByteArray());
+        }
     }
     
     /**
@@ -148,8 +184,22 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      * @param arena Arena
      */
-    public final void queuePlayer(BattleMode mode, CorePlayer cp, Arena arena) {
-        battleManagers.get(mode).queuePlayer(cp, arena);
+    public final void queuePlayer(BattleMode mode, CorePlayer cp, @Nullable Arena arena) {
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+        output.writeUTF(cp.getIdentifier());
+        output.writeUTF(mode.getName());
+        if (arena == null) {
+            output.writeUTF("arena:*");
+        } else {
+            output.writeUTF("arena:" + arena.getIdentifier());
+        }
+
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
+            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:solo", output.toByteArray());
+        } else {
+            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:join", output.toByteArray());
+        }
     }
     
     /**
@@ -302,16 +352,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(ChatChannel cc, String msg) {
         Chat.sendMessage(cc, getChatPrefix() + msg);
-    }
-    
-    /**
-     * Send message to a ChatGroup
-     *
-     * @param cg Chat Group
-     * @param msg Message
-     */
-    public final void sendMessage(ChatGroup cg, String msg) {
-        cg.sendMessage(getChatPrefix() + msg);
     }
     
 }

@@ -9,6 +9,9 @@ package com.spleefleague.core.menu.hotbars.main;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.main.profile.FriendsMenu;
+import com.spleefleague.core.menu.hotbars.main.profile.PurseMenu;
+import org.bukkit.ChatColor;
 
 /**
  * @author NickM13
@@ -26,10 +29,13 @@ public class ProfileMenu {
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             menuItem = InventoryMenuAPI.createItem()
-                    .setName("Profile")
+                    .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Profile")
                     .setDisplayItem(cp -> InventoryMenuUtils.createCustomSkull(cp.getName()))
                     .setDescription("View statistics on your player character")
                     .createLinkedContainer("Profile");
+
+            menuItem.getLinkedChest().addMenuItem(FriendsMenu.getItem(), 1, 1);
+            menuItem.getLinkedChest().addMenuItem(PurseMenu.getItem(), 4, 2);
         }
         return menuItem;
     }

@@ -3,14 +3,13 @@ package com.spleefleague.core.command.commands;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.CommandTemplate;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 
 import java.util.Random;
 import java.util.Set;
@@ -19,10 +18,10 @@ import java.util.Set;
  * @author NickM13
  * @since 4/29/2020
  */
-public class SeasonCommand extends CommandTemplate {
+public class SeasonCommand extends CoreCommand {
     
     public SeasonCommand() {
-        super(SeasonCommand.class, "season", Rank.DEVELOPER);
+        super("season", Rank.DEVELOPER);
         setUsage("See Developer!");
         setDescription("Seasons Command for Resetting");
     }
@@ -48,9 +47,8 @@ public class SeasonCommand extends CommandTemplate {
         }
         */
         for (String name : testPlayers) {
-            OfflinePlayer op = Bukkit.getOfflinePlayer(name);
-            CorePlayer cp = (CorePlayer) Core.getInstance().getPlayers().createFakePlayer(op);
-            Leaderboards.debug(cp, rand.nextInt(3000));
+            CorePlayer cp = Core.getInstance().getPlayers().createFakePlayer(name);
+            //Leaderboards.debug(cp, rand.nextInt(3000));
         }
     }
     
@@ -65,8 +63,9 @@ public class SeasonCommand extends CommandTemplate {
                             sender,
                             "SeasonReset2",
                             (cp2, s2) -> {
-                                Leaderboards.startNewSeason();
+                                //Leaderboards.startNewSeason();
                                 success(sender, "Seasons have been reset!");
+                                error(sender, CoreError.SETUP);
                             });
                 });
     }

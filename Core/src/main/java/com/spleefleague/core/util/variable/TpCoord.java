@@ -46,10 +46,12 @@ public class TpCoord {
                 loc.setX(x.value);
                 break;
             case RELATIVE:
-                loc.add(new Vector(x.value, 0D, 0D));
+                if (x.value != null)
+                    loc.add(new Vector(x.value, 0D, 0D));
                 break;
             case DIRECTIONAL:
-                loc.add(new Vector(x.value, 0D, 0D));
+                if (x.value != null)
+                    loc.add(loc.getDirection().multiply(x.value));
                 break;
         }
         switch (y.origin) {
@@ -57,10 +59,15 @@ public class TpCoord {
                 loc.setY(y.value);
                 break;
             case RELATIVE:
-                loc.add(new Vector(0D, y.value, 0D));
+                if (y.value != null)
+                    loc.add(new Vector(0D, y.value, 0D));
                 break;
             case DIRECTIONAL:
-                loc.add(new Vector(0D, y.value, 0D));
+                if (y.value != null) {
+                    Location loc2 = loc.clone();
+                    loc2.setPitch(loc.getPitch() - 90);
+                    loc.add(loc2.getDirection().multiply(y.value));
+                }
                 break;
         }
         switch (z.origin) {
@@ -68,10 +75,12 @@ public class TpCoord {
                 loc.setZ(z.value);
                 break;
             case RELATIVE:
-                loc.add(new Vector(0D, 0D, z.value));
+                if (z.value != null)
+                    loc.add(new Vector(0D, 0D, z.value));
                 break;
             case DIRECTIONAL:
-                loc.add(new Vector(0D, 0D, z.value));
+                if (z.value != null)
+                    loc.add(loc.getDirection().crossProduct(new Vector(0, 1, 0)).normalize().multiply(z.value));
                 break;
         }
     }

@@ -45,7 +45,7 @@ public class PlayToRequest extends BattleRequest {
      */
     @Override
     protected void meetsRequirement() {
-    
+        battle.setPlayTo(playToValue);
     }
     
 }

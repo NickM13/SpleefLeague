@@ -38,7 +38,7 @@ public class RequestManager {
             Iterator<Map.Entry<String, Request>> sit = r.getValue().entrySet().iterator();
             while (sit.hasNext()) {
                 Map.Entry<String, Request> sn = sit.next();
-                if (sn.getValue().isTimedout()) {
+                if (sn.getValue().isExpired()) {
                     sn.getValue().timeout(receiver, sn.getKey());
                     sit.remove();
                 }
