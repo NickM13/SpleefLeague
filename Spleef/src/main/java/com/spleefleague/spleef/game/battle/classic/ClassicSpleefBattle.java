@@ -88,4 +88,9 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
         ClassicSpleefAffixes.updateField(this);
     }
 
+    @Override
+    protected void applyRewards(ClassicSpleefPlayer classicSpleefPlayer) {
+
+    }
+
 }

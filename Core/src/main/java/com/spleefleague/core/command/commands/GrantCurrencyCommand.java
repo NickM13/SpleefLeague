@@ -24,7 +24,7 @@ public class GrantCurrencyCommand extends CoreCommand {
     
     @CommandAnnotation
     public void grantcurrency(CorePlayer sender, CorePlayer cp, Integer amt) {
-        cp.addCoins(amt);
+        cp.getPurse().getCoins().addAmount(amt);
     }
 
 }

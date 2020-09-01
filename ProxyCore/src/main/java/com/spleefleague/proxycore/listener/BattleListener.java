@@ -51,6 +51,7 @@ public class BattleListener implements Listener {
                     int season = input.readInt();
                     int playerCount = input.readInt();
                     ByteArrayDataOutput scoreOut = ByteStreams.newDataOutput();
+                    ByteArrayDataOutput rewardOut = ByteStreams.newDataOutput();
                     scoreOut.writeUTF(modeName);
                     scoreOut.writeInt(season);
                     scoreOut.writeInt(playerCount);
@@ -64,6 +65,7 @@ public class BattleListener implements Listener {
                     }
                     for (Map.Entry<String, ServerInfo> entry : ProxyCore.getInstance().getProxy().getServers().entrySet()) {
                         entry.getValue().sendData("slcore:score", scoreOut.toByteArray());
+                        entry.getValue().sendData("slcore:reward", scoreOut.toByteArray());
                     }
                 } else {
                     int playerCount = input.readInt();

@@ -161,6 +161,42 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     }
 
     @Override
+    protected void applyRewards(PowerSpleefPlayer winner) {
+        if (winner.getRoundWins() < 5) {
+            // No rewards for less than 5 round games
+            return;
+        }
+        for (PowerSpleefPlayer psp : battlers.values()) {
+            int coins;
+            int common = 0, rare = 0, epic = 0, legendary = 0;
+            if (psp.getPlayer().equals(winner.getPlayer())) {
+                coins = new Random().nextInt(4) + 3;
+            } else {
+                coins = new Random().nextInt(3) + 1;
+            }
+            for (int i = 0; i < 1; i++) {
+                switch (getRandomOre(0.025, 0.01, 0.005, 0.001)) {
+                    case COMMON: common++; break;
+                    case RARE: rare++; break;
+                    case EPIC: epic++; break;
+                    case LEGENDARY: legendary++; break;
+                }
+            }
+            psp.getCorePlayer().getPurse().getCoins().addAmount(coins);
+            psp.getCorePlayer().getPurse().getCommonOre().addAmount(common);
+            psp.getCorePlayer().getPurse().getRareOre().addAmount(rare);
+            psp.getCorePlayer().getPurse().getEpicOre().addAmount(epic);
+            psp.getCorePlayer().getPurse().getLegendaryOre().addAmount(legendary);
+
+            if (coins > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + coins + ChatColor.GOLD + " Coin" + (coins != 1 ? "s" : ""));
+            if (common > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + common + ChatColor.GREEN + " Common Ore" + (common != 1 ? "s" : ""));
+            if (rare > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + rare + ChatColor.AQUA + " Rare Ore" + (rare != 1 ? "s" : ""));
+            if (epic > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + epic + ChatColor.DARK_PURPLE + " Epic Ore" + (epic != 1 ? "s" : ""));
+            if (legendary > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + legendary + ChatColor.YELLOW + " Legendary Ore" + (legendary != 1 ? "s" : ""));
+        }
+    }
+
+    @Override
     public void endBattle(PowerSpleefPlayer winner) {
         for (PowerSpleefPlayer psp : battlers.values()) {
             Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), psp::resetCooldowns, 2L);

@@ -179,6 +179,7 @@ public class Core extends CorePlugin<CorePlayer> {
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:chat", new ChatPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:refresh", new RefreshPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:score", new RefreshPluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:reward", new RefreshPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new RefreshPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "battle:start", new BattlePluginListener());
     }

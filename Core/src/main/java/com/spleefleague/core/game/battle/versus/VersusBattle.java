@@ -15,6 +15,7 @@ import com.spleefleague.core.game.request.PauseRequest;
 import com.spleefleague.core.game.request.PlayToRequest;
 import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CorePlayerPurse;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
 import org.bukkit.Bukkit;
@@ -191,7 +192,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
         return eloChange;
     }
-    
+
+    protected abstract void applyRewards(BP winner);
+
     /**
      * End a battle with a determined winner
      *
@@ -238,6 +241,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 output.writeBoolean(true);              // Rating Change
                 output.writeInt(getMode().getSeason()); // Mode Season
                 applyEloChange(winner);
+                applyRewards(winner);
                 output.writeInt(battlers.size());
                 for (BattlePlayer bp : battlers.values()) {
                     output.writeUTF(bp.getCorePlayer().getUniqueId().toString());

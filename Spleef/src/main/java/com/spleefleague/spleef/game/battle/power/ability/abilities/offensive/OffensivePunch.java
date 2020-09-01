@@ -34,9 +34,9 @@ public class OffensivePunch extends AbilityOffensive {
         projectileStats.fireRange = 5D;
         projectileStats.collidable = false;
         projectileStats.noClip = true;
-        projectileStats.count = 10;
-        projectileStats.hSpread = 40;
-        projectileStats.vSpread = 40;
+        projectileStats.count = 20;
+        projectileStats.hSpread = 90;
+        projectileStats.vSpread = 60;
         projectileStats.customModelData = 1;
     }
 
@@ -93,7 +93,7 @@ public class OffensivePunch extends AbilityOffensive {
                         handLocation.getX(),
                         handLocation.getY(),
                         handLocation.getZ(),
-                        1, 0., 0., 0., 0D, Type.OFFENSIVE.getDustSmall());
+                        1, 0D, 0D, 0D, 0D, Type.OFFENSIVE.getDustSmall());
             }
         }
     }
@@ -145,7 +145,8 @@ public class OffensivePunch extends AbilityOffensive {
             deactivatePunch(psp);
             psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_BEE_STING, 1, 1);
             Location loc = target.getPlayer().getEyeLocation().clone();
-            loc.setDirection(psp.getPlayer().getLocation().getDirection());
+            loc.setYaw(psp.getPlayer().getLocation().getYaw());
+            loc.setPitch(30);
             psp.getBattle().getGameWorld().shootProjectile(loc, projectileStats);
         }
     }

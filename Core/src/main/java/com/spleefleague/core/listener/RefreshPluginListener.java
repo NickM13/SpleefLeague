@@ -42,7 +42,17 @@ public class RefreshPluginListener implements PluginMessageListener {
                 int score = input.readInt();
                 cp.getRatings().setRating(mode, season, score);
                 Leaderboards.get(mode).getLeaderboards().get(season).setPlayerScore(cp.getUniqueId(), score);
-                System.out.println(cp.getDisplayName() + " " + score);
+            }
+        } else if (s.equals("slcore:reward")) {
+            ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
+            String mode = input.readUTF();
+            int season = input.readInt();
+            int playerCount = input.readInt();
+            for (int i = 0; i < playerCount; i++) {
+                CorePlayer cp = Core.getInstance().getPlayers().get(UUID.fromString(input.readUTF()));
+                int score = input.readInt();
+                cp.getRatings().setRating(mode, season, score);
+                Leaderboards.get(mode).getLeaderboards().get(season).setPlayerScore(cp.getUniqueId(), score);
             }
         }
     }

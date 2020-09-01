@@ -289,7 +289,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * @return Can Purchase
      */
     public final boolean canPurchase(CorePlayer cp) {
-        return (cp.getCoins() >= getCoinCost() && isAvailableToPurchase(cp));
+        return (cp.getPurse().getCoins().getAmount() >= getCoinCost() && isAvailableToPurchase(cp));
     }
     
     /**

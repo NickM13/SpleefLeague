@@ -631,6 +631,31 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param winner Winner
      */
     public abstract void endBattle(BP winner);
+
+    protected enum OreType {
+        NONE, COMMON, RARE, EPIC, LEGENDARY;
+    }
+
+    /**
+     * Get a random ore based on percentage weights (should add up to less than 1)
+     *
+     * @param common common ore
+     * @param rare rare ore
+     * @param epic epic ore
+     * @param legendary legendary ore
+     * @return Ore Type
+     */
+    protected static OreType getRandomOre(double common, double rare, double epic, double legendary) {
+        double r = Math.random();
+        if (r < common) return OreType.COMMON;
+        r -= common;
+        if (r < rare) return OreType.RARE;
+        r -= rare;
+        if (r < epic) return OreType.EPIC;
+        r -= epic;
+        if (r < legendary) return OreType.LEGENDARY;
+        return OreType.NONE;
+    }
     
     /**
      * Ends a battle, removes all players, destroys game world

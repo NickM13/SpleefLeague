@@ -51,4 +51,9 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     
     }
 
+    @Override
+    protected void applyRewards(ClassicSpleggPlayer classicSpleggPlayer) {
+
+    }
+
 }

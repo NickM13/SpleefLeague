@@ -5,13 +5,13 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.GameUtils;
+import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Particle;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.util.Vector;
 
@@ -20,6 +20,19 @@ import org.bukkit.util.Vector;
  * @since 5/19/2020
  */
 public class OffensiveLivingBomb extends AbilityOffensive {
+
+    private static ProjectileStats projectileStats = new ProjectileStats();
+
+    static {
+        projectileStats.lifeTicks = 100;
+        projectileStats.fireRange = 3D;
+        projectileStats.count = 80;
+        projectileStats.hSpread = 180;
+        projectileStats.vSpread = 30;
+        projectileStats.collidable = false;
+        //projectileStats.hitKnockback = 1D;
+        projectileStats.customModelData = 1;
+    }
 
     private static final int TICK_COUNT = 6;
     private static final double TICK_DELAY = 0.25D;
@@ -70,7 +83,11 @@ public class OffensiveLivingBomb extends AbilityOffensive {
                     }
                 }
             }
-            AbilityUtils.startFling(psp, new Vector(0, 1.5, 0), 0.2);
+            Location loc = psp.getPlayer().getLocation().clone();
+            loc.setPitch(0);
+            loc.add(0, 1.2, 0);
+            psp.getBattle().getGameWorld().shootProjectile(loc, projectileStats);
+            AbilityUtils.startFling(psp, new Vector(0, 1.2, 0), 0.2);
             psp.getPowerValueMap().put("livingbomb", false);
             return;
         }

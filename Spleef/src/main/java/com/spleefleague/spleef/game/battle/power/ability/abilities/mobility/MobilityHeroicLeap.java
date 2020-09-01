@@ -83,7 +83,7 @@ public class MobilityHeroicLeap extends AbilityMobility {
         } else {
             psp.getPowerValueMap().put("heroicleaping", psp.getBattle().getRoundTime());
             psp.getPowerValueMap().put("heroicdrop", null);
-            AbilityUtils.startFling(psp, new Vector(0, 1.5, 0), 0.5);
+            AbilityUtils.startFling(psp, new Vector(0, 1., 0), 0.5);
         }
         return false;
     }

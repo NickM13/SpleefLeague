@@ -101,12 +101,8 @@ public class CorePlayer extends RatedPlayer {
     @DBField private List<TempRank> tempRanks;
     
     @DBField private Boolean vanished;
-    @DBField private Integer coins = 0;
-    @DBField private Integer commonOre = 0;
-    @DBField private Integer rareOre = 0;
-    @DBField private Integer epicOre = 0;
-    @DBField private Integer legendaryOre = 0;
-    @DBField private Integer mythicOre = 0;
+
+    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
 
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
     @DBField private final CorePlayerOptions options = new CorePlayerOptions();
@@ -466,69 +462,10 @@ public class CorePlayer extends RatedPlayer {
     }
 
     /**
-     * @return Coins count
+     * @return Purse Object
      */
-    public int getCoins() {
-        return coins;
-    }
-
-    /**
-     * Sets player's total coins to coins
-     *
-     * @param coins Coins
-     */
-    public void setCoins(int coins) {
-        this.coins = coins;
-    }
-
-    /**
-     * Adds coins to player's coins
-     * Can be positive or negative
-     *
-     * @param coins Coins
-     */
-    public void addCoins(int coins) {
-        this.coins += coins;
-    }
-
-    public int getCommonOre() {
-        return commonOre;
-    }
-
-    public void addCommonOre(int ores) {
-        this.commonOre += ores;
-    }
-
-    public int getRareOre() {
-        return rareOre;
-    }
-
-    public void addRareOre(int ores) {
-        this.rareOre += ores;
-    }
-
-    public int getEpicOre() {
-        return epicOre;
-    }
-
-    public void addEpicOre(int ores) {
-        this.epicOre += ores;
-    }
-
-    public int getLegendaryOre() {
-        return legendaryOre;
-    }
-
-    public void addLegendaryOre(int ores) {
-        this.legendaryOre += ores;
-    }
-
-    public int getMythicOre() {
-        return mythicOre;
-    }
-
-    public void addMythicOre(int ores) {
-        this.mythicOre += ores;
+    public CorePlayerPurse getPurse() {
+        return purse;
     }
 
     /**
