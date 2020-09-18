@@ -74,8 +74,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
     public void initOnline() {
         playerList.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            load(p.getUniqueId(), p.getName());
             //p.kickPlayer("Sorry, reloads have to kick now :(");
+            load(p.getUniqueId(), p.getName());
         }
         for (P p : playerList.values()) {
             p.init();

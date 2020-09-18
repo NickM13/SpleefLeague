@@ -28,4 +28,9 @@ public class PartySJBattle extends DynamicBattle<PartySJPlayer> {
     public void reset() {
     
     }
+
+    @Override
+    protected void sendEndMessage(PartySJPlayer partySJPlayer) {
+
+    }
 }
