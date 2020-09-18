@@ -3,10 +3,13 @@ package com.spleefleague.proxycore.game.queue;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.spleefleague.coreapi.chat.ChatColor;
+import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyParty;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,18 +35,22 @@ public class QueueContainer {
         TEAM,
         DYNAMIC,
         BONANZA
+
     }
 
     private final String identifier;
+    private final String displayName;
     private final List<QueuePlayer> queuedPlayers;
     private final Set<Integer> teamSizes;
     private int reqTeams;
     private int maxTeams;
     TeamStyle teamStyle;
     private boolean joinOngoing;
+    private ScheduledTask nextCheck = null;
 
     public QueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, TeamStyle teamStyle, boolean joinOngoing) {
         this.identifier = identifier;
+        this.displayName = displayName;
         this.queuedPlayers = new ArrayList<>();
         this.teamSizes = new HashSet<>();
         if (teamStyle != TeamStyle.TEAM) {
@@ -52,6 +59,10 @@ public class QueueContainer {
         this.reqTeams = reqTeams;
         this.maxTeams = maxTeams;
         this.joinOngoing = joinOngoing;
+    }
+
+    public String getDisplayName() {
+        return ChatColor.GOLD + displayName;
     }
 
     public void addTeamSize(int size) {
@@ -75,7 +86,14 @@ public class QueueContainer {
         QueuePlayer qp = new QueuePlayer(pcp, query);
         if (qp.query.equals("arena:*") && replaced != null) return -1;
         queuedPlayers.add(qp);
-        ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 500, TimeUnit.MILLISECONDS);
+        if (nextCheck == null) {
+            if (queuedPlayers.size() >= this.maxTeams) {
+                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 500, TimeUnit.MILLISECONDS);
+            } else if (queuedPlayers.size() >= this.reqTeams) {
+                ProxyCore.getInstance().sendMessage(ProxyCore.getChatTag() + identifier + " will begin in 5 seconds!");
+                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 5000, TimeUnit.MILLISECONDS);
+            }
+        }
         return replaced != null ? 1 : 0;
     }
 
@@ -108,109 +126,6 @@ public class QueueContainer {
         return queuedPlayers.get(0);
     }
 
-    private static class SubQuery {
-
-        String type;
-        List<String> values;
-        boolean hasStar;
-
-        SubQuery(String section) {
-            String[] splits = section.split(":");
-            this.type = splits[0];
-            this.values = new ArrayList<>();
-            for (String s : splits[1].split(",")) {
-                if (s.equals("*")) {
-                    this.hasStar = true;
-                } else {
-                    this.values.add(s);
-                }
-            }
-        }
-
-        /**
-         * Both sub queries should be either whitelist or blacklist (with or without star)
-         *
-         * @param query1 Sub Query
-         * @param query2 Sub Query
-         * @return
-         */
-        private static String mergeSame(SubQuery query1, SubQuery query2) {
-            StringBuilder merged = new StringBuilder();
-            for (String v : query1.values) {
-                if (merged.length() > 0) {
-                    merged.append(",");
-                }
-                merged.append(v);
-            }
-            for (String v : query2.values) {
-                if (merged.length() > 0) {
-                    merged.append(",");
-                }
-                merged.append(v);
-            }
-            return merged.toString();
-        }
-
-        /**
-         * Takes a whitelist and blacklist of values and produces a new string
-         *
-         * @param whitelist Whitelist Sub Query
-         * @param blacklist Blacklist Sub Query
-         * @return
-         */
-        private static String mergeOther(SubQuery whitelist, SubQuery blacklist) {
-            StringBuilder merged = new StringBuilder();
-            for (String v1 : whitelist.values) {
-                boolean ignored = false;
-                for (String v2 : blacklist.values) {
-                    if (v1.equals(v2)) {
-                        ignored = true;
-                        break;
-                    }
-                }
-                if (!ignored) {
-                    merged.append(v1);
-                }
-            }
-            return merged.toString();
-        }
-
-        /**
-         * Compare two sub queries of the same type, returning a new query string
-         * (empty string should exit player match)
-         *
-         * @param that Sub Query
-         * @return New Query String
-         */
-        public String compareValue(SubQuery that) {
-            String newVal;
-            if (hasStar) {
-                if (that.hasStar) {
-                    newVal = "*," + mergeSame(this, that);
-                } else {
-                    newVal = mergeOther(that, this);
-                }
-            } else {
-                if (that.hasStar) {
-                    newVal = mergeOther(this, that);
-                } else {
-                    newVal = mergeSame(this, that);
-                }
-            }
-            return newVal;
-        }
-
-    }
-
-    private SubQuery[] splitQuery(String query) {
-        String[] sections = query.split(";");
-        SubQuery[] subQueries = new SubQuery[sections.length];
-        for (int i = 0; i < sections.length; i++) {
-            subQueries[i] = new SubQuery(sections[i]);
-        }
-        return subQueries;
-    }
-
     /**
      * Attemps to match two query searches, returning null if any sub queries return an empty string
      *
@@ -220,8 +135,8 @@ public class QueueContainer {
      */
     private String matchQueries(String query1, String query2) {
         StringBuilder matchedQuery = new StringBuilder();
-        SubQuery[] subQueries1 = splitQuery(query1);
-        SubQuery[] subQueries2 = splitQuery(query2);
+        SubQuery[] subQueries1 = SubQuery.splitQuery(query1);
+        SubQuery[] subQueries2 = SubQuery.splitQuery(query2);
         boolean matched;
         for (SubQuery sq1 : subQueries1) {
             matched = false;
@@ -241,15 +156,11 @@ public class QueueContainer {
         return matchedQuery.toString();
     }
 
-    private boolean matchAfter(int teamSize, StringBuilder mainQuery, int start, int remaining, List<QueuePlayer> list) {
-        if (remaining <= 0) {
-            return true;
-        }
-        ListIterator<QueuePlayer> pit;
-        QueuePlayer qp;
-        pit = queuedPlayers.listIterator(start);
+    private boolean matchAfter(int teamSize, StringBuilder mainQuery, int start, int remaining, QueuedChunk list) {
+        if (remaining <= 0) return true;
+        ListIterator<QueuePlayer> pit = queuedPlayers.listIterator(start);
         while (pit.hasNext()) {
-            qp = pit.next();
+            QueuePlayer qp = pit.next();
             ProxyCorePlayer pcp1 = qp.pcp;
             ProxyParty party = pcp1.getParty();
             if (teamSize > 1 && (party == null || party.getPlayers().size() != teamSize)) {
@@ -258,47 +169,34 @@ public class QueueContainer {
             String newQuery = matchQueries(mainQuery.toString(), qp.query);
             if (newQuery == null) {
                 return false;
-            }
-
-            if (mainQuery.toString().equals("") || qp.query.equals("*")) {
-                if (!qp.query.equals("*")) {
-                    StringBuilder _arena = new StringBuilder(qp.query);
-                    list.add(qp);
-                    if (matchAfter(teamSize, _arena, pit.nextIndex(), remaining-1, list)) {
-                        mainQuery.delete(0, mainQuery.length());
-                        mainQuery.append(_arena);
-                        return true;
-                    }
-                    return false;
-                } else {
-                    list.add(qp);
-                    return matchAfter(teamSize, mainQuery, pit.nextIndex(), remaining-1, list);
-                }
             } else {
-                if (mainQuery.toString().equalsIgnoreCase(qp.query)) {
-                    list.add(qp);
-                    return matchAfter(teamSize, mainQuery, pit.nextIndex(), remaining-1, list);
+                StringBuilder queryBuilder = new StringBuilder(newQuery);
+                list.players.add(qp);
+                if (matchAfter(teamSize, queryBuilder, pit.nextIndex(), remaining-1, list)) {
+                    mainQuery.delete(0, mainQuery.length());
+                    mainQuery.append(queryBuilder.toString());
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    public List<QueuePlayer> getMatchedPlayers(int count, int teamSize) {
-        List<QueuePlayer> queuePlayers = new ArrayList<>();
+    public QueuedChunk getMatchedPlayers(int count, int teamSize) {
+        QueuedChunk queuePlayers = new QueuedChunk();
         ListIterator<QueuePlayer> pit = queuedPlayers.listIterator();
 
         while (pit.hasNext()) {
             QueuePlayer qp = pit.next();
-            queuePlayers.clear();
-            queuePlayers.add(qp);
+            queuePlayers.players.clear();
+            queuePlayers.players.add(qp);
             StringBuilder mainQuery = new StringBuilder(qp.query);
             ProxyCorePlayer pcp1 = qp.pcp;
             if (pcp1 == null) continue;
             ProxyParty party = pcp1.getParty();
             if (teamSize <= 1 || (party != null && party.getPlayers().size() == teamSize)) {
                 if (matchAfter(teamSize, mainQuery, pit.nextIndex(), count-1, queuePlayers)) {
-                    lastQuery = mainQuery.toString();
+                    queuePlayers.query = mainQuery.toString();
                     return queuePlayers;
                 }
             }
@@ -306,14 +204,20 @@ public class QueueContainer {
         return null;
     }
 
-    private List<QueuePlayer> gatherPlayers(int count, int size) {
-        List<QueuePlayer> gatheredPlayers = new ArrayList<>();
-        List<QueuePlayer> cplayers = getMatchedPlayers(count, size);
-        if (cplayers == null) return null;
-        for (QueuePlayer cp : cplayers) {
-            gatheredPlayers.add(cp);
-            if (gatheredPlayers.size() == count) {
-                return gatheredPlayers;
+    private class QueuedChunk {
+        List<QueuePlayer> players = new ArrayList<>();
+        String query;
+    }
+
+    private QueuedChunk gatherPlayers(int count, int size) {
+        QueuedChunk cchunk = getMatchedPlayers(count, size);
+        if (cchunk == null) return null;
+        QueuedChunk gatheredChunk = new QueuedChunk();
+        gatheredChunk.query = cchunk.query;
+        for (QueuePlayer cp : cchunk.players) {
+            gatheredChunk.players.add(cp);
+            if (gatheredChunk.players.size() == count) {
+                return gatheredChunk;
             }
         }
         return null;
@@ -321,30 +225,37 @@ public class QueueContainer {
 
     public void checkQueue() {
         for (int size : teamSizes) {
-            if (getQueueSize() >= reqTeams) {
-                List<QueuePlayer> players = gatherPlayers(reqTeams, size);
-                if (players != null) {
-                    startMatch(players, getLastQuery());
+            while (true) {
+                if (getQueueSize() >= reqTeams) {
+                    QueuedChunk chunk = gatherPlayers(Math.max(Math.min(getQueueSize(), maxTeams), reqTeams), size);
+                    if (chunk != null) {
+                        startMatch(chunk.players, chunk.query);
+                        if (getQueueSize() < maxTeams) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
                 }
             }
         }
+        nextCheck = null;
     }
 
-    public void startMatch(List<QueuePlayer> players, String query) {
+    public boolean startMatch(List<QueuePlayer> players, String query) {
         ServerInfo minigameServer = ProxyCore.getInstance().getMinigameServers().get(0);
         if (minigameServer == null) {
             ProxyCore.getInstance().getLogger().warning("There are no minigame servers available right now!");
-            return;
+            return false;
         }
 
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeUTF(identifier);
         output.writeUTF(query);
-        output.writeUTF(""); // Arena name, temporarily empty for all arenas
         output.writeInt(players.size());
         for (QueuePlayer qp : players) {
             if (qp.pcp.isInBattle()) {
-                return;
+                return false;
             }
             output.writeUTF(qp.pcp.getUniqueId().toString());
         }
@@ -354,6 +265,7 @@ public class QueueContainer {
             qp.pcp.getPlayer().connect(minigameServer);
         }
         minigameServer.sendData("battle:start", output.toByteArray());
+        return true;
     }
 
 }

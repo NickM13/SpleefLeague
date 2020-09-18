@@ -28,7 +28,12 @@ public class ShuffleSJBattle extends VersusBattle<ShuffleSJPlayer> {
     public void updateExperience() {
         //chatGroup.setExperience((getLevelTime() % 1000) / 1000.f, (int)(getLevelTime() / 1000));
     }
-    
+
+    @Override
+    protected void applyRewards(ShuffleSJPlayer shuffleSJPlayer) {
+
+    }
+
     @Override
     protected void setupBaseSettings() {
     

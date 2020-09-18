@@ -10,15 +10,19 @@ public class CurrencyCommonOre extends Currency {
 
     }
 
-    public static String getIdentifier() {
+    public String getIdentifier() {
         return "common_ore";
     }
 
-    public static String getName() {
-        return ChatColor.GREEN + "Common Ore";
+    public String getChatColor() {
+        return ChatColor.GREEN + "";
     }
 
-    public static Material getDisplayIcon() {
+    public String getName() {
+        return "Common Ore";
+    }
+
+    public Material getDisplayIcon() {
         return Material.COAL_ORE;
     }
 

@@ -19,6 +19,8 @@ import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.splegg.Splegg;
+import com.spleefleague.splegg.game.classic.ClassicSpleggBattle;
+import com.spleefleague.splegg.game.multi.MultiSpleggBattle;
 import org.bson.Document;
 import org.bukkit.Material;
 import org.bukkit.entity.Snowball;
@@ -36,7 +38,7 @@ public class SpleggGun extends Holdable {
         Vendorable.registerVendorableType(SpleggGun.class);
         
         spleggGunCol = Splegg.getInstance().getPluginDB().getCollection("SpleggGuns");
-        Integer count = 0;
+        int count = 0;
         for (Document doc : spleggGunCol.find()) {
             SpleggGun spleggGun = new SpleggGun();
             spleggGun.load(doc);
@@ -44,39 +46,69 @@ public class SpleggGun extends Holdable {
             count++;
         }
         if (count == 0) {
-            create(SpleggGun.class, "default", "Splegg Gun");
+            create(SpleggGun.class, "henholster", "Hen Holster");
         }
 
-        InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItem")
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+        InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemS1")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getDisplayItem())
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg);
+                        && cp.getBattle().getPlugin() instanceof Splegg
+                        && cp.getBattle() instanceof ClassicSpleggBattle);
+
+        InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemS2")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getDisplayItem())
+                .setAvailability(cp -> cp.isInBattle()
+                        && cp.getBattleState() == BattleState.BATTLER
+                        && cp.getBattle().getPlugin() instanceof Splegg
+                        && cp.getBattle() instanceof ClassicSpleggBattle);
+
+        InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemM1")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getDisplayItem())
+                .setAvailability(cp -> cp.isInBattle()
+                        && cp.getBattleState() == BattleState.BATTLER
+                        && cp.getBattle().getPlugin() instanceof Splegg
+                        && cp.getBattle() instanceof MultiSpleggBattle);
+
+        InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemM2")
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getName())
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getDisplayItem())
+                .setAvailability(cp -> cp.isInBattle()
+                        && cp.getBattleState() == BattleState.BATTLER
+                        && cp.getBattle().getPlugin() instanceof Splegg
+                        && cp.getBattle() instanceof MultiSpleggBattle);
     }
 
     public static SpleggGun getDefault() {
         Collection<SpleggGun> collection = Vendorables.getAll(SpleggGun.class).values();
-        return collection == null ? null : collection.iterator().next();
+        return collection.iterator().next();
     }
-    
-    private static InventoryMenuItem createActiveSpleggGunMenuItem() {
+
+    private static InventoryMenuItem createActiveSpleggGunMenuItem(String affix) {
         return InventoryMenuAPI.createItem()
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getName() + "")
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDisplayItem())
                 .setCloseOnAction(false);
     }
-    
-    public static InventoryMenuItem createMenu() {
+
+    public static InventoryMenuItem createMenu(String affix, String secondary) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .setName("Splegg Guns")
-                .setDescription("Set your active splegg gun")
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getName() + " &6&iClick to Change")
+                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDisplayItem())
                 .createLinkedContainer("Active Splegg Gun");
 
-        menuItem.getLinkedChest().addStaticItem(createActiveSpleggGunMenuItem(), 4, 4);
+        menuItem.getLinkedChest().setPageBoundaries(1, 3, 1, 7);
+
+        menuItem.getLinkedChest().addStaticItem(createActiveSpleggGunMenuItem(affix), 4, 4);
 
         for (SpleggGun spleggGun : Vendorables.getAll(SpleggGun.class).values()) {
             InventoryMenuItem smi = InventoryMenuAPI.createItem()
@@ -84,13 +116,17 @@ public class SpleggGun extends Holdable {
                     .setDisplayItem(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
                     .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")
                     .setAction(cp -> {
-                        if (spleggGun.isAvailable(cp))
-                            cp.getCollectibles().setActiveItem(spleggGun);
+                        if (spleggGun.isAvailable(cp)) {
+                            if (cp.getCollectibles().getActiveOrDefault(SpleggGun.class, secondary, SpleggGun.getDefault()).equals(spleggGun)) {
+                                cp.getCollectibles().setActiveItem(cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()), secondary);
+                            }
+                            cp.getCollectibles().setActiveItem(spleggGun, affix);
+                        }
                     })
                     .setCloseOnAction(false);
-                menuItem.getLinkedChest().addMenuItem(smi);
+            menuItem.getLinkedChest().addMenuItem(smi);
         }
-        
+
         return menuItem;
     }
 
@@ -107,6 +143,10 @@ public class SpleggGun extends Holdable {
         this.identifier = identifier;
         this.name = displayName;
         this.projectileStats = new ProjectileStats();
+    }
+
+    public void resetStats() {
+        projectileStats = new ProjectileStats();
     }
     
     @Override

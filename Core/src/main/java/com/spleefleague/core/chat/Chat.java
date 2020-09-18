@@ -205,31 +205,32 @@ public class Chat {
         }
     }
     public static void sendTitle(CorePlayer cp, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        if (cp != null && cp.getPlayer() != null)
+            cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
     }
 
     public static void sendMessageToPlayer(CorePlayer cp, String msg) {
-        if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE)
+        if (cp != null && cp.getPlayer() != null)
             cp.getPlayer().sendMessage(chatColors.get("DEFAULT") + colorize(msg));
     }
 
     public static void sendMessageToPlayerSuccess(CorePlayer cp, String msg) {
-        if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE)
+        if (cp != null && cp.getPlayer() != null)
             cp.getPlayer().sendMessage(chatColors.get("SUCCESS") + colorize(msg));
     }
 
     public static void sendMessageToPlayerError(CorePlayer cp, String msg) {
-        if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE)
+        if (cp != null && cp.getPlayer() != null)
             cp.getPlayer().sendMessage(chatColors.get("ERROR") + colorize(msg));
     }
 
     public static void sendMessageToPlayerInvalid(CorePlayer cp, String msg) {
-        if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE)
+        if (cp != null && cp.getPlayer() != null)
             cp.getPlayer().sendMessage(chatColors.get("ERROR") + "Invalid command: " + colorize(msg));
     }
 
     public static void sendMessageToPlayerInfo(CorePlayer cp, String msg) {
-        if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE)
+        if (cp != null && cp.getPlayer() != null)
             cp.getPlayer().sendMessage(chatColors.get("INFO") + colorize(msg));
     }
     

@@ -57,11 +57,13 @@ public class SpleefUtils {
         if (battle == null || battle.getGameWorld() == null) return;
         GameWorld gameWorld = battle.getGameWorld();
         List<Map<BlockPosition, FakeBlock>> toMerge = new ArrayList<>();
+        /*
         for (BuildStructure structure : battle.getArena().getStructures()) {
             if (structure != null) {
                 toMerge.add(structure.getFakeBlocks());
             }
         }
+        */
         if (field != null) {
             toMerge.add(field.getFakeBlocks());
         }
@@ -80,11 +82,13 @@ public class SpleefUtils {
         if (battle == null || battle.getGameWorld() == null) return;
         GameWorld gameWorld = battle.getGameWorld();
         List<Map<BlockPosition, FakeBlock>> toMerge = new ArrayList<>();
+        /*
         for (BuildStructure structure : battle.getArena().getStructures()) {
             if (structure != null) {
                 toMerge.add(structure.getFakeBlocks());
             }
         }
+        */
         if (field != null) {
             toMerge.add(field.getFakeBlocks());
         }

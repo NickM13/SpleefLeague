@@ -9,6 +9,7 @@ import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import net.minecraft.server.v1_16_R1.MovingObjectPosition;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
@@ -23,8 +24,8 @@ public class OffensiveYoink extends AbilityOffensive {
 
     public static class YoinkProjectile extends FakeEntitySnowball {
 
-        public YoinkProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public YoinkProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         @Override
@@ -60,7 +61,7 @@ public class OffensiveYoink extends AbilityOffensive {
     }
 
     public OffensiveYoink() {
-        super(10, 12D);
+        super(10, 10D);
     }
 
     @Override

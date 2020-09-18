@@ -8,6 +8,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -55,6 +56,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -172,6 +174,7 @@ public class Core extends CorePlugin<CorePlayer> {
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:score");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:end");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:spectate");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "party:create");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "party:join");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "party:leave");
@@ -182,6 +185,7 @@ public class Core extends CorePlugin<CorePlayer> {
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:reward", new RefreshPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new RefreshPluginListener());
         getServer().getMessenger().registerIncomingPluginChannel(this, "battle:start", new BattlePluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "battle:spectate", new BattlePluginListener());
     }
     
     /**
@@ -256,7 +260,7 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public void applyVisibilities(CorePlayer cp) {
         if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
-        if (cp.isVanished()) {
+        if (cp.isVanished() || cp.isGhosting()) {
             cp.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
         } else {
             cp.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
@@ -267,31 +271,24 @@ public class Core extends CorePlugin<CorePlayer> {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle()
                         && cp.getBuildWorld() == cp2.getBuildWorld()) {
-                    //cp.getPlayer().showPlayer(this, cp2.getPlayer());
-                    //if (!cp.isVanished())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
-                    //else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    if (!cp.isGhosting()) cp.getPlayer().showPlayer(this, cp2.getPlayer());
+                    else                  cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    if (!cp.isVanished() && !cp.isGhosting())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
-                    //cp.getPlayer().hidePlayer(this, cp2.getPlayer());
-                    //cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 }
             }
         }
     }
 
-    public void returnToHub(CorePlayer cp) {
-        /*
-        Player p = cp.getPlayer();
-        if (p != null) {
-            ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-            output.writeUTF("Connect");
-            output.writeUTF("lobby");
-
-            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                p.sendPluginMessage(Core.getInstance(), "BungeeCord", output.toByteArray());
-            }, 20L);
-        }
-        */
+    public void returnToHub(@NotNull CorePlayer cp) {
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        output.writeInt(1);
+        output.writeUTF(cp.getUniqueId().toString());
+        if (cp.getPlayer() != null)
+            cp.getPlayer().sendPluginMessage(Core.getInstance(), "slcore:lobby", output.toByteArray());
     }
 
     /**

@@ -44,7 +44,25 @@ import org.bukkit.craftbukkit.v1_16_R1.command.CraftBlockCommandSender;
  */
 public class CoreCommand extends Command {
 
-    private final Map<String, Function<CorePlayer, Set<String>>> optionsMap;
+    public class PriorInfo {
+        CorePlayer cp;
+        List<String> args;
+
+        PriorInfo(CorePlayer cp, List<String> args) {
+            this.cp = cp;
+            this.args = args;
+        }
+
+        public CorePlayer getCorePlayer() {
+            return cp;
+        }
+
+        public List<String> getArgs() {
+            return args;
+        }
+    }
+
+    private final Map<String, Function<PriorInfo, Set<String>>> optionsMap;
     
     private final static Set<String> allPermissions = new HashSet<>();
     private String container;
@@ -74,13 +92,13 @@ public class CoreCommand extends Command {
     public String getContainer() {
         return container;
     }
-    
-    protected void setOptions(String name, Function<CorePlayer, Set<String>> options) {
+
+    protected void setOptions(String name, Function<PriorInfo, Set<String>> options) {
         optionsMap.put(name, options);
     }
     
-    protected TreeSet<String> getOptions(String name, CorePlayer cp) {
-        return Sets.newTreeSet(optionsMap.get(name).apply(cp));
+    protected TreeSet<String> getOptions(String name, CorePlayer cp, List<String> args) {
+        return Sets.newTreeSet(optionsMap.get(name).apply(new PriorInfo(cp, args)));
     }
     
     private Integer toInt(String str) {
@@ -411,7 +429,8 @@ public class CoreCommand extends Command {
                 if (!method.isAnnotationPresent(CommandAnnotation.class)) {
                     continue;
                 }
-                ArrayList<Object> params = new ArrayList<>();
+                List<Object> params = new ArrayList<>();
+                List<String> strParams = new ArrayList<>();
                 int paramSize = 0;
                 int paramCount = 0;
                 
@@ -437,13 +456,12 @@ public class CoreCommand extends Command {
                 if (cp != null &&
                         method.getParameters()[0].getType().equals(CorePlayer.class)) {
                     if (!cp.getRank().hasPermission(Rank.getRank(method.getAnnotation(CommandAnnotation.class).minRank()))) {
-                        boolean hasRank = false;
                         for (String rankName : method.getAnnotation(CommandAnnotation.class).additionalRanks().split(",")) {
                             if (cp.getRank().equals(Rank.getRank(rankName))) {
                                 break;
                             }
                         }
-                        if (!hasRank) continue;
+                        continue;
                     }
                     params.add(cp);
                 } else if (method.getParameters()[0].getType().equals(CommandSender.class)) {
@@ -554,12 +572,14 @@ public class CoreCommand extends Command {
                                     break;
                                 default: break;
                             }
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
                         if (paramClass.equals(TpCoord.class) &&
                                 (obj = TpCoord.create(arg)) != null) {
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
@@ -567,18 +587,21 @@ public class CoreCommand extends Command {
                                 (obj = Core.getInstance().getPlayers().getOffline(arg)) != null) {
                             invalidArg = !isValidCorePlayer(cs, cp, (CorePlayer) obj, param.getAnnotation(CorePlayerArg.class));
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
                         if (paramClass.equals(Player.class) &&
                                 (obj = Bukkit.getPlayer(arg)) != null) {
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
                         if (paramClass.equals(OfflinePlayer.class)) {
                             obj = Bukkit.getOfflinePlayer(arg);
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
@@ -586,6 +609,7 @@ public class CoreCommand extends Command {
                                 (obj = toInt(arg)) != null) {
                             invalidArg = !isNumInbounds(cs, ((Integer) obj).doubleValue(), param.getAnnotation(NumberArg.class));
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
@@ -593,11 +617,11 @@ public class CoreCommand extends Command {
                                 && (obj = toDouble(arg)) != null) {
                             invalidArg = !isNumInbounds(cs, (Double) obj, param.getAnnotation(NumberArg.class));
                             params.add(obj);
+                            strParams.add(arg);
                             ai++;
                             continue;
                         }
                     }
-                    // Last resort, just pass string
                     if (paramClass.equals(String.class)) {
                         if (param.isAnnotationPresent(LiteralArg.class)) {
                             if (!param.getAnnotation(LiteralArg.class).value().toLowerCase().startsWith(arg.toLowerCase())) {
@@ -608,7 +632,7 @@ public class CoreCommand extends Command {
                             if (param.getAnnotation(OptionArg.class).force()) {
                                 invalidArg = true;
                                 String possibleMatch = null;
-                                Set<String> options2 = this.getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
+                                Set<String> options2 = this.getOptions(param.getAnnotation(OptionArg.class).listName(), cp, strParams);
                                 for (String o : options2) {
                                     if (o.equalsIgnoreCase(arg)
                                             || o.contains(":") && o.split(":")[1].equalsIgnoreCase(arg)) {
@@ -632,6 +656,7 @@ public class CoreCommand extends Command {
                             }
                         }
                         params.add(arg);
+                        strParams.add(arg);
                         ai++;
                         continue;
                     }
@@ -724,6 +749,8 @@ public class CoreCommand extends Command {
 
             boolean invalidArg = false;
 
+            List<String> strParams = new ArrayList<>();
+
             int ai = 0, pi = 1;
             for (; pi < args.length && !invalidArg; pi++) {
                 // Check for "vararg"
@@ -765,11 +792,13 @@ public class CoreCommand extends Command {
                             break;
                         default: break;
                     }
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
                 if (paramClass.equals(TpCoord.class)) {
                     invalidArg = (TpCoord.create(arg) == null);
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
@@ -778,15 +807,18 @@ public class CoreCommand extends Command {
                     if (!invalidArg) {
                         invalidArg = !isValidCorePlayer(cs, cp, (CorePlayer) obj, param.getAnnotation(CorePlayerArg.class));
                     }
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
                 if (paramClass.equals(Player.class)) {
                     invalidArg = (Bukkit.getPlayer(arg) == null);
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
                 if (paramClass.equals(OfflinePlayer.class)) {
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
@@ -794,6 +826,7 @@ public class CoreCommand extends Command {
                     invalidArg = ((obj = toInt(arg)) == null);
                     if (!invalidArg)
                         invalidArg = !isNumInbounds(cs, ((Integer) obj).doubleValue(), param.getAnnotation(NumberArg.class));
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
@@ -801,10 +834,10 @@ public class CoreCommand extends Command {
                     invalidArg = ((obj = toDouble(arg)) == null);
                     if (!invalidArg)
                         invalidArg = !isNumInbounds(cs, (Double) obj, param.getAnnotation(NumberArg.class));
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
-                // Last resort, just pass string
                 if (paramClass.equals(String.class)) {
                     if (param.isAnnotationPresent(LiteralArg.class)) {
                         if (!param.getAnnotation(LiteralArg.class).value().toLowerCase().startsWith(arg.toLowerCase())) {
@@ -814,7 +847,7 @@ public class CoreCommand extends Command {
                     } else if (param.isAnnotationPresent(OptionArg.class)) {
                         if (param.getAnnotation(OptionArg.class).force()) {
                             invalidArg = true;
-                            TreeSet<String> optionSet = getOptions(param.getAnnotation(OptionArg.class).listName(), cp);
+                            TreeSet<String> optionSet = getOptions(param.getAnnotation(OptionArg.class).listName(), cp, strParams);
                             String possibleMatch = null;
                             for (String o : optionSet) {
                                 if (/*o.toUpperCase().startsWith(arg.toUpperCase()) || */o.equalsIgnoreCase(arg)) {
@@ -828,12 +861,15 @@ public class CoreCommand extends Command {
                             }
                             if (invalidArg) {
                                 if (possibleMatch != null) {
+                                    strParams.add(possibleMatch);
                                     invalidArg = false;
+                                    ai++;
                                 }
                                 continue;
                             }
                         }
                     }
+                    strParams.add(arg);
                     ai++;
                     continue;
                 }
@@ -851,7 +887,7 @@ public class CoreCommand extends Command {
                         String literal = currParam.getAnnotation(LiteralArg.class).value();
                         addOption(options, literal, lastArg);
                     } else if (currParam.isAnnotationPresent(OptionArg.class)) {
-                        for (String option : getOptions(currParam.getAnnotation(OptionArg.class).listName(), cp)) {
+                        for (String option : getOptions(currParam.getAnnotation(OptionArg.class).listName(), cp, strParams)) {
                             addOption(options, option, lastArg);
                         }
                     }

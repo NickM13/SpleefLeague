@@ -22,6 +22,7 @@ import com.spleefleague.core.world.game.GameWorld;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -77,6 +78,8 @@ public class Arena extends DBEntity {
     protected List<Position> spawns = new ArrayList<>();
     protected List<Position> checkpoints = new ArrayList<>();
     @DBField protected Position spectatorSpawn = null;
+
+    protected List<Position> scoreboards = new ArrayList<>();
 
     @DBField protected Material displayItem = Material.MAP;
 
@@ -159,6 +162,22 @@ public class Arena extends DBEntity {
             spawnLists.add(spawn.save());
         }
         return spawnLists;
+    }
+
+    @DBLoad(fieldName ="scoreboards")
+    private void loadScoreboards(List<List<?>> scoreboardLists) {
+        for (List<?> scoreboardList : scoreboardLists) {
+            scoreboards.add(new Position(scoreboardList));
+        }
+    }
+
+    @DBSave(fieldName ="scoreboards")
+    private List<List<?>> saveScoreboards() {
+        List<List<?>> scoreboardLists = new ArrayList<>();
+        for (Position scoreboard : scoreboards) {
+            scoreboardLists.add(scoreboard.save());
+        }
+        return scoreboardLists;
     }
 
     @DBLoad(fieldName ="checkpoints")
@@ -536,9 +555,33 @@ public class Arena extends DBEntity {
         return buildStructures;
     }
 
+    public BuildStructure getRandomStructure(String startStr) {
+        List<String> structures = new ArrayList<>();
+        for (String structure : this.structures) {
+            if (structure.startsWith(startStr)) {
+                structures.add(structure);
+            }
+        }
+        return structures.isEmpty() ? null : BuildStructures.get(structures.get((new Random()).nextInt(structures.size())));
+    }
+
     public void setOrigin(Position position) {
         origin = position;
         Arenas.saveArenaDB(this);
+    }
+
+    public void addScoreboard(Position position) {
+        scoreboards.add(position);
+        Arenas.saveArenaDB(this);
+    }
+
+    public void clearScoreboards() {
+        scoreboards.clear();
+        Arenas.saveArenaDB(this);
+    }
+
+    public List<Position> getScoreboards() {
+        return scoreboards;
     }
 
     public Position getOrigin() {

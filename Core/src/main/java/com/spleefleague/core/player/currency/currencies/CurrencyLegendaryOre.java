@@ -10,15 +10,19 @@ public class CurrencyLegendaryOre extends Currency {
 
     }
 
-    public static String getIdentifier() {
+    public String getIdentifier() {
         return "legendary_ore";
     }
 
-    public static String getName() {
-        return ChatColor.YELLOW + "Legendary Ore";
+    public String getChatColor() {
+        return ChatColor.YELLOW + "";
     }
 
-    public static Material getDisplayIcon() {
+    public String getName() {
+        return "Legendary Ore";
+    }
+
+    public Material getDisplayIcon() {
         return Material.DIAMOND_ORE;
     }
 

@@ -2,6 +2,7 @@ package com.spleefleague.core.world;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.util.MathUtils;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.util.BoundingBox;
@@ -129,9 +130,9 @@ public class FakeUtils {
         Map<BlockPosition, FakeBlock> transformedBlocks = new HashMap<>();
         for (Map.Entry<BlockPosition, FakeBlock> entry : blocks.entrySet()) {
             BlockPosition newPos = new BlockPosition(
-                    (int) (entry.getKey().getX() * Math.cos(radians) - entry.getKey().getZ() * Math.sin(radians)),
+                    (int) (entry.getKey().getX() * MathUtils.cos(radians, 4) - entry.getKey().getZ() * MathUtils.sin(radians, 4)),
                     entry.getKey().getY(),
-                    (int) (entry.getKey().getX() * Math.sin(radians) + entry.getKey().getZ() * Math.cos(radians)));
+                    (int) (entry.getKey().getX() * MathUtils.sin(radians, 4) + entry.getKey().getZ() * MathUtils.cos(radians, 4)));
             transformedBlocks.put(newPos, entry.getValue());
         }
         return transformedBlocks;

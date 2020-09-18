@@ -153,35 +153,39 @@ public class ProxyCore extends Plugin {
         return playerManager;
     }
 
-    public static void sendMessage(String text) {
-        getInstance().getPlayers().getAll().forEach(pcp -> pcp.getPlayer().sendMessage(new TextComponent(text)));
+    public void sendMessage(String text) {
+        playerManager.getAll().forEach(pcp -> {
+            if (pcp.getPlayer() != null) {
+                pcp.getPlayer().sendMessage(new TextComponent(text));
+            }
+        });
     }
 
-    public static void sendMessage(TextComponent text) {
-        getInstance().getPlayers().getAll().forEach(pcp -> pcp.getPlayer().sendMessage(text));
+    public void sendMessage(TextComponent text) {
+        playerManager.getAll().forEach(pcp -> pcp.getPlayer().sendMessage(text));
     }
 
     public static String getChatTag() {
         return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
     }
 
-    public static void sendMessage(ProxyCorePlayer pcp, String text) {
+    public void sendMessage(ProxyCorePlayer pcp, String text) {
         pcp.getPlayer().sendMessage(new TextComponent(getChatTag() + text));
     }
 
-    public static void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
         TextComponent textComp = new TextComponent(getChatTag());
         textComp.addExtra(text);
         pcp.getPlayer().sendMessage(textComp);
     }
 
-    public static void sendError(ProxyCorePlayer pcp, String text) {
+    public void sendError(ProxyCorePlayer pcp, String text) {
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
     }
 
-    public static void sendError(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendError(ProxyCorePlayer pcp, TextComponent text) {
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);

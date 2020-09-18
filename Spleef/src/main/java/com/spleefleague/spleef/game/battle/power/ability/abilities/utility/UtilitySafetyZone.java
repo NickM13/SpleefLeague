@@ -26,7 +26,7 @@ public class UtilitySafetyZone extends AbilityUtility {
     private static final double DURATION = 3D;
 
     public UtilitySafetyZone() {
-        super(4, 20);
+        super(4, 15);
     }
 
     @Override

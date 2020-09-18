@@ -126,7 +126,7 @@ public abstract class Ability {
      * Returns a percent number of how much is remaining until the value is fully charged
      *
      * @param psp Casting Player
-     * @return
+     * @return percent
      */
     protected double getMissingPercent(PowerSpleefPlayer psp) {
         return Math.max(0, (psp.getCooldown(getType()) - psp.getBattle().getRoundTime()) / cooldown);

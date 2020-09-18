@@ -1,17 +1,27 @@
 package com.spleefleague.core.command.commands;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.build.BuildWorldPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -84,20 +94,8 @@ public class BuildCommand extends CoreCommand {
         } else if (!target.isInBuildWorld()) {
             error(sender, "They aren't in a build world!");
         } else {
-            Chat.sendRequest(sender.getDisplayName() + " wants to join your build world!",
-                    target,
-                    sender,
-                    (r, s) -> {
-                        if (!target.isInBuildWorld()) {
-                            error(sender, "They aren't in a build world anymore!");
-                        } else if (!sender.isInGlobal()) {
-                            error(sender, "You're already in a fake world!");
-                        } else {
-                            target.getBuildWorld().addPlayer(sender);
-                            success(sender, "Joined " + target.getDisplayNamePossessive() + " world");
-                        }
-                    });
-            success(sender, "Join request sent");
+            target.getBuildWorld().addPlayer(sender);
+            success(sender, "Joined " + target.getDisplayNamePossessive() + " world");
         }
     }
     
@@ -246,14 +244,47 @@ public class BuildCommand extends CoreCommand {
             @LiteralArg("fill") String l,
             @OptionArg(listName="materials") String materialName) {
         if (sender.isInBuildWorld()) {
-            BuildStructure structure = sender.getBuildWorld().getStructure();
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
-            Chat.sendRequest("Are you sure you want to fill?  No undoing!",
+            Chat.sendRequest("Are you sure you want to fill?  This will overwrite current blocks, no undoing!",
                     sender,
                     "StructureFill",
                     (r, s) -> {
                         sender.getBuildWorld().fill(bwp.getPosBox(), Material.valueOf(materialName.toUpperCase()));
                         success(sender, "Structure has been filled");
+                    });
+        } else {
+            error(sender, "You aren't in a build world!");
+        }
+    }
+
+    @CommandAnnotation
+    public void buildWorldify(CorePlayer sender,
+                           @LiteralArg("worldify") String l) {
+        if (sender.isInBuildWorld()) {
+            BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
+            Chat.sendRequest("Are you sure you want to send the selected area to the real world?  This will overwrite current blocks, no undoing!",
+                    sender,
+                    "StructureWorldify",
+                    (r, s) -> {
+                        sender.getBuildWorld().worldify(bwp.getPosBox());
+                        success(sender, "Structure has been worldified");
+                    });
+        } else {
+            error(sender, "You aren't in a build world!");
+        }
+    }
+
+    @CommandAnnotation
+    public void buildBuildify(CorePlayer sender,
+                          @LiteralArg("buildify") String l) {
+        if (sender.isInBuildWorld()) {
+            BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
+            Chat.sendRequest("Are you sure you want to send the selected area to the build world?  This will overwrite current blocks, no undoing!",
+                    sender,
+                    "StructureBuildify",
+                    (r, s) -> {
+                        sender.getBuildWorld().buildify(bwp.getPosBox());
+                        success(sender, "Structure has been buildified");
                     });
         } else {
             error(sender, "You aren't in a build world!");

@@ -35,8 +35,8 @@ public class MobilityHookshot extends AbilityMobility {
         private EntityRaycastResult hookedEntity = null;
         private int hookLife = 0;
 
-        public HookshotProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public HookshotProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         public Entity getHookedEntity() {

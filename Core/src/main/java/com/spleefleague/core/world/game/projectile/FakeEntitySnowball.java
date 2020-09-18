@@ -46,52 +46,27 @@ public class FakeEntitySnowball extends EntitySnowball {
     protected BlockPosition stuck = null;
     protected int lifeTicks;
     private BlockPosition lastBlock = null;
-    private Vector size;
+    private final Vector size;
+    private double charge;
 
-    public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-        super(EntityTypes.SNOWBALL, ((CraftWorld) gameWorld.getWorld()).getHandle());
-        this.cpShooter = shooter;
-
-        this.gameWorld = gameWorld;
-        this.projectileStats = projectileStats;
-        this.size = new Vector(this.projectileStats.size, this.projectileStats.size, this.projectileStats.size);
-
-        ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelData));
-
-        Location handLocation = shooter.getPlayer().getEyeLocation().clone()
-                .add(shooter.getPlayer().getLocation().getDirection()
-                        .crossProduct(new Vector(0, 1, 0)).normalize()
-                        .multiply(0.15).add(new Vector(0, -0.15, 0)));
-        setPositionRotation(handLocation.getX(), handLocation.getY(), handLocation.getZ(), handLocation.getPitch(), handLocation.getYaw());
-
-        Random rand = new Random();
-        Location lookLoc = shooter.getPlayer().getLocation().clone();
-        if (projectileStats.hSpread > 0) {
-            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
-        }
-        if (projectileStats.vSpread > 0) {
-            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
-        }
-        Vector direction = lookLoc.getDirection().normalize().multiply(projectileStats.fireRange * 0.25);
-        setMot(new Vec3D(direction.getX(), direction.getY(), direction.getZ()));
-
-        lastLoc = new Point(getPositionVector());
-
-        setNoGravity(!projectileStats.gravity);
-        this.bounces = projectileStats.bounces;
-        this.noclip = projectileStats.noClip;
-        this.lifeTicks = projectileStats.lifeTicks;
+    public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+        this(gameWorld, shooter, location, projectileStats, 1.);
     }
 
-    public FakeEntitySnowball(GameWorld gameWorld, Location location, ProjectileStats projectileStats) {
+    public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
         super(EntityTypes.SNOWBALL, ((CraftWorld) gameWorld.getWorld()).getHandle());
-        this.cpShooter = null;
+        this.cpShooter = shooter;
+        this.charge = charge;
 
         this.gameWorld = gameWorld;
         this.projectileStats = projectileStats;
         this.size = new Vector(this.projectileStats.size, this.projectileStats.size, this.projectileStats.size);
 
-        ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelData));
+        if (projectileStats.customModelDatas.isEmpty()) {
+            ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelData));
+        } else {
+            ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelDatas.get(new Random().nextInt(projectileStats.customModelDatas.size()))));
+        }
 
         Location handLocation = location.clone()
                 .add(location.getDirection()
@@ -101,13 +76,20 @@ public class FakeEntitySnowball extends EntitySnowball {
 
         Random rand = new Random();
         Location lookLoc = location.clone();
-        if (projectileStats.hSpread > 0) {
-            lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
+        Vector lookDir;
+        if (projectileStats.shape == ProjectileStats.Shape.DEFAULT ||
+                projectileStats.shape == ProjectileStats.Shape.CONE) {
+            if (projectileStats.hSpread > 0) {
+                lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
+            }
+            if (projectileStats.vSpread > 0) {
+                lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
+            }
+            lookDir = lookLoc.getDirection();
+        } else {
+            lookDir = lookLoc.getDirection();
         }
-        if (projectileStats.vSpread > 0) {
-            lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
-        }
-        Vector direction = lookLoc.getDirection().normalize().multiply(projectileStats.fireRange * 0.25);
+        Vector direction = lookDir.normalize().multiply(projectileStats.fireRange * 0.25 * charge);
         setMot(new Vec3D(direction.getX(), direction.getY(), direction.getZ()));
 
         lastLoc = new Point(getPositionVector());
@@ -285,7 +267,23 @@ public class FakeEntitySnowball extends EntitySnowball {
      * @return Should ignore next raycast results
      */
     protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
-        gameWorld.breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent);
+        switch (projectileStats.breakStyle) {
+            case DEFAULT:
+                cpShooter.getStatistics().get("splegg").add("blocksBroken", gameWorld.breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case CORROSIVE:
+                cpShooter.getStatistics().get("splegg").add("blocksCorroded", gameWorld.corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case FIRE:
+                cpShooter.getStatistics().get("splegg").add("blocksBurnt", gameWorld.burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case ICE:
+                cpShooter.getStatistics().get("splegg").add("blocksIced", gameWorld.iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case REGENERATE:
+                cpShooter.getStatistics().get("splegg").add("blocksEndered", gameWorld.breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+        }
 
         bounces--;
         if (bounces < 0) {
@@ -306,13 +304,13 @@ public class FakeEntitySnowball extends EntitySnowball {
 
     protected void onEntityHit(Entity craftEntity, EntityRaycastResult entityRaycastResult) {
         bounces--;
+        if (projectileStats.hitKnockback > 0) {
+            CoreUtils.knockbackEntity(entityRaycastResult.getEntity(), craftEntity.getVelocity(), projectileStats.hitKnockback);
+        }
         if (bounces < 0) {
             killEntity();
         } else {
             entityBounce(craftEntity, entityRaycastResult);
-        }
-        if (projectileStats.hitKnockback > 0) {
-            CoreUtils.knockbackEntity(entityRaycastResult.getEntity(), craftEntity.getVelocity(), projectileStats.hitKnockback);
         }
         if (entityRaycastResult.getEntity() instanceof Player) {
             CorePlayer target = Core.getInstance().getPlayers().get(entityRaycastResult.getEntity().getUniqueId());

@@ -10,15 +10,19 @@ public class CurrencyEpicOre extends Currency {
 
     }
 
-    public static String getIdentifier() {
+    public String getIdentifier() {
         return "epic_ore";
     }
 
-    public static String getName() {
-        return ChatColor.DARK_PURPLE + "Epic Ore";
+    public String getChatColor() {
+        return ChatColor.DARK_PURPLE + "";
     }
 
-    public static Material getDisplayIcon() {
+    public String getName() {
+        return "Epic Ore";
+    }
+
+    public Material getDisplayIcon() {
         return Material.GOLD_ORE;
     }
 

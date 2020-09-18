@@ -36,8 +36,8 @@ public class UtilitySmokeBomb extends AbilityUtility {
 
         private boolean activated = false;
 
-        public SmokeBombProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public SmokeBombProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         @Override

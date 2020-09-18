@@ -28,7 +28,12 @@ public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
     protected void setupBaseSettings() {
     
     }
-    
+
+    @Override
+    protected void applyRewards(ClassicSJPlayer classicSJPlayer) {
+
+    }
+
     @Override
     protected void winBattler(CorePlayer corePlayer) {
     

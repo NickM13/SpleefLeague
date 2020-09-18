@@ -127,7 +127,7 @@
         <dependency>
             <groupId>com.github.WesJD.AnvilGUI</groupId>
             <artifactId>anvilgui</artifactId>
-            <version>988981dd50</version>
+            <version>ff3d22d9c8</version>
         </dependency>
 
         <dependency>

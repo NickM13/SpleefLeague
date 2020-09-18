@@ -49,11 +49,13 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     @Override
     protected void setupBaseSettings() {
         SpleefUtils.setupBaseSettings(this);
-        randomField = BuildStructures.getRandom("spleef:power");
-        gameWorld.setBaseBlocks(
-                FakeUtils.translateBlocks(
-                        FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
-                        getArena().getOrigin().toBlockPosition()));
+        randomField = arena.getRandomStructure("spleef:power");
+        if (randomField != null) {
+            gameWorld.setBaseBlocks(
+                    FakeUtils.translateBlocks(
+                            FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
+                            getArena().getOrigin().toBlockPosition()));
+        }
     }
 
     private static final String LB = ChatColor.GRAY + "" + ChatColor.BOLD + "[";
@@ -91,7 +93,6 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
 
     @Override
     public void fillField() {
-        BuildStructures.getNames();
         SpleefUtils.fillFieldFast(this, randomField);
     }
     
@@ -182,17 +183,11 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
                     case LEGENDARY: legendary++; break;
                 }
             }
-            psp.getCorePlayer().getPurse().getCoins().addAmount(coins);
-            psp.getCorePlayer().getPurse().getCommonOre().addAmount(common);
-            psp.getCorePlayer().getPurse().getRareOre().addAmount(rare);
-            psp.getCorePlayer().getPurse().getEpicOre().addAmount(epic);
-            psp.getCorePlayer().getPurse().getLegendaryOre().addAmount(legendary);
-
-            if (coins > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + coins + ChatColor.GOLD + " Coin" + (coins != 1 ? "s" : ""));
-            if (common > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + common + ChatColor.GREEN + " Common Ore" + (common != 1 ? "s" : ""));
-            if (rare > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + rare + ChatColor.AQUA + " Rare Ore" + (rare != 1 ? "s" : ""));
-            if (epic > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + epic + ChatColor.DARK_PURPLE + " Epic Ore" + (epic != 1 ? "s" : ""));
-            if (legendary > 0) psp.getCorePlayer().sendMessage(Chat.DEFAULT + " +" + legendary + ChatColor.YELLOW + " Legendary Ore" + (legendary != 1 ? "s" : ""));
+            if (coins > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getCoins().addAmount(coins));
+            if (common > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getCommonOre().addAmount(common));
+            if (rare > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getRareOre().addAmount(rare));
+            if (epic > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getEpicOre().addAmount(epic));
+            if (legendary > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getLegendaryOre().addAmount(legendary));
         }
     }
 

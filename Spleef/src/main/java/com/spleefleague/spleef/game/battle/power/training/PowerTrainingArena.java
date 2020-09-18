@@ -42,8 +42,8 @@ public class PowerTrainingArena {
         if (menuItem == null) {
             menuItem = InventoryMenuAPI.createItem()
                     .setName("&6&lTraining Field")
-                    .setDescription("!")
-                    .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
+                    .setDescription("Hone your skills in this solo sandbox version of Power Spleef! Change your powers in game, control field regeneration and learn new combos to best your foes.")
+                    .setDisplayItem(Material.WOODEN_SHOVEL, 1)
                     .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER_TRAINING.getBattleMode(), cp));
 
             InventoryMenuItemHotbar options = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(8, "pstOptions")

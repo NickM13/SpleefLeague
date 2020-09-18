@@ -38,7 +38,6 @@ public class InventoryMenuSkullManager {
             skullMeta.setOwningPlayer(uuidSkullMap.get(uuid));
         } else {
             loadSkull(uuid);
-            skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer("Blaezon"));
         }
         skullItem.setItemMeta(skullMeta);
         return skullItem;

@@ -61,7 +61,7 @@ public class MobilityHeroicLeap extends AbilityMobility {
                     applyCooldown(psp);
                 }
             } else if (dropDir != null) {
-                psp.getPlayer().setVelocity(dropDir.multiply(1.2));
+                psp.getPlayer().setVelocity(dropDir.clone().multiply(0.6));
                 psp.getPlayer().setSneaking(true);
             }
         }

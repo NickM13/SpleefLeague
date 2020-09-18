@@ -195,7 +195,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         }
         return false;
     }
-    
+
     /**
      * Returns the current active collectibles item of a type, or null if there is none
      *
@@ -206,6 +206,18 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     public <T extends Collectible> T getActive(Class<T> clazz) {
         if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz))) return null;
         return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getTypeName(clazz)));
+    }
+
+    /**
+     * Returns the current active collectibles item of a type, or null if there is none
+     *
+     * @param <T> ? extends Collectible
+     * @param clazz Collectible Class
+     * @return Nullable Collectible
+     */
+    public <T extends Collectible> T getActive(Class<T> clazz, String affix) {
+        if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz) + affix)) return null;
+        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getTypeName(clazz) + affix));
     }
     
     public boolean hasActive(Class<? extends Collectible> clazz) {
@@ -220,7 +232,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         }
         return false;
     }
-    
+
     /**
      * Returns the current active collectibles item of a type, or default if there is none or the active collectible
      * is no longer available
@@ -232,6 +244,21 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      */
     public <T extends Collectible> T getActiveOrDefault(Class<T> clazz, T defaultCollectible) {
         T collectible = getActive(clazz);
+        if (collectible == null) return defaultCollectible;
+        return collectible;
+    }
+
+    /**
+     * Returns the current active collectibles item of a type, or default if there is none or the active collectible
+     * is no longer available
+     *
+     * @param <T> ? extends Collectible
+     * @param clazz Collectible Class
+     * @param defaultCollectible Default Collectible
+     * @return NonNull Collectible
+     */
+    public <T extends Collectible> T getActiveOrDefault(Class<T> clazz, String affix, T defaultCollectible) {
+        T collectible = getActive(clazz, affix);
         if (collectible == null) return defaultCollectible;
         return collectible;
     }
@@ -323,7 +350,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     public boolean hasHeldItem() {
         return heldItem != null;
     }
-    
+
     /**
      * Sets a collectible as the active collectible
      *
@@ -334,6 +361,19 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
         activeCollectibles.put(collectible.getType(), collectible.getIdentifier());
+        owner.refreshHotbar();
+    }
+
+    /**
+     * Sets a collectible as the active collectible
+     *
+     * @param collectible Collectible
+     */
+    public void setActiveItem(Collectible collectible, String affix) {
+        Collectible current = getActive(collectible.getClass(), affix);
+        if (current != null) current.onDisable(owner);
+        collectible.onEnable(owner);
+        activeCollectibles.put(collectible.getType() + affix, collectible.getIdentifier());
         owner.refreshHotbar();
     }
     

@@ -9,6 +9,7 @@ import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
@@ -25,8 +26,8 @@ public class OffensiveBoomerang extends AbilityOffensive {
         Vector targetDir = null;
         int distanceTravelled;
 
-        public BoomerangProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public BoomerangProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         @Override
@@ -92,7 +93,7 @@ public class OffensiveBoomerang extends AbilityOffensive {
     }
 
     public OffensiveBoomerang() {
-        super(12, 4D);
+        super(12, 3D);
     }
 
     @Override

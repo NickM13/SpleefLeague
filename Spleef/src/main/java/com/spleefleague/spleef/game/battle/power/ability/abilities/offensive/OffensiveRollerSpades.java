@@ -21,11 +21,11 @@ import java.util.Set;
  */
 public class OffensiveRollerSpades extends AbilityOffensive {
 
-    private static final double DURATION = 5D;
+    private static final double DURATION = 7D;
     private static final double DELAY = 0.5D;
 
     public OffensiveRollerSpades() {
-        super(9, 7);
+        super(9, 10);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class OffensiveRollerSpades extends AbilityOffensive {
                 Chat.DESCRIPTION + " seconds. May be reactivated to detonate early.";
     }
 
-    private static final Material MARKER = Material.RED_CONCRETE_POWDER;
+    private static final Material MARKER = Material.RED_CONCRETE;
 
     /**
      * Called every 0.1 seconds (2 ticks)
@@ -137,6 +137,37 @@ public class OffensiveRollerSpades extends AbilityOffensive {
         return false;
     }
 
+    public void clear(PowerSpleefPlayer psp) {
+        psp.getPowerValueMap().put("rollerspade", -1D);
+        Set<BlockPosition> marks = (HashSet<BlockPosition>) psp.getPowerValueMap().get("rollermarks");
+        GameWorld gameWorld = psp.getBattle().getGameWorld();
+        Set<BlockPosition> toBreak = new HashSet<>();
+        Set<BlockPosition> toRepair = new HashSet<>();
+        for (BlockPosition mark : marks) {
+            FakeBlock fb = gameWorld.getFakeBlocks().get(mark);
+            if (fb != null) {
+                if (fb.getBlockData().getMaterial().equals(MARKER)) {
+                    toBreak.add(mark);
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(-1, 0, 0)));
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(1, 0, 0)));
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(0, -1, 0)));
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(0, 1, 0)));
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(0, 0, -1)));
+                    if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(0, 0, 1)));
+                    continue;
+                }
+            }
+            toRepair.add(mark);
+        }
+        for (BlockPosition pos : toBreak) {
+            gameWorld.breakBlock(pos, psp.getCorePlayer());
+        }
+        for (BlockPosition pos : toRepair) {
+            gameWorld.clearBlockDelayed(pos);
+        }
+        marks.clear();
+    }
+
     /**
      * Called at the start of a round
      *
@@ -147,6 +178,7 @@ public class OffensiveRollerSpades extends AbilityOffensive {
         psp.getPlayer().removePotionEffect(PotionEffectType.SPEED);
         psp.getPowerValueMap().put("rollerspade", -1D);
         psp.getPowerValueMap().put("rollermarks", new HashSet<>());
+        clear(psp);
     }
 
 }

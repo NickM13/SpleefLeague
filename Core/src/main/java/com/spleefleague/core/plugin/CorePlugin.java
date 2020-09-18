@@ -42,6 +42,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 
+import static com.google.common.io.ByteStreams.newDataOutput;
+
 /**
  * CorePlugin is the base class for all SpleefLeague plugins,
  * all plugins that use this are stored in a plugins master list
@@ -78,9 +80,9 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:connection", playerManager);
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:chat");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:refresh");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:lobby");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:start");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:forcestart");
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:solo");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:join");
@@ -156,7 +158,20 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final BattleManager getBattleManager(BattleMode mode) {
         return battleManagers.get(mode);
     }
-    
+
+    public final void forceStart(BattleMode mode, List<CorePlayer> corePlayers, Arena arena) {
+        ByteArrayDataOutput output = newDataOutput();
+
+        output.writeUTF(mode.getName());
+        output.writeUTF("arena:" + arena.getIdentifierNoTag());
+        output.writeInt(corePlayers.size());
+        for (CorePlayer cp : corePlayers) {
+            output.writeUTF(cp.getUniqueId().toString());
+        }
+
+        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:forcestart", output.toByteArray());
+    }
+
     /**
      * Queue a player for a battle
      *
@@ -164,7 +179,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        ByteArrayDataOutput output = newDataOutput();
 
         output.writeUTF(cp.getIdentifier());
         output.writeUTF(mode.getName());
@@ -184,16 +199,16 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      * @param arena Arena
      */
-    public final void queuePlayer(BattleMode mode, CorePlayer cp, @Nullable Arena arena) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+    public final void queuePlayer(BattleMode mode, CorePlayer cp, Arena arena) {
+        if (arena == null) {
+            queuePlayer(mode, cp);
+            return;
+        }
+        ByteArrayDataOutput output = newDataOutput();
 
         output.writeUTF(cp.getIdentifier());
         output.writeUTF(mode.getName());
-        if (arena == null) {
-            output.writeUTF("arena:*");
-        } else {
-            output.writeUTF("arena:" + arena.getIdentifier());
-        }
+        output.writeUTF("arena:" + arena.getIdentifierNoTag());
 
         if (mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
             Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:solo", output.toByteArray());
@@ -291,9 +306,24 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @return Success
      */
     public static boolean spectatePlayerGlobal(CorePlayer spectator, CorePlayer target) {
-        if (!spectator.isInBattle() && target.isInBattle()) {
-            target.getBattle().addSpectator(spectator, target);
-            return true;
+        switch (target.getOnlineState()) {
+            case OFFLINE:
+                Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayName() + Chat.ERROR + " is not online");
+                break;
+            case HERE:
+                if (!spectator.isInBattle() && target.isInBattle()) {
+                    target.getBattle().addSpectator(spectator, target);
+                    return true;
+                } else {
+                    Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayName() + Chat.ERROR + "'s game cannot be spectated");
+                }
+                break;
+            case OTHER:
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                out.writeUTF(spectator.getUniqueId().toString());
+                out.writeUTF(target.getUniqueId().toString());
+                spectator.getPlayer().sendPluginMessage(Core.getInstance(), "battle:spectate", out.toByteArray());
+                break;
         }
         return false;
     }

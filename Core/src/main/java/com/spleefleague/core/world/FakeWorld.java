@@ -132,33 +132,38 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer mapChunkPacket = event.getPacket();
-                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
-                Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
-                Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
-                while (fit.hasNext()) {
-                    FakeWorld<?> fakeWorld = fit.next();
-                    Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
-                    if (fakeChunk != null) {
-                        for (BlockPosition blockPosition : fakeChunk) {
-                            short relativeLoc = 0;
-                            relativeLoc += (blockPosition.getX() & 15) << 12;
-                            relativeLoc += (blockPosition.getZ() & 15) << 8;
-                            relativeLoc += blockPosition.getY();
-                            FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(blockPosition);
-                            if (!fakeBlocks.containsKey(relativeLoc)) {
-                                fakeBlocks.put(relativeLoc, fakeBlock);
+                boolean isFull = mapChunkPacket.getBooleans().read(0);
+                if (isFull) {
+                    CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                    ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
+                    Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
+                    Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                    while (fit.hasNext()) {
+                        FakeWorld<?> fakeWorld = fit.next();
+                        Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
+                        if (fakeChunk != null) {
+                            for (BlockPosition blockPosition : fakeChunk) {
+                                short relativeLoc = 0;
+                                int x = blockPosition.getX() & 15;
+                                int y = blockPosition.getY() & 15;
+                                int z = blockPosition.getZ() & 15;
+                                relativeLoc += x << 12;
+                                relativeLoc += z << 8;
+                                relativeLoc += y;
+                                if (!fakeBlocks.containsKey(relativeLoc)) {
+                                    fakeBlocks.put(relativeLoc, fakeWorld.getFakeBlocks().get(blockPosition));
+                                }
                             }
                         }
                     }
+                    if (!fakeBlocks.isEmpty()) {
+                        PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                                chunkCoord,
+                                fakeBlocks);
+                        Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
+                    }
+                    loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
                 }
-                if (fakeBlocks.size() > 0) {
-                    PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
-                            chunkCoord,
-                            fakeBlocks);
-                    Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
-                }
-                loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
             }
         });
         Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.UNLOAD_CHUNK) {
@@ -283,11 +288,11 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
             if (!cp.equals(cp2)) {
                 if (!playerMap.containsKey(cp2.getPlayer().getUniqueId())) {
-                    //cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
-                    //cp2.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
+                    cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
+                    cp2.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
                 } else {
-                    //cp.getPlayer().showPlayer(Core.getInstance(), cp2.getPlayer());
-                    //cp2.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
+                    cp.getPlayer().showPlayer(Core.getInstance(), cp2.getPlayer());
+                    cp2.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
                 }
             }
         }
@@ -468,8 +473,8 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * @param pos Block Position
      * @param blockData Block Data
      */
-    public void setBlock(BlockPosition pos, BlockData blockData) {
-        setBlock(pos, blockData, false);
+    public boolean setBlock(BlockPosition pos, BlockData blockData) {
+        return setBlock(pos, blockData, false);
     }
 
     /**
@@ -480,9 +485,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * @param blockData Block Data
      * @param ignoreUpdate Should Send Packet
      */
-    public void setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
+    public boolean setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
         if (!world.getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getType().isAir()) {
-            return;
+            return false;
         }
         ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
         FakeBlock fb = new FakeBlock(blockData);
@@ -492,6 +497,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         }
         fakeChunks.get(coord).add(pos);
         if (!ignoreUpdate) updateBlock(pos);
+        return true;
     }
 
     /**

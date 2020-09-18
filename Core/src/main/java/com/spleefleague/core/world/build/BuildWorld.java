@@ -182,7 +182,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         return super.removePlayer(cp);
     }
 
-    public void setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
+    public boolean setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
         if (fakeBlocks.isEmpty()) {
             lowest = pos;
             highest = pos;
@@ -196,7 +196,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                     Math.max(pos.getY(), highest.getY()),
                     Math.max(pos.getZ(), highest.getZ()));
         }
-        super.setBlock(pos, blockData, ignoreUpdate);
+        return super.setBlock(pos, blockData, ignoreUpdate);
     }
 
     public void saveToStructure() {
@@ -223,6 +223,46 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
             for (int y = (int) fillBox.getLow().y; y <= fillBox.getHigh().y; y++) {
                 for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
                     fillBlocks.put(new BlockPosition(x, y, z), fb);
+                }
+            }
+        }
+        setBlocks(fillBlocks);
+    }
+
+    /**
+     * Transfer the selected blocks to the build world
+     *
+     * @param fillBox Dimension
+     */
+    public void buildify(Dimension fillBox) {
+        Map<BlockPosition, FakeBlock> fillBlocks = new HashMap<>();
+        for (int x = (int) fillBox.getLow().x; x <= fillBox.getHigh().x; x++) {
+            for (int y = (int) fillBox.getLow().y; y <= fillBox.getHigh().y; y++) {
+                for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
+                    fillBlocks.put(new BlockPosition(x, y, z), new FakeBlock(getWorld().getBlockAt(x, y, z).getBlockData()));
+                    getWorld().getBlockAt(x, y, z).setType(Material.AIR);
+                }
+            }
+        }
+        setBlocks(fillBlocks);
+    }
+
+    /**
+     * Transfer the selected blocks to the real world
+     *
+     * @param fillBox Dimension
+     */
+    public void worldify(Dimension fillBox) {
+        FakeBlock fb = new FakeBlock(Material.AIR.createBlockData());
+        Map<BlockPosition, FakeBlock> fillBlocks = new HashMap<>();
+        for (int x = (int) fillBox.getLow().x; x <= fillBox.getHigh().x; x++) {
+            for (int y = (int) fillBox.getLow().y; y <= fillBox.getHigh().y; y++) {
+                for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
+                    FakeBlock fb2 = fakeBlocks.get(new BlockPosition(x, y, z));
+                    if (fb2 != null) {
+                        getWorld().getBlockAt(x, y, z).setBlockData(fb2.getBlockData());
+                        fillBlocks.put(new BlockPosition(x, y, z), fb);
+                    }
                 }
             }
         }

@@ -21,7 +21,7 @@ import java.util.Set;
 public class UtilityArena extends AbilityUtility {
 
     public UtilityArena() {
-        super(1, 20);
+        super(1, 15);
     }
 
     @Override

@@ -99,8 +99,9 @@ public class CorePlayer extends RatedPlayer {
 
     @DBField private PermRank permRank;
     @DBField private List<TempRank> tempRanks;
-    
+
     @DBField private Boolean vanished;
+    private Boolean ghosting = false;
 
     @DBField private CorePlayerPurse purse = new CorePlayerPurse();
 
@@ -254,6 +255,7 @@ public class CorePlayer extends RatedPlayer {
         PersonalScoreboard.closePlayerScoreboard(this);
     }
 
+    @Deprecated
     public void addElo(String mode, int season, int amt) {
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeUTF(mode);
@@ -390,7 +392,7 @@ public class CorePlayer extends RatedPlayer {
         return getPlayer().isFlying()
                 || getPlayer().isGliding();
     }
-    
+
     /**
      * @param vanished Vanished state
      */
@@ -403,6 +405,20 @@ public class CorePlayer extends RatedPlayer {
      */
     public boolean isVanished() {
         return vanished;
+    }
+
+    /**
+     * @param ghosting Ghosting state
+     */
+    public void setGhosting(boolean ghosting) {
+        this.ghosting = ghosting;
+    }
+
+    /**
+     * @return Ghosting state
+     */
+    public boolean isGhosting() {
+        return ghosting;
     }
 
     /**
@@ -655,6 +671,7 @@ public class CorePlayer extends RatedPlayer {
     }
 
     public void checkGlobalSpectate() {
+        /*
         if (isInGlobal()) {
             for (BattleMode arenaMode : BattleMode.getAllModes()) {
                 for (Battle<?> battle : arenaMode.getOngoingBattles()) {
@@ -665,6 +682,7 @@ public class CorePlayer extends RatedPlayer {
                 }
             }
         }
+         */
     }
     
     /**
@@ -894,17 +912,6 @@ public class CorePlayer extends RatedPlayer {
 
     @Override
     public void setOnline(OnlineState state) {
-        if (this.onlineState == OnlineState.OFFLINE) {
-            if (state != OnlineState.OFFLINE) {
-                // Player coming online
-                Core.getInstance().sendMessage(getDisplayName() + " has come online.");
-            }
-        } else {
-            if (state == OnlineState.OFFLINE) {
-                // Player going offline
-                Core.getInstance().sendMessage(getDisplayName() + " has gone offline.");
-            }
-        }
         super.setOnline(state);
     }
 

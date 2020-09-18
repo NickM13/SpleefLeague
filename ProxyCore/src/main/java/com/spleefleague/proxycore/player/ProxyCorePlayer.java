@@ -39,6 +39,11 @@ public class ProxyCorePlayer extends RatedPlayer {
 
     }
 
+    public void transfer(ServerInfo server) {
+        getPlayer().connect(server);
+        this.currentServer = server;
+    }
+
     public void setCurrentServer(ServerInfo currentServer) {
         this.currentServer = currentServer;
     }

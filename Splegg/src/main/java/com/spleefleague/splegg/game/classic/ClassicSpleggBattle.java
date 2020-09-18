@@ -8,7 +8,6 @@ package com.spleefleague.splegg.game.classic;
 
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
@@ -45,10 +44,21 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     public void reset() {
         fillField();
     }
-    
+
+    @Override
+    public void startRound() {
+        super.startRound();
+        for (ClassicSpleggPlayer csp : battlers.values()) {
+            csp.resetAbilities();
+        }
+    }
+
     @Override
     public void updateField() {
-    
+        for (ClassicSpleggPlayer csp : battlers.values()) {
+            csp.updateAbilities();
+        }
+        gameWorld.performBaseBreakRegen();
     }
 
     @Override

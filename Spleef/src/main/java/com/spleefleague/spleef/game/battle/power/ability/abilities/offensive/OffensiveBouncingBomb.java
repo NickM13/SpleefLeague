@@ -8,6 +8,7 @@ import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -22,8 +23,8 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
 
     public static class BouncingProjectile extends FakeEntitySnowball {
 
-        public BouncingProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public BouncingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         @Override

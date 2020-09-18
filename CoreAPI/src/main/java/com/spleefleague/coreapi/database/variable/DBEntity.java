@@ -48,6 +48,10 @@ public class DBEntity {
         return identifier;
     }
 
+    public String getIdentifierNoTag() {
+        return identifier.contains(":") ? identifier.split(":")[1] : identifier;
+    }
+
     /**
      * Sets the identifying String of this vendorable<br>
      * Should only be used when cloning

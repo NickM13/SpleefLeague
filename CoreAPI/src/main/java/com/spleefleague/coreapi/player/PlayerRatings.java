@@ -99,6 +99,18 @@ public class PlayerRatings extends DBVariable<Document> {
         }
     }
 
+    public boolean addRating(String mode, int season, int change) {
+        if (!modeRatingsMap.containsKey(mode)) {
+            modeRatingsMap.put(mode, new Ratings());
+        }
+        if (change > 0) {
+            addWin(mode, season);
+        } else {
+            addLoss(mode, season);
+        }
+        return modeRatingsMap.get(mode).get(season).addElo(owner, change);
+    }
+
     public void addWin(String mode, int season) {
         modeRatingsMap.get(mode).get(season).addWin();
     }

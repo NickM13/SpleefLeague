@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.io.converter.LocationConverter;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.CorePlayer;
@@ -101,13 +102,13 @@ public class Warp extends DBEntity {
     /**
      * Returns all warps available to a player, used for command tab completes
      *
-     * @param cp Core Player
+     * @param pi Prior Info
      * @return Warp Name Set
      */
-    public static Set<String> getWarpNames(CorePlayer cp) {
+    public static Set<String> getWarpNames(CoreCommand.PriorInfo pi) {
         Set<String> warpNames = new HashSet<>();
         for (Warp warp : warps.values()) {
-            if (warp.isAvailable(cp)) {
+            if (warp.isAvailable(pi.getCorePlayer())) {
                 warpNames.add(warp.getIdentifier());
             }
         }

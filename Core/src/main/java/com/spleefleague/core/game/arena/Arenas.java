@@ -6,6 +6,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.coreapi.queue.SubQuery;
 import org.bson.Document;
 import org.bukkit.ChatColor;
 
@@ -42,7 +43,11 @@ public class Arenas {
                     if (!modeArenaMap.containsKey(modeName)) {
                         modeArenaMap.put(modeName, new TreeMap<>());
                     }
-                    modeArenaMap.get(modeName).put(arena.getIdentifier(), arena);
+                    if (arena.getIdentifier().contains(":")) {
+                        modeArenaMap.get(modeName).put(arena.getIdentifier().split(":")[1], arena);
+                    } else {
+                        modeArenaMap.get(modeName).put(arena.getIdentifier(), arena);
+                    }
                 }
                 arenaMap.put(arena.getIdentifier(), arena);
             }
@@ -86,8 +91,9 @@ public class Arenas {
         if (arenaMap.containsKey(identifier)) {
             Arena arena = arenaMap.remove(identifier);
             unsaveArenaDB(arena);
+            String idName = identifier.contains(":") ? identifier.split(":")[1] : identifier;
             for (String mode : arena.getModes()) {
-                modeArenaMap.get(mode).remove(identifier);
+                modeArenaMap.get(mode).remove(idName);
             }
             return true;
         }
@@ -111,7 +117,7 @@ public class Arenas {
             if (!modeArenaMap.containsKey(mode.getName())) {
                 modeArenaMap.put(mode.getName(), new TreeMap<>());
             }
-            modeArenaMap.get(mode.getName()).put(arena.getIdentifier(), arena);
+            modeArenaMap.get(mode.getName()).put(arena.getIdentifier().contains(":") ? arena.getIdentifier().split(":")[1] : arena.getIdentifier(), arena);
             saveArenaDB(arena);
             return true;
         }
@@ -121,7 +127,7 @@ public class Arenas {
     public static boolean removeArenaMode(String arenaName, BattleMode mode) {
         Arena arena = arenaMap.get(arenaName);
         if (arena != null && arena.removeMode(mode.getName())) {
-            modeArenaMap.get(mode.getName()).remove(arenaName);
+            modeArenaMap.get(mode.getName()).remove(arenaName.contains(":") ? arenaName.split(":")[1] : arenaName);
             saveArenaDB(arena);
             return true;
         }
@@ -146,11 +152,35 @@ public class Arenas {
         
         for (Map.Entry<String, Arena> entry : modeArenaMap.get(mode.getName()).entrySet()) {
             if (entry.getValue().isAvailable()) {
-                arenas.put(entry.getKey(), entry.getValue());
+                arenas.put(entry.getValue().getIdentifierNoTag(), entry.getValue());
             }
         }
         
         return arenas;
+    }
+
+    public static Arena getByQuery(SubQuery query, BattleMode mode) {
+        if (query.hasStar) {
+            Map<String, Arena> unpaused = getUnpaused(mode);
+            for (String s : query.values) {
+                unpaused.remove(s);
+            }
+            if (unpaused.isEmpty()) return null;
+            int r = new Random().nextInt(unpaused.size());
+            int i = 0;
+            for (Arena a : unpaused.values()) {
+                if (i == r) return a;
+                i++;
+            }
+        } else {
+            int r = new Random().nextInt(query.values.size());
+            int i = 0;
+            for (String s : query.values) {
+                if (i == r) return get(s, mode);
+                i++;
+            }
+        }
+        return null;
     }
     
     /**
@@ -196,7 +226,7 @@ public class Arenas {
             if (arenaName.equals("")) {
                 return getRandom(mode);
             } else {
-                return arenas.get(arenaName);
+                return arenas.get(arenaName.contains(":") ? arenaName.split(":")[1] : arenaName);
             }
         }
         return null;

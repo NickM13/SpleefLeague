@@ -74,6 +74,7 @@ public abstract class BattleManager {
                         bit.remove();
                     } else {
                         b.doCountdown();
+                        b.updateGhosts();
                     }
                 }
             }

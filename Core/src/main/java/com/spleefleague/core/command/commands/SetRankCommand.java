@@ -6,9 +6,11 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
@@ -43,7 +45,7 @@ public class SetRankCommand extends CoreCommand {
         return true;
     }
     
-    private boolean sr(CommandSender sender, CorePlayer cp, Rank rank) {
+    private boolean sr(CommandSender sender, @CorePlayerArg(allowOffline = true) CorePlayer cp, Rank rank) {
         if (cp == null) {
             error(sender, "Player does not exist");
             return true;
@@ -55,6 +57,9 @@ public class SetRankCommand extends CoreCommand {
         success(sender, cp.getDisplayName() + Chat.DEFAULT + "'s rank has been set to " + rank.getDisplayName());
         success(cp, Chat.DEFAULT + "Your rank has been set to " + rank.getDisplayName());
         cp.setRank(rank);
+        if (cp.getPlayer() == null) {
+            Core.getInstance().getPlayers().save(cp);
+        }
         return true;
     }
     

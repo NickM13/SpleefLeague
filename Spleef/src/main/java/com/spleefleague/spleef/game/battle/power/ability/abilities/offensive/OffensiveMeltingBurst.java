@@ -9,6 +9,7 @@ import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -89,12 +90,12 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
      */
 
     private static final double BURST_DELAY = 1.5D;
-    private static final double BURST_RADIUS = 5D;
+    private static final double BURST_RADIUS = 4D;
 
     public static class MeltingProjectile extends FakeEntitySnowball {
 
-        public MeltingProjectile(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, projectileStats);
+        public MeltingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+            super(gameWorld, shooter, location, projectileStats);
         }
 
         @Override
@@ -136,7 +137,7 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
     }
 
     public OffensiveMeltingBurst() {
-        super(6, 15);
+        super(6, 10);
     }
 
     @Override

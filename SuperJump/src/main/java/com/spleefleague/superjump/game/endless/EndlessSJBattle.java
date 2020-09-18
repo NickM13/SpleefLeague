@@ -82,7 +82,7 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
             BlockPosition pos = bpit.next();
             if (!bpit.hasNext()) {
                 getGameWorld().setBlock(pos, Material.REDSTONE_LAMP.createBlockData());
-                Dimension goal = new Dimension(new Point(pos.getX(), pos.getY(), pos.getZ()), new Point(pos.getX() + 1, pos.getY() + 1.1, pos.getZ() + 1));
+                Dimension goal = new Dimension(new Point(pos.getX() - 0.29, pos.getY(), pos.getZ() - 0.29), new Point(pos.getX() + 1.29, pos.getY() + 3.1, pos.getZ() + 1.29));
                 setGoals(Lists.newArrayList(goal));
             } else {
                 getGameWorld().setBlockDelayed(pos, Material.WHITE_CONCRETE.createBlockData(), 0.05, arena.getSpawns());

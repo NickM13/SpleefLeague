@@ -15,7 +15,7 @@ import org.bukkit.potion.PotionEffectType;
  */
 public class OffensiveIntoTheShadows extends AbilityOffensive {
 
-    private static final double DURATION = 1;
+    private static final double DURATION = 1.25;
 
     public OffensiveIntoTheShadows() {
         super(3, 3, 5D, 2D);
@@ -30,7 +30,7 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
     public String getDescription() {
         return Chat.DESCRIPTION + "Turn invisible for " +
                 Chat.STAT + DURATION +
-                Chat.DESCRIPTION + " second" + (DURATION > 1 ? "s" : "") + ". Holds up to " +
+                Chat.DESCRIPTION + " seconds" + ". Holds up to " +
                 Chat.STAT + this.charges +
                 Chat.DESCRIPTION + " charges.";
     }
@@ -53,7 +53,7 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
                 psp.getPlayer().getBoundingBox().getCenterX(),
                 psp.getPlayer().getBoundingBox().getCenterY(),
                 psp.getPlayer().getBoundingBox().getCenterZ(),
-                15, 0.2, 0.9, 0.2, 0D,
+                20, 0.2, 0.9, 0.2, 0D,
                 Type.OFFENSIVE.getDustMedium());
         return true;
     }

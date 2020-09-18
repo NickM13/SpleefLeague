@@ -85,6 +85,20 @@ public class CoreUtils {
         return formatted.toString();
     }
 
+    /**
+     * @deprecated Use StringUtils
+     * @param stringCollection
+     * @return
+     */
+    @Deprecated
+    public static String mergeSetString(Collection<String> stringCollection) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String str : stringCollection) {
+            stringBuilder.append((stringBuilder.length() > 0 ? ", " : "") + str);
+        }
+        return stringBuilder.toString();
+    }
+
     public static void knockbackEntity(Entity entity, Vector direction, double power) {
         entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
     }

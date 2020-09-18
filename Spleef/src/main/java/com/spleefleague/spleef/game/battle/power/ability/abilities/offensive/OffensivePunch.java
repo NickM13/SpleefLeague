@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class OffensivePunch extends AbilityOffensive {
 
-    private static final double REMAIN = 5;
+    private static final double REMAIN = 6;
     private static final double POWER = 2;
 
     private static final ProjectileStats projectileStats = new ProjectileStats();
@@ -147,7 +147,7 @@ public class OffensivePunch extends AbilityOffensive {
             Location loc = target.getPlayer().getEyeLocation().clone();
             loc.setYaw(psp.getPlayer().getLocation().getYaw());
             loc.setPitch(30);
-            psp.getBattle().getGameWorld().shootProjectile(loc, projectileStats);
+            psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), loc, projectileStats);
         }
     }
 

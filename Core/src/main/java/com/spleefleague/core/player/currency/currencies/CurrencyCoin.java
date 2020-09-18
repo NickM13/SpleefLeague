@@ -10,15 +10,19 @@ public class CurrencyCoin extends Currency {
 
     }
 
-    public static String getIdentifier() {
+    public String getIdentifier() {
         return "coin";
     }
 
-    public static String getName() {
-        return ChatColor.GOLD + "Coin";
+    public String getChatColor() {
+        return ChatColor.GOLD + "";
     }
 
-    public static Material getDisplayIcon() {
+    public String getName() {
+        return "Coin";
+    }
+
+    public Material getDisplayIcon() {
         return Material.GOLD_NUGGET;
     }
 

@@ -23,6 +23,7 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
+import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
 
 import java.lang.reflect.Constructor;
@@ -35,6 +36,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nullable;
 
@@ -70,6 +72,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected List<Position> checkpoints = new ArrayList<>();
     protected List<Dimension> checkpointAreas = new ArrayList<>();
     protected List<Position> spawns = new ArrayList<>();
+    protected List<Position> scoreboards = new ArrayList<>();
 
     // Collections for players
     protected final List<UUID> waitingPlayers = new ArrayList<>();
@@ -78,6 +81,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected final Map<CorePlayer, BP> battlers = new HashMap<>();
     protected final List<BP> sortedBattlers = new ArrayList<>();
     protected final Set<BP> remainingPlayers = new HashSet<>();
+    protected final Set<BP> deadBattlers = new HashSet<>();
     
     private final Map<String, BattleRequest> battleRequests = new HashMap<>();
     
@@ -102,6 +106,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         this.setBorders(arena.getBorders());
         this.setCheckpoints(arena.getCheckpoints());
         this.spawns.addAll(arena.getSpawns());
+        this.scoreboards.addAll(arena.getScoreboards());
         this.gameWorld = arena.createGameWorld();
         this.chatGroup = new ChatGroup(plugin.getChatPrefix());
         this.waitingPlayers.addAll(players);
@@ -172,6 +177,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         resetBattlers();
         updateScoreboard();
         resetRequests();
+        updatePhysicalScoreboard();
     }
     
     /**
@@ -194,6 +200,9 @@ public abstract class Battle<BP extends BattlePlayer> {
         bp.getCorePlayer().refreshHotbar();
         bp.getCorePlayer().setGameMode(gameMode);
         bp.getPlayer().setWalkSpeed(0.2f);
+        bp.getPlayer().setFlying(false);
+        bp.getCorePlayer().setGhosting(false);
+        Core.getInstance().applyVisibilities(bp.getCorePlayer());
         bp.respawn();
     }
 
@@ -440,6 +449,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                         }
                     } else if (e.getPlayer().getLocation().getBlock().isLiquid() || !isInBorder(cp)) {
                         failBattler(cp);
+                        getGameWorld().stopFutureShots(cp);
                     } else if (isInGoal(cp)) {
                         winBattler(cp);
                     } else {
@@ -451,10 +461,12 @@ public abstract class Battle<BP extends BattlePlayer> {
                     }
                 }
             } else if (cp.getBattleState() == BattleState.SPECTATOR) {
-                if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) &&
-                        !cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR) &&
-                        arena.hasSpectatorSpawn() && (isInBorder(cp) || !isInSpectatorBorder(cp))) {
-                    onSpectatorEnter(cp);
+                if (arena.getSpectatorSpawn() != null) {
+                    if (isInBorder(cp) || !isInSpectatorBorder(cp)) {
+                        cp.getPlayer().teleport(arena.getSpectatorSpawn());
+                    }
+                } else if (!isInSpectatorBorder(cp)) {
+                    cp.getPlayer().teleport(getClosestBattler(cp).getPlayer().getLocation());
                 }
             } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
                 if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
@@ -612,7 +624,8 @@ public abstract class Battle<BP extends BattlePlayer> {
             gameWorld.removePlayer(cp);
             players.remove(cp);
             cp.leaveBattle(arena.getPostGameWarp());
-            //Core.getInstance().returnToHub(cp);
+
+            Core.getInstance().returnToHub(cp);
             return true;
         }
         return false;
@@ -678,7 +691,15 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param cp CorePlayer
      */
     protected abstract void failBattler(CorePlayer cp);
-    
+
+    protected void addBattlerGhost(CorePlayer cp) {
+        battlers.get(cp).setFallen(true);
+        deadBattlers.add(battlers.get(cp));
+        cp.getPlayer().setAllowFlight(true);
+        cp.setGhosting(true);
+        Core.getInstance().applyVisibilities(cp);
+    }
+
     /**
      * Called when a battler enters a goal area
      *
@@ -776,8 +797,10 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Reset all battlers
      */
     protected final void resetBattlers() {
+        deadBattlers.clear();
         remainingPlayers.addAll(battlers.values());
         for (BP bp : battlers.values()) {
+            bp.getPlayer().setAllowFlight(false);
             spawnBattler(bp);
         }
     }
@@ -794,11 +817,15 @@ public abstract class Battle<BP extends BattlePlayer> {
         if (addPlayer(cp, BattleState.SPECTATOR)) {
             spectators.add(cp);
             cp.savePregameState();
+            cp.getPlayer().setAllowFlight(true);
+            cp.setGhosting(true);
+            cp.getPlayer().setFlying(true);
             if (arena.getSpectatorSpawn() != null) {
                 cp.getPlayer().teleport(arena.getSpectatorSpawn());
             } else {
                 gameWorld.setSpectator(cp, target);
             }
+            Core.getInstance().applyVisibilities(cp);
         }
     }
     
@@ -827,6 +854,9 @@ public abstract class Battle<BP extends BattlePlayer> {
             if (cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.SPECTATOR)) {
                 cp.getPlayer().setSpectatorTarget(null);
             }
+            cp.getPlayer().setAllowFlight(false);
+            cp.setGhosting(true);
+            Core.getInstance().applyVisibilities(cp);
         }
     }
     
@@ -917,6 +947,11 @@ public abstract class Battle<BP extends BattlePlayer> {
     public abstract void updateScoreboard();
 
     /**
+     * Updates the block form of scoreboard
+     */
+    public void updatePhysicalScoreboard() {}
+
+    /**
      * Called every 1/20 second
      * Updates the field on occasion for events such as
      * auto-regenerating maps
@@ -927,6 +962,12 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Updates the experience bar of players in the game
      */
     public abstract void updateExperience();
+
+    public void updateGhosts() {
+        for (BP bp : deadBattlers) {
+
+        }
+    }
 
     /**
      * Called when the game begins, removes glass boxes and allows

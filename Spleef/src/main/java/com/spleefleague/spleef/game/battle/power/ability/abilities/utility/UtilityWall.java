@@ -32,7 +32,7 @@ public class UtilityWall extends AbilityUtility {
     private static final double DURATION = 3;
 
     public UtilityWall() {
-        super(6, 10);
+        super(6, 15);
     }
 
     @Override

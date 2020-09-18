@@ -41,20 +41,24 @@ public class BattleUtils {
     private static char[] POINT_ANIM = {/*'─', */'═', '╪', '▓', '█'};
 
     public static String toScoreSquares(BattlePlayer bp, int playToPoints) {
-        StringBuilder stringBuilder = new StringBuilder(Chat.SCORE);
-        for (int i = 0; i < bp.getRoundWins(); i++) {
-            if (i == bp.getRoundWins() - 1) {
-                long time = System.currentTimeMillis() - bp.getLastWin();
-                stringBuilder.append(POINT_ANIM[(int) Math.min(POINT_ANIM.length - 1, time / 150)]);
-            } else {
-                stringBuilder.append("█");
+        if (playToPoints > 5) {
+            return (Chat.SCORE + bp.getRoundWins() + "/" + playToPoints);
+        } else {
+            StringBuilder stringBuilder = new StringBuilder(Chat.SCORE);
+            for (int i = 0; i < bp.getRoundWins(); i++) {
+                if (i == bp.getRoundWins() - 1) {
+                    long time = System.currentTimeMillis() - bp.getLastWin();
+                    stringBuilder.append(POINT_ANIM[(int) Math.min(POINT_ANIM.length - 1, time / 150)]);
+                } else {
+                    stringBuilder.append("█");
+                }
             }
+            stringBuilder.append(Chat.DEFAULT);
+            for (int i = bp.getRoundWins(); i < playToPoints; i++) {
+                stringBuilder.append("─");
+            }
+            return stringBuilder.toString();
         }
-        stringBuilder.append(Chat.DEFAULT);
-        for (int i = bp.getRoundWins(); i < playToPoints; i++) {
-            stringBuilder.append("─");
-        }
-        return stringBuilder.toString();
     }
 
     /**
@@ -87,7 +91,7 @@ public class BattleUtils {
      */
     public static void fillDome(GameWorld gameWorld, Material material, List<Position> positions) {
         for (Position pos : positions) {
-            BuildStructure dome = BuildStructures.get("dome");
+            BuildStructure dome = BuildStructures.get("StartDome");
             for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
                 gameWorld.setBlock(entry.getKey().add(pos.toBlockPosition()), entry.getValue().getBlockData());
             }
@@ -102,7 +106,7 @@ public class BattleUtils {
      */
     public static void clearDome(GameWorld gameWorld, List<Position> positions) {
         for (Position pos : positions) {
-            BuildStructure dome = BuildStructures.get("dome");
+            BuildStructure dome = BuildStructures.get("StartDome");
             for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
                 gameWorld.breakBlock(entry.getKey().add(pos.toBlockPosition()), null);
             }

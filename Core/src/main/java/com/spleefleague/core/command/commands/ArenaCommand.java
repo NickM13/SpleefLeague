@@ -222,6 +222,45 @@ public class ArenaCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void arenaGetScoreboard(CorePlayer sender,
+                                   @LiteralArg("get") String l1,
+                                   @LiteralArg("scoreboard") String l2,
+                                   @OptionArg(listName = "arenas") String arenaName) {
+        success(sender, "Scoreboards: ");
+        for (Position pos : Arenas.get(arenaName).getScoreboards()) {
+            success(sender, " " + pos);
+        }
+    }
+
+    @CommandAnnotation
+    public void arenaAddScoreboard(CorePlayer sender,
+                                   @LiteralArg("add") String l1,
+                                   @LiteralArg("scoreboard") String l2,
+                                   @OptionArg(listName = "arenas") String arenaName) {
+        Position pos = new Position(sender.getLocation());
+        Arenas.get(arenaName).addScoreboard(pos);
+        success(sender, "Scoreboard added at " + pos);
+    }
+
+    @CommandAnnotation
+    public void arenaClearScoreboard(CorePlayer sender,
+                                   @LiteralArg("clear") String l1,
+                                   @LiteralArg("scoreboards") String l2,
+                                   @OptionArg(listName = "arenas") String arenaName) {
+        Arenas.get(arenaName).clearScoreboards();
+        success(sender, "Scoreboards cleared");
+    }
+
+    @CommandAnnotation
+    public void arenaGetOrigin(CorePlayer sender,
+                                   @LiteralArg("get") String l1,
+                                   @LiteralArg("origin") String l2,
+                                   @OptionArg(listName = "arenas") String arenaName) {
+        Position pos = Arenas.get(arenaName).getOrigin();
+        success(sender, "Origin is " + pos);
+    }
+
+    @CommandAnnotation
     public void arenaSetOrigin(CorePlayer sender,
                                @LiteralArg("set") String l1,
                                @LiteralArg("origin") String l2,

@@ -40,7 +40,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
 
         SpleggMode.init();
         addBattleManager(SpleggMode.CLASSIC.getBattleMode());
-        //addBattleManager(SpleggMode.MULTI.getArenaMode());
+        addBattleManager(SpleggMode.MULTI.getBattleMode());
         initMenu();
         initCommands();
     }
@@ -78,24 +78,24 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     public void initMenu() {
         spleggMenuItem = InventoryMenuAPI.createItem()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Splegg")
-                .setDescription("Imagine the following description included the word egg in it somewhere." +
-                        "\n\nA competitive gamemode in which you must knock your opponent into the water while avoiding a similar fate." +
-                        "\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!" +
+                .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
                 .setDisplayItem(Material.EGG)
                 .createLinkedContainer("Splegg Menu");
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 0, 2);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 1, 3);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 2, 2);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("TeamSplegg"), 3, 3);
-        ClassicSpleggArena.createMenu(4, 2);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Multispleef!"), 5, 3);
+        ClassicSpleggArena.createMenu(3, 3);
+        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 4, 2);
+        MultiSpleggArena.createMenu(5, 3);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 6, 2);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 7, 3);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 8, 2);
-        spleggMenuItem.getLinkedChest().addStaticItem(SpleggGun.createMenu(), 4, 4);
-    
+
         SLMainHotbar.getItemHotbar().getLinkedChest().addMenuItem(spleggMenuItem, 5, 3);
+
+        ClassicSpleggArena.initLeaderboard(0, 3);
+        MultiSpleggArena.initLeaderboard(2, 3);
     }
 
     protected void initCommands() {

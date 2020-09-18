@@ -2,6 +2,7 @@ package com.spleefleague.proxycore.player;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.coreapi.chat.Chat;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.proxycore.ProxyCore;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.bson.Document;
@@ -33,7 +34,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerJoin(ProxiedPlayer pp) {
         load(pp);
-        //ProxyCore.sendMessage(Chat.PLAYER_NAME + pp.getDisplayName() + " has logged in");
+        ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY +  " is now online.");
     }
 
     private void load(ProxiedPlayer pp) {
@@ -62,7 +63,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerQuit(ProxiedPlayer pp) {
         //save(players.remove(pp.getUniqueId()));
-        //ProxyCore.sendMessage(Chat.PLAYER_NAME + pp.getDisplayName() + " has logged out");
+        ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
     }
 
     public Collection<ProxyCorePlayer> getAll() {

@@ -53,13 +53,13 @@ public class ChatChannelCommand extends CoreCommand {
         newQuickChat(ChatChannel.getChannel(Channel.ADMIN), "admin", "Admin Chat");
         setUsage("/cc <channel> | /chatchannels");
         setDescription("Set your current chat channel");
-        setOptions("chatChannels", (cp) -> getAvailableChatNames(cp));
+        setOptions("chatChannels", pi -> getAvailableChatNames(pi));
     }
     
-    private Set<String> getAvailableChatNames(CorePlayer cp) {
+    private Set<String> getAvailableChatNames(PriorInfo pi) {
         Set<String> names = new HashSet<>();
         for (QuickChat qc : quickChats) {
-            if (qc.cc.isAvailable(cp)) {
+            if (qc.cc.isAvailable(pi.getCorePlayer())) {
                 names.add(qc.name);
             }
         }

@@ -11,9 +11,6 @@ public class RefreshListener implements Listener {
 
     public RefreshListener() {
         ProxyCore.getInstance().getProxy().registerChannel("refresh:arenas");
-        ProxyCore.getInstance().getProxy().registerChannel("refresh:arenas");
     }
-
-
 
 }

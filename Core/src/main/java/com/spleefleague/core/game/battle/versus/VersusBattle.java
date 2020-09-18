@@ -1,10 +1,12 @@
 package com.spleefleague.core.game.battle.versus;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
@@ -18,10 +20,17 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerPurse;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.core.util.variable.Position;
+import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.build.BuildStructure;
+import com.spleefleague.core.world.build.BuildStructures;
+import jdk.internal.joptsimple.internal.Strings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -60,6 +69,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      * Initialize scoreboard
      */
     protected void setupScoreboard() {
+        chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
         chatGroup.addTeam("time", "00:00:00:000");
         chatGroup.addTeam("p1", "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(0).getCorePlayer().getName());
         chatGroup.addTeam("p1score", BattleUtils.toScoreSquares(sortedBattlers.get(0), playToPoints));
@@ -136,8 +146,27 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     }
 
+    @Override
+    public void updatePhysicalScoreboard() {
+        for (Position scoreboard : scoreboards) {
+            BuildStructure score0 = BuildStructures.get("score" + sortedBattlers.get(0).getRoundWins());
+            if (score0 != null) {
+                Map<BlockPosition, FakeBlock> blocks = score0.getFakeBlocks();
+                blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(blocks, (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
+                gameWorld.setBlocks(blocks);
+            }
+            BuildStructure score1 = BuildStructures.get("score" + sortedBattlers.get(1).getRoundWins());
+            if (score1 != null) {
+                Map<BlockPosition, FakeBlock> blocks = score1.getFakeBlocks();
+                blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(FakeUtils.translateBlocks(blocks, new BlockPosition(6, 0, 0)), (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
+                gameWorld.setBlocks(blocks);
+            }
+        }
+    }
+
     protected void onScorePoint(BP winner) {
         chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " has scored a point!");
+        updatePhysicalScoreboard();
     }
     
     /**
@@ -157,7 +186,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             onScorePoint(winner);
             startRound();
             if (winner.getRoundWins() == playToPoints - 1) {
-                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 10, 5);
+                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 70, 5);
             }
         } else {
             endBattle(winner);
@@ -180,14 +209,27 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
 
         for (BattlePlayer bp : battlers.values()) {
+            int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             if (bp.equals(winner)) {
                 //bp.getCorePlayer().addElo(getMode().getName(), getMode().getSeason(), eloChange);
-                bp.getCorePlayer().getRatings().setRating(getMode().getName(), getMode().getSeason(),
-                        bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) + eloChange);
+                boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), eloChange);
+                bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have gained "
+                        + ChatColor.GREEN + eloChange
+                        + ChatColor.GRAY + " Rating Points ("
+                        + ChatColor.RED + initialElo
+                        + ChatColor.GRAY + "->"
+                        + ChatColor.GREEN + (initialElo + eloChange)
+                        + ChatColor.GRAY + ")");
             } else {
                 //bp.getCorePlayer().addElo(getMode().getName(), getMode().getSeason(), -eloChange);
-                bp.getCorePlayer().getRatings().setRating(getMode().getName(), getMode().getSeason(),
-                        bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) - eloChange);
+                bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
+                bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have lost "
+                        + ChatColor.GREEN + eloChange
+                        + ChatColor.GRAY + " Rating Points ("
+                        + ChatColor.RED + initialElo
+                        + ChatColor.GRAY + "->"
+                        + ChatColor.GREEN + (initialElo - eloChange)
+                        + ChatColor.GRAY + ")");
             }
         }
         return eloChange;
@@ -223,6 +265,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             }
             if (loser == null) {
                 output.writeBoolean(false);         // Rating Change
+                output.write(battlers.size());
                 for (BattlePlayer bp : battlers.values()) {
                     output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
                 }
@@ -240,8 +283,16 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             } else {
                 output.writeBoolean(true);              // Rating Change
                 output.writeInt(getMode().getSeason()); // Mode Season
-                applyEloChange(winner);
+                for (BattlePlayer bp : battlers.values()) {
+                    bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
+                    StringBuilder linebreak = new StringBuilder(Chat.colorize("             &8"));
+                    for (int i = 0; i < ChatUtils.getPixelCount(ChatColor.BOLD + getMode().getDisplayName()) / (double) (ChatUtils.getPixelCount("-")); i++) {
+                        linebreak.append("-");
+                    }
+                    bp.getCorePlayer().sendMessage(linebreak.toString());
+                }
                 applyRewards(winner);
+                applyEloChange(winner);
                 output.writeInt(battlers.size());
                 for (BattlePlayer bp : battlers.values()) {
                     output.writeUTF(bp.getCorePlayer().getUniqueId().toString());

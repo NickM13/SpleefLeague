@@ -72,7 +72,9 @@ public class AffixHotStreak extends ClassicSpleefAffix {
                             (int) Math.floor(csp.getPlayer().getBoundingBox().getMinY() - 0.5),
                             (int) Math.floor(csp.getPlayer().getBoundingBox().getMinZ())));
                     for (BlockPosition pos : positions) {
-                        battle.getGameWorld().setBlockDelayed(pos, Material.AIR.createBlockData(), 10L);
+                        if (!battle.getGameWorld().hasBlockDelayed(pos)) {
+                            battle.getGameWorld().setBlockDelayed(pos, Material.AIR.createBlockData(), 10L);
+                        }
                     }
                 } else {
                     csp.getPlayer().sendExperienceChange((float) (time / streakDelay), 0);

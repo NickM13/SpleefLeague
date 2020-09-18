@@ -14,13 +14,18 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -210,36 +215,35 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
      * @return DBPlayer
      */
     private P load(UUID uuid, String username) {
-        playerList.remove(uuid);
-        if (playerList.get(uuid) == null) {
-            try {
-                P p = playerClass.getDeclaredConstructor().newInstance();
-                Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
-                if (pdoc != null) {
-                    p.load(pdoc);
-                    p.setUsername(username);
-                } else {
-                    p.newPlayer(uuid, username);
-                }
-                p.setOnline(DBPlayer.OnlineState.OTHER);
-                playerList.put(p.getUniqueId(), p);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
+        if (onlinePlayerList.containsKey(uuid)) {
+            if (!playerList.containsKey(uuid)) {
+                playerList.put(uuid, onlinePlayerList.get(uuid));
             }
+            return onlinePlayerList.get(uuid);
+        }
+        try {
+            P p = playerClass.getDeclaredConstructor().newInstance();
+            Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
+            if (pdoc != null) {
+                p.load(pdoc);
+                p.setUsername(username);
+            } else {
+                p.newPlayer(uuid, username);
+            }
+            p.setOnline(DBPlayer.OnlineState.OTHER);
+            playerList.put(p.getUniqueId(), p);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
         return playerList.get(uuid);
     }
 
-    public void refresh(UUID uuid) {
-        if (playerList.containsKey(uuid)) {
-            Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
-            if (pdoc != null) {
-                playerList.get(uuid).load(pdoc);
-            }
-        } else {
+    public void refresh(Set<UUID> players) {
+        playerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
+        for (UUID uuid : players) {
             OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-            load(op.getUniqueId(), op.getName());
+            load(uuid, op.getName());
         }
     }
 
@@ -256,6 +260,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
             }
             playerCol.insertOne(player.toDocument());
 
+            /*
             ByteArrayDataOutput output = ByteStreams.newDataOutput();
 
             output.writeUTF("players");
@@ -267,6 +272,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
             if (plugin.isEnabled()) {
                 Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(plugin, "slcore:refresh", output.toByteArray());
             }
+            */
         } catch (NoClassDefFoundError | IllegalAccessError exception) {
             CoreLogger.logError("Jar files updated, unable to save player " + player.getName(), null);
         } catch (IllegalArgumentException exception) {
@@ -282,12 +288,12 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
      */
     private void quit(Player player) {
         if (playerList.containsKey(player.getUniqueId())) {
-            save(playerList.get(player.getUniqueId()));
+            P p = onlinePlayerList.remove(player.getUniqueId());
+            if (p != null) {
+                save(p);
+                p.close();
+            }
             playerList.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
-        }
-        P p = onlinePlayerList.remove(player.getUniqueId());
-        if (p != null) {
-            p.close();
         }
     }
 
@@ -303,8 +309,27 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
             p.setOnline(DBPlayer.OnlineState.HERE);
             p.init();
             onlinePlayerList.put(p.getUniqueId(), p);
+            if (joinActions.containsKey(p.getUniqueId())) {
+                for (Consumer<P> action : joinActions.get(p.getUniqueId())) {
+                    action.accept(p);
+                }
+                joinActions.remove(p.getUniqueId());
+            }
         } else {
             CoreLogger.logError(new NullPointerException());
+        }
+    }
+
+    private Map<UUID, List<Consumer<P>>> joinActions = new HashMap<>();
+
+    public void addPlayerJoinAction(UUID uuid, Consumer<P> action, boolean runIfOnline) {
+        if (runIfOnline && onlinePlayerList.containsKey(uuid)) {
+            action.accept(onlinePlayerList.get(uuid));
+        } else {
+            if (!joinActions.containsKey(uuid)) {
+                joinActions.put(uuid, new ArrayList<>());
+            }
+            joinActions.get(uuid).add(action);
         }
     }
     
@@ -351,7 +376,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
      * Save all DBPlayer
      */
     public void close() {
-        for (P p : playerList.values()) {
+        for (P p : onlinePlayerList.values()) {
             save(p);
         }
     }
@@ -371,26 +396,11 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
 
         String type = input.readUTF();
         UUID uuid = UUID.fromString(input.readUTF());
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
 
         switch (type) {
             case "connect":
-                if (!playerList.containsKey(uuid)) {
-                    try {
-                        P p = playerClass.getDeclaredConstructor().newInstance();
-                        Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
-                        if (pdoc != null) {
-                            p.load(pdoc);
-                            p.setUsername(offlinePlayer.getName());
-                        } else {
-                            p.newPlayer(uuid, offlinePlayer.getName());
-                        }
-                        p.setOnline(DBPlayer.OnlineState.OTHER);
-                        playerList.put(p.getUniqueId(), p);
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                        Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+                load(uuid, op.getName());
                 break;
             case "disconnect":
                 playerList.remove(uuid);

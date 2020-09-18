@@ -10,15 +10,19 @@ public class CurrencyRareOre extends Currency {
 
     }
 
-    public static String getIdentifier() {
+    public String getIdentifier() {
         return "rare_ore";
     }
 
-    public static String getName() {
-        return ChatColor.AQUA + "Rare Ore";
+    public String getChatColor() {
+        return ChatColor.AQUA + "";
     }
 
-    public static Material getDisplayIcon() {
+    public String getName() {
+        return "Rare Ore";
+    }
+
+    public Material getDisplayIcon() {
         return Material.IRON_ORE;
     }
 

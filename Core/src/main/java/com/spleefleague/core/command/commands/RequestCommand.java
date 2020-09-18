@@ -29,10 +29,10 @@ public class RequestCommand extends CoreCommand {
         setOptions("requests", RequestCommand::getAvailableRequests);
     }
     
-    protected static Set<String> getAvailableRequests(CorePlayer cp) {
+    protected static Set<String> getAvailableRequests(PriorInfo pi) {
         Set<String> availableRequests = new HashSet<>();
-        if (cp.isInBattle()) {
-            availableRequests.addAll(cp.getBattle().getAvailableRequests(cp));
+        if (pi.getCorePlayer().isInBattle()) {
+            availableRequests.addAll(pi.getCorePlayer().getBattle().getAvailableRequests(pi.getCorePlayer()));
         }
         return availableRequests;
     }

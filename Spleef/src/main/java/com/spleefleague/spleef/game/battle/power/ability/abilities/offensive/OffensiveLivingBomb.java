@@ -26,7 +26,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
     static {
         projectileStats.lifeTicks = 100;
         projectileStats.fireRange = 3D;
-        projectileStats.count = 80;
+        projectileStats.count = 40;
         projectileStats.hSpread = 180;
         projectileStats.vSpread = 30;
         projectileStats.collidable = false;
@@ -67,6 +67,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
     }
 
     private void tick(PowerSpleefPlayer psp, int count) {
+        if (!(boolean) psp.getPowerValueMap().get("livingbomb")) return;
         if (count <= 0) {
             psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
             psp.getBattle().getGameWorld().breakBlocks(new BlockPosition(
@@ -86,7 +87,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
             Location loc = psp.getPlayer().getLocation().clone();
             loc.setPitch(0);
             loc.add(0, 1.2, 0);
-            psp.getBattle().getGameWorld().shootProjectile(loc, projectileStats);
+            psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), loc, projectileStats);
             AbilityUtils.startFling(psp, new Vector(0, 1.2, 0), 0.2);
             psp.getPowerValueMap().put("livingbomb", false);
             return;

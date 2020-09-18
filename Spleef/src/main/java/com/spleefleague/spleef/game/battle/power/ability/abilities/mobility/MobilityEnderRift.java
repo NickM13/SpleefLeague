@@ -1,10 +1,12 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ import java.util.List;
 public class MobilityEnderRift extends AbilityMobility {
 
     private static final double REVERSE_TIME = 5D;
-    private static final int REVERSE_SPEED = 10;
+    private static final int REVERSE_SPEED = 15;
 
     public MobilityEnderRift() {
         super(4, 10);
@@ -47,7 +49,15 @@ public class MobilityEnderRift extends AbilityMobility {
             if (pastLocs.isEmpty()) {
                 stopRifting(psp);
             } else {
-                psp.getPlayer().teleport(pastLocs.remove(pastLocs.size() - 1).setDirection(psp.getPlayer().getLocation().getDirection()));
+                Location loc = pastLocs.remove(pastLocs.size() - 1);
+
+                psp.getBattle().getGameWorld().setTempBlock(new BlockPosition(loc.toVector()).add(new BlockPosition(-1, -1, 0)), Material.SNOW_BLOCK.createBlockData(), 30, true);
+                psp.getBattle().getGameWorld().setTempBlock(new BlockPosition(loc.toVector()).add(new BlockPosition(0, -1, -1)), Material.SNOW_BLOCK.createBlockData(), 30, true);
+                psp.getBattle().getGameWorld().setTempBlock(new BlockPosition(loc.toVector()).add(new BlockPosition(1, -1, 0)), Material.SNOW_BLOCK.createBlockData(), 30, true);
+                psp.getBattle().getGameWorld().setTempBlock(new BlockPosition(loc.toVector()).add(new BlockPosition(0, -1, 1)), Material.SNOW_BLOCK.createBlockData(), 30, true);
+                psp.getBattle().getGameWorld().setTempBlock(new BlockPosition(loc.toVector()).add(new BlockPosition(0, -1, 0)), Material.SNOW_BLOCK.createBlockData(), 30, true);
+
+                psp.getPlayer().teleport(loc.setDirection(psp.getPlayer().getLocation().getDirection()));
                 psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 0.5f, 1.7f);
                 GameUtils.spawnPlayerParticles(psp, getType().getDustMedium(), 1);
             }

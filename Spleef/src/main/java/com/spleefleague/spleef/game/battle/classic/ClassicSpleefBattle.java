@@ -12,6 +12,7 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
@@ -26,6 +27,8 @@ import java.util.UUID;
  * @author NickM13
  */
 public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
+
+    private BuildStructure randomField;
 
     public ClassicSpleefBattle(List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), players, arena, ClassicSpleefPlayer.class, SpleefMode.CLASSIC.getBattleMode());
@@ -44,16 +47,19 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
     @Override
     protected void setupBaseSettings() {
         SpleefUtils.setupBaseSettings(this);
+        randomField = arena.getRandomStructure("spleef:classic");
+        if (randomField != null) {
+            gameWorld.setBaseBlocks(
+                    FakeUtils.translateBlocks(
+                            FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
+                            getArena().getOrigin().toBlockPosition()));
+        }
         ClassicSpleefAffixes.startBattle(this);
-        gameWorld.setBaseBlocks(
-                FakeUtils.translateBlocks(
-                        FakeUtils.rotateBlocks(BuildStructures.get("spleef:classic").getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
-                        getArena().getOrigin().toBlockPosition()));
     }
 
     @Override
     public void fillField() {
-        SpleefUtils.fillFieldFast(this, BuildStructures.get("spleef:classic"));
+        SpleefUtils.fillFieldFast(this, randomField);
     }
     
     @Override

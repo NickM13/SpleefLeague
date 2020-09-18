@@ -1,5 +1,6 @@
 package com.spleefleague.core.game.battle.dynamic;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -13,6 +14,7 @@ import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
+import org.bukkit.Bukkit;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +26,7 @@ import java.util.UUID;
 public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected static final int MAX_SHOWN = 5;
-    protected int playToPoints = 5;
+    protected int playToPoints = 1;
     
     public DynamicBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
@@ -45,7 +47,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void setupBaseSettings() {
-    
+
     }
     
     /**
@@ -58,10 +60,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     
     @Override
     protected void setupScoreboard() {
-        chatGroup.addTeam("playto", Chat.SCOREBOARD_DEFAULT + "Playing To " + Chat.SCORE + playToPoints);
-        for (int i = 0; i < battlers.size() && i < 5; i++) {
-            chatGroup.addTeam("p" + i, "");
-        }
+
     }
     
     /**
@@ -135,12 +134,19 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     public void endBattle(BP winner) {
         applyEloChange(winner);
-        getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " all other players in "
-                + Chat.GAMEMODE + getMode().getDisplayName());
-        destroy();
+        if (winner != null) {
+            /*
+            getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                    + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
+                    + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " all other players in "
+                    + Chat.GAMEMODE + getMode().getDisplayName());
+            */
+            sendEndMessage(winner);
+        }
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);
     }
+
+    protected abstract void sendEndMessage(BP winner);
     
     /**
      * Called when a battler leaves boundaries
@@ -151,9 +157,11 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void failBattler(CorePlayer cp) {
         remainingPlayers.remove(battlers.get(cp));
         if (remainingPlayers.isEmpty()) {
-            endRound(null);
+            endRound(battlers.get(cp));
         } else if (remainingPlayers.size() == 1) {
             endRound(remainingPlayers.iterator().next());
+        } else {
+            addBattlerGhost(cp);
         }
     }
     
@@ -164,7 +172,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void winBattler(CorePlayer cp) {
-    
+
     }
     
     /**
@@ -194,7 +202,27 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
-    
+        if (battlers.size() <= 2) {
+            removeBattler(cp);
+            if (battlers.isEmpty()) {
+                endBattle(null);
+            } else {
+                endBattle(battlers.values().iterator().next());
+            }
+        } else {
+            remainingPlayers.remove(battlers.get(cp));
+            removeBattler(cp);
+            sortedBattlers.clear();
+            sortedBattlers.addAll(battlers.values());
+            if (battlers.size() < 5) {
+                chatGroup.removeTeam("p" + (battlers.size() - 1));
+            }
+            if (remainingPlayers.isEmpty()) {
+                startRound();
+            } else if (remainingPlayers.size() == 1) {
+                endRound(battlers.values().iterator().next());
+            }
+        }
     }
     
     /**
@@ -203,11 +231,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void updateScoreboard() {
-        chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString() + "     " + Chat.SCORE + "Score  ");
-        for (int i = 0; i < Math.min(sortedBattlers.size(), MAX_SHOWN); i++) {
-            chatGroup.setTeamDisplayName("p" + i, Chat.PLAYER_NAME + sortedBattlers.get(i).getCorePlayer().getName()
-                    + ": " + Chat.SCORE + sortedBattlers.get(i).getRoundWins());
-        }
+        chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString());
     }
     
     /**

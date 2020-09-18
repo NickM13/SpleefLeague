@@ -31,13 +31,10 @@ public class AffixLateGame extends ClassicSpleefAffix {
      */
     @Override
     public void startRound(ClassicSpleefBattle battle) {
-        Set<BlockPosition> positions = new HashSet<>();
-        BlockPosition origin = battle.getArena().getStructures().get(0).getOriginPos();
-        positions.addAll(battle.getArena().getStructures().get(0).getFakeBlocks().keySet());
         Random random = new Random();
-        for (BlockPosition pos : positions) {
+        for (BlockPosition pos : battle.getGameWorld().getBaseBlocks().keySet()) {
             if (random.nextDouble() < crumblePercent) {
-                battle.getGameWorld().setBlock(pos.add(origin), Material.AIR.createBlockData(), true);
+                battle.getGameWorld().setBlockDelayed(pos, Material.AIR.createBlockData(), 0.2, battle.getArena().getSpawns());
             }
         }
         for (Position spawn : battle.getArena().getSpawns()) {
@@ -45,8 +42,7 @@ public class AffixLateGame extends ClassicSpleefAffix {
                     (int) Math.floor(spawn.getX()),
                     (int) Math.floor(spawn.getY()) - 1,
                     (int) Math.floor(spawn.getZ()));
-            battle.getGameWorld().setBlock(blockPos,
-                    battle.getArena().getStructures().get(0).getFakeBlocks().getOrDefault(blockPos.subtract(battle.getArena().getStructures().get(0).getOriginPos()), new FakeBlock(Material.SNOW.createBlockData())).getBlockData(), true);
+            battle.getGameWorld().setBlockDelayed(blockPos, Material.SNOW_BLOCK.createBlockData(), 8);
         }
         battle.getGameWorld().updateAll();
     }

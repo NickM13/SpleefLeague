@@ -6,7 +6,11 @@ import com.google.common.io.ByteStreams;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.BattleManager;
 import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
+import com.spleefleague.proxycore.game.queue.QueueManager;
+import com.spleefleague.proxycore.game.queue.QueuePlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PreLoginEvent;
@@ -17,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author NickM13
@@ -26,23 +31,35 @@ public class BattleListener implements Listener {
 
     public BattleListener() {
         super();
-        ProxyCore.getInstance().getProxy().registerChannel("battle:start");
+        ProxyCore.getInstance().getProxy().registerChannel("battle:forcestart");
         ProxyCore.getInstance().getProxy().registerChannel("battle:end");
+        ProxyCore.getInstance().getProxy().registerChannel("battle:spectate");
     }
 
     @EventHandler
     public void onPreLogin(PreLoginEvent event) {
         String server = BattleManager.getInstance().getPlayerBattleServer(event.getConnection().getUniqueId());
         if (server != null) {
-            // Connect player to that server, for rejoining teamspleef or something?
+            // Connect player to that server, for rejoining teamspleef or something? Probably will just be a /rejoin command though
         }
     }
 
     @EventHandler
     public void onBattleMessage(PluginMessageEvent event) {
         switch (event.getTag()) {
+            case "battle:forcestart": {
+                ByteArrayDataInput input = ByteStreams.newDataInput(event.getData());
+                List<QueuePlayer> players = new ArrayList<>();
+                String mode = input.readUTF();
+                String param = input.readUTF();
+                int playerCount = input.readInt();
+                for (int i = 0; i < playerCount; i++) {
+                    players.add(new QueuePlayer(ProxyCore.getInstance().getPlayers().get(UUID.fromString(input.readUTF())), param));
+                }
+                QueueManager.forceStart(mode, param, players);
+            }
+                break;
             case "battle:end": {
-                ServerInfo lobby = ProxyCore.getInstance().getLobbyServers().get(0);
                 ByteArrayDataInput input = ByteStreams.newDataInput(event.getData());
                 List<ProxyCorePlayer> players = new ArrayList<>();
                 String modeName = input.readUTF();
@@ -51,7 +68,6 @@ public class BattleListener implements Listener {
                     int season = input.readInt();
                     int playerCount = input.readInt();
                     ByteArrayDataOutput scoreOut = ByteStreams.newDataOutput();
-                    ByteArrayDataOutput rewardOut = ByteStreams.newDataOutput();
                     scoreOut.writeUTF(modeName);
                     scoreOut.writeInt(season);
                     scoreOut.writeInt(playerCount);
@@ -65,7 +81,6 @@ public class BattleListener implements Listener {
                     }
                     for (Map.Entry<String, ServerInfo> entry : ProxyCore.getInstance().getProxy().getServers().entrySet()) {
                         entry.getValue().sendData("slcore:score", scoreOut.toByteArray());
-                        entry.getValue().sendData("slcore:reward", scoreOut.toByteArray());
                     }
                 } else {
                     int playerCount = input.readInt();
@@ -73,18 +88,26 @@ public class BattleListener implements Listener {
                         players.add(ProxyCore.getInstance().getPlayers().get(UUID.fromString(input.readUTF())));
                     }
                 }
-                if (lobby == null) {
-                    ProxyCore.getInstance().getLogger().severe("No lobby server is available!");
-                    return;
-                }
                 for (ProxyCorePlayer pcp : players) {
-                    pcp.getPlayer().connect(lobby);
-                    pcp.setInBattle(false);
+                    if (pcp != null && pcp.getPlayer() != null) {
+                        //pcp.getPlayer().connect(lobby);
+                        pcp.setInBattle(false);
+                    }
                 }
             }
                 break;
-            case "battle:remove": {
-
+            case "battle:spectate": {
+                ByteArrayDataInput input = ByteStreams.newDataInput(event.getData());
+                ProxyCorePlayer spectator = ProxyCore.getInstance().getPlayers().get(UUID.fromString(input.readUTF()));
+                ProxyCorePlayer target = ProxyCore.getInstance().getPlayers().get(UUID.fromString(input.readUTF()));
+                if (target.isInBattle()) {
+                    spectator.transfer(target.getCurrentServer());
+                    ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+                        target.getCurrentServer().sendData("battle:spectate", event.getData());
+                    }, 500, TimeUnit.MILLISECONDS);
+                } else {
+                    spectator.getPlayer().sendMessage(new TextComponent(ChatColor.YELLOW + target.getName() + ChatColor.RED + "'s game cannot be spectated"));
+                }
             }
                 break;
         }

@@ -68,11 +68,7 @@ public class SpectateCommand extends CoreCommand {
             if (sender.isInBattle()) {
                 sender.getBattle().leavePlayer(sender);
             }
-            if (CorePlugin.spectatePlayerGlobal(sender, target)) {
-                success(sender, "You are now spectating " + target.getDisplayName() + "'s game");
-            } else {
-                error(sender, target.getDisplayName() + Chat.ERROR + " is not in a spectatable game");
-            }
+            CorePlugin.spectatePlayerGlobal(sender, target);
         }
     }
 

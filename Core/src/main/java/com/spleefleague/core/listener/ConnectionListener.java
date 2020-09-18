@@ -85,14 +85,7 @@ public class ConnectionListener implements Listener {
         if (!cp1.getRank().hasPermission(Rank.MODERATOR)) {
             cp1.gotoSpawn();
         }
-        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-            for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
-                if (!cp2.getPlayer().equals(cp1.getPlayer()) && cp2.isInBattle()) {
-                    cp2.getPlayer().hidePlayer(Core.getInstance(), cp1.getPlayer());
-                    cp1.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
-                }
-            }
-        }, 1L);
+        Core.getInstance().applyVisibilities(cp1);
     }
     
     @EventHandler(priority = EventPriority.LOW)

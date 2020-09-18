@@ -14,6 +14,7 @@ import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
+import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
@@ -56,7 +57,18 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onServerSwitch(ServerSwitchEvent event) {
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
+        ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId()).setCurrentServer(event.getPlayer().getServer().getInfo());
+
+        if (event.getPlayer().getServer().getInfo().getPlayers().size() == 1) {
+            ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+            output.writeInt(ProxyCore.getInstance().getPlayers().getAll().size());
+            for (ProxyCorePlayer pcp : ProxyCore.getInstance().getPlayers().getAll()) {
+                output.writeUTF(pcp.getIdentifier());
+            }
+
+            event.getPlayer().getServer().getInfo().sendData("slcore:refresh", output.toByteArray());
+        }
     }
 
     @EventHandler

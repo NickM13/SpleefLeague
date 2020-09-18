@@ -110,7 +110,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         blocksBrokenRound = 0;
     }
 
-    @Deprecated
+    //@Deprecated
     public Map<String, Object> getPowerValueMap() {
         return powerValueMap;
     }

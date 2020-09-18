@@ -184,7 +184,7 @@ public class ChatGroup {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
-            if (team == null) continue;
+            if (team == null || ss.displayName.length() > 63) continue;
             team.setPrefix(ss.displayName);
         }
     }
@@ -207,7 +207,7 @@ public class ChatGroup {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
-            if (team == null) continue;
+            if (team == null || ss.displayName.length() > 63) continue;
             team.setPrefix(ss.displayName);
         }
     }
@@ -276,8 +276,10 @@ public class ChatGroup {
                 //TODO: Is this necessary?
                 team.addEntry(ss.name);
             }
-            team.setDisplayName(ss.displayName);
-            team.setPrefix(ss.displayName);
+            if (ss.displayName.length() <= 63) {
+                team.setDisplayName(ss.displayName);
+                team.setPrefix(ss.displayName);
+            }
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             ps.getSideBar().getScore(ss.name).setScore(ss.score);
             int i = sortedScores.size() - 1;
@@ -297,9 +299,13 @@ public class ChatGroup {
      */
     public void removePlayer(CorePlayer cp) {
         //cp.getPlayer().sendExperienceChange(0, 0);
-        cp.getPlayer().setTotalExperience(0);
-        players.remove(cp);
-        PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
+        if (cp != null) {
+            if (cp.getPlayer() != null) {
+                cp.getPlayer().setTotalExperience(0);
+            }
+            players.remove(cp);
+            PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
+        }
     }
     
     /**
