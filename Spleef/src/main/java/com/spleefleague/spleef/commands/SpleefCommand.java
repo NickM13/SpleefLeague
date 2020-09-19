@@ -36,14 +36,34 @@ public class SpleefCommand extends CoreCommand {
     public SpleefCommand() {
         super("spleef", Rank.DEFAULT);
         this.addAlias("s");
-        this.setOptions("gamemodes",    cp -> CoreUtils.enumToStrSet(SpleefMode.class, true));
+        this.setOptions("gamemodes",    pi -> CoreUtils.enumToStrSet(SpleefMode.class, true));
+        this.setOptions("chalModes",    this::getChallengeModes);
         this.setOptions("arenas",       this::getArenas);
         setContainer("spleef");
     }
 
+    protected SortedSet<String> getChallengeModes(PriorInfo pi) {
+        SortedSet<String> available = new TreeSet<>();
+        for (SpleefMode spleefMode : SpleefMode.values()) {
+            if (spleefMode.getBattleMode().getTeamStyle() == BattleMode.TeamStyle.VERSUS) {
+                available.add(spleefMode.name().toLowerCase());
+            }
+        }
+        return available;
+    }
+
     protected SortedSet<String> getArenas(PriorInfo pi) {
-        String mode = pi.getArgs().get(pi.getArgs().size() - 1);
-        return Sets.newTreeSet(Arenas.getUnpaused(SpleefMode.valueOf(mode.toUpperCase()).getBattleMode()).keySet());
+        BattleMode mode = SpleefMode.valueOf(pi.getArgs().get(pi.getArgs().size() - 1).toUpperCase()).getBattleMode();
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.VERSUS ||
+                mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
+            return Sets.newTreeSet(Arenas.getUnpaused(mode).keySet());
+        }
+        return new TreeSet<>();
+    }
+
+    @CommandAnnotation
+    public void spleef(CorePlayer sender) {
+        sender.setInventoryMenuItem(Spleef.getInstance().getSpleefMenu());
     }
 
     @CommandAnnotation(minRank="DEVELOPER")
@@ -78,8 +98,11 @@ public class SpleefCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void spleef(CorePlayer sender) {
-        sender.setInventoryMenuItem(Spleef.getInstance().getSpleefMenu());
+    public void spleefChallenge(CorePlayer sender,
+                                @LiteralArg("challenge") String l,
+                                @OptionArg(listName = "chalModes") String mode,
+                                @OptionArg(listName = "arenas") String arena) {
+
     }
 
     @CommandAnnotation

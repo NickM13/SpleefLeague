@@ -132,38 +132,40 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer mapChunkPacket = event.getPacket();
-                boolean isFull = mapChunkPacket.getBooleans().read(0);
-                if (isFull) {
-                    CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                    ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
-                    Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
-                    Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
-                    while (fit.hasNext()) {
-                        FakeWorld<?> fakeWorld = fit.next();
-                        Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
-                        if (fakeChunk != null) {
-                            for (BlockPosition blockPosition : fakeChunk) {
-                                short relativeLoc = 0;
-                                int x = blockPosition.getX() & 15;
-                                int y = blockPosition.getY() & 15;
-                                int z = blockPosition.getZ() & 15;
-                                relativeLoc += x << 12;
-                                relativeLoc += z << 8;
-                                relativeLoc += y;
-                                if (!fakeBlocks.containsKey(relativeLoc)) {
-                                    fakeBlocks.put(relativeLoc, fakeWorld.getFakeBlocks().get(blockPosition));
-                                }
+                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
+                Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
+                Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
+                while (fit.hasNext()) {
+                    FakeWorld<?> fakeWorld = fit.next();
+                    Set<BlockPosition> fakeChunk = fakeWorld.getFakeChunk(chunkCoord);
+                    if (fakeChunk != null) {
+                        for (BlockPosition blockPosition : fakeChunk) {
+                            short relativeLoc = 0;
+                            relativeLoc += (blockPosition.getX() & 15) << 12;
+                            relativeLoc += (blockPosition.getZ() & 15) << 8;
+                            relativeLoc += blockPosition.getY();
+                            FakeBlock fakeBlock = fakeWorld.getFakeBlocks().get(blockPosition);
+                            if (!fakeBlocks.containsKey(relativeLoc)) {
+                                fakeBlocks.put(relativeLoc, fakeBlock);
                             }
                         }
                     }
-                    if (!fakeBlocks.isEmpty()) {
-                        PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
-                                chunkCoord,
-                                fakeBlocks);
-                        Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
-                    }
-                    loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
                 }
+                if (!fakeBlocks.isEmpty()) {
+                    PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                            chunkCoord,
+                            fakeBlocks);
+                    Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
+                    if (event.getPlayer().getLocation().getChunk().getX() == chunkCoord.x &&
+                            event.getPlayer().getLocation().getChunk().getZ() == chunkCoord.z) {
+                        Location oldLoc = event.getPlayer().getLocation().clone().add(0, 0.1, 0);
+                        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                            event.getPlayer().teleport(oldLoc);
+                        }, 4L);
+                    }
+                }
+                loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
             }
         });
         Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.UNLOAD_CHUNK) {

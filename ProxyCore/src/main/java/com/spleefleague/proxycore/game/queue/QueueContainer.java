@@ -1,10 +1,8 @@
 package com.spleefleague.proxycore.game.queue;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.queue.SubQuery;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBattleStart;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyParty;
@@ -12,15 +10,12 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,6 +42,8 @@ public class QueueContainer {
     TeamStyle teamStyle;
     private boolean joinOngoing;
     private ScheduledTask nextCheck = null;
+    private final Set<UUID> spectating;
+    private final Set<UUID> playing;
 
     public QueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, TeamStyle teamStyle, boolean joinOngoing) {
         this.identifier = identifier;
@@ -59,10 +56,12 @@ public class QueueContainer {
         this.reqTeams = reqTeams;
         this.maxTeams = maxTeams;
         this.joinOngoing = joinOngoing;
+        this.spectating = new HashSet<>();
+        this.playing = new HashSet<>();
     }
 
     public String getDisplayName() {
-        return ChatColor.GOLD + displayName;
+        return ChatColor.GOLD + displayName + ChatColor.GRAY;
     }
 
     public void addTeamSize(int size) {
@@ -90,7 +89,7 @@ public class QueueContainer {
             if (queuedPlayers.size() >= this.maxTeams) {
                 nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 500, TimeUnit.MILLISECONDS);
             } else if (queuedPlayers.size() >= this.reqTeams) {
-                ProxyCore.getInstance().sendMessage(ProxyCore.getChatTag() + identifier + " will begin in 5 seconds!");
+                ProxyCore.getInstance().sendMessage(ProxyCore.getChatTag() + getDisplayName() + " will begin in 5 seconds!");
                 nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 5000, TimeUnit.MILLISECONDS);
             }
         }
@@ -225,17 +224,17 @@ public class QueueContainer {
 
     public void checkQueue() {
         for (int size : teamSizes) {
-            while (true) {
-                if (getQueueSize() >= reqTeams) {
-                    QueuedChunk chunk = gatherPlayers(Math.max(Math.min(getQueueSize(), maxTeams), reqTeams), size);
-                    if (chunk != null) {
-                        startMatch(chunk.players, chunk.query);
-                        if (getQueueSize() < maxTeams) {
-                            break;
-                        }
-                    } else {
+            while (getQueueSize() >= reqTeams) {
+                QueuedChunk chunk = gatherPlayers(Math.max(Math.min(getQueueSize(), maxTeams), reqTeams), size);
+                if (chunk != null) {
+                    if (!startMatch(chunk.players, chunk.query)) {
                         break;
                     }
+                    if (getQueueSize() < maxTeams) {
+                        break;
+                    }
+                } else {
+                    break;
                 }
             }
         }
@@ -246,26 +245,44 @@ public class QueueContainer {
         ServerInfo minigameServer = ProxyCore.getInstance().getMinigameServers().get(0);
         if (minigameServer == null) {
             ProxyCore.getInstance().getLogger().warning("There are no minigame servers available right now!");
+            for (QueuePlayer qp : players) {
+                ProxyCore.getInstance().sendMessage(qp.pcp, ChatColor.RED + "No available minigame servers!");
+            }
             return false;
         }
 
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-        output.writeUTF(identifier);
-        output.writeUTF(query);
-        output.writeInt(players.size());
+        List<UUID> playerUuids = new ArrayList<>();
+
         for (QueuePlayer qp : players) {
-            if (qp.pcp.isInBattle()) {
-                return false;
-            }
-            output.writeUTF(qp.pcp.getUniqueId().toString());
+            if (qp.pcp.isBattling()) return false;
+            playerUuids.add(qp.pcp.getUniqueId());
         }
         for (QueuePlayer qp : players) {
             QueueManager.leaveAllQueues(qp.pcp.getUniqueId());
-            qp.pcp.setInBattle(true);
+            qp.pcp.setBattleContainer(this);
+            qp.pcp.setBattling(true);
+            playing.add(qp.pcp.getUniqueId());
             qp.pcp.getPlayer().connect(minigameServer);
         }
-        minigameServer.sendData("battle:start", output.toByteArray());
+        ProxyCore.getInstance().sendPacket(minigameServer, new PacketBattleStart(identifier, query, playerUuids));
         return true;
+    }
+
+    public void removePlayer(UUID uuid) {
+        spectating.remove(uuid);
+        playing.remove(uuid);
+    }
+
+    public Set<UUID> getSpectating() {
+        return spectating;
+    }
+
+    public void addSpectator(UUID uuid) {
+        spectating.add(uuid);
+    }
+
+    public Set<UUID> getPlaying() {
+        return playing;
     }
 
 }

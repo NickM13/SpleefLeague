@@ -1,18 +1,19 @@
 package com.spleefleague.proxycore;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
+import com.spleefleague.coreapi.utils.packet.Packet;
+import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import com.spleefleague.proxycore.game.queue.QueueManager;
 import com.spleefleague.proxycore.listener.BattleListener;
 import com.spleefleague.proxycore.listener.ConnectionListener;
-import com.spleefleague.proxycore.listener.CoreListener;
-import com.spleefleague.proxycore.listener.PartyListener;
-import com.spleefleague.proxycore.listener.QueueListener;
-import com.spleefleague.proxycore.listener.RefreshListener;
+import com.spleefleague.proxycore.listener.SpigotPluginListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyPlayerManager;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,14 +24,18 @@ import net.md_5.bungee.api.scheduler.ScheduledTask;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -40,8 +45,8 @@ public class ProxyCore extends Plugin {
 
     private static ProxyCore instance;
 
-    private static final List<ServerInfo> lobbyServers = new ArrayList<>();
-    private static final List<ServerInfo> minigameServers = new ArrayList<>();
+    private static final SortedMap<String, ServerInfo> lobbyServers = new TreeMap<>();
+    private static final SortedMap<String, ServerInfo> minigameServers = new TreeMap<>();
     private static ScheduledTask serverPingTask;
 
     public static ProxyCore getInstance() {
@@ -65,11 +70,8 @@ public class ProxyCore extends Plugin {
         initMongo();
 
         getProxy().getPluginManager().registerListener(this, new BattleListener());
-        getProxy().getPluginManager().registerListener(this, new CoreListener());
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
-        getProxy().getPluginManager().registerListener(this, new PartyListener());
-        getProxy().getPluginManager().registerListener(this, new QueueListener());
-        getProxy().getPluginManager().registerListener(this, new RefreshListener());
+        getProxy().getPluginManager().registerListener(this, new SpigotPluginListener());
 
         playerManager.init();
         Leaderboards.init();
@@ -77,22 +79,35 @@ public class ProxyCore extends Plugin {
         ArenaManager.init();
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
-            lobbyServers.clear();
-            minigameServers.clear();
+            Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
+            Set<String> toFindMinigame = Sets.newHashSet(lobbyServers.keySet());
             for (ServerInfo server : getProxy().getServers().values()) {
-                if (server.getName().toLowerCase().startsWith("lobby")) {
+                String name = server.getName();
+                if (name.toLowerCase().startsWith("lobby")) {
                     server.ping((serverPing, throwable) -> {
                         if (serverPing != null) {
-                            lobbyServers.add(server);
+                            lobbyServers.put(name, server);
+                        } else {
+                            lobbyServers.remove(name);
                         }
                     });
-                } else if (server.getName().toLowerCase().startsWith("minigame")) {
+                    toFindMinigame.remove(name);
+                } else if (name.toLowerCase().startsWith("minigame")) {
                     server.ping((serverPing, throwable) -> {
                         if (serverPing != null) {
-                            minigameServers.add(server);
+                            minigameServers.put(name, server);
+                        } else {
+                            minigameServers.remove(name);
                         }
                     });
+                    toFindMinigame.remove(name);
                 }
+            }
+            for (String name : toFindLobby) {
+                lobbyServers.remove(name);
+            }
+            for (String name : toFindMinigame) {
+                minigameServers.remove(name);
             }
             // TODO: Probably increase this value on release?
         }, 0, 10, TimeUnit.SECONDS);
@@ -107,11 +122,11 @@ public class ProxyCore extends Plugin {
     }
 
     public List<ServerInfo> getLobbyServers() {
-        return lobbyServers;
+        return Lists.newArrayList(lobbyServers.values());
     }
 
     public List<ServerInfo> getMinigameServers() {
-        return minigameServers;
+        return Lists.newArrayList(minigameServers.values());
     }
 
     /**
@@ -189,6 +204,29 @@ public class ProxyCore extends Plugin {
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
+    }
+
+    /**
+     * Send a packet to all servers with 1 or more players
+     *
+     * @param output
+     */
+    public void sendPacket(Packet output) {
+        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServersCopy().entrySet()) {
+            if (!server.getValue().getPlayers().isEmpty()) {
+                server.getValue().sendData("slcore:bungee", output.toByteArray());
+            }
+        }
+    }
+
+    /**
+     * Send a packet to a specific server
+     *
+     * @param server
+     * @param packet
+     */
+    public void sendPacket(ServerInfo server, PacketBungee packet) {
+        server.sendData("slcore:bungee", packet.toByteArray());
     }
 
 }

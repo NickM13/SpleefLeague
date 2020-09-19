@@ -63,6 +63,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerQuit(ProxiedPlayer pp) {
         //save(players.remove(pp.getUniqueId()));
+        ProxyCore.getInstance().getPlayers().get(pp.getUniqueId()).setBattleContainer(null);
         ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
     }
 

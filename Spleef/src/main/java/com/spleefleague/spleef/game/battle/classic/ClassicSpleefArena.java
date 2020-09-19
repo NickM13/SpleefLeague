@@ -26,7 +26,7 @@ public class ClassicSpleefArena {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lClassic Spleef")
                 .setDescription(cp -> "The classic version in which you duel a single opponent with a basic diamond shovel." +
-                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getBattleMode()).getCurrentlyPlaying())
+                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .createLinkedContainer("Classic Spleef Menu");
         

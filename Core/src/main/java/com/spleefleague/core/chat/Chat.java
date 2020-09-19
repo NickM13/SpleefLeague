@@ -5,15 +5,10 @@
  */
 package com.spleefleague.core.chat;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -21,7 +16,8 @@ import com.spleefleague.core.request.ConsoleRequest;
 import com.spleefleague.core.request.PlayerRequest;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import org.bukkit.Bukkit;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketChatBungee;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketChatSpigot;
 import org.bukkit.ChatColor;
 
 /**
@@ -141,57 +137,34 @@ public class Chat {
         if (cp.isMuted() == 2) {
             cp.sendMessage(msg);
         } else {
-            ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-            output.writeUTF(cp.getUniqueId().toString());
-            output.writeUTF(cc.getChannel().name());
-            output.writeUTF(msg);
-
-            cp.getPlayer().sendPluginMessage(Core.getInstance(), "slcore:chat", output.toByteArray());
-            //Core.getInstance().getServer().getMessenger().dispatchIncomingMessage(cp.getPlayer(), "core:chat", output.toByteArray());
+            Core.getInstance().sendPacket(new PacketChatSpigot(cp.getUniqueId(), cc.getChannel().name(), msg));
         }
     }
 
     public static void sendMessage(ChatChannel channel, String msg) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-        output.writeUTF("");
-        output.writeUTF(channel.getChannel().name());
-        output.writeUTF(msg);
-
-        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "slcore:chat", output.toByteArray());
-        /*
-        for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
-            if (!cp.getOptions().isChannelDisabled(channel.getName())
-                    && channel.isAvailable(cp)) {
-                cp.sendMessage(msg);
-            }
-        }
-        */
+        Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), msg));
     }
 
-    public static void sendMessage(byte[] bytes) {
-        ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
+    public static void sendMessage(PacketChatBungee packet) {
+        UUID uuid = packet.sender;
+        CorePlayer sender = uuid != null ? Core.getInstance().getPlayers().get(uuid) : null;
+        ChatChannel chatChannel = ChatChannel.getChannel(ChatChannel.Channel.valueOf(packet.channel));
+        String message = packet.message;
 
-        String playerUuid = input.readUTF();
-        CorePlayer cp = playerUuid.length() == 0 ? null : Core.getInstance().getPlayers().get(UUID.fromString(playerUuid));
-        ChatChannel cc = ChatChannel.getChannel(ChatChannel.Channel.valueOf(input.readUTF()));
-        String msg = input.readUTF();
-
-        if (cp != null) {
-            for (CorePlayer cp1 : cc.getPlayers(cp)) {
-                if (cp1.getOnlineState() == DBPlayer.OnlineState.HERE
-                        && cc.isAvailable(cp1)
-                        && !cp1.getOptions().isChannelDisabled(cc.getName())) {
-                    cp1.sendMessage(msg);
+        if (sender != null) {
+            for (CorePlayer cp : chatChannel.getPlayers(sender)) {
+                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE
+                        && chatChannel.isAvailable(cp)
+                        && !cp.getOptions().isChannelDisabled(chatChannel.getName())) {
+                    cp.sendMessage(message);
                 }
             }
         } else {
-            for (CorePlayer cp1 : Core.getInstance().getPlayers().getOnline()) {
-                if (cp1.getOnlineState() == DBPlayer.OnlineState.HERE
-                        && cc.isAvailable(cp1)
-                        && !cp1.getOptions().isChannelDisabled(cc.getName())) {
-                    cp1.sendMessage(msg);
+            for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
+                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE
+                        && chatChannel.isAvailable(cp)
+                        && !cp.getOptions().isChannelDisabled(chatChannel.getName())) {
+                    cp.sendMessage(message);
                 }
             }
         }

@@ -25,7 +25,7 @@ public enum SpleefMode {
     MULTI,
     POWER,
     POWER_TRAINING,
-    WC,
+    //WC,
     BONANZA;
     
     private static final String prefix = "spleef:";
@@ -37,7 +37,7 @@ public enum SpleefMode {
         BattleMode.addArenaMode(BONANZA.getName(), "Bonanza Spleef", 0, 0, BattleMode.TeamStyle.BONANZA, true, BonanzaSpleefBattle.class);
         BattleMode.addArenaMode(POWER.getName(), "Power Spleef", 2, 2, BattleMode.TeamStyle.VERSUS, false, PowerSpleefBattle.class);
         BattleMode.addArenaMode(POWER_TRAINING.getName(), "Power Training", 1, 1, BattleMode.TeamStyle.SOLO, false, PowerTrainingBattle.class);
-        BattleMode.addArenaMode(WC.getName(), "SWC", 2, 2, BattleMode.TeamStyle.VERSUS, false, null);
+        //BattleMode.addArenaMode(WC.getName(), "SWC", 2, 2, BattleMode.TeamStyle.VERSUS, false, null);
     }
     
     public String getName() {

@@ -6,8 +6,6 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
@@ -35,7 +33,6 @@ import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
-import com.spleefleague.core.queue.QueueRunnable;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.variable.Warp;
 
@@ -49,6 +46,10 @@ import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.utils.packet.Packet;
+import com.spleefleague.coreapi.utils.packet.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -56,7 +57,6 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -172,20 +172,9 @@ public class Core extends CorePlugin<CorePlayer> {
         Bukkit.getPluginManager().registerEvents(new EnvironmentListener(), this);
         Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
 
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:score");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:end");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:spectate");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:create");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:join");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "party:leave");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:spigot");
 
-        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:chat", new ChatPluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:refresh", new RefreshPluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:score", new RefreshPluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:reward", new RefreshPluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new RefreshPluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "battle:start", new BattlePluginListener());
-        getServer().getMessenger().registerIncomingPluginChannel(this, "battle:spectate", new BattlePluginListener());
+        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:bungee", new BungeePluginListener());
     }
     
     /**
@@ -283,12 +272,12 @@ public class Core extends CorePlugin<CorePlayer> {
         }
     }
 
-    public void returnToHub(@NotNull CorePlayer cp) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-        output.writeInt(1);
-        output.writeUTF(cp.getUniqueId().toString());
-        if (cp.getPlayer() != null)
-            cp.getPlayer().sendPluginMessage(Core.getInstance(), "slcore:lobby", output.toByteArray());
+    public void returnToHub(CorePlayer cp) {
+        if (cp == null) return;
+        for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
+            plugin.getPlayers().saveForTransfer(cp.getUniqueId());
+        }
+        Core.getInstance().sendPacket(new PacketHub(Lists.newArrayList(cp)));
     }
 
     /**
@@ -695,13 +684,7 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public void sendTell(CorePlayer sender, CorePlayer target, String msg) {
         sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
-
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-        output.writeUTF(sender.getUniqueId().toString());
-        output.writeUTF(target.getUniqueId().toString());
-        output.writeUTF(msg);
-
-        sender.getPlayer().sendPluginMessage(Core.getInstance(), "slcore:tell", output.toByteArray());
+        sendPacket(new PacketTellSpigot(sender.getUniqueId(), target.getUniqueId(), msg));
     }
 
     public void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
@@ -722,6 +705,18 @@ public class Core extends CorePlugin<CorePlayer> {
         title = msgs[0];
         subtitle = msgs.length > 1 ? msgs[1] : "";
         Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
+    }
+
+    /**
+     * Send a packet to all servers with 1 or more players
+     *
+     * @param output
+     */
+    public void sendPacket(PacketSpigot output) {
+        Player sender = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+        if (sender != null) {
+            sender.sendPluginMessage(Core.getInstance(), "slcore:spigot", output.toByteArray());
+        }
     }
 
 }

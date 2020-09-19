@@ -6,9 +6,6 @@
 
 package com.spleefleague.core.plugin;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
@@ -27,22 +24,16 @@ import com.spleefleague.core.player.PlayerManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Filter;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketForceStart;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
 import org.apache.logging.log4j.LogManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import javax.annotation.Nullable;
-
-import static com.google.common.io.ByteStreams.newDataOutput;
 
 /**
  * CorePlugin is the base class for all SpleefLeague plugins,
@@ -77,17 +68,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final void onEnable() {
         init();
 
-        getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:connection", playerManager);
-
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:chat");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "slcore:lobby");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "battle:forcestart");
-
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:solo");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:join");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:leave");
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "queue:leaveall");
 
         if (playerManager != null) playerManager.initOnline();
         running = true;
@@ -160,16 +141,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     }
 
     public final void forceStart(BattleMode mode, List<CorePlayer> corePlayers, Arena arena) {
-        ByteArrayDataOutput output = newDataOutput();
-
-        output.writeUTF(mode.getName());
-        output.writeUTF("arena:" + arena.getIdentifierNoTag());
-        output.writeInt(corePlayers.size());
-        for (CorePlayer cp : corePlayers) {
-            output.writeUTF(cp.getUniqueId().toString());
-        }
-
-        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:forcestart", output.toByteArray());
+        Core.getInstance().sendPacket(new PacketForceStart(mode.getName(), "arena:" + arena.getIdentifierNoTag(), corePlayers));
     }
 
     /**
@@ -179,17 +151,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp) {
-        ByteArrayDataOutput output = newDataOutput();
-
-        output.writeUTF(cp.getIdentifier());
-        output.writeUTF(mode.getName());
-        output.writeUTF("arena:*");
-
-        if (mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
-            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:solo", output.toByteArray());
-        } else {
-            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:join", output.toByteArray());
-        }
+        Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:*"));
     }
     
     /**
@@ -204,17 +166,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             queuePlayer(mode, cp);
             return;
         }
-        ByteArrayDataOutput output = newDataOutput();
-
-        output.writeUTF(cp.getIdentifier());
-        output.writeUTF(mode.getName());
-        output.writeUTF("arena:" + arena.getIdentifierNoTag());
-
-        if (mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
-            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:solo", output.toByteArray());
-        } else {
-            Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "queue:join", output.toByteArray());
-        }
+        Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
     }
     
     /**
@@ -315,14 +267,11 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
                     target.getBattle().addSpectator(spectator, target);
                     return true;
                 } else {
-                    Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayName() + Chat.ERROR + "'s game cannot be spectated");
+                    Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayNamePossessive() + Chat.ERROR + " game cannot be spectated");
                 }
                 break;
             case OTHER:
-                ByteArrayDataOutput out = ByteStreams.newDataOutput();
-                out.writeUTF(spectator.getUniqueId().toString());
-                out.writeUTF(target.getUniqueId().toString());
-                spectator.getPlayer().sendPluginMessage(Core.getInstance(), "battle:spectate", out.toByteArray());
+                Core.getInstance().sendPacket(new PacketBattleSpectateSpigot(spectator, target));
                 break;
         }
         return false;

@@ -33,7 +33,7 @@ public class PowerSpleefArena {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lPower Spleef")
                 .setDescription("A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!" +
-                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.POWER.getBattleMode()).getCurrentlyPlaying())
+                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.POWER.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
                 .createLinkedContainer("Power Spleef Menu");
 

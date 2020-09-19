@@ -88,10 +88,12 @@ public abstract class Battle<BP extends BattlePlayer> {
     // Ongoing battle stats
     protected boolean ongoing;
     protected boolean finished = false;
+    protected boolean destroyed = false;
     protected boolean waiting = true;
     protected long startedTime;
     protected long roundStartTime = 0;
     protected boolean frozen = false;
+    protected boolean matchPointing = false;
     
     // Round countdown
     protected static final int COUNTDOWN = 3;
@@ -178,6 +180,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         updateScoreboard();
         resetRequests();
         updatePhysicalScoreboard();
+        frozen = true;
     }
     
     /**
@@ -287,6 +290,10 @@ public abstract class Battle<BP extends BattlePlayer> {
 
     public boolean isFinished() {
         return finished;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
     }
 
     public boolean isWaiting() {
@@ -427,23 +434,16 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param e Player Move Event
      */
     public final void onMove(CorePlayer cp, PlayerMoveEvent e) {
-        if (ongoing) {
+        if (ongoing && !finished) {
             if (cp.getBattleState() == BattleState.BATTLER) {
                 BP bp = battlers.get(cp);
                 if (!bp.isFallen()) {
                     if (!isRoundStarted()) {
-                        if (frozen || true) {
+                        if (frozen) {
                             e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
                                     e.getFrom().getX(),
                                     e.getFrom().getY(),
                                     e.getFrom().getZ(),
-                                    e.getTo().getYaw(),
-                                    e.getTo().getPitch()));
-                        } else if (e.getTo() != null && e.getFrom().getY() != e.getTo().getY()) {
-                            e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
-                                    e.getTo().getX(),
-                                    e.getFrom().getY(),
-                                    e.getTo().getZ(),
                                     e.getTo().getYaw(),
                                     e.getTo().getPitch()));
                         }
@@ -682,7 +682,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         battleMode.removeBattle(this);
         gameWorld.destroy();
         ongoing = false;
-        finished = true;
+        destroyed = true;
     }
 
     /**
@@ -696,6 +696,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         battlers.get(cp).setFallen(true);
         deadBattlers.add(battlers.get(cp));
         cp.getPlayer().setAllowFlight(true);
+        cp.getPlayer().setFlying(true);
         cp.setGhosting(true);
         Core.getInstance().applyVisibilities(cp);
     }
@@ -1023,7 +1024,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                     sendPlayerTitle(ChatColor.GREEN + "Go!", "", 5, 10, 5);
                     releaseBattlers();
                     roundStartTime = System.currentTimeMillis();
-                } else /*if (countdown <= 3)*/ {
+                } else if (!matchPointing) {
                     sendPlayerTitle(ChatColor.RED + "" + countdown + "...", "", 5, 10, 5);
                 }
                 countdown--;

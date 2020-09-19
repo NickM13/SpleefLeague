@@ -26,6 +26,7 @@ public abstract class DBPlayer extends DBEntity {
     @DBField
     protected String username;
     protected List<Document> brokenProfiles;
+    protected long presaved = -1;
     
     // Current battle state the player is in (None, Battler, Spectator, or Ref)
 
@@ -39,6 +40,14 @@ public abstract class DBPlayer extends DBEntity {
     
     protected DBPlayer() {
 
+    }
+
+    public void setPresaved() {
+        presaved = System.currentTimeMillis() + 5000;
+    }
+
+    public boolean isPresaved() {
+        return presaved > System.currentTimeMillis();
     }
 
     /**

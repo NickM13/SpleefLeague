@@ -50,7 +50,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
  * @author NickM13
  * @param <P> extends DBPlayer
  */
-public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessageListener {
+public class PlayerManager <P extends DBPlayer> implements Listener {
 
     private final Map<UUID, P> onlinePlayerList;
     private final Map<UUID, P> playerList;
@@ -280,6 +280,15 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
         }
     }
 
+    public void saveForTransfer(UUID uuid) {
+        P p = get(uuid);
+        if (p != null) {
+            save(p);
+            p.setPresaved();
+        }
+
+    }
+
     /**
      * Remove a DBPlayer from the player list
      * Called on player disconnects from this server
@@ -290,7 +299,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
         if (playerList.containsKey(player.getUniqueId())) {
             P p = onlinePlayerList.remove(player.getUniqueId());
             if (p != null) {
-                save(p);
+                if (!p.isPresaved())
+                    save(p);
                 p.close();
             }
             playerList.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
@@ -381,31 +391,12 @@ public class PlayerManager <P extends DBPlayer> implements Listener, PluginMessa
         }
     }
 
-    /**
-     * Handles player connections to the server network, not just this server
-     *
-     * @param s Channel
-     * @param player Player
-     * @param bytes Packet
-     */
-    @Override
-    public void onPluginMessageReceived(String s, Player player, byte[] bytes) {
-        if (!s.equalsIgnoreCase("SLCore:Connection")) return;
+    public void onBungeeConnect(OfflinePlayer op) {
+        load(op.getUniqueId(), op.getName());
+    }
 
-        ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
-
-        String type = input.readUTF();
-        UUID uuid = UUID.fromString(input.readUTF());
-
-        switch (type) {
-            case "connect":
-                OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-                load(uuid, op.getName());
-                break;
-            case "disconnect":
-                playerList.remove(uuid);
-                break;
-        }
+    public void onBungeeDisconnect(UUID uuid) {
+        playerList.remove(uuid);
     }
 
 }

@@ -23,7 +23,7 @@ public class BonanzaSpleefArena {
                 .setDescription("Drop in anytime to this fast paced, constant battleground of Spleef glory!" +
                         "  Compete for kill streaks against other players and become a champion." +
                         "\n\nYou may queue for other games while playing Bonanza Spleef." +
-                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.BONANZA.getBattleMode()).getCurrentlyPlaying())
+                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.BONANZA.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)
                 .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.BONANZA.getBattleMode(), cp));
         

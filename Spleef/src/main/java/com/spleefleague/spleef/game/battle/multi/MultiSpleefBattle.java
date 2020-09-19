@@ -31,7 +31,12 @@ public class MultiSpleefBattle extends DynamicBattle<MultiSpleefPlayer> {
     public void fillField() {
         SpleefUtils.fillFieldFast(this, null);
     }
-    
+
+    @Override
+    protected void sendEndMessage(MultiSpleefPlayer msp) {
+
+    }
+
     @Override
     public void reset() {
         fillField();

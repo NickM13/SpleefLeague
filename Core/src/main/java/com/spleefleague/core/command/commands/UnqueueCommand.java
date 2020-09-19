@@ -6,6 +6,8 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
@@ -26,7 +28,9 @@ public class UnqueueCommand extends CoreCommand {
         if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");
         } else {
-            error(sender, "You aren't in any queues!");
+            ByteArrayDataOutput output = ByteStreams.newDataOutput();
+            output.writeUTF(sender.getIdentifier());
+            sender.getPlayer().sendPluginMessage(Core.getInstance(), "queue:leaveall", output.toByteArray());
         }
     }
     

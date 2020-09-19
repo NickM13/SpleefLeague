@@ -2,6 +2,7 @@ package com.spleefleague.splegg.game.multi;
 
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.dynamic.DynamicBattle;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
@@ -26,6 +27,11 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
     @Override
     protected void setupBaseSettings() {
         SpleggUtils.setupBaseSettings(this);
+    }
+
+    @Override
+    public void updateExperience() {
+        chatGroup.setExperience((float) (getRoundTime() / 600), 0);
     }
 
     @Override
@@ -59,8 +65,14 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
 
     @Override
     protected void sendEndMessage(MultiSpleggPlayer msp) {
-        chatGroup.sendTitle(msp.getCorePlayer().getDisplayName() + " won the game!",
-                ChatColor.RED + msp.getGun1().getName() + "&7 and " + ChatColor.BLUE + msp.getGun2().getName(), 20, 160, 20);
+        chatGroup.sendTitle(msp.getCorePlayer().getDisplayName() + " won the game",
+                ChatColor.RED + msp.getGun1().getName() + ChatColor.GRAY + " and " + ChatColor.BLUE + msp.getGun2().getName(), 20, 160, 20);
+    }
+
+    @Override
+    protected void failBattler(CorePlayer cp) {
+        super.failBattler(cp);
+        gameWorld.doFailBlast(cp);
     }
 
 }

@@ -1,20 +1,19 @@
 package com.spleefleague.proxycore.listener;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketConnection;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshAll;
 import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.spleefleague.proxycore.game.queue.QueueContainer;
+import com.spleefleague.proxycore.game.queue.QueueManager;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,32 +24,14 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onPostLogin(PostLoginEvent event) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-        output.writeUTF("connect");
-        output.writeUTF(event.getPlayer().getUniqueId().toString());
-
-        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServers().entrySet()) {
-            if (!server.getValue().getPlayers().isEmpty()) {
-                server.getValue().sendData("slcore:connection", output.toByteArray());
-            }
-        }
+        ProxyCore.getInstance().sendPacket(new PacketConnection(PacketConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId()));
 
         ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
     }
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-        output.writeUTF("disconnect");
-        output.writeUTF(event.getPlayer().getUniqueId().toString());
-
-        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServers().entrySet()) {
-            if (!server.getValue().getPlayers().isEmpty()) {
-                server.getValue().sendData("slcore:connection", output.toByteArray());
-            }
-        }
+        ProxyCore.getInstance().sendPacket(new PacketConnection(PacketConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
 
         ProxyCore.getInstance().getPlayers().onPlayerQuit(event.getPlayer());
     }
@@ -60,33 +41,17 @@ public class ConnectionListener implements Listener {
         ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId()).setCurrentServer(event.getPlayer().getServer().getInfo());
 
         if (event.getPlayer().getServer().getInfo().getPlayers().size() == 1) {
-            ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-            output.writeInt(ProxyCore.getInstance().getPlayers().getAll().size());
-            for (ProxyCorePlayer pcp : ProxyCore.getInstance().getPlayers().getAll()) {
-                output.writeUTF(pcp.getIdentifier());
+            List<QueueContainerInfo> queueInfoList = new ArrayList<>();
+            for (Map.Entry<String, QueueContainer> entry : QueueManager.getContainerMap().entrySet()) {
+                queueInfoList.add(new QueueContainerInfo(entry.getKey(),
+                        entry.getValue().getQueueSize(),
+                        entry.getValue().getPlaying().size(),
+                        entry.getValue().getSpectating().size()));
             }
 
-            event.getPlayer().getServer().getInfo().sendData("slcore:refresh", output.toByteArray());
-        }
-    }
-
-    @EventHandler
-    public void onPluginMessage(PluginMessageEvent event) {
-        ByteArrayDataInput input;
-        String type;
-        switch (event.getTag()) {
-            case "slcore:connection":
-                input = ByteStreams.newDataInput(event.getData());
-                type = input.readUTF();
-                switch (type) {
-                    case "lobby":
-                        if (event.getSender() instanceof ProxiedPlayer) {
-                            ((ProxiedPlayer) event.getSender()).connect(ProxyCore.getInstance().getProxy().getServers().get("lobby"));
-                        }
-                        break;
-                }
-                break;
+            ProxyCore.getInstance().sendPacket(
+                    event.getPlayer().getServer().getInfo(),
+                    new PacketRefreshAll(ProxyCore.getInstance().getPlayers().getAll(), queueInfoList));
         }
     }
 

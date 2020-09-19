@@ -80,12 +80,14 @@
             <artifactId>mongo-java-driver</artifactId>
             <version>3.12.1</version>
         </dependency>
+
         <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.16-R0.2-SNAPSHOT</version>
+            <groupId>io.github.waterfallmc</groupId>
+            <artifactId>waterfall-api</artifactId>
+            <version>1.16-R0.4-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
+
         <dependency>
             <groupId>com.spleefleague</groupId>
             <artifactId>CoreAPI</artifactId>

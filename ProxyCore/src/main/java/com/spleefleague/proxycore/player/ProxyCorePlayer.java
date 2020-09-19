@@ -1,9 +1,8 @@
 package com.spleefleague.proxycore.player;
 
-import com.spleefleague.coreapi.player.PlayerRatings;
-import com.spleefleague.coreapi.player.PlayerStatistics;
 import com.spleefleague.coreapi.player.RatedPlayer;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.queue.QueueContainer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -16,7 +15,8 @@ public class ProxyCorePlayer extends RatedPlayer {
     private ServerInfo currentServer = null;
     private ProxyParty party = null;
     private ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
-    private boolean inBattle = false;
+    private boolean battling = false;
+    private QueueContainer battleContainer = null;
 
     public ProxyCorePlayer() {
 
@@ -56,12 +56,26 @@ public class ProxyCorePlayer extends RatedPlayer {
         return ProxyCore.getInstance().getProxy().getPlayer(uuid);
     }
 
-    public boolean isInBattle() {
-        return inBattle;
+    public boolean isBattling() {
+        return battling;
     }
 
-    public void setInBattle(boolean inBattle) {
-        this.inBattle = inBattle;
+    public void setBattling(boolean state) {
+        battling = state;
+    }
+
+    public QueueContainer getBattleContainer() {
+        return battleContainer;
+    }
+
+    public void setBattleContainer(QueueContainer battleContainer) {
+        if (this.battleContainer != null) {
+            this.battleContainer.removePlayer(getUniqueId());
+        }
+        this.battleContainer = battleContainer;
+        if (battleContainer == null) {
+            this.battling = false;
+        }
     }
 
     public void setParty(ProxyParty party) {

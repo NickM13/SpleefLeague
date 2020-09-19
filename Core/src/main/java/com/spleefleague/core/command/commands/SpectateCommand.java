@@ -39,22 +39,6 @@ public class SpectateCommand extends CoreCommand {
             sender.getBattle().leavePlayer(sender);
             success(sender, "You are no longer spectating");
         } else {
-            /*
-            if (CorePlugin.getIngamePlayerNames().isEmpty()) {
-                error(sender, "There are no active games to spectate!");
-                return;
-            }
-            int r = new Random().nextInt(CorePlugin.getIngamePlayerNames().size());
-            int i = 0;
-            for (String name : CorePlugin.getIngamePlayerNames()) {
-                if (i == r) {
-                    spectate(sender, name);
-                    return;
-                }
-                i++;
-            }
-            error(sender, "There are no active games to spectate!");
-             */
             error(sender, CoreError.SETUP);
         }
     }

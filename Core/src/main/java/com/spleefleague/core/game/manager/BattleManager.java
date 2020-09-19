@@ -49,6 +49,8 @@ public abstract class BattleManager {
 
     protected final List<Battle<?>> battles;
 
+    protected int queued, playing, spectators;
+
     protected BattleManager(BattleMode mode) {
         this.name = mode.getName();
         this.displayName = mode.getDisplayName();
@@ -70,7 +72,7 @@ public abstract class BattleManager {
             while (bit.hasNext()) {
                 b = bit.next();
                 if (b != null) {
-                    if (b.isFinished()) {
+                    if (b.isDestroyed()) {
                         bit.remove();
                     } else {
                         b.doCountdown();
@@ -141,8 +143,28 @@ public abstract class BattleManager {
         return players;
     }
 
-    public int getCurrentlyPlaying() {
-        return getIngamePlayers();
+    public void setQueued(int num) {
+        queued = num;
+    }
+
+    public void setPlaying(int num) {
+        playing = num;
+    }
+
+    public void setSpectators(int num) {
+        spectators = num;
+    }
+
+    public int getQueued() {
+        return queued;
+    }
+
+    public int getPlaying() {
+        return playing;
+    }
+
+    public int getSpectators() {
+        return spectators;
     }
     
     public abstract void startMatch(List<CorePlayer> corePlayers, String name);

@@ -75,7 +75,17 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
                 + " between "
                 + CoreUtils.mergePlayerNames(battlers.keySet()) + "!");
     }
-    
+
+    /**
+     * Start a round<br>
+     * Resets the field and its players, also used in Reset Request
+     */
+    @Override
+    public void startRound() {
+        super.startRound();
+        frozen = false;
+    }
+
     @Override
     protected void fillField() {
     
@@ -144,6 +154,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             sendEndMessage(winner);
         }
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);
+        finished = true;
     }
 
     protected abstract void sendEndMessage(BP winner);
@@ -160,8 +171,10 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             endRound(battlers.get(cp));
         } else if (remainingPlayers.size() == 1) {
             endRound(remainingPlayers.iterator().next());
-        } else {
-            addBattlerGhost(cp);
+        }
+        addBattlerGhost(cp);
+        if (remainingPlayers.size() > 1) {
+            chatGroup.sendMessage(cp.getDisplayName() + " has been eliminated, " + remainingPlayers.size() + " remaining");
         }
     }
     

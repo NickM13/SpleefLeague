@@ -17,7 +17,6 @@ import com.spleefleague.core.game.request.PauseRequest;
 import com.spleefleague.core.game.request.PlayToRequest;
 import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.CorePlayerPurse;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.util.variable.Position;
@@ -25,14 +24,18 @@ import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
-import jdk.internal.joptsimple.internal.Strings;
+import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndRated;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -176,6 +179,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void endRound(BP winner) {
+        matchPointing = false;
         if (winner == null) {
             chatGroup.sendMessage(Chat.ERROR + "No other player found!");
             startRound();
@@ -186,7 +190,8 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             onScorePoint(winner);
             startRound();
             if (winner.getRoundWins() == playToPoints - 1) {
-                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 70, 5);
+                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 50, 5);
+                matchPointing = true;
             }
         } else {
             endBattle(winner);
@@ -244,14 +249,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void endBattle(BP winner) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-        output.writeUTF(getMode().getName());   // Mode Name
         if (winner == null) {
-            output.writeBoolean(false);
-            output.writeInt(battlers.values().size());
-            for (BattlePlayer bp : battlers.values()) {
-                output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
-            }
+            Core.getInstance().sendPacket(new PacketBattleEndUnrated(
+                    getMode().getName(),
+                    battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
             getPlugin().sendMessage(Chat.DEFAULT + "Battle between "
                     + Chat.PLAYER_NAME + CoreUtils.mergePlayerNames(battlers.keySet())
                     + Chat.DEFAULT + " was peacefully concluded.");
@@ -264,11 +265,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
             }
             if (loser == null) {
-                output.writeBoolean(false);         // Rating Change
-                output.write(battlers.size());
-                for (BattlePlayer bp : battlers.values()) {
-                    output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
-                }
+                Core.getInstance().sendPacket(new PacketBattleEndUnrated(
+                        getMode().getName(),
+                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 loser = winner;
                 getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
                         + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
@@ -281,8 +280,6 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                         + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
                         + Chat.DEFAULT + ")");
             } else {
-                output.writeBoolean(true);              // Rating Change
-                output.writeInt(getMode().getSeason()); // Mode Season
                 for (BattlePlayer bp : battlers.values()) {
                     bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
                     StringBuilder linebreak = new StringBuilder(Chat.colorize("             &8"));
@@ -293,11 +290,13 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
                 applyRewards(winner);
                 applyEloChange(winner);
-                output.writeInt(battlers.size());
-                for (BattlePlayer bp : battlers.values()) {
-                    output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
-                    output.writeInt(bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()));
-                }
+                Core.getInstance().sendPacket(new PacketBattleEndRated(
+                        getMode().getName(),
+                        getMode().getSeason(),
+                        battlers.values().stream().map(bp -> new RatedPlayerInfo(
+                                bp.getCorePlayer().getUniqueId(),
+                                bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()))
+                        ).collect(Collectors.toList())));
                 getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
                         + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                         + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
@@ -311,7 +310,6 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             }
         }
         destroy();
-        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:end", output.toByteArray());
     }
     
     /**

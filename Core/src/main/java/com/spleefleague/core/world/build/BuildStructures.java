@@ -21,9 +21,11 @@ public class BuildStructures {
         fieldCol = Core.getInstance().getPluginDB().getCollection("Structures");
         for (Document document : fieldCol.find()) {
             BuildStructure buildStructure = new BuildStructure();
-            buildStructure.load(document);
-            STRUCTURES.put(buildStructure.getName(), buildStructure);
+            if (buildStructure.load(document)) {
+                STRUCTURES.put(buildStructure.getName(), buildStructure);
+            }
         }
+        System.out.println("Loaded " + STRUCTURES.size() + " structures.");
     }
     
     public static boolean create(CorePlayer sender, String structureName) {

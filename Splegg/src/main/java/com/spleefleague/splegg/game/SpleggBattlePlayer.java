@@ -69,12 +69,13 @@ public class SpleggBattlePlayer extends BattlePlayer {
         } else if (spleggGun1.getProjectileStats().fireSystem == ProjectileStats.FireSystem.CHARGE) {
             if (cooldown1 <= getBattle().getRoundTime()) {
                 if (charge1 >= 0) {
-                    if (charge1 >= 0.2) {
+                    double chargePercent = Math.min(1, Math.floor(5 * (getBattle().getRoundTime() - charge1) / (spleggGun1.getProjectileStats().chargeTime / 20.)) / 5.);
+                    if (chargePercent >= 0.2) {
                         cooldown1 = getBattle().getRoundTime() + spleggGun1.getProjectileStats().fireCooldown / 20.;
                         getPlayer().removePotionEffect(PotionEffectType.SLOW);
                         getBattle().getGameWorld().shootProjectileCharged(getCorePlayer(),
                                 spleggGun1.getProjectileStats(),
-                                Math.min(1, Math.round(5 * (getBattle().getRoundTime() - charge1) / (spleggGun1.getProjectileStats().chargeTime / 20.)) / 5));
+                                chargePercent);
                         charge1 = -1;
                     }
                 } else {

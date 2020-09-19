@@ -712,10 +712,8 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 futureShots.put(shooter.getUniqueId(), new HashSet<>());
             }
             futureShots.get(shooter.getUniqueId()).add(new FutureShot(projectileStats, location.clone().toVector().subtract(shooter.getLocation().clone().toVector()), charge));
-            return shoot(shooter, location, projectileStats, charge);
-        } else {
-            return shoot(shooter, location, projectileStats, charge);
         }
+        return shoot(shooter, location, projectileStats, charge);
     }
 
     public List<net.minecraft.server.v1_16_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
@@ -785,10 +783,8 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 futureShots.put(shooter.getUniqueId(), new HashSet<>());
             }
             futureShots.get(shooter.getUniqueId()).add(new FutureShot(projectileStats, location.clone().toVector().subtract(shooter.getLocation().clone().toVector()), 1));
-            return shoot(shooter, location, projectileStats, 1);
-        } else {
-            return shoot(shooter, location, projectileStats, 1);
         }
+        return shoot(shooter, location, projectileStats, 1);
     }
     
     public void doFailBlast(CorePlayer cp) {
