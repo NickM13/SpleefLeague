@@ -4,7 +4,6 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
@@ -13,16 +12,17 @@ import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.SpleefBattlePlayer;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.mobility.MobilityEnderRift;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,22 +32,21 @@ import java.util.Map;
  */
 public class PowerSpleefPlayer extends SpleefBattlePlayer {
 
-    private Map<String, Object> powerValueMap = new HashMap<>();
+    private AbilityStats utilityStats, offensiveStats, mobilityStats;
 
     private AbilityUtility utility;
     private AbilityOffensive offensive;
     private AbilityMobility mobility;
 
     // Cooldown is the seconds into the current round that the ability will have all of its charges back.
-    private Map<Ability.Type, Double> cooldowns = new HashMap<>();
+    private final Map<Ability.Type, Double> cooldowns = new HashMap<>();
 
     public PowerSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
-        updatePowers();
+        selectPowers();
     }
 
-    public void updatePowers() {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
+    public void selectPowers() {
         chooseOffensive();
         chooseUtility();
         chooseMobililty();
@@ -59,36 +58,36 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     public void chooseOffensive() {
         SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveOffensive() != null) {
-            offensive = sp.getActiveOffensive();
+            offensiveStats = sp.getActiveOffensive();
         } else {
-            offensive = (AbilityOffensive) Abilities.getAbilityRandom(Ability.Type.OFFENSIVE);
-            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &cOffensive &7power: &c" + offensive.getDisplayName());
+            offensiveStats = Abilities.getRandomAbilityStats(Ability.Type.OFFENSIVE);
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &cOffensive &7power: &c" + offensiveStats.getName());
         }
-        offensive.reset(this);
+        offensive = (AbilityOffensive) offensiveStats.create(this);
         getPlayer().setCooldown(Ability.Type.OFFENSIVE.getMaterial(), 0);
     }
 
     public void chooseUtility() {
         SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveUtility() != null) {
-            utility = sp.getActiveUtility();
+            utilityStats = sp.getActiveUtility();
         } else {
-            utility = (AbilityUtility) Abilities.getAbilityRandom(Ability.Type.UTILITY);
-            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &9Utility &7power: &9" + utility.getDisplayName());
+            utilityStats = Abilities.getRandomAbilityStats(Ability.Type.UTILITY);
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &9Utility &7power: &9" + utilityStats.getName());
         }
-        utility.reset(this);
+        utility = (AbilityUtility) utilityStats.create(this);
         getPlayer().setCooldown(Ability.Type.UTILITY.getMaterial(), 0);
     }
 
     public void chooseMobililty() {
         SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
         if (sp.getActiveMobility() != null) {
-            mobility = sp.getActiveMobility();
+            mobilityStats = sp.getActiveMobility();
         } else {
-            mobility = (AbilityMobility) Abilities.getAbilityRandom(Ability.Type.MOBILITY);
-            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &aMobility &7power: &a" + mobility.getDisplayName());
+            mobilityStats = Abilities.getRandomAbilityStats(Ability.Type.MOBILITY);
+            Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &aMobility &7power: &a" + mobilityStats.getName());
         }
-        mobility.reset(this);
+        mobility = (AbilityMobility) mobilityStats.create(this);
         getPlayer().setCooldown(Ability.Type.MOBILITY.getMaterial(), 0);
     }
 
@@ -110,21 +109,22 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         blocksBrokenRound = 0;
     }
 
-    //@Deprecated
-    public Map<String, Object> getPowerValueMap() {
-        return powerValueMap;
+    public AbilityStats getAbilityStats(Ability.Type type) {
+        switch (type) {
+            case OFFENSIVE: return offensiveStats;
+            case UTILITY: return utilityStats;
+            case MOBILITY: return mobilityStats;
+            default: return null;
+        }
     }
 
-    public <T extends Object> T getPowerValue(Class<T> clazz, String key) {
-        return (T) powerValueMap.get(key);
-    }
-
-    public <T extends Object> T getPowerValue(Class<T> clazz, String key, T def) {
-        return (T) powerValueMap.getOrDefault(key, def);
-    }
-
-    public void setPowerValue(String key, Object value) {
-        powerValueMap.put(key, value);
+    public Ability getAbility(Ability.Type type) {
+        switch (type) {
+            case OFFENSIVE: return offensive;
+            case UTILITY: return utility;
+            case MOBILITY: return mobility;
+            default: return null;
+        }
     }
 
     public AbilityUtility getUtility() {
@@ -132,7 +132,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public String getUtilityName() {
-        return utility != null ? utility.getDisplayName() : "";
+        return utilityStats != null ? utilityStats.getName() : "";
     }
 
     public AbilityOffensive getOffensive() {
@@ -140,7 +140,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public String getOffensiveName() {
-        return offensive != null ? offensive.getDisplayName() : "";
+        return offensiveStats != null ? offensiveStats.getName() : "";
     }
 
     public AbilityMobility getMobility() {
@@ -148,7 +148,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public String getMobilityName() {
-        return mobility != null ? mobility.getDisplayName() : "";
+        return mobilityStats != null ? mobilityStats.getName() : "";
     }
 
     public void resetCooldowns() {
@@ -157,13 +157,13 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
             getPlayer().setCooldown(type.getMaterial(), 40);
         }
         if (utility != null) {
-            utility.reset(this);
+            utility.reset();
         }
         if (offensive != null) {
-            offensive.reset(this);
+            offensive.reset();
         }
         if (mobility != null) {
-            mobility.reset(this);
+            mobility.reset();
         }
     }
 
@@ -190,15 +190,15 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
             default: return;
         }
         if (ability == null) return;
-        ItemStack newItem = getPlayer().getInventory().getItem(ability.getType().getSlot());
+        ItemStack newItem = getPlayer().getInventory().getItem(ability.getStats().getType().getSlot());
         if (newItem != null) {
-            int charges = ability.getCharges(this);
+            int charges = ability.getCharges();
             if (newItem.getAmount() != charges) {
                 newItem.setAmount(charges);
-                getPlayer().getInventory().setItem(ability.getType().getSlot(), newItem);
+                getPlayer().getInventory().setItem(ability.getStats().getType().getSlot(), newItem);
             }
         }
-        ability.update(this);
+        ability.update();
     }
 
     private static final String CD_OUTER = ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC;
@@ -207,7 +207,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     private String toHotbarString(String color, Ability ability) {
         StringBuilder stringBuilder = new StringBuilder(CD_OUTER + "[");
         if (ability != null) {
-            stringBuilder.append(ability.getHotbarString(color, CD_COLOR, this));
+            stringBuilder.append(ability.getHotbarString(color, CD_COLOR));
         } else {
             stringBuilder.append("─────");
         }
@@ -229,14 +229,14 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     @Override
     public void onRightClick() {
         if (mobility != null && getBattle().isRoundStarted()) {
-            mobility.activate(this);
+            mobility.activate();
         }
     }
 
     @Override
     public void onSwapItem() {
         if (utility != null && getBattle().isRoundStarted()) {
-            utility.activate(this);
+            utility.activate();
         }
     }
 
@@ -248,17 +248,17 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
                 switch (type) {
                     case OFFENSIVE:
                         if (offensive != null && getBattle().isRoundStarted()) {
-                            offensive.activate(this);
+                            offensive.activate();
                         }
                         break;
                     case UTILITY:
                         if (utility != null && getBattle().isRoundStarted()) {
-                            utility.activate(this);
+                            utility.activate();
                         }
                         break;
                     case MOBILITY:
                         if (mobility != null && getBattle().isRoundStarted()) {
-                            mobility.activate(this);
+                            mobility.activate();
                         }
                         break;
                 }
@@ -269,7 +269,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     @Override
     public void onDropItem() {
         if (offensive != null && getBattle().isRoundStarted()) {
-            offensive.activate(this);
+            offensive.activate();
         }
     }
 
@@ -277,13 +277,13 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     public void onStartSneak() {
         super.onStartSneak();
         if (offensive != null && getBattle().isRoundStarted()) {
-            offensive.onStartSneak(this);
+            offensive.onStartSneak();
         }
         if (utility != null && getBattle().isRoundStarted()) {
-            utility.onStartSneak(this);
+            utility.onStartSneak();
         }
         if (mobility != null && getBattle().isRoundStarted()) {
-            mobility.onStartSneak(this);
+            mobility.onStartSneak();
         }
     }
 
@@ -296,39 +296,39 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     public void onBlockBreak() {
         super.onBlockBreak();
         if (offensive != null && getBattle().isRoundStarted()) {
-            offensive.onBlockBreak(this);
+            offensive.onBlockBreak();
         }
         if (utility != null && getBattle().isRoundStarted()) {
-            utility.onBlockBreak(this);
+            utility.onBlockBreak();
         }
         if (mobility != null && getBattle().isRoundStarted()) {
-            mobility.onBlockBreak(this);
+            mobility.onBlockBreak();
         }
     }
 
     @Override
     public void onPlayerPunch(BattlePlayer target) {
         if (offensive != null && getBattle().isRoundStarted()) {
-            offensive.onPlayerPunch(this, (PowerSpleefPlayer) target);
+            offensive.onPlayerPunch((PowerSpleefPlayer) target);
         }
         if (utility != null && getBattle().isRoundStarted()) {
-            utility.onPlayerPunch(this, (PowerSpleefPlayer) target);
+            utility.onPlayerPunch((PowerSpleefPlayer) target);
         }
         if (mobility != null && getBattle().isRoundStarted()) {
-            mobility.onPlayerPunch(this, (PowerSpleefPlayer) target);
+            mobility.onPlayerPunch((PowerSpleefPlayer) target);
         }
     }
 
     @Override
     public void onPlayerHit(BattlePlayer attacker) {
         if (offensive != null && getBattle().isRoundStarted()) {
-            offensive.onHit(this);
+            offensive.onHit();
         }
         if (utility != null && getBattle().isRoundStarted()) {
-            utility.onHit(this);
+            utility.onHit();
         }
         if (mobility != null && getBattle().isRoundStarted()) {
-            mobility.onHit(this);
+            mobility.onHit();
         }
     }
 

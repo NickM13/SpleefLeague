@@ -1,13 +1,12 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Bukkit;
@@ -20,6 +19,14 @@ import org.bukkit.util.Vector;
  * @since 5/19/2020
  */
 public class OffensiveLivingBomb extends AbilityOffensive {
+
+    public static AbilityStats init() {
+        return init(OffensiveLivingBomb.class)
+                .setCustomModelData(5)
+                .setName("Living Bomb")
+                .setDescription("Ignite a living bomb inside yourself, detonating after %DETONATE_AFTER% seconds, firing destructive shrapnel, destroying blocks in a small radius around the player and shooting them upwards. Players caught by the blast are knocked back.")
+                .setUsage(15);
+    }
 
     private static ProjectileStats projectileStats = new ProjectileStats();
 
@@ -39,85 +46,65 @@ public class OffensiveLivingBomb extends AbilityOffensive {
     private static final double EXPLODE_PERCENT = 0.75D;
     private static final double EXPLODE_RADIUS = 3;
     private static final double KNOCKBACK = 1.5;
+    private static final double DETONATE_AFTER = TICK_COUNT * TICK_DELAY;
 
-    public OffensiveLivingBomb() {
-        super(5, 1, 15, 0.25D);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Living Bomb";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Ignite a living bomb inside yourself, detonating after " +
-                Chat.STAT + TICK_COUNT * TICK_DELAY +
-                Chat.DESCRIPTION + " seconds, firing destructive shrapnel, destroying blocks in a small radius around the player and shooting them upwards. Players caught by the blast are knocked back.";
-    }
+    private boolean bombing = false;
 
     /**
      * Called every 0.1 seconds (2 ticks)
-     *
-     * @param psp
      */
     @Override
-    public void update(PowerSpleefPlayer psp) {
+    public void update() {
 
     }
 
-    private void tick(PowerSpleefPlayer psp, int count) {
-        if (!(boolean) psp.getPowerValueMap().get("livingbomb")) return;
+    private void tick(int count) {
+        if (!bombing) return;
         if (count <= 0) {
-            psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-            psp.getBattle().getGameWorld().breakBlocks(new BlockPosition(
-                            psp.getPlayer().getLocation().getBlockX(),
-                            psp.getPlayer().getLocation().getBlockY(),
-                            psp.getPlayer().getLocation().getBlockZ()),
+            getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
+            getUser().getBattle().getGameWorld().breakBlocks(new BlockPosition(
+                            getPlayer().getLocation().getBlockX(),
+                            getPlayer().getLocation().getBlockY(),
+                            getPlayer().getLocation().getBlockZ()),
                     1D, EXPLODE_RADIUS, EXPLODE_PERCENT);
-            GameUtils.spawnPlayerParticles(psp, getType().getDustBig(), 2);
-            for (BattlePlayer bp : psp.getBattle().getBattlers()) {
-                if (!bp.getCorePlayer().equals(psp.getCorePlayer())) {
-                    Vector direction = bp.getPlayer().getLocation().toVector().subtract(psp.getPlayer().getLocation().toVector());
+            GameUtils.spawnPlayerParticles(getUser(), getStats().getType().getDustBig(), 2);
+            for (BattlePlayer bp : getUser().getBattle().getBattlers()) {
+                if (!bp.getCorePlayer().equals(getUser().getCorePlayer())) {
+                    Vector direction = bp.getPlayer().getLocation().toVector().subtract(getPlayer().getLocation().toVector());
                     if (direction.length() < 4) {
                         CoreUtils.knockbackEntity(bp.getPlayer(), direction, KNOCKBACK);
                     }
                 }
             }
-            Location loc = psp.getPlayer().getLocation().clone();
+            Location loc = getPlayer().getLocation().clone();
             loc.setPitch(0);
             loc.add(0, 1.2, 0);
-            psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), loc, projectileStats);
-            AbilityUtils.startFling(psp, new Vector(0, 1.2, 0), 0.2);
-            psp.getPowerValueMap().put("livingbomb", false);
+            getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), loc, projectileStats);
+            AbilityUtils.startFling(getUser(), new Vector(0, 1.2, 0), 0.2);
+            bombing = false;
             return;
         }
-        psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1);
-        psp.getPowerValueMap().put("livingbomb", true);
-        psp.getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> tick(psp, count-1), (int) (TICK_DELAY * 20)));
-        GameUtils.spawnPlayerParticles(psp, getType().getDustMedium(), 1);
+        getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1);
+        getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> tick(count-1), (int) (TICK_DELAY * 20)));
+        GameUtils.spawnPlayerParticles(getUser(), getStats().getType().getDustMedium(), 1);
     }
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getPowerValueMap().put("livingbomb", true);
-        tick(psp, TICK_COUNT);
+    public boolean onUse() {
+        bombing = true;
+        tick(TICK_COUNT);
         return true;
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
-        psp.getPowerValueMap().put("livingbomb", false);
+    public void reset() {
+        bombing = false;
     }
 
 }

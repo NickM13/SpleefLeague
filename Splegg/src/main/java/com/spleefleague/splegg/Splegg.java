@@ -39,7 +39,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
         playerManager = new PlayerManager<>(this, SpleggPlayer.class, getPluginDB().getCollection("Players"));
 
         SpleggMode.init();
-        addBattleManager(SpleggMode.CLASSIC.getBattleMode());
+        addBattleManager(SpleggMode.VERSUS.getBattleMode());
         addBattleManager(SpleggMode.MULTI.getBattleMode());
         initMenu();
         initCommands();

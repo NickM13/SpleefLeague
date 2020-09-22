@@ -7,7 +7,7 @@ import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -21,13 +21,21 @@ import org.bukkit.util.Vector;
  */
 public class OffensiveBoomerang extends AbilityOffensive {
 
+    public static AbilityStats init() {
+        return init(OffensiveBoomerang.class)
+                .setCustomModelData(12)
+                .setName("Boomerang")
+                .setDescription("Throw a boomerang forward destroying all destructible blocks it passes, returning to the sender after %X1% second.")
+                .setUsage(3);
+    }
+
     public static class BoomerangProjectile extends FakeEntitySnowball {
 
         Vector targetDir = null;
         int distanceTravelled;
 
-        public BoomerangProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, location, projectileStats);
+        public BoomerangProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(gameWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -92,36 +100,18 @@ public class OffensiveBoomerang extends AbilityOffensive {
         projectileStats.customModelData = 12;
     }
 
-    public OffensiveBoomerang() {
-        super(12, 3D);
-    }
-
     @Override
-    public String getDisplayName() {
-        return "Boomerang";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Throw a boomerang forward destroying all destructible blocks it passes, returning to the sender after " +
-                "&c1" +
-                " &7second.";
-    }
-
-    @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), projectileStats);
-        psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_LLAMA_SWAG, 1, 1.4f);
+    public boolean onUse() {
+        getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), projectileStats);
+        getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ENTITY_LLAMA_SWAG, 1, 1.4f);
         return true;
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
+    public void reset() {
 
     }
 

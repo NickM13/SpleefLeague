@@ -7,6 +7,8 @@ import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketChatSpigot;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -18,39 +20,31 @@ public class PacketChatBungee extends PacketBungee {
     public UUID sender;
     public String channel;
     public String message;
+    public Set<UUID> blacklist;
 
     public PacketChatBungee() { }
 
     public PacketChatBungee(UUID sender, String channel, String message) {
+        this(sender, channel, message, new HashSet<>());
+    }
+
+    public PacketChatBungee(UUID sender, String channel, String message, Set<UUID> blacklist) {
         this.sender = sender;
         this.channel = channel;
         this.message = message;
+        this.blacklist = blacklist;
     }
 
     public PacketChatBungee(PacketChatSpigot packet) {
         this.sender = packet.sender;
         this.channel = packet.channel;
         this.message = packet.message;
+        this.blacklist = packet.blacklist;
     }
 
     @Override
     public int getTag() {
         return PacketType.Bungee.CHAT.ordinal();
-    }
-
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        String uuidStr = input.readUTF();
-        sender = uuidStr.isEmpty() ? null : UUID.fromString(uuidStr);
-        channel = input.readUTF();
-        message = input.readUTF();
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(sender == null ? "" : sender.toString());
-        output.writeUTF(channel);
-        output.writeUTF(message);
     }
 
 }

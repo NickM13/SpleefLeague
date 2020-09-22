@@ -25,6 +25,7 @@ public abstract class BattlePlayer {
     private boolean fallen;
     private int roundWins;
     private long lastWin = 0;
+    private boolean channeling = false;
 
     public BattlePlayer(CorePlayer cp, Battle<?> battle) {
         this.cp = cp;
@@ -83,10 +84,19 @@ public abstract class BattlePlayer {
         return battle;
     }
 
+    public void setChanneling(boolean state) {
+        channeling = state;
+    }
+
+    public boolean isChanneling() {
+        return channeling;
+    }
+
     /**
      * Called when a player spawns into a battle
      */
     public void respawn() {
+        channeling = false;
         fallen = false;
         if (checkpoint != -1) {
             player.teleport(battle.getCheckpoint(checkpoint));

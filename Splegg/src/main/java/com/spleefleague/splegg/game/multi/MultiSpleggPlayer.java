@@ -12,9 +12,7 @@ import com.spleefleague.splegg.game.SpleggGun;
 public class MultiSpleggPlayer extends SpleggBattlePlayer {
 
     public MultiSpleggPlayer(CorePlayer cp, Battle<?> battle) {
-        super(cp, battle);
-        this.spleggGun1 = cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault());
-        this.spleggGun2 = cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault());
+        super(cp, battle, cp.getCollectibles().getActive(SpleggGun.class, "m1"), cp.getCollectibles().getActive(SpleggGun.class, "m2"));
     }
 
 }

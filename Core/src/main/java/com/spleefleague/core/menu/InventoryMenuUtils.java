@@ -152,17 +152,16 @@ public class InventoryMenuUtils {
     }
     
     public static ItemStack createCustomSkull(UUID uuid) {
-        OfflinePlayer op;
-        if (uuid == null) {
-            op = Bukkit.getOfflinePlayer("Blaezon");
-        } else {
-            op = Bukkit.getOfflinePlayer(uuid);
+        if (uuid == null) return InventoryMenuSkullManager.getDefaultSkull();
+        OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+        ItemStack skullItem = new ItemStack(Material.PLAYER_HEAD);
+        ItemMeta itemMeta = skullItem.getItemMeta();
+        if (itemMeta instanceof SkullMeta) {
+            SkullMeta skullMeta = (SkullMeta) itemMeta;
+            skullMeta.setOwningPlayer(op);
+            skullItem.setItemMeta(skullMeta);
         }
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-        skullMeta.setOwningPlayer(op);
-        skull.setItemMeta(skullMeta);
-        return skull;
+        return skullItem;
     }
 
     public static ItemStack createCustomSkullOrDefault(UUID uuid) {

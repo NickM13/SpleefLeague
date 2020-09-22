@@ -14,13 +14,13 @@ import com.spleefleague.splegg.game.multi.MultiSpleggBattle;
  * @author NickM13
  */
 public enum SpleggMode {
-    
-    CLASSIC, MULTI;
+
+    VERSUS, MULTI;
     
     private static final String prefix = "splegg:";
     
     public static void init() {
-        BattleMode.addArenaMode(CLASSIC.getName(), "Classic Splegg", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSpleggBattle.class);
+        BattleMode.addArenaMode(VERSUS.getName(), "Splegg Versus", 2, 2, BattleMode.TeamStyle.VERSUS, false, ClassicSpleggBattle.class);
         BattleMode.addArenaMode(MULTI.getName(), "Multisplegg", 3, 32, BattleMode.TeamStyle.DYNAMIC, false, MultiSpleggBattle.class);
     }
     

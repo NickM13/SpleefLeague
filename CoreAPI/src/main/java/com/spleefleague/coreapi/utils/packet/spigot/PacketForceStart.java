@@ -37,25 +37,4 @@ public class PacketForceStart extends PacketSpigot {
         return PacketType.Spigot.FORCE_START.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        mode = input.readUTF();
-        query = input.readUTF();
-        int playerCount = input.readInt();
-        players = new ArrayList<>();
-        for (int i = 0; i < playerCount; i++) {
-            players.add(UUID.fromString(input.readUTF()));
-        }
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(mode);
-        output.writeUTF(query);
-        output.writeInt(players.size());
-        for (UUID uuid : players) {
-            output.writeUTF(uuid.toString());
-        }
-    }
-
 }

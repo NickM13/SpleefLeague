@@ -38,18 +38,4 @@ public class PacketTellBungee extends PacketBungee {
         return PacketType.Bungee.TELL.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        sender = UUID.fromString(input.readUTF());
-        target = UUID.fromString(input.readUTF());
-        message = input.readUTF();
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(sender.toString());
-        output.writeUTF(target.toString());
-        output.writeUTF(message);
-    }
-
 }

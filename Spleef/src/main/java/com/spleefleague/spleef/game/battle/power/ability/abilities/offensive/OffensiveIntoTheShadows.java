@@ -1,12 +1,16 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
-import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 /**
@@ -15,44 +19,41 @@ import org.bukkit.potion.PotionEffectType;
  */
 public class OffensiveIntoTheShadows extends AbilityOffensive {
 
+    public static AbilityStats init() {
+        return init(OffensiveIntoTheShadows.class)
+                .setCustomModelData(3)
+                .setName("Into the Shadows")
+                .setDescription("Turn invisible for %DURATION% seconds. Holds up to %charges% charges.")
+                .setUsage(3, 5, 2);
+    }
+
     private static final double DURATION = 1.25;
-
-    public OffensiveIntoTheShadows() {
-        super(3, 3, 5D, 2D);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Into the Shadows";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Turn invisible for " +
-                Chat.STAT + DURATION +
-                Chat.DESCRIPTION + " seconds" + ". Holds up to " +
-                Chat.STAT + this.charges +
-                Chat.DESCRIPTION + " charges.";
-    }
+    private static final Material INDICATOR = Material.ENDER_EYE;
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getPlayer().addPotionEffect(PotionEffectType.INVISIBILITY.createEffect((int) (DURATION * 20), 0));
-        psp.getPlayer().addPotionEffect(PotionEffectType.GLOWING.createEffect((int) (DURATION * 20), 0));
-        psp.getBattle().getBattlers().forEach(bp -> bp.getCorePlayer().getPlayer().hidePlayer(Spleef.getInstance(), psp.getPlayer()));
-        psp.getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
-            psp.getBattle().getBattlers().forEach(bp -> bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), psp.getPlayer()));
+    public boolean onUse() {
+        getPlayer().addPotionEffect(PotionEffectType.INVISIBILITY.createEffect((int) (DURATION * 20), 0));
+        getPlayer().addPotionEffect(PotionEffectType.GLOWING.createEffect((int) (DURATION * 20), 0));
+        getUser().getBattle().getBattlers().forEach(bp -> {
+            if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
+                bp.getCorePlayer().getPlayer().hidePlayer(Spleef.getInstance(), getPlayer());
+        });
+        getPlayer().getInventory().setItem(EquipmentSlot.OFF_HAND, new ItemStack(INDICATOR));
+        getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
+            getPlayer().getInventory().setItem(EquipmentSlot.OFF_HAND, null);
+            getUser().getBattle().getBattlers().forEach(bp -> {
+                if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
+                    bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), getPlayer());
+            });
         }, (int) (DURATION * 20) + 5));
-        psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.UI_TOAST_IN, 1, 1);
-        psp.getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,
-                psp.getPlayer().getBoundingBox().getCenterX(),
-                psp.getPlayer().getBoundingBox().getCenterY(),
-                psp.getPlayer().getBoundingBox().getCenterZ(),
+        getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.UI_TOAST_IN, 1, 1);
+        getUser().getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,
+                getPlayer().getBoundingBox().getCenterX(),
+                getPlayer().getBoundingBox().getCenterY(),
+                getPlayer().getBoundingBox().getCenterZ(),
                 20, 0.2, 0.9, 0.2, 0D,
                 Type.OFFENSIVE.getDustMedium());
         return true;
@@ -60,12 +61,13 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
-        psp.getBattle().getBattlers().forEach(bp -> bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), psp.getPlayer()));
+    public void reset() {
+        getUser().getBattle().getBattlers().forEach(bp -> {
+            if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
+                bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), getPlayer());
+        });
     }
 
 }

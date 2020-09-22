@@ -2,6 +2,7 @@ package com.spleefleague.core.game.battle.versus;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
@@ -27,6 +28,7 @@ import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndRated;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
@@ -199,43 +201,31 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     }
     
     protected int applyEloChange(BP winner) {
-        int eloChange;
         int avgRating = 0;
-    
-        for (BattlePlayer bp : battlers.values()) {
-            avgRating += bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
+        int winnerRating = winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
+
+        for (CorePlayer cp : battlers.keySet()) {
+            int rating = cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
+            avgRating += rating;
         }
         avgRating /= battlers.size();
-    
-        if (winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) > avgRating) {
-            eloChange = 20 - (int) (Math.min((winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()) - avgRating) / 500.0, 1) * 15);
-        } else {
-            eloChange = 20 + (int)(Math.min((avgRating - winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason())) / 500.0, 1) * 15);
-        }
+
+        int d = (avgRating - winnerRating) * battlers.size();
+        d = Math.min(Math.max(d, -750), 750);
+
+        int eloChange = (int) (0.00001f * d * d + 0.014f * d + 20.f);
 
         for (BattlePlayer bp : battlers.values()) {
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
-            if (bp.equals(winner)) {
-                //bp.getCorePlayer().addElo(getMode().getName(), getMode().getSeason(), eloChange);
-                boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), eloChange);
-                bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have gained "
-                        + ChatColor.GREEN + eloChange
-                        + ChatColor.GRAY + " Rating Points ("
-                        + ChatColor.RED + initialElo
-                        + ChatColor.GRAY + "->"
-                        + ChatColor.GREEN + (initialElo + eloChange)
-                        + ChatColor.GRAY + ")");
-            } else {
-                //bp.getCorePlayer().addElo(getMode().getName(), getMode().getSeason(), -eloChange);
-                bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
-                bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have lost "
-                        + ChatColor.GREEN + eloChange
-                        + ChatColor.GRAY + " Rating Points ("
-                        + ChatColor.RED + initialElo
-                        + ChatColor.GRAY + "->"
-                        + ChatColor.GREEN + (initialElo - eloChange)
-                        + ChatColor.GRAY + ")");
-            }
+            int toChange = bp.equals(winner) ? eloChange : -eloChange;
+            boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
+            bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have " + (toChange >= 0 ? "gained " : "lost ")
+                    + ChatColor.GREEN + eloChange
+                    + ChatColor.GRAY + " Rating Points ("
+                    + ChatColor.RED + initialElo
+                    + ChatColor.GRAY + "->"
+                    + ChatColor.GREEN + (initialElo + toChange)
+                    + ChatColor.GRAY + ")");
         }
         return eloChange;
     }
@@ -253,9 +243,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             Core.getInstance().sendPacket(new PacketBattleEndUnrated(
                     getMode().getName(),
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
-            getPlugin().sendMessage(Chat.DEFAULT + "Battle between "
+            getPlugin().sendMessageBlacklisted(Chat.DEFAULT + "Battle between "
                     + Chat.PLAYER_NAME + CoreUtils.mergePlayerNames(battlers.keySet())
-                    + Chat.DEFAULT + " was peacefully concluded.");
+                    + Chat.DEFAULT + " was peacefully concluded.",
+                    battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
         } else {
             BP loser = null;
             for (CorePlayer cp : battlers.keySet()) {
@@ -269,7 +260,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                         getMode().getName(),
                         battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 loser = winner;
-                getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                getPlugin().sendMessageBlacklisted(Chat.PLAYER_NAME + winner.getPlayer().getName()
                         + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                         + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
                         + Chat.PLAYER_NAME + loser.getPlayer().getName()
@@ -278,7 +269,8 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                         + Chat.GAMEMODE + getMode().getDisplayName() + " "
                         + Chat.DEFAULT + "("
                         + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                        + Chat.DEFAULT + ")");
+                        + Chat.DEFAULT + ")",
+                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
             } else {
                 for (BattlePlayer bp : battlers.values()) {
                     bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
@@ -297,7 +289,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                                 bp.getCorePlayer().getUniqueId(),
                                 bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()))
                         ).collect(Collectors.toList())));
-                getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
+                getPlugin().sendMessageBlacklisted(Chat.PLAYER_NAME + winner.getPlayer().getName()
                         + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
                         + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
                         + Chat.PLAYER_NAME + loser.getPlayer().getName()
@@ -306,9 +298,11 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                         + Chat.GAMEMODE + getMode().getDisplayName() + " "
                         + Chat.DEFAULT + "("
                         + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                        + Chat.DEFAULT + ")");
+                        + Chat.DEFAULT + ")",
+                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
             }
         }
+        sendRequeueMessage();
         destroy();
     }
     

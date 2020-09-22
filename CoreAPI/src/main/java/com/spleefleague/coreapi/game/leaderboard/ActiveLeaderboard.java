@@ -1,5 +1,8 @@
 package com.spleefleague.coreapi.game.leaderboard;
 
+import com.spleefleague.coreapi.player.RatedPlayer;
+import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
+
 import java.util.*;
 
 /**
@@ -53,6 +56,12 @@ public class ActiveLeaderboard extends Leaderboard {
                 scorePlayersMap.remove(score);
             }
             playerScoreMap.remove(player);
+        }
+    }
+
+    public void refreshPlayers(Set<RatedPlayerInfo> players) {
+        for (RatedPlayerInfo rpi : players) {
+            setPlayerScore(rpi.uuid, rpi.elo);
         }
     }
 

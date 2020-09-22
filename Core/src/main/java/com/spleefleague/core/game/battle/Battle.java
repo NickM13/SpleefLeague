@@ -6,9 +6,6 @@
 
 package com.spleefleague.core.game.battle;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatGroup;
@@ -23,20 +20,30 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
-import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
 
@@ -96,7 +103,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected boolean matchPointing = false;
     
     // Round countdown
-    protected static final int COUNTDOWN = 3;
+    protected int roundCountdown = 3;
     protected int countdown = 0;
 
     public Battle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
@@ -452,6 +459,20 @@ public abstract class Battle<BP extends BattlePlayer> {
                         getGameWorld().stopFutureShots(cp);
                     } else if (isInGoal(cp)) {
                         winBattler(cp);
+                    } else if (bp.isChanneling()) {
+                        Vector newVel = e.getPlayer().getVelocity().clone();
+                        if (Math.abs(e.getFrom().getX() - e.getTo().getX()) > 0.05 &&
+                                Math.abs(e.getFrom().getZ() - e.getTo().getZ()) > 0.05) {
+                            e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
+                                    e.getFrom().getX(),
+                                    e.getTo().getY(),
+                                    e.getFrom().getZ(),
+                                    e.getTo().getYaw(),
+                                    e.getTo().getPitch()));
+                            newVel.setX(0);
+                            newVel.setZ(0);
+                            e.getPlayer().setVelocity(newVel);
+                        }
                     } else {
                         checkCheckpoints(cp);
                     }
@@ -461,12 +482,16 @@ public abstract class Battle<BP extends BattlePlayer> {
                     }
                 }
             } else if (cp.getBattleState() == BattleState.SPECTATOR) {
-                if (arena.getSpectatorSpawn() != null) {
+                if (arena.getSpectatorSpawn() != null && !cp.isGhosting()) {
                     if (isInBorder(cp) || !isInSpectatorBorder(cp)) {
                         cp.getPlayer().teleport(arena.getSpectatorSpawn());
                     }
                 } else if (!isInSpectatorBorder(cp)) {
-                    cp.getPlayer().teleport(getClosestBattler(cp).getPlayer().getLocation());
+                    if (arena.getSpectatorSpawn() != null) {
+                        cp.getPlayer().teleport(arena.getSpectatorSpawn());
+                    } else {
+                        cp.getPlayer().teleport(getClosestBattler(cp).getPlayer().getLocation());
+                    }
                 }
             } else if (cp.getBattleState() == BattleState.SPECTATOR_GLOBAL) {
                 if (!cp.getPlayer().getGameMode().equals(org.bukkit.GameMode.CREATIVE) && arena.hasSpectatorSpawn() && (isInBorder(cp))) {
@@ -669,6 +694,15 @@ public abstract class Battle<BP extends BattlePlayer> {
         if (r < legendary) return OreType.LEGENDARY;
         return OreType.NONE;
     }
+
+    protected final void sendRequeueMessage() {
+        for (BattlePlayer bp : battlers.values()) {
+            TextComponent requeueText = new TextComponent(Chat.TAG_BRACE + " [" + Chat.SUCCESS + "Queue Again!" + Chat.TAG_BRACE + "]");
+            requeueText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to queue again").create()));
+            requeueText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/requeue"));
+            bp.getCorePlayer().sendMessage(requeueText);
+        }
+    }
     
     /**
      * Ends a battle, removes all players, destroys game world
@@ -811,22 +845,23 @@ public abstract class Battle<BP extends BattlePlayer> {
      * spectator spawn the spectator is set to GameMode 3
      * and forced to first person spectator of target
      *
-     * @param cp CorePlayer
+     * @param spectator CorePlayer
      * @param target Target
      */
-    public void addSpectator(CorePlayer cp, CorePlayer target) {
-        if (addPlayer(cp, BattleState.SPECTATOR)) {
-            spectators.add(cp);
-            cp.savePregameState();
-            cp.getPlayer().setAllowFlight(true);
-            cp.setGhosting(true);
-            cp.getPlayer().setFlying(true);
+    public void addSpectator(CorePlayer spectator, CorePlayer target) {
+        if (addPlayer(spectator, BattleState.SPECTATOR)) {
+            spectators.add(spectator);
+            spectator.savePregameState();
+            spectator.getPlayer().setAllowFlight(true);
+            spectator.getPlayer().setFlying(true);
             if (arena.getSpectatorSpawn() != null) {
-                cp.getPlayer().teleport(arena.getSpectatorSpawn());
+                spectator.getPlayer().teleport(arena.getSpectatorSpawn());
+                spectator.setGhosting(false);
             } else {
-                gameWorld.setSpectator(cp, target);
+                gameWorld.setSpectator(spectator, target);
+                spectator.setGhosting(true);
             }
-            Core.getInstance().applyVisibilities(cp);
+            Core.getInstance().applyVisibilities(spectator);
         }
     }
     
@@ -856,7 +891,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                 cp.getPlayer().setSpectatorTarget(null);
             }
             cp.getPlayer().setAllowFlight(false);
-            cp.setGhosting(true);
+            cp.setGhosting(false);
             Core.getInstance().applyVisibilities(cp);
         }
     }
@@ -1043,7 +1078,7 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Set countdown and prevents world from being broken
      */
     public void startCountdown() {
-        countdown = COUNTDOWN;
+        countdown = roundCountdown;
         gameWorld.setEditable(false);
         for (BattlePlayer bp : battlers.values()) {
             bp.getCorePlayer().refreshHotbar();

@@ -1,7 +1,11 @@
 package com.spleefleague.proxycore.listener.spigot.listener;
 
+import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshQueue;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.queue.QueueContainer;
+import com.spleefleague.proxycore.game.queue.QueueManager;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.connection.Connection;
@@ -22,6 +26,9 @@ public class BattleEndUnratedSpigotListener extends SpigotListener<PacketBattleE
                 pcp.setBattleContainer(null);
             }
         }
+        QueueContainer container = QueueManager.getContainerMap().get(packet.mode);
+        ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(new QueueContainerInfo(packet.mode,
+                container.getQueueSize(), container.getPlaying().size(), container.getSpectating().size())));
     }
 
 }

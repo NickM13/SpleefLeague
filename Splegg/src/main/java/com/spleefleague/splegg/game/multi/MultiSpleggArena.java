@@ -6,6 +6,7 @@
 
 package com.spleefleague.splegg.game.multi;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
@@ -39,7 +40,8 @@ public class MultiSpleggArena extends SpleggArena {
         String mainColor = ChatColor.GOLD + "" + ChatColor.BOLD;
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName(mainColor + "Multisplegg")
-                .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!")
+                .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!" +
+                        "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.MULTI.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.CHICKEN_SPAWN_EGG)
                 .createLinkedContainer("Multisplegg");
 
@@ -64,7 +66,7 @@ public class MultiSpleggArena extends SpleggArena {
     }
 
     public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Leaderboards.get(SpleggMode.MULTI.getName());
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleggMode.MULTI.getName());
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lMultisplegg")
                 .setDescription("View the top players of Multisplegg!")

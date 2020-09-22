@@ -26,25 +26,25 @@ public class FakeUtils {
     }
 
     public static boolean isOnGround(CorePlayer cp) {
-        if (cp.getPlayer().getVelocity().getY() > 0) return false;
         if (cp.getPlayer().isOnGround()) return true;
+        if (cp.getPlayer().getVelocity().getY() > 0) return false;
         Set<BlockPosition> blockPositions = new HashSet<>();
         BoundingBox bb = cp.getPlayer().getBoundingBox();
         blockPositions.add(new BlockPosition(
                 (int) Math.floor(bb.getMinX()),
-                (int) Math.floor(bb.getMinY() - 0.001),
+                (int) Math.floor(bb.getMinY() - 0.85),
                 (int) Math.floor(bb.getMinZ())));
         blockPositions.add(new BlockPosition(
                 (int) Math.floor(bb.getMaxX()),
-                (int) Math.floor(bb.getMinY() - 0.001),
+                (int) Math.floor(bb.getMinY() - 0.85),
                 (int) Math.floor(bb.getMinZ())));
         blockPositions.add(new BlockPosition(
                 (int) Math.floor(bb.getMaxX()),
-                (int) Math.floor(bb.getMinY() - 0.001),
+                (int) Math.floor(bb.getMinY() - 0.85),
                 (int) Math.floor(bb.getMaxZ())));
         blockPositions.add(new BlockPosition(
                 (int) Math.floor(bb.getMinX()),
-                (int) Math.floor(bb.getMinY() - 0.001),
+                (int) Math.floor(bb.getMinY() - 0.85),
                 (int) Math.floor(bb.getMaxZ())));
         Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
         while (fit.hasNext()) {

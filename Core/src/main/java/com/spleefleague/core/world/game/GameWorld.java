@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.world.game;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.BattleState;
@@ -22,14 +23,16 @@ import com.spleefleague.core.Core;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Snow;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
@@ -149,6 +152,9 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     protected final BukkitTask playerBlastTask;
     protected final List<PlayerBlast> playerBlasts;
 
+    protected final BukkitTask playerPortalTask;
+    protected final Map<UUID, PortalPair> playerPortals;
+
     protected final List<BukkitTask> gameTasks;
 
     protected boolean showSpectators;
@@ -177,6 +183,11 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         playerBlastTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updatePlayerBlasts, 0L, 2L);
+
+        playerPortals = new HashMap<>();
+        playerPortalTask = Bukkit.getScheduler()
+                .runTaskTimer(Core.getInstance(),
+                        this::updatePlayerPortals, 0L, 2L);
 
         gameTasks = new ArrayList<>();
 
@@ -532,8 +543,11 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 fwp.getPlayer().playSound(pos.toLocation(getWorld()), Sound.ENTITY_ENDER_EYE_DEATH, 1, 1.5f);
             });
             breakBlock(pos, null);
-            if (baseBlocks.containsKey(pos))
-            setBlockDelayed(pos, baseBlocks.get(pos).getBlockData(), 100);
+            if (baseBlocks.containsKey(pos)) {
+                setBlockDelayed(pos, baseBlocks.get(pos).getBlockData(), 100);
+            } else {
+
+            }
             return true;
         } else {
             updateBlock(pos);
@@ -570,6 +584,54 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         }
     }
 
+    private static List<Color> colors = Lists.newArrayList(Color.BLUE, Color.AQUA, Color.RED, Color.YELLOW);
+
+    protected void updatePlayerPortals() {
+        int i = 0;
+        for (PortalPair portal : playerPortals.values()) {
+            if (portal.isLinked()) {
+                for (GameWorldPlayer gwp : getPlayerMap().values()) {
+                    Location toCompare = gwp.getPlayer().getLocation().clone().add(0, 1, 0);
+                    if (portal.canTeleport1(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal1().getTpLoc()) < 1.5) {
+                        portal.teleportTo2(gwp.getPlayer());
+                    } else if (portal.canTeleport2(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal2().getTpLoc()) < 1.5) {
+                        portal.teleportTo1(gwp.getPlayer());
+                    }
+                }
+                GameUtils.spawnRingParticles(
+                        this,
+                        portal.getPortal1().getVisualPos(),
+                        portal.getPortal1().getBlockFace().getDirection(),
+                        new Particle.DustOptions(colors.get((i * 2) % colors.size()), 1.f),
+                        0.5, 5);
+                GameUtils.spawnRingParticles(
+                        this,
+                        portal.getPortal2().getVisualPos(),
+                        portal.getPortal2().getBlockFace().getDirection(),
+                        new Particle.DustOptions(colors.get((i * 2 + 1) % colors.size()), 1.f),
+                        0.5, 5);
+            } else {
+                if (portal.getPortal1() != null) {
+                    GameUtils.spawnRingParticles(
+                            this,
+                            portal.getPortal1().getVisualPos(),
+                            portal.getPortal1().getBlockFace().getDirection(),
+                            new Particle.DustOptions(colors.get((i * 2) % colors.size()), 1.5f),
+                            0.25, 1);
+                }
+                if (portal.getPortal2() != null) {
+                    GameUtils.spawnRingParticles(
+                            this,
+                            portal.getPortal2().getVisualPos(),
+                            portal.getPortal2().getBlockFace().getDirection(),
+                            new Particle.DustOptions(colors.get((i * 2 + 1) % colors.size()), 1.5f),
+                            0.25, 1);
+                }
+            }
+            i++;
+        }
+    }
+
     protected void updateFutureBlocks() {
         for (Map.Entry<BlockPosition, SortedSet<FutureBlock>> futureList : futureBlocks.entrySet()) {
             Iterator<FutureBlock> fbit = futureList.getValue().iterator();
@@ -580,11 +642,24 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                     setBlock(futureList.getKey(), futureBlock.fakeBlock.getBlockData());
                     updateBlock(futureList.getKey());
                     fbit.remove();
-                } else if (futureBlock.delay < 7 && futureBlock.fakeBlock.getBlockData().getMaterial().equals(Material.SNOW_BLOCK)) {
-                    Snow snow = (Snow) Material.SNOW.createBlockData();
-                    snow.setLayers((int) (8 - futureBlock.delay));
-                    setBlock(futureList.getKey(), snow);
-                    updateBlock(futureList.getKey());
+                } else if (futureBlock.delay < 7) {
+                    Material futureMat = futureBlock.fakeBlock.getBlockData().getMaterial();
+                    if (futureMat.equals(Material.SNOW_BLOCK)) {
+                        Snow snow = (Snow) Material.SNOW.createBlockData();
+                        snow.setLayers((int) (8 - futureBlock.delay));
+                        setBlock(futureList.getKey(), snow);
+                        updateBlock(futureList.getKey());
+                    } else {
+                        if (fakeBlocks.containsKey(futureList.getKey())) {
+                            Material fakeMat = fakeBlocks.get(futureList.getKey()).getBlockData().getMaterial();
+                            if (futureMat.isAir() && (fakeMat.equals(Material.SNOW) || fakeMat.equals(Material.SNOW_BLOCK))) {
+                                Snow snow = (Snow) Material.SNOW.createBlockData();
+                                snow.setLayers((int) (futureBlock.delay));
+                                setBlock(futureList.getKey(), snow);
+                                updateBlock(futureList.getKey());
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -697,6 +772,21 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         futureShots.clear();
     }
 
+    public void portalize(FakeEntitySnowball entity, Location location, Vector velocity) {
+        try {
+            FakeEntitySnowball newEntity = (FakeEntitySnowball) entity.getStats().entityClass
+                    .getDeclaredConstructor(GameWorld.class, CorePlayer.class, Location.class, ProjectileStats.class, Double.class)
+                    .newInstance(this, entity.getCpShooter(), location, entity.getStats(), 1D);
+            projectiles.put(newEntity.getUniqueID(), new GameProjectile(newEntity, entity.getStats()));
+            newEntity.setMot(velocity.getX(), velocity.getY(), velocity.getZ());
+            newEntity.reducedStats(entity);
+            ((CraftWorld) getWorld()).getHandle().addEntity(newEntity);
+            entity.killEntity();
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException exception) {
+            CoreLogger.logError(exception);
+        }
+    }
+
     public List<net.minecraft.server.v1_16_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
         return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone()
                 .add(shooter.getPlayer().getLocation().getDirection()
@@ -785,6 +875,17 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
             futureShots.get(shooter.getUniqueId()).add(new FutureShot(projectileStats, location.clone().toVector().subtract(shooter.getLocation().clone().toVector()), 1));
         }
         return shoot(shooter, location, projectileStats, 1);
+    }
+
+    public Map<UUID, PortalPair> getPlayerPortals() {
+        return playerPortals;
+    }
+
+    public void createPortal(CorePlayer shooter, BlockPosition pos, BlockFace face) {
+        if (!playerPortals.containsKey(shooter.getUniqueId())) {
+            playerPortals.put(shooter.getUniqueId(), new PortalPair());
+        }
+        playerPortals.get(shooter.getUniqueId()).pushPortal(getWorld(), pos, face);
     }
     
     public void doFailBlast(CorePlayer cp) {

@@ -14,10 +14,61 @@ public class GameUtils {
                 8, 0.25 * sizeMultiplier, 0.9 * sizeMultiplier, 0.25 * sizeMultiplier, 0D, dustOptions);
     }
 
+    public static void spawnRingParticles(GameWorld gameWorld, Vector loc, Vector axis, Particle.DustOptions dustOptions, double radius, int count) {
+        double dot = axis.dot(new Vector(0, 1, 0));
+        if (dot >= 0.999 || dot <= -0.999) {
+            spawnRingParticles(gameWorld, loc, dustOptions, radius, count);
+            return;
+        }
+        Vector rotAxis = axis.getCrossProduct(new Vector(0, 1, 0));
+        double angle = Math.toRadians(90 * (-dot + 1));
+        for (int i = 0; i < count; i++) {
+            double radians = Math.random() * Math.PI * 2;
+            Vector vec = new Vector(Math.sin(radians), 0, Math.cos(radians)).rotateAroundAxis(rotAxis, angle).multiply(radius);
+            vec.add(loc);
+            gameWorld.spawnParticles(Particle.REDSTONE,
+                    vec.getX(), vec.getY(), vec.getZ(),
+                    1, 0, 0, 0, 0,
+                    dustOptions);
+        }
+    }
+
     public static void spawnRingParticles(GameWorld gameWorld, Vector loc, Particle.DustOptions dustOptions, double radius, int count) {
         for (int i = 0; i < count; i++) {
             double radians = Math.random() * Math.PI * 2;
             Vector pos = loc.clone().add(new Vector(Math.sin(radians), 0, Math.cos(radians)).multiply(radius));
+            gameWorld.spawnParticles(Particle.REDSTONE,
+                    pos.getX(), pos.getY(), pos.getZ(),
+                    1, 0, 0, 0, 0,
+                    dustOptions);
+        }
+    }
+
+    public static void spawnDiscParticles(GameWorld gameWorld, Vector loc, Vector axis, Particle.DustOptions dustOptions, double radius, int count) {
+        double dot = axis.dot(new Vector(0, 1, 0));
+        if (dot >= 0.999 || dot <= -0.999) {
+            spawnDiscParticles(gameWorld, loc, dustOptions, radius, count);
+            return;
+        }
+        Vector rotAxis = axis.getCrossProduct(new Vector(0, 1, 0));
+        double angle = Math.toRadians(90 * (-dot + 1));
+        for (int i = 0; i < count; i++) {
+            double radians = Math.random() * Math.PI * 2;
+            double dist = (1 - Math.pow(Math.random(), 2)) * radius;
+            Vector vec = new Vector(Math.sin(radians), 0, Math.cos(radians)).rotateAroundAxis(rotAxis, angle).multiply(dist);
+            vec.add(loc);
+            gameWorld.spawnParticles(Particle.REDSTONE,
+                    vec.getX(), vec.getY(), vec.getZ(),
+                    1, 0, 0, 0, 0,
+                    dustOptions);
+        }
+    }
+
+    public static void spawnDiscParticles(GameWorld gameWorld, Vector loc, Particle.DustOptions dustOptions, double radius, int count) {
+        for (int i = 0; i < count; i++) {
+            double radians = Math.random() * Math.PI * 2;
+            double dist = (1 - Math.pow(Math.random(), 2)) * radius;
+            Vector pos = loc.clone().add(new Vector(Math.sin(radians), 0, Math.cos(radians)).multiply(dist));
             gameWorld.spawnParticles(Particle.REDSTONE,
                     pos.getX(), pos.getY(), pos.getZ(),
                     1, 0, 0, 0, 0,

@@ -23,6 +23,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ public class GlobalZone extends DBEntity {
             public void onPacketSending(PacketEvent event) {
                 PacketContainer spawnEntityPacket = event.getPacket();
                 UUID uuid = spawnEntityPacket.getUUIDs().read(0);
-                net.minecraft.server.v1_16_R1.Entity entity = (net.minecraft.server.v1_16_R1.Entity) ((CraftWorld) (event.getPlayer().getWorld())).getHandle().getEntity(uuid);
+                net.minecraft.server.v1_16_R1.Entity entity = ((CraftWorld) (event.getPlayer().getWorld())).getHandle().getEntity(uuid);
                 if (entity instanceof ZoneLeafEntity) {
                     CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
                     ZoneLeafEntity zoneLeaf = (ZoneLeafEntity) entity;
@@ -102,7 +103,7 @@ public class GlobalZone extends DBEntity {
                     GlobalZone zone = getZone(new Point(cp.getLocation()));
                     return Chat.DEFAULT + "Id: " + zone.getIdentifier() + "\n" +
                             Chat.DEFAULT + "Name: " + zone.getName() + "\n" +
-                            Chat.DEFAULT + "Feathers: " + zone.getLeaves().size();
+                            Chat.DEFAULT + "Leaves: " + zone.getLeaves().size();
                 })
                 .setAvailability(cp -> editingPlayers.contains(cp.getUniqueId()))
                 .setAction(CorePlayer::refreshHotbar);
@@ -122,7 +123,8 @@ public class GlobalZone extends DBEntity {
         if (globalLeafNames.contains(identifier)) {
             UUID uuid = globalLeafUuids.remove(identifier);
             if (uuid != null) {
-                Objects.requireNonNull(Bukkit.getEntity(uuid)).remove();
+                Entity entity = Bukkit.getEntity(uuid);
+                if (entity != null) entity.remove();
             }
             String[] args = identifier.split(":", 2);
             globalZoneMap.get(args[0]).removeLeaf(args[1]);
@@ -223,11 +225,9 @@ public class GlobalZone extends DBEntity {
 
     public static UUID dropLeaf(String zoneName, ZoneLeaf leaf) {
         ZoneLeafEntity leafEntity = new ZoneLeafEntity(((CraftWorld) Core.DEFAULT_WORLD).getHandle(), leaf, zoneName);
-        /*
         ((CraftWorld) Core.DEFAULT_WORLD).getHandle().addEntity(
                 leafEntity,
                 CreatureSpawnEvent.SpawnReason.CUSTOM);
-        */
         globalLeafUuids.put(leafEntity.getFullName(), leafEntity.getUniqueID());
         return leafEntity.getUniqueID();
     }
@@ -332,7 +332,7 @@ public class GlobalZone extends DBEntity {
         return borders;
     }
 
-    public boolean isFeather(Position pos) {
+    public boolean isLeaf(Position pos) {
         return (leafPosHash.containsKey(pos));
     }
 

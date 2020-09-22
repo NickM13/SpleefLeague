@@ -27,14 +27,4 @@ public class PacketQueueLeave extends PacketSpigot {
         return PacketType.Spigot.QUEUE_LEAVE.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        player = UUID.fromString(input.readUTF());
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(player.toString());
-    }
-
 }

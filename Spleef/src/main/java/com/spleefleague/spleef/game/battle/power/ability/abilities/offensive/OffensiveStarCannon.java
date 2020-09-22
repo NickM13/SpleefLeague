@@ -1,8 +1,7 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Sound;
 
@@ -12,53 +11,43 @@ import org.bukkit.Sound;
  */
 public class OffensiveStarCannon extends AbilityOffensive {
 
+    public static AbilityStats init() {
+        return init(OffensiveStarCannon.class)
+                .setCustomModelData(2)
+                .setName("Star Cannon")
+                .setDescription("Fires a blast of %COUNT% snowballs in front of you, destroying blocks hit and slightly knocking back players hit by the blast.")
+                .setUsage(12);
+    }
+
+    private static final int COUNT = 15;
+
     private static ProjectileStats boltStats = new ProjectileStats();
 
     static {
         boltStats.customModelData = 1;
         boltStats.fireRange = 5D;
-        boltStats.count = 15;
+        boltStats.count = COUNT;
         boltStats.hSpread = 30;
         boltStats.vSpread = 30;
         boltStats.collidable = true;
         boltStats.hitKnockback = 1D;
     }
 
-    public OffensiveStarCannon() {
-        super(2, 12D);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Star Cannon";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Fire a blast of " +
-                Chat.STAT + boltStats.count +
-                Chat.DESCRIPTION + " snowballs in front of you, destroying blocks hit and slightly knocking back players hit by the blast.";
-    }
-
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), boltStats);
-        psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 2);
+    public boolean onUse() {
+        getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), boltStats);
+        getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 2);
         return true;
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
+    public void reset() {
 
     }
 }

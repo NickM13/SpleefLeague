@@ -30,15 +30,4 @@ public class PacketBattleSpectateSpigot extends PacketSpigot {
         return PacketType.Spigot.BATTLE_SPECTATE.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        spectator = UUID.fromString(input.readUTF());
-        target = UUID.fromString(input.readUTF());
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(spectator.toString());
-        output.writeUTF(target.toString());
-    }
 }

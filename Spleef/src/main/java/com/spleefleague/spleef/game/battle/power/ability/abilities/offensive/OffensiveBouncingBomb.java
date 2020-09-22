@@ -1,12 +1,11 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -19,12 +18,20 @@ import org.bukkit.entity.Entity;
  */
 public class OffensiveBouncingBomb extends AbilityOffensive {
 
+    public static AbilityStats init() {
+        return init(OffensiveBouncingBomb.class)
+                .setCustomModelData(1)
+                .setName("Bouncing Bomb")
+                .setDescription("Throw a bouncing bomb forward, destroying blocks in a small radius around its impact point. The bomb may bounce off of surrounding blocks and players up to %BOUNCES% times.")
+                .setUsage(10);
+    }
+
     private static final ProjectileStats bombStats = new ProjectileStats();
 
     public static class BouncingProjectile extends FakeEntitySnowball {
 
-        public BouncingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, location, projectileStats);
+        public BouncingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(gameWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -48,36 +55,22 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
 
     }
 
+    private static int BOUNCES = 2;
+
     static {
         bombStats.entityClass = BouncingProjectile.class;
         bombStats.customModelData = 13;
         bombStats.fireRange = 4D;
         bombStats.breakRadius = 2D;
         bombStats.noClip = true;
-        bombStats.bounces = 2;
+        bombStats.bounces = BOUNCES;
         bombStats.bounciness = 0.65D;
     }
 
-    public OffensiveBouncingBomb() {
-        super(1, 10);
-    }
-
     @Override
-    public String getDisplayName() {
-        return "Bouncing Bomb";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Throw a bouncing bomb forward, destroying blocks in a small radius around its impact point. The bomb may bounce off of surrounding blocks and players up to " +
-                Chat.STAT + bombStats.bounces +
-                Chat.DESCRIPTION + " times.";
-    }
-
-    @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), bombStats);
-        psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.BLOCK_COMPOSTER_EMPTY, 1, 1);
+    public boolean onUse() {
+        getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), bombStats);
+        getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.BLOCK_COMPOSTER_EMPTY, 1, 1);
         return true;
     }
 
@@ -85,7 +78,7 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
      * Called at the start of a round
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
+    public void reset() {
 
     }
 

@@ -8,6 +8,8 @@ package com.spleefleague.splegg.game.classic;
 
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
+import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
@@ -21,7 +23,7 @@ import java.util.UUID;
 public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     
     public ClassicSpleggBattle(List<UUID> players, Arena arena) {
-        super(Splegg.getInstance(), players, arena, ClassicSpleggPlayer.class, SpleggMode.CLASSIC.getBattleMode());
+        super(Splegg.getInstance(), players, arena, ClassicSpleggPlayer.class, SpleggMode.VERSUS.getBattleMode());
     }
     
     /**
@@ -30,6 +32,12 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     @Override
     protected void setupBaseSettings() {
         SpleggUtils.setupBaseSettings(this);
+        for (BuildStructure structure : getArena().getStructures()) {
+            gameWorld.setBaseBlocks(
+                    FakeUtils.translateBlocks(
+                            FakeUtils.rotateBlocks(structure.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
+                            getArena().getOrigin().toBlockPosition()));
+        }
     }
     
     @Override

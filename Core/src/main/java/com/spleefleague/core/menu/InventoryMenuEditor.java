@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -22,15 +23,15 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 public class InventoryMenuEditor extends InventoryMenuContainerChest {
     
-    protected HashMap<Integer, InventoryMenuItem> edittableItems;
-    protected Consumer<HashMap<Integer, InventoryMenuItem>> saveFun;
+    protected Map<Integer, InventoryMenuItem> edittableItems;
+    protected Consumer<Map<Integer, InventoryMenuItem>> saveFun;
     
     public InventoryMenuEditor() {
         super();
         upperBorder = false;
     }
     
-    public InventoryMenuEditor setSaveFun(Consumer<HashMap<Integer, InventoryMenuItem>> saveFun) {
+    public InventoryMenuEditor setSaveFun(Consumer<Map<Integer, InventoryMenuItem>> saveFun) {
         this.saveFun = saveFun;
         return this;
     }

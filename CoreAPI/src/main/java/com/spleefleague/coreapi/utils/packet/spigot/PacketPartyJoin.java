@@ -19,13 +19,4 @@ public class PacketPartyJoin extends PacketSpigot {
         return PacketType.Spigot.PARTY_JOIN.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-
-    }
 }

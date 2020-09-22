@@ -1,6 +1,5 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.utility;
 
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
@@ -8,26 +7,26 @@ import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
-import com.spleefleague.spleef.game.battle.power.ability.Abilities;
-import com.spleefleague.spleef.game.battle.power.ability.Ability;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
-import net.minecraft.server.v1_16_R1.MovingObjectPosition;
-import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
-
-import java.util.Random;
 
 /**
  * @author NickM13
  * @since 5/19/2020
  */
 public class UtilitySmokeBomb extends AbilityUtility {
+
+    public static AbilityStats init() {
+        return init(UtilitySmokeBomb.class)
+                .setCustomModelData(5)
+                .setName("Smoke Bomb")
+                .setDescription("Throw a smoke bomb onto the ground lasting %DURATION% seconds, blinding players in a small radius around the bomb.")
+                .setUsage(15);
+    }
 
     private static final double DURATION = 5D;
     private static final double RANGE = 4D;
@@ -36,8 +35,8 @@ public class UtilitySmokeBomb extends AbilityUtility {
 
         private boolean activated = false;
 
-        public SmokeBombProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, location, projectileStats);
+        public SmokeBombProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(gameWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -86,40 +85,20 @@ public class UtilitySmokeBomb extends AbilityUtility {
         projectileStats.bounciness = 0.15;
     }
 
-    public UtilitySmokeBomb() {
-        super(5, 15);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Smoke Bomb";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Throw a smoke bomb onto the ground lasting " +
-                Chat.STAT + DURATION +
-                Chat.DESCRIPTION + " seconds, blinding players in a small radius around the bomb.";
-    }
-
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), projectileStats);
+    public boolean onUse() {
+        getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), projectileStats);
         return true;
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
+    public void reset() {
 
     }
 

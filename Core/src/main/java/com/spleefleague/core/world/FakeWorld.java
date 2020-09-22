@@ -19,6 +19,7 @@ import net.minecraft.server.v1_16_R1.EnumDirection;
 import net.minecraft.server.v1_16_R1.PacketPlayInUseItem;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
@@ -40,6 +41,15 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         BuildWorld.init();
         FakeBlock.init();
         GlobalWorld.init();
+
+        Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            Core.getInstance().getPlayers().getOnline().forEach(cp -> {
+                if (FakeUtils.isOnGround(cp)) {
+                    net.minecraft.server.v1_16_R1.Entity entity = ((CraftEntity) cp.getPlayer()).getHandle();
+                    entity.setMot(entity.getMot().getX(), 0, entity.getMot().getZ());
+                }
+            });
+        }, 10, 2));
     
         Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_DIG) {
             @Override
@@ -159,10 +169,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                     Core.sendPacket(event.getPlayer(), multiBlockChangePacket);
                     if (event.getPlayer().getLocation().getChunk().getX() == chunkCoord.x &&
                             event.getPlayer().getLocation().getChunk().getZ() == chunkCoord.z) {
-                        Location oldLoc = event.getPlayer().getLocation().clone().add(0, 0.1, 0);
+                        Location oldLoc = event.getPlayer().getLocation().clone().add(0, 0.2, 0);
                         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
                             event.getPlayer().teleport(oldLoc);
-                        }, 4L);
+                        }, 20L);
                     }
                 }
                 loadedChunks.get(cp.getUniqueId()).add(chunkCoord);

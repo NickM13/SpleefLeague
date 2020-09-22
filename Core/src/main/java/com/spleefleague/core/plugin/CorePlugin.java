@@ -28,6 +28,7 @@ import java.util.logging.Level;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketChallengeSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketForceStart;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
 import org.apache.logging.log4j.LogManager;
@@ -168,6 +169,11 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         }
         Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
     }
+
+    public final void challengePlayer(BattleMode mode, CorePlayer sender, CorePlayer receiver, Arena arena) {
+        Core.getInstance().sendMessage(sender, "You have challenged " + receiver.getDisplayName() + " to " + Chat.GAMEMODE + mode.getDisplayName());
+        Core.getInstance().sendPacket(new PacketChallengeSpigot(sender.getUniqueId(), receiver.getUniqueId(), mode.getName(), "arena:" + (arena != null ? arena.getIdentifierNoTag() : "*")));
+    }
     
     /**
      * Sets the main database used by this plugin
@@ -195,6 +201,10 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final PlayerManager<P> getPlayers() {
         return playerManager;
+    }
+
+    public void refreshPlayers(Set<UUID> players) {
+        playerManager.refresh(players);
     }
     
     /**
@@ -292,7 +302,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     }
     
     public abstract String getChatPrefix();
-    
+
     /**
      * Send a message to the global channel
      *
@@ -300,6 +310,15 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(String msg) {
         Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg);
+    }
+
+    /**
+     * Send a message to the global channel with a list of players that can't receive it
+     *
+     * @param msg Message
+     */
+    public final void sendMessageBlacklisted(String msg, Set<UUID> blacklist) {
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg, blacklist);
     }
     
     /**
@@ -321,7 +340,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final void sendMessage(CommandSender cs, String msg) {
         cs.sendMessage(getChatPrefix() + msg);
     }
-    
+
     /**
      * Doesn't use default chat prefix
      * <br>Send message to a ChatChannel
@@ -331,6 +350,18 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(ChatChannel cc, String msg) {
         Chat.sendMessage(cc, getChatPrefix() + msg);
+    }
+
+    /**
+     * Doesn't use default chat prefix
+     * <br>Send message to a ChatChannel with a list of players that can't receive it
+     *
+     * @param cc Chat Channel
+     * @param msg Message
+     * @param blacklist Blacklist of Players
+     */
+    public final void sendMessageBlacklisted(ChatChannel cc, String msg, Set<UUID> blacklist) {
+        Chat.sendMessage(cc, getChatPrefix() + msg, blacklist);
     }
     
 }

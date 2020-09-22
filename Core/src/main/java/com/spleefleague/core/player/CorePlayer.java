@@ -1183,11 +1183,12 @@ public class CorePlayer extends RatedPlayer {
      * @param exitLocation Location to attempt to teleport player to
      */
     public final void leaveBattle(Location exitLocation) {
-        if (battleState != BattleState.SPECTATOR_GLOBAL && Core.getInstance().getServerType().equals(Core.ServerType.LOBBY)) {
-            loadPregameState(exitLocation);
-        }
+        BattleState temp = battleState;
         this.battle = null;
         this.battleState = BattleState.NONE;
+        if (temp != BattleState.SPECTATOR_GLOBAL && Core.getInstance().getServerType().equals(Core.ServerType.LOBBY)) {
+            loadPregameState(exitLocation);
+        }
         CorePlugin.removeIngamePlayerName(this);
     }
     

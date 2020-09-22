@@ -6,6 +6,7 @@
 
 package com.spleefleague.splegg.game.classic;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
@@ -27,10 +28,11 @@ public class ClassicSpleggArena {
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.GOLD + "" + ChatColor.BOLD;
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .setName(mainColor + "Classic Splegg")
-                .setDescription("Test your might against another player in this 1v1 competition of precision and movement.")
+                .setName(mainColor + "Splegg Versus")
+                .setDescription("Test your might against another player in this 1v1 competition of precision and movement." +
+                        "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.VERSUS.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.EGG)
-                .createLinkedContainer("Classic Splegg");
+                .createLinkedContainer("Splegg Versus");
 
         menuItem.getLinkedChest()
                 .setPageBoundaries(1, 3, 1, 7)
@@ -38,12 +40,12 @@ public class ClassicSpleggArena {
                     container.clearUnsorted();
                     container.addMenuItem(InventoryMenuAPI.createItem()
                             .setName("&a&lRandom Arena")
-                            .setDescription("Join the queue for a random " + mainColor + "Classic Splegg &7map!")
+                            .setDescription("Join the queue for a random " + mainColor + "Splegg Versus &7map!")
                             .setDisplayItem(new ItemStack(Material.EMERALD))
-                            .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getBattleMode(), cp)));
+                            .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.VERSUS.getBattleMode(), cp)));
 
-                    Arenas.getAll(SpleggMode.CLASSIC.getBattleMode()).values().forEach(arena -> {
-                        menuItem.getLinkedChest().addMenuItem(arena.createMenu((cp -> Splegg.getInstance().queuePlayer(SpleggMode.CLASSIC.getBattleMode(), cp, arena))));
+                    Arenas.getAll(SpleggMode.VERSUS.getBattleMode()).values().forEach(arena -> {
+                        menuItem.getLinkedChest().addMenuItem(arena.createMenu((cp -> Splegg.getInstance().queuePlayer(SpleggMode.VERSUS.getBattleMode(), cp, arena))));
                     });
                 });
 
@@ -54,10 +56,10 @@ public class ClassicSpleggArena {
     }
 
     public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Leaderboards.get(SpleggMode.CLASSIC.getName());
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleggMode.VERSUS.getName());
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .setName("&6&lClassic Splegg")
-                .setDescription("View the top players of Classic Splegg!")
+                .setName("&6&lSplegg Versus")
+                .setDescription("View the top players of Splegg Versus!")
                 .setDisplayItem(Material.EGG)
                 .setLinkedContainer(leaderboard.createMenuContainer());
 

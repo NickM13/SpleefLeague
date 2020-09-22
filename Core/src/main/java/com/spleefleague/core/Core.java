@@ -6,10 +6,16 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ticket.Tickets;
@@ -17,6 +23,7 @@ import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
@@ -34,8 +41,11 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.request.RequestManager;
+import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.core.util.variable.Warp;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
@@ -50,19 +60,29 @@ import com.spleefleague.coreapi.utils.packet.Packet;
 import com.spleefleague.coreapi.utils.packet.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
+import net.minecraft.server.v1_16_R1.ChatBaseComponent;
+import net.minecraft.server.v1_16_R1.EnumGamemode;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_16_R1.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
+
+import javax.annotation.Nullable;
 
 /**
  * SpleefLeague's Core Plugin
@@ -76,6 +96,8 @@ public class Core extends CorePlugin<CorePlayer> {
     private static Core instance;
 
     private QueueManager queueManager;
+
+    private Leaderboards leaderboards;
 
     // Command manager, contains list of all commands
     // and registers them to the server
@@ -124,7 +146,7 @@ public class Core extends CorePlugin<CorePlayer> {
         initMenus();
         initTabList();
 
-        Leaderboards.init();
+        leaderboards = new Leaderboards();
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -142,13 +164,16 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     @Override
     public void close() {
+        for (BukkitTask task : taskList) {
+            task.cancel();
+        }
         BuildWorld.close();
         Warp.close();
         Infraction.close();
         Collectible.close();
         Vendors.close();
         Tickets.close();
-        Leaderboards.close();
+        leaderboards.close();
         NoteBlockMusic.close();
         playerManager.close();
         running = false;
@@ -158,6 +183,18 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public static Core getInstance() {
         return instance;
+    }
+
+    @Override
+    public void refreshPlayers(Set<UUID> players) {
+        super.refreshPlayers(players);
+        leaderboards.refresh(players);
+    }
+
+    private static List<BukkitTask> taskList = new ArrayList<>();
+
+    public void addTask(BukkitTask task) {
+        taskList.add(task);
     }
     
     /**
@@ -248,7 +285,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param cp Core Player
      */
     public void applyVisibilities(CorePlayer cp) {
-        if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
+        if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) return;
         if (cp.isVanished() || cp.isGhosting()) {
             cp.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
         } else {
@@ -258,12 +295,12 @@ public class Core extends CorePlugin<CorePlayer> {
         // getOnline doesn't return vanished players
         for (CorePlayer cp2 : getPlayers().getOnline()) {
             if (!cp.equals(cp2)) {
-                if (cp.getBattle() == cp2.getBattle()
-                        && cp.getBuildWorld() == cp2.getBuildWorld()) {
-                    if (!cp.isGhosting()) cp.getPlayer().showPlayer(this, cp2.getPlayer());
-                    else                  cp.getPlayer().hidePlayer(this, cp2.getPlayer());
-                    if (!cp.isVanished() && !cp.isGhosting())   cp2.getPlayer().showPlayer(this, cp.getPlayer());
-                    else                    cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                if (cp.getBattle() == cp2.getBattle() &&
+                        cp.getBuildWorld() == cp2.getBuildWorld()) {
+                    if (!cp2.isGhosting()) cp.getPlayer().showPlayer(this, cp2.getPlayer());
+                    else                   cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    if (!cp.isVanished() && !cp.isGhosting()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    else                                      cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
                     cp.getPlayer().hidePlayer(this, cp2.getPlayer());
                     cp2.getPlayer().hidePlayer(this, cp.getPlayer());
@@ -274,10 +311,25 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public void returnToHub(CorePlayer cp) {
         if (cp == null) return;
+        /*
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
             plugin.getPlayers().saveForTransfer(cp.getUniqueId());
         }
+        */
         Core.getInstance().sendPacket(new PacketHub(Lists.newArrayList(cp)));
+    }
+
+    public void onBungeeConnect(UUID uuid) {
+        CorePlayer cp = getPlayers().get(uuid);
+        if (cp == null || cp.isVanished() || cp.getOnlineState() != DBPlayer.OnlineState.OTHER) return;
+        Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
+    }
+
+    public void onBungeeDisconnect(UUID uuid) {
+        CorePlayer cp = getPlayers().get(uuid);
+        if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
+            Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
+        }
     }
 
     /**
@@ -291,32 +343,40 @@ public class Core extends CorePlugin<CorePlayer> {
             public void onPacketSending(PacketEvent pe) {
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
                     PacketContainer packet = pe.getPacket();
-                    CorePlayer cp;
                     switch (packet.getPlayerInfoAction().read(0)) {
-                        case ADD_PLAYER:
-                            cp = Core.getInstance().getPlayers().get(packet.getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID());
-                            if (!cp.isVanished()) {
-                                // TODO: Add this back
-                                /*
-                                packet.getPlayerInfoDataLists().write(0, Lists.newArrayList(new PlayerInfoData(
-                                        packet.getPlayerInfoDataLists().read(0).get(0).getProfile(),
-                                        packet.getPlayerInfoDataLists().read(0).get(0).getLatency(),
-                                        packet.getPlayerInfoDataLists().read(0).get(0).getGameMode(),
-                                        WrappedChatComponent.fromText(cp.getDisplayName()))));
-                                 */
+                        case ADD_PLAYER: {
+                            List<PlayerInfoData> newData = new ArrayList<>();
+                            for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
+                                CorePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
+                                if (!cp.isVanished()) {
+                                    newData.add(new PlayerInfoData(
+                                            playerInfoData.getProfile(),
+                                            playerInfoData.getLatency(),
+                                            playerInfoData.getGameMode(),
+                                            WrappedChatComponent.fromText(cp.getDisplayName())));
+                                }
+                            }
+                            if (newData.isEmpty()) {
+                                pe.setCancelled(true);
                             } else {
-                                /*
-                                pe.setCancelled(true);
-                                 */
+                                packet.getPlayerInfoDataLists().write(0, newData);
                             }
+                        }
                             break;
-                        case REMOVE_PLAYER:
-                            cp = Core.getInstance().getPlayers().get(packet.getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID());
-                            if (cp != null && cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE && !cp.isVanished()) {
-                                /*
-                                pe.setCancelled(true);
-                                 */
+                        case REMOVE_PLAYER: {
+                            List<PlayerInfoData> newData = new ArrayList<>();
+                            for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
+                                CorePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
+                                if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE || cp.isVanished()) {
+                                    newData.add(playerInfoData);
+                                }
                             }
+                            if (newData.isEmpty()) {
+                                pe.setCancelled(true);
+                            } else {
+                                packet.getPlayerInfoDataLists().write(0, newData);
+                            }
+                        }
                             break;
                         default: break;
                     }
@@ -339,6 +399,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param packet Packet Container
      */
     public static void sendPacket(Player p, PacketContainer packet) {
+        if (packet == null) return;
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
                 protocolManager.sendServerPacket(p, packet);
@@ -355,6 +416,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param packet Packet Container
      */
     public static void sendPacket(CorePlayer cp, PacketContainer packet) {
+        if (packet == null) return;
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
                 if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
@@ -370,6 +432,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param packet Packet Container
      */
     public static void sendPacketAll(PacketContainer packet) {
+        if (packet == null) return;
         for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
             sendPacket(cp, packet);
         }
@@ -432,6 +495,10 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public QueueManager getQueueManager() {
         return queueManager;
+    }
+
+    public Leaderboards getLeaderboards() {
+        return leaderboards;
     }
 
     /**

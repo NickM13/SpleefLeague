@@ -48,7 +48,7 @@ public class PowerTrainingArena {
 
             InventoryMenuItemHotbar options = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(8, "pstOptions")
                     .setName(cp -> "&a&lTraining Options")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription("Various training options for Power Spleef Training mode")
                     .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
                             cp.getBattle() instanceof PowerTrainingBattle &&
@@ -59,7 +59,7 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                     .setName(cp -> "&a&lTraining Field")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
                         List<BuildStructure> structures = BuildStructures.getAll("spleef:power");
@@ -81,7 +81,7 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                     .setName(cp -> "&a&lPower Cooldowns")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
                         return "Cooldowns are currently " + (battle.isCooldownEnabled() ? ChatColor.GREEN + "enabled" : ChatColor.GRAY + "disabled");
@@ -91,28 +91,27 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                     .setName(cp -> "&a&lReset Field")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription("")
                     .setAction(cp -> cp.getBattle().reset()));
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                     .setName(cp -> "&a&lRegeneration Speed")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
-                        StringBuilder stringBuilder = new StringBuilder();
-                        stringBuilder.append((battle.getRegenSpeed() == 0 ? ChatColor.GREEN : ChatColor.GRAY) + "Normal (1x)\n");
-                        stringBuilder.append((battle.getRegenSpeed() == 1 ? ChatColor.GREEN : ChatColor.GRAY) + "Fast (2x)\n");
-                        stringBuilder.append((battle.getRegenSpeed() == 2 ? ChatColor.GREEN : ChatColor.GRAY) + "Faster (4x)\n");
-                        stringBuilder.append((battle.getRegenSpeed() == 3 ? ChatColor.GREEN : ChatColor.GRAY) + "Fastest (8x)");
-                        return stringBuilder.toString();
+                        String str = (battle.getRegenSpeed() == 0 ? ChatColor.GREEN : ChatColor.GRAY) + "Normal (1x)\n" +
+                                (battle.getRegenSpeed() == 1 ? ChatColor.GREEN : ChatColor.GRAY) + "Fast (2x)\n" +
+                                (battle.getRegenSpeed() == 2 ? ChatColor.GREEN : ChatColor.GRAY) + "Faster (4x)\n" +
+                                (battle.getRegenSpeed() == 3 ? ChatColor.GREEN : ChatColor.GRAY) + "Fastest (8x)";
+                        return str;
                     })
                     .setAction(cp -> ((PowerTrainingBattle) cp.getBattle()).nextRegenSpeed())
                     .setCloseOnAction(false));
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
                     .setName(cp -> "&a&lLeave Match")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getDisplayItem())
+                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription("")
                     .setAction(cp -> cp.getBattle().leavePlayer(cp)));
         }

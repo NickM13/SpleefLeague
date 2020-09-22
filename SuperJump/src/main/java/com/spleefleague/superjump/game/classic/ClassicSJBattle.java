@@ -7,10 +7,10 @@
 package com.spleefleague.superjump.game.classic;
 
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.SuperJump;
+import com.spleefleague.superjump.game.SJMode;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,13 +20,13 @@ import java.util.UUID;
  */
 public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
     
-    public ClassicSJBattle(List<UUID> players, Arena arena, BattleMode battleMode) {
-        super(SuperJump.getInstance(), players, arena, ClassicSJPlayer.class, battleMode);
+    public ClassicSJBattle(List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), players, arena, ClassicSJPlayer.class, SJMode.CLASSIC.getBattleMode());
     }
     
     @Override
     protected void setupBaseSettings() {
-    
+
     }
 
     @Override
@@ -36,11 +36,12 @@ public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
 
     @Override
     protected void winBattler(CorePlayer corePlayer) {
-    
+
     }
     
     @Override
     public void reset() {
-    
+
     }
+
 }

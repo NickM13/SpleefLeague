@@ -6,13 +6,21 @@
 
 package com.spleefleague.core.player.scoreboard;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.spleefleague.core.util.PacketUtils;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.v1_16_R1.CraftServer;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -35,6 +43,16 @@ public class PersonalScoreboard {
         Scoreboard scoreboard = ps.getScoreboard();
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
             scoreboard.getTeam(cp2.getRank().getIdentifierShort()).addEntry(cp2.getName());
+        }
+
+        List<CorePlayer> toScoreboardify = new ArrayList<>();
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
+            if (cp2.getOnlineState() != DBPlayer.OnlineState.OFFLINE) {
+                toScoreboardify.add(cp2);
+            }
+        }
+        if (!toScoreboardify.isEmpty()) {
+            Core.sendPacket(cp, PacketUtils.createAddPlayerPacket(toScoreboardify));
         }
     }
 
@@ -71,13 +89,17 @@ public class PersonalScoreboard {
     }
     
     protected Scoreboard scoreboard;
-    protected Objective tabList, sideBar;
+    protected PersonalTablist tabList;
+    protected Objective sideBar;
     protected boolean showRanks;
     
     public PersonalScoreboard(boolean showRanks) {
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         scoreboard.registerNewTeam("Players");
         scoreboard.getTeam("Players").setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        tabList = new PersonalTablist();
+
+        ((CraftServer) Bukkit.getServer()).getServer().getPlayerList();
 
         resetObjective();
         
@@ -93,9 +115,7 @@ public class PersonalScoreboard {
     }
     
     public void resetObjective() {
-        if (tabList != null) tabList.unregister();
-        tabList = scoreboard.registerNewObjective("Welcome to SL!", "dummy", "=-=");
-        tabList.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+        tabList.register(scoreboard.registerNewObjective("Welcome to SL!", "dummy", "=-="));
 
         if (sideBar != null) sideBar.unregister();
         sideBar = scoreboard.registerNewObjective("ServerName", "dummy", "=---=");
@@ -119,7 +139,7 @@ public class PersonalScoreboard {
         return scoreboard;
     }
 
-    public Objective getTabList() {
+    public PersonalTablist getTabList() {
         return tabList;
     }
 

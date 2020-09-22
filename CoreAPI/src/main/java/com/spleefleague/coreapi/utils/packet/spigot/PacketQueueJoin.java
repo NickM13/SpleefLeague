@@ -31,17 +31,4 @@ public class PacketQueueJoin extends PacketSpigot {
         return PacketType.Spigot.QUEUE_JOIN.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        player = UUID.fromString(input.readUTF());
-        mode = input.readUTF();
-        query = input.readUTF();
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(player.toString());
-        output.writeUTF(mode);
-        output.writeUTF(query);
-    }
 }

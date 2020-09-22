@@ -6,6 +6,7 @@
 
 package com.spleefleague.spleef.game.battle.classic;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
@@ -48,7 +49,8 @@ public class ClassicSpleefArena {
     }
     
     public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Leaderboards.get(SpleefMode.CLASSIC.getName());
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.CLASSIC.getName());
+
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lClassic Spleef")
                 .setDescription("View the top players of Classic Spleef!")

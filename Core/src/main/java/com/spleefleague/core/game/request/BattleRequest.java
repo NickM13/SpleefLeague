@@ -80,7 +80,7 @@ public abstract class BattleRequest {
     public void addRequester(CorePlayer cp, int total) {
         battle.getPlugin().sendMessage(cp, "You requested to " + getChatName());
         requestingPlayers.add(cp);
-        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": " + (getPercent(total) * 100) + "%");
+        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": " + (int)(getPercent(total) * 100) + "%");
         checkRequired(total);
     }
     

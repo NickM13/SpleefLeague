@@ -6,6 +6,7 @@ import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.player.SpleefPlayer;
 
 /**
@@ -13,6 +14,12 @@ import com.spleefleague.spleef.player.SpleefPlayer;
  * @since 5/17/2020
  */
 public abstract class AbilityMobility extends Ability {
+
+    protected static AbilityStats init(Class<? extends AbilityMobility> clazz) {
+        return AbilityStats.create()
+                .setAbilityType(Type.MOBILITY)
+                .setAbilityClass(clazz);
+    }
 
     private static InventoryMenuItem menuItem = null;
 
@@ -32,7 +39,7 @@ public abstract class AbilityMobility extends Ability {
                             Abilities.getAbilities(Type.MOBILITY).size() +
                             " &7unique abilities. Only one mobility ability may be equipped at once." +
                             "\n\n&7&lCurrently Equipped: &6" +
-                            (sp.getActiveMobility() != null ? sp.getActiveMobility().getDisplayName() : "Random Power");
+                            (sp.getActiveMobility() != null ? sp.getActiveMobility().getName() : "Random Power");
                 })
                 .setDisplayItem(cp -> {
                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
@@ -55,24 +62,24 @@ public abstract class AbilityMobility extends Ability {
                                     .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveMobility(""))
                                     .setCloseOnAction(false),
                             0);
-                    for (Ability ability : Abilities.getAbilities(Type.MOBILITY).values()) {
+                    for (AbilityStats abilityStats : Abilities.getAbilities(Type.MOBILITY).values()) {
                         container.addMenuItem(InventoryMenuAPI.createItem()
                                 .setName(cp2 -> {
                                     SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp2);
-                                    return ability.getType().getColor() + ability.getDisplayName() + (sp.getActiveMobility() != null ? (sp.getActiveMobility().getName().equalsIgnoreCase(ability.getName()) ? " &6(Currently Equipped!)" : "") : "");
+                                    return abilityStats.getType().getColor() + abilityStats.getName() + (sp.getActiveMobility() != null ? (sp.getActiveMobility().getName().equalsIgnoreCase(abilityStats.getName()) ? " &6(Currently Equipped!)" : "") : "");
                                 })
-                                .setDescription(ability.getFullDescription())
-                                .setDisplayItem(ability.getDisplayItem())
-                                .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveMobility(ability.getName()))
+                                .setDescription(abilityStats.getDescription())
+                                .setDisplayItem(abilityStats.getDisplayItem())
+                                .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActiveMobility(abilityStats.getName()))
                                 .setCloseOnAction(false), i * 2 + 2);
                         i++;
                     }
                 });
 
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItem()
-                .setName(cp -> Type.MOBILITY.getColor() + Spleef.getInstance().getPlayers().get(cp).getActiveMobility().getDisplayName() + " &6(Currently Equipped!)")
+                .setName(cp -> Type.MOBILITY.getColor() + Spleef.getInstance().getPlayers().get(cp).getActiveMobility().getName() + " &6(Currently Equipped!)")
                 .setDisplayItem(cp -> Spleef.getInstance().getPlayers().get(cp).getActiveMobility().getDisplayItem())
-                .setDescription(cp -> Spleef.getInstance().getPlayers().get(cp).getActiveMobility().getFullDescription())
+                .setDescription(cp -> Spleef.getInstance().getPlayers().get(cp).getActiveMobility().getDescription())
                 .setCloseOnAction(false)
                 .setVisibility(cp -> Spleef.getInstance().getPlayers().get(cp).getActiveMobility() != null), 4, 4);
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItem()
@@ -83,14 +90,6 @@ public abstract class AbilityMobility extends Ability {
                 .setVisibility(cp -> Spleef.getInstance().getPlayers().get(cp).getActiveMobility() == null), 4, 4);
 
         return menuItem;
-    }
-
-    public AbilityMobility(int customModelData, int charges, double cooldown, double refreshCooldown) {
-        super(Type.MOBILITY, InventoryMenuUtils.createCustomItem(Type.MOBILITY.getMaterial(), customModelData), charges, cooldown, refreshCooldown);
-    }
-
-    public AbilityMobility(int customModelData, double cooldown) {
-        super(Type.MOBILITY, InventoryMenuUtils.createCustomItem(Type.MOBILITY.getMaterial(), customModelData), 1, cooldown, 0.25D);
     }
 
 }

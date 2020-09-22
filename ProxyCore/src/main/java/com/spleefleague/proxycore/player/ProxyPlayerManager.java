@@ -1,7 +1,6 @@
 package com.spleefleague.proxycore.player;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.proxycore.ProxyCore;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -26,9 +25,6 @@ public class ProxyPlayerManager {
     }
 
     public void close() {
-        for (ProxyCorePlayer pcp : players.values()) {
-            pcp.save(playerCol);
-        }
         players.clear();
     }
 
@@ -56,15 +52,13 @@ public class ProxyPlayerManager {
      * @param pcp
      */
     public void save(ProxyCorePlayer pcp) {
-        if (pcp != null) {
-            //pcp.save(playerCol);
-        }
+
     }
 
     public void onPlayerQuit(ProxiedPlayer pp) {
-        //save(players.remove(pp.getUniqueId()));
         ProxyCore.getInstance().getPlayers().get(pp.getUniqueId()).setBattleContainer(null);
         ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
+        players.remove(pp.getUniqueId());
     }
 
     public Collection<ProxyCorePlayer> getAll() {

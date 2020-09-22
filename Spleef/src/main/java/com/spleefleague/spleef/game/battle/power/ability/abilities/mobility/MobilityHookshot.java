@@ -1,20 +1,20 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
+import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
@@ -27,7 +27,15 @@ import org.bukkit.util.Vector;
  */
 public class MobilityHookshot extends AbilityMobility {
 
-    private static final double HOOK_LIFE = 2D;
+    private static final double HOOKLIFE = 2D;
+
+    public static AbilityStats init() {
+        return init(MobilityHookshot.class)
+                .setCustomModelData(6)
+                .setName("Hookshot")
+                .setDescription("Fire a grappling hook into a target block, attaching you to it for %HOOKLIFE% seconds. Reactivate while attached to a block to fire yourself in the direction you are facing, destroying blocks you pass.")
+                .setUsage(10D);
+    }
 
     public static class HookshotProjectile extends FakeEntitySnowball {
 
@@ -35,8 +43,8 @@ public class MobilityHookshot extends AbilityMobility {
         private EntityRaycastResult hookedEntity = null;
         private int hookLife = 0;
 
-        public HookshotProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, location, projectileStats);
+        public HookshotProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(gameWorld, shooter, location, projectileStats, charge);
         }
 
         public Entity getHookedEntity() {
@@ -80,7 +88,7 @@ public class MobilityHookshot extends AbilityMobility {
                 craftEntity.setVelocity(new Vector(0, 0, 0));
                 craftEntity.teleport(entityRaycastResult.getIntersection().toLocation(craftEntity.getWorld()));
                 hookedEntity = entityRaycastResult;
-                hookLife = craftEntity.getTicksLived() + (int) (HOOK_LIFE * 20);
+                hookLife = craftEntity.getTicksLived() + (int) (HOOKLIFE * 20);
             }
         }
 
@@ -91,7 +99,7 @@ public class MobilityHookshot extends AbilityMobility {
                 craftEntity.setVelocity(new Vector(0, 0, 0));
                 craftEntity.teleport(blockRaycastResult.getIntersection().toLocation(craftEntity.getWorld()));
                 hookedBlock = blockRaycastResult;
-                hookLife = craftEntity.getTicksLived() + (int) (HOOK_LIFE * 20);
+                hookLife = craftEntity.getTicksLived() + (int) (HOOKLIFE * 20);
             }
             return false;
         }
@@ -105,6 +113,10 @@ public class MobilityHookshot extends AbilityMobility {
                 killEntity();
             }
             if (isAlive()) {
+                if (hookedBlock != null && gameWorld.getFakeBlocks().getOrDefault(hookedBlock.getBlockPos(), new FakeBlock(Material.AIR.createBlockData())).getBlockData().getMaterial().isAir()) {
+                    killEntity();
+                    return;
+                }
                 if (hookedEntity != null) {
                     craftEntity.teleport(hookedEntity.getEntity().getLocation().clone().add(hookedEntity.getOffset()));
                 }
@@ -124,7 +136,7 @@ public class MobilityHookshot extends AbilityMobility {
         projectileStats.breakRadius = 0D;
         projectileStats.gravity = false;
         projectileStats.lifeTicks = 4;
-        projectileStats.fireRange = 7D;
+        projectileStats.fireRange = 10D;
         projectileStats.collidable = true;
         projectileStats.size = 0.5;
         projectileStats.noClip = true;
@@ -132,69 +144,47 @@ public class MobilityHookshot extends AbilityMobility {
         projectileStats.customModelData = 12;
     }
 
-    public MobilityHookshot() {
-        super(6, 10);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Hookshot";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Fire a grappling hook into a target block, attaching you to it for " +
-                Chat.STAT + HOOK_LIFE +
-                Chat.DESCRIPTION + " seconds. Reactivate while attached to a block to fire yourself in the direction you are facing, destroying blocks you pass.";
-    }
+    private HookshotProjectile hookshot = null;
 
     /**
      * Called every 0.1 seconds (2 ticks)
-     *
-     * @param psp Casting Player
      */
     @Override
-    public void update(PowerSpleefPlayer psp) {
-        HookshotProjectile hookshot = (HookshotProjectile) psp.getPowerValueMap().get("hookshot");
+    public void update() {
         if (hookshot != null && hookshot.isHooked()) {
             if (hookshot.isAlive()) {
-                psp.getPlayer().setGravity(false);
-                Vector dir = hookshot.getHookPos().subtract(psp.getPlayer().getLocation().toVector()).normalize();
-                if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) < 0.2) {
-                    psp.getPlayer().setVelocity(new Vector(0, 0, 0));
+                getPlayer().setGravity(false);
+                Vector dir = hookshot.getHookPos().subtract(getPlayer().getLocation().toVector()).normalize();
+                if (hookshot.getHookPos().distance(getPlayer().getLocation().toVector()) < 0.2) {
+                    getPlayer().setVelocity(new Vector(0, 0, 0));
                 } else {
-                    if (hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) > 1.25) {
-                        psp.getBattle().getGameWorld().breakBlocks(psp.getPlayer().getBoundingBox().expand(0.15, 0., 0.15, 0.15, 0.15, 0.15));
+                    if (hookshot.getHookPos().distance(getPlayer().getLocation().toVector()) > 1.25) {
+                        getUser().getBattle().getGameWorld().breakBlocks(getPlayer().getBoundingBox().expand(0.15, 0., 0.15, 0.15, 0.15, 0.15));
                     }
-                    psp.getPlayer().setVelocity(dir.multiply(Math.min(1.1, hookshot.getHookPos().distance(psp.getPlayer().getLocation().toVector()) / 5.)));
+                    getPlayer().setVelocity(dir.multiply(Math.min(1.1, hookshot.getHookPos().distance(getPlayer().getLocation().toVector()) / 5.)));
                 }
             } else {
-                psp.getPowerValueMap().put("hookshot", null);
-                psp.getPlayer().setGravity(true);
-                applyCooldown(psp);
+                hookshot = null;
+                getPlayer().setGravity(true);
+                applyCooldown();
             }
         }
     }
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        HookshotProjectile hookshot = (HookshotProjectile) psp.getPowerValueMap().get("hookshot");
+    public boolean onUse() {
         if (hookshot == null || !hookshot.isAlive()) {
-            hookshot = (HookshotProjectile) psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), projectileStats).get(0);
-            psp.getPowerValueMap().put("hookshot", hookshot);
-            psp.getBattle().getGameWorld().playSound(psp.getPlayer().getLocation(), Sound.ENTITY_LLAMA_SWAG, 1, 1.4f);
-            applyCooldown(psp, projectileStats.lifeTicks / 20.);
+            hookshot = (HookshotProjectile) getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), projectileStats).get(0);
+            getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ENTITY_LLAMA_SWAG, 1, 1.4f);
+            applyCooldown(projectileStats.lifeTicks / 20.);
             return false;
         } else {
-            psp.getPowerValueMap().put("hookshot", null);
-            Location facing = psp.getPlayer().getLocation().clone();
+            Location facing = getPlayer().getLocation().clone();
             facing.setPitch(Math.max(-60, Math.min(60, facing.getPitch())));
-            AbilityUtils.startFling(psp, facing.getDirection(), 0.3);
+            AbilityUtils.startFling(getUser(), facing.getDirection(), 0.3);
             Entity hookedEntity = hookshot.getHookedEntity();
             if (hookedEntity != null) {
                 if (hookedEntity instanceof Player) {
@@ -209,22 +199,19 @@ public class MobilityHookshot extends AbilityMobility {
                 }
             }
             hookshot.killEntity();
+            hookshot = null;
             return true;
         }
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp Casting Player
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
-        psp.getPowerValueMap().put("hookshot", null);
-        psp.getPowerValueMap().put("hookshottime", -1D);
-        psp.getPowerValueMap().put("hookshotdir", null);
-        psp.getPlayer().setGravity(true);
-        AbilityUtils.stopFling(psp);
+    public void reset() {
+        hookshot = null;
+        getPlayer().setGravity(true);
+        AbilityUtils.stopFling(getUser());
     }
 
 }

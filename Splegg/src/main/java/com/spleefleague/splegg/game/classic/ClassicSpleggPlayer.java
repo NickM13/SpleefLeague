@@ -12,9 +12,7 @@ import com.spleefleague.splegg.game.SpleggGun;
 public class ClassicSpleggPlayer extends SpleggBattlePlayer {
     
     public ClassicSpleggPlayer(CorePlayer cp, Battle<?> battle) {
-        super(cp, battle);
-        this.spleggGun1 = cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault());
-        this.spleggGun2 = cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault());
+        super(cp, battle, cp.getCollectibles().getActive(SpleggGun.class, "s1"), cp.getCollectibles().getActive(SpleggGun.class, "s2"));
     }
     
 }

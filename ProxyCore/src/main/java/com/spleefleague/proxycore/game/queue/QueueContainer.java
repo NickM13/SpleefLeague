@@ -1,11 +1,19 @@
 package com.spleefleague.proxycore.game.queue;
 
+import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.queue.SubQuery;
+import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBattleStart;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshQueue;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyParty;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
@@ -30,15 +38,14 @@ public class QueueContainer {
         TEAM,
         DYNAMIC,
         BONANZA
-
     }
 
     private final String identifier;
     private final String displayName;
     private final List<QueuePlayer> queuedPlayers;
     private final Set<Integer> teamSizes;
-    private int reqTeams;
-    private int maxTeams;
+    private final int reqTeams;
+    private final int maxTeams;
     TeamStyle teamStyle;
     private boolean joinOngoing;
     private ScheduledTask nextCheck = null;
@@ -89,8 +96,13 @@ public class QueueContainer {
             if (queuedPlayers.size() >= this.maxTeams) {
                 nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 500, TimeUnit.MILLISECONDS);
             } else if (queuedPlayers.size() >= this.reqTeams) {
-                ProxyCore.getInstance().sendMessage(ProxyCore.getChatTag() + getDisplayName() + " will begin in 5 seconds!");
-                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 5000, TimeUnit.MILLISECONDS);
+                TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Queue Now" + Chat.TAG_BRACE + "]");
+                accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to join!").create()));
+                accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request queue " + identifier));
+                TextComponent text = new TextComponent(ProxyCore.getChatTag() + getDisplayName() + " match starting in 2 minutes ");
+                text.addExtra(accept);
+                ProxyCore.getInstance().sendMessage(text);
+                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 120 * 1000L, TimeUnit.MILLISECONDS);
             }
         }
         return replaced != null ? 1 : 0;
@@ -114,15 +126,6 @@ public class QueueContainer {
             }
         }
         return null;
-    }
-
-    private String lastQuery = "";
-    public String getLastQuery() {
-        return lastQuery;
-    }
-
-    public QueuePlayer getPlayerFirst() {
-        return queuedPlayers.get(0);
     }
 
     /**
@@ -203,7 +206,7 @@ public class QueueContainer {
         return null;
     }
 
-    private class QueuedChunk {
+    private static class QueuedChunk {
         List<QueuePlayer> players = new ArrayList<>();
         String query;
     }
@@ -258,13 +261,15 @@ public class QueueContainer {
             playerUuids.add(qp.pcp.getUniqueId());
         }
         for (QueuePlayer qp : players) {
-            QueueManager.leaveAllQueues(qp.pcp.getUniqueId());
+            QueueManager.leaveAllQueues(qp.pcp.getUniqueId(), false);
             qp.pcp.setBattleContainer(this);
             qp.pcp.setBattling(true);
             playing.add(qp.pcp.getUniqueId());
             qp.pcp.getPlayer().connect(minigameServer);
+            qp.pcp.setLastQueueRequest(new PacketQueueJoin(qp.pcp.getUniqueId(), identifier, qp.query));
         }
         ProxyCore.getInstance().sendPacket(minigameServer, new PacketBattleStart(identifier, query, playerUuids));
+        ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(new QueueContainerInfo(identifier, queuedPlayers.size(), playing.size(), spectating.size())));
         return true;
     }
 

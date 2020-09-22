@@ -17,6 +17,7 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
@@ -101,8 +102,10 @@ public class SpleefCommand extends CoreCommand {
     public void spleefChallenge(CorePlayer sender,
                                 @LiteralArg("challenge") String l,
                                 @OptionArg(listName = "chalModes") String mode,
-                                @OptionArg(listName = "arenas") String arena) {
-
+                                @OptionArg(listName = "arenas") String arenaName,
+                                @CorePlayerArg(allowCrossServer = true, allowSelf = false) CorePlayer target) {
+        BattleMode battleMode = SpleefMode.valueOf(mode.toUpperCase()).getBattleMode();
+        Spleef.getInstance().challengePlayer(battleMode, sender, target, Arenas.get(arenaName, battleMode));
     }
 
     @CommandAnnotation

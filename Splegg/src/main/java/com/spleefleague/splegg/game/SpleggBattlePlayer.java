@@ -5,6 +5,7 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.SoundUtils;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.splegg.Splegg;
 import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 import org.bukkit.potion.PotionEffectType;
@@ -22,10 +23,22 @@ public class SpleggBattlePlayer extends BattlePlayer {
     private double charge1 = -1, charge2 = -1;
     private int lastTick = -1;
 
-    public SpleggBattlePlayer(CorePlayer cp, Battle<?> battle) {
+    public SpleggBattlePlayer(CorePlayer cp, Battle<?> battle, SpleggGun gun1, SpleggGun gun2) {
         super(cp, battle);
         this.knockouts = 0;
         this.knockoutStreak = 0;
+        if (gun1 == null) {
+            this.spleggGun1 = SpleggGun.getRandom(gun2);
+            Splegg.getInstance().sendMessage(cp, "Random Main Splegg Gun selected: " + spleggGun1.getName());
+        } else {
+            this.spleggGun1 = gun1;
+        }
+        if (gun2 == null || gun2.equals(this.spleggGun1)) {
+            this.spleggGun2 = SpleggGun.getRandom(this.spleggGun1);
+            Splegg.getInstance().sendMessage(cp, "Random Secondary Splegg Gun selected: " + spleggGun2.getName());
+        } else {
+            this.spleggGun2 = gun2;
+        }
     }
 
     public SpleggGun getGun1() {
@@ -94,12 +107,13 @@ public class SpleggBattlePlayer extends BattlePlayer {
             }
         } else if (spleggGun2.getProjectileStats().fireSystem == ProjectileStats.FireSystem.CHARGE) {
             if (charge2 >= 0) {
-                if (charge2 >= 0.2) {
+                double chargePercent = Math.min(1, Math.floor(5 * (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.)) / 5.);
+                if (chargePercent >= 0.2) {
                     cooldown2 = getBattle().getRoundTime() + spleggGun2.getProjectileStats().fireCooldown / 20.;
                     getPlayer().removePotionEffect(PotionEffectType.SLOW);
                     getBattle().getGameWorld().shootProjectileCharged(getCorePlayer(),
                             spleggGun2.getProjectileStats(),
-                            Math.min(1, Math.round(5 * (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.)) / 5));
+                            chargePercent);
                     charge2 = -1;
                 }
             } else {
@@ -180,7 +194,7 @@ public class SpleggBattlePlayer extends BattlePlayer {
                     if (charge2 < 0) stringBuilder.append(Strings.repeat(' ', HOTBAR_LEN * 2));
                     else {
                         percent2 = 1.f - Math.min(1, (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.));
-                        stringBuilder.append(ChatColor.RED + "" + ChatColor.BOLD + "" + ChatColor.ITALIC
+                        stringBuilder.append(ChatColor.BLUE + "" + ChatColor.BOLD + "" + ChatColor.ITALIC
                                 + (percent2 > 0 ? getHotbarString(percent2) : Strings.repeat('█', HOTBAR_LEN)));
                     }
                 } else {

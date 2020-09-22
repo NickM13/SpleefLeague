@@ -15,7 +15,7 @@ public class QueueLeaveSpigotListener extends SpigotListener<PacketQueueLeave> {
 
     @Override
     protected void receive(Connection sender, PacketQueueLeave packet) {
-        if (QueueManager.leaveAllQueues(packet.player)) {
+        if (QueueManager.leaveAllQueues(packet.player, true)) {
             ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(packet.player), ChatColor.GRAY + "You have left all queues");
         } else {
             ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(packet.player), ChatColor.RED + "You have nothing to leave!");

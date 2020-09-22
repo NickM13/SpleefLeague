@@ -1,12 +1,11 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import net.minecraft.server.v1_16_R1.MovingObjectPosition;
 import org.bukkit.Location;
@@ -19,13 +18,21 @@ import org.bukkit.util.Vector;
  */
 public class OffensiveYoink extends AbilityOffensive {
 
+    public static AbilityStats init() {
+        return init(OffensiveYoink.class)
+                .setCustomModelData(10)
+                .setName("Yoink")
+                .setDescription("Fire a hook forward, if the projectile collides with another player they are quickly pulled to the casters locations.")
+                .setUsage(10);
+    }
+
     private static final double POWER = 0.35D;
     private static final double POWER_CAP = 2.5D;
 
     public static class YoinkProjectile extends FakeEntitySnowball {
 
-        public YoinkProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-            super(gameWorld, shooter, location, projectileStats);
+        public YoinkProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(gameWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -60,38 +67,20 @@ public class OffensiveYoink extends AbilityOffensive {
         projectileStats.size = 0.5D;
     }
 
-    public OffensiveYoink() {
-        super(10, 10D);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Yoink";
-    }
-
-    @Override
-    public String getDescription() {
-        return Chat.DESCRIPTION + "Fire a hook forward, if the projectile collides with another player they are quickly pulled to the casters locations.";
-    }
-
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
     @Override
-    public boolean onUse(PowerSpleefPlayer psp) {
-        psp.getBattle().getGameWorld().shootProjectile(psp.getCorePlayer(), projectileStats);
+    public boolean onUse() {
+        getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), projectileStats);
         return true;
     }
 
     /**
      * Called at the start of a round
-     *
-     * @param psp
      */
     @Override
-    public void reset(PowerSpleefPlayer psp) {
+    public void reset() {
 
     }
 

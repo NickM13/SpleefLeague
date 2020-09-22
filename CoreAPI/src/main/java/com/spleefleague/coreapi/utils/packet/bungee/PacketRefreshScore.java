@@ -9,7 +9,6 @@ import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author NickM13
@@ -32,27 +31,6 @@ public class PacketRefreshScore extends PacketBungee {
     @Override
     public int getTag() {
         return PacketType.Bungee.REFRESH_SCORE.ordinal();
-    }
-
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        mode = input.readUTF();
-        season = input.readInt();
-        int playerCount = input.readInt();
-        players = new ArrayList<>();
-        for (int i = 0; i < playerCount; i++) {
-            players.add(new RatedPlayerInfo(input));
-        }
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(mode);
-        output.writeInt(season);
-        output.writeInt(players.size());
-        for (RatedPlayerInfo rpi : players) {
-            rpi.toOutput(output);
-        }
     }
 
 }

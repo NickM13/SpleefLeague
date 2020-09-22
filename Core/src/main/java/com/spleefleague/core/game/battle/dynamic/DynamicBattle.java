@@ -4,17 +4,16 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
-import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.request.EndGameRequest;
 import com.spleefleague.core.game.request.PauseRequest;
-import com.spleefleague.core.game.request.PlayToRequest;
 import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,9 +26,12 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     
     protected static final int MAX_SHOWN = 5;
     protected int playToPoints = 1;
-    
+    protected int initBattlerCount;
+    protected int avgBattlerRating;
+
     public DynamicBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, players, arena, battlePlayerClass, battleMode);
+        roundCountdown = 10;
     }
     
     /**
@@ -38,7 +40,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void setupBattleRequests() {
         addBattleRequest(new ResetRequest(this));
         addBattleRequest(new EndGameRequest(this));
-        addBattleRequest(new PlayToRequest(this));
+        //addBattleRequest(new PlayToRequest(this));
         addBattleRequest(new PauseRequest(this));
     }
     
@@ -55,7 +57,14 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void setupBattlers() {
-    
+        initBattlerCount = battlers.size();
+        if (battlers.isEmpty()) return;
+        avgBattlerRating = 0;
+        for (CorePlayer cp : battlers.keySet()) {
+            int rating = cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
+            avgBattlerRating += rating;
+        }
+        avgBattlerRating /= battlers.size();
     }
     
     @Override
@@ -109,7 +118,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void saveBattlerStats(BP bp) {
-    
+
     }
     
     /**
@@ -127,13 +136,32 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             endBattle(winner);
         }
     }
+
+    private void applyEloChange(CorePlayer cp, int place) {
+        int diffFromAvg = avgBattlerRating - cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
+        diffFromAvg = Math.min(Math.max(diffFromAvg * 2, -750), 750);
+        int eloChange = (int) (0.00001f * diffFromAvg * diffFromAvg + 0.014f * diffFromAvg + 20.f);
+        float placePercent = (2 * (initBattlerCount - place - 1f) / (initBattlerCount - 1f)) - 1f;
+        eloChange = (int) (eloChange * placePercent);
+
+        int initialElo = cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
+        boolean divChange = cp.getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
+        cp.sendMessage(ChatColor.GRAY + " You have " +
+                (eloChange >= 0 ? "gained " : "lost ") +
+                ChatColor.GREEN + eloChange +
+                ChatColor.GRAY + " Rating Points (" +
+                ChatColor.RED + initialElo +
+                ChatColor.GRAY + "->" +
+                ChatColor.GREEN + (initialElo + eloChange) +
+                ChatColor.GRAY + ")");
+    }
     
     /**
      *
      * @param winner Battle Player
      */
     protected void applyEloChange(BP winner) {
-        getPlugin().sendMessage("Elo Change not set up for Dynamic Battles yet!");
+        applyEloChange(winner.getCorePlayer(), 0);
     }
     
     /**
@@ -167,6 +195,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     protected void failBattler(CorePlayer cp) {
         remainingPlayers.remove(battlers.get(cp));
+        applyEloChange(cp, remainingPlayers.size());
         if (remainingPlayers.isEmpty()) {
             endRound(battlers.get(cp));
         } else if (remainingPlayers.size() == 1) {
@@ -228,7 +257,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             sortedBattlers.clear();
             sortedBattlers.addAll(battlers.values());
             if (battlers.size() < 5) {
-                chatGroup.removeTeam("p" + (battlers.size() - 1));
+                //chatGroup.removeTeam("p" + (battlers.size() - 1));
             }
             if (remainingPlayers.isEmpty()) {
                 startRound();

@@ -26,6 +26,15 @@ public class SubQuery {
         }
     }
 
+    public static SubQuery getSubQuery(String query, String search) {
+        for (SubQuery subQuery : splitQuery(query)) {
+            if (subQuery.type.equalsIgnoreCase(search)) {
+                return subQuery;
+            }
+        }
+        return null;
+    }
+
     public static SubQuery[] splitQuery(String query) {
         String[] sections = query.split(";");
         SubQuery[] subQueries = new SubQuery[sections.length];

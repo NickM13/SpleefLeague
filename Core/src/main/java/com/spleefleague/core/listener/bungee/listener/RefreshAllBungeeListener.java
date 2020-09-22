@@ -14,8 +14,9 @@ public class RefreshAllBungeeListener extends BungeeListener<PacketRefreshAll> {
 
     @Override
     protected void receive(Player sender, PacketRefreshAll packet) {
+        //Core.getInstance().getLeaderboards().refresh();
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
-            plugin.getPlayers().refresh(Sets.newHashSet(packet.players));
+            plugin.refreshPlayers(Sets.newHashSet(packet.players));
         }
         for (QueueContainerInfo qci : packet.queueInfoList) {
             BattleManager manager = Core.getInstance().getBattleManager(BattleMode.get(qci.name));

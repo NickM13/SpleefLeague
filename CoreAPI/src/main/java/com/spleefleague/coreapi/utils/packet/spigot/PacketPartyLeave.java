@@ -19,13 +19,4 @@ public class PacketPartyLeave extends PacketSpigot {
         return PacketType.Spigot.PARTY_LEAVE.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-
-    }
 }

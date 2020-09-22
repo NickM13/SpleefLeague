@@ -61,7 +61,7 @@ public class Rating extends DBEntity {
     protected static final int BASE_ELO = 1000;
 
     @DBField protected Integer elo;
-    @DBField protected Division division = Division.SILVER3;
+    @DBField protected Division division;
     @DBField protected Integer wins;
     @DBField protected Integer losses;
     @DBField protected Long lastPlayed;
@@ -74,6 +74,17 @@ public class Rating extends DBEntity {
         losses = 0;
         lastPlayed = 0L;
         lastDecay = 0L;
+    }
+
+    /**
+     * Called after load to further initialize anything
+     */
+    @Override
+    public void afterLoad() {
+        wins = wins == null ? 0 : wins;
+        losses = losses == null ? 0 : losses;
+        wins = wins == null ? 0 : wins;
+        wins = wins == null ? 0 : wins;
     }
 
     private boolean updateDivision(boolean direction) {

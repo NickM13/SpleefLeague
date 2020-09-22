@@ -5,6 +5,7 @@ import joptsimple.internal.Strings;
 import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author NickM13
@@ -120,12 +121,12 @@ public class ChatUtils {
         return msgs;
     }
     
-    public static ArrayList<String> wrapDescription(String message) {
+    public static List<String> wrapDescription(String message) {
         if (message == null || message.equals("")) return Lists.newArrayList("");
         
-        ArrayList<String> messageSplit = Lists.newArrayList(message.split("\n"));
+        List<String> messageSplit = Lists.newArrayList(message.split("\n"));
         
-        ArrayList<String> msgs = new ArrayList<>();
+        List<String> msgs = new ArrayList<>();
         
         for (String m : messageSplit) {
             msgs.addAll(wrapDesc(m));

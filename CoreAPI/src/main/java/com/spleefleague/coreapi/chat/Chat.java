@@ -6,7 +6,7 @@ package com.spleefleague.coreapi.chat;
  */
 public class Chat {
 
-    public static String DEFAULT = ChatColor.GRAY + "",
+    public static final String DEFAULT = ChatColor.GRAY + "",
             WHISPER = ChatColor.WHITE + "" + ChatColor.ITALIC + "",
             SUCCESS = ChatColor.GREEN + "",
             INFO = ChatColor.YELLOW + "",

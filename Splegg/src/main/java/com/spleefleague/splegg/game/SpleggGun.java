@@ -6,6 +6,7 @@
 
 package com.spleefleague.splegg.game;
 
+import com.google.common.collect.Sets;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
@@ -24,8 +25,13 @@ import com.spleefleague.splegg.game.multi.MultiSpleggBattle;
 import org.bson.Document;
 import org.bukkit.Material;
 import org.bukkit.entity.Snowball;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author NickM13
@@ -50,39 +56,35 @@ public class SpleggGun extends Holdable {
         }
 
         InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemS1")
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s1", SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getName() : "")
+                .setDescription(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDescription() : "")
+                .setDisplayItem(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg
                         && cp.getBattle() instanceof ClassicSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemS2")
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "s2", SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getName() : "")
+                .setDescription(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDescription() : "")
+                .setDisplayItem(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg
                         && cp.getBattle() instanceof ClassicSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemM1")
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m1", SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getName() : "")
+                .setDescription(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDescription() : "")
+                .setDisplayItem(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg
                         && cp.getBattle() instanceof MultiSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemM2")
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getName())
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, "m2", SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getName() : "")
+                .setDescription(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDescription() : "")
+                .setDisplayItem(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Splegg
                         && cp.getBattle() instanceof MultiSpleggBattle);
     }
 
@@ -91,24 +93,89 @@ public class SpleggGun extends Holdable {
         return collection.iterator().next();
     }
 
+    public static SpleggGun getRandom(SpleggGun blacklist) {
+        Set<SpleggGun> collection = Sets.newHashSet(Vendorables.getAll(SpleggGun.class).values());
+        if (blacklist != null) collection.remove(blacklist);
+        int r = new Random().nextInt(collection.size());
+        Iterator<SpleggGun> it = collection.iterator();
+        for (int i = 0; i < r; i++) {
+            it.next();
+        }
+        return it.next();
+    }
+
     private static InventoryMenuItem createActiveSpleggGunMenuItem(String affix) {
         return InventoryMenuAPI.createItem()
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getName() + "")
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getName() + " &6(Currently Selected)";
+                    } else {
+                        return "Random Splegg Gun &6(Currently Selected)";
+                    }
+                })
+                .setDescription(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getDescription();
+                    } else {
+                        return "Select a random Splegg Gun for your next match!";
+                    }
+                })
+                .setDisplayItem(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getDisplayItem();
+                    } else {
+                        return InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11);
+                    }
+                })
                 .setCloseOnAction(false);
     }
 
     public static InventoryMenuItem createMenu(String affix, String secondary) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .setName(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getName() + " &6&iClick to Change")
-                .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()).getDisplayItem())
+                .setName(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getName() + " &6&i(Click to Change)";
+                    } else {
+                        return "Random Splegg Gun &6&i(Click to Change)";
+                    }
+                })
+                .setDescription(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getDescription();
+                    } else {
+                        return "Select a random Splegg Gun for your next match!";
+                    }
+                })
+                .setDisplayItem(cp -> {
+                    SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                    if (active != null) {
+                        return active.getDisplayItem();
+                    } else {
+                        return InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11);
+                    }
+                })
                 .createLinkedContainer("Active Splegg Gun");
 
         menuItem.getLinkedChest().setPageBoundaries(1, 3, 1, 7);
+        menuItem.getLinkedChest().addDeadSpace(0, 1);
+        menuItem.getLinkedChest().addDeadSpace(2, 1);
+        menuItem.getLinkedChest().addDeadSpace(3, 1);
+        menuItem.getLinkedChest().addDeadSpace(4, 1);
+        menuItem.getLinkedChest().addDeadSpace(6, 1);
 
         menuItem.getLinkedChest().addStaticItem(createActiveSpleggGunMenuItem(affix), 4, 4);
+
+        menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItem()
+                .setName("Random Splegg Gun")
+                .setDescription("Select a random Splegg Gun for your next match!")
+                .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11))
+                .setAction(cp -> cp.getCollectibles().removeActiveItem(SpleggGun.class, affix))
+                .setCloseOnAction(false), 4, 2);
 
         for (SpleggGun spleggGun : Vendorables.getAll(SpleggGun.class).values()) {
             InventoryMenuItem smi = InventoryMenuAPI.createItem()

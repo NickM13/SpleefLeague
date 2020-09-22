@@ -1,6 +1,7 @@
 package com.spleefleague.core.game.battle.solo;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
@@ -13,6 +14,7 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
 import org.bukkit.Bukkit;
 
 import java.util.List;
@@ -151,15 +153,8 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void endBattle(BP winner) {
-        ByteArrayDataOutput output = ByteStreams.newDataOutput();
-        output.writeUTF(getMode().getName());   // Mode Name
-        output.writeBoolean(false);
-        output.writeInt(battlers.values().size());
-        for (BattlePlayer bp : battlers.values()) {
-            output.writeUTF(bp.getCorePlayer().getUniqueId().toString());
-        }
+        Core.getInstance().sendPacket(new PacketBattleEndUnrated(getMode().getName(), Lists.newArrayList(battler.getCorePlayer().getUniqueId())));
         destroy();
-        Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(Core.getInstance(), "battle:end", output.toByteArray());
     }
     
 }

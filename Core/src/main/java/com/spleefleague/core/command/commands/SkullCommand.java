@@ -8,6 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Material;
@@ -34,7 +35,8 @@ public class SkullCommand extends CoreCommand {
         SkullMeta skullmeta = (SkullMeta)skull.getItemMeta();
         skullmeta.setOwningPlayer(op);
         skull.setItemMeta(skullmeta);
-        inventory.addItem(skull);
+        //inventory.addItem(skull);
+        inventory.addItem(InventoryMenuSkullManager.getPlayerSkullForced(op.getUniqueId()));
     }
 
 }

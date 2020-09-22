@@ -80,10 +80,17 @@ public class DBEntity {
                         if ((fieldName = f.getAnnotation(DBField.class).fieldName()).equals("")) {
                             fieldName = f.getName();
                         }
-                        if (Enum.class.isAssignableFrom(f.getType())) {
+                        if (f.getType() == int.class) {
+                            doc.append(fieldName, f.getInt(this));
+                        } else if (f.getType() == long.class) {
+                            doc.append(fieldName, f.getLong(this));
+                        } else if (f.getType() == float.class) {
+                            doc.append(fieldName, (double) f.getFloat(this));
+                        } else if (f.getType() == double.class) {
+                            doc.append(fieldName, f.getDouble(this));
+                        } else if (Enum.class.isAssignableFrom(f.getType())) {
                             doc.append(fieldName, (f.get(this)).toString());
-                        }
-                        else if (DBVariable.class.isAssignableFrom(f.getType())) {
+                        } else if (DBVariable.class.isAssignableFrom(f.getType())) {
                             doc.append(fieldName, ((DBVariable<?>) f.get(this)).save());
                         } else if (UUID.class.isAssignableFrom(f.getType())) {
                             doc.append(fieldName, (f.get(this)).toString());
@@ -157,7 +164,19 @@ public class DBEntity {
                         if (fieldName.equals("")) fieldName = f.getName();
                         if (doc.get(fieldName) == null) continue;
                         Object obj = null;
-                        if (Enum.class.isAssignableFrom(f.getType())) {
+                        if (f.getType() == int.class) {
+                            f.setInt(this, doc.getInteger(fieldName));
+                            continue;
+                        } else if (f.getType() == long.class) {
+                            f.setLong(this, doc.getLong(fieldName));
+                            continue;
+                        } else if (f.getType() == float.class) {
+                            f.setFloat(this, doc.getDouble(fieldName).floatValue());
+                            continue;
+                        } else if (f.getType() == double.class) {
+                            f.setDouble(this, doc.getDouble(fieldName));
+                            continue;
+                        } else if (Enum.class.isAssignableFrom(f.getType())) {
                             try {
                                 obj = f.getType().getDeclaredMethod("valueOf", String.class).invoke(f.getType(), doc.get(fieldName, String.class));
                             } catch (ClassCastException exception) {

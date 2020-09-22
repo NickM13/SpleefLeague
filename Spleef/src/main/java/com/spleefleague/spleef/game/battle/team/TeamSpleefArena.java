@@ -29,7 +29,7 @@ public class TeamSpleefArena {
     public static void createMenu(int x, int y) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lTeam Spleef")
-                .setDescription("United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode." +
+                .setDescription(cp -> "United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode." +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.TEAM.getBattleMode()).getPlaying())
                 .setAvailability(cp -> {
                     Party party = cp.getParty();
@@ -67,7 +67,7 @@ public class TeamSpleefArena {
     }
     
     public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Leaderboards.get(SpleefMode.TEAM.getName());
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.TEAM.getName());
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lTeam Spleef")
                 .setDescription("View the top players of Team Spleef!")

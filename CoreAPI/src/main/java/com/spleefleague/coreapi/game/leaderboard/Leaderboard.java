@@ -24,8 +24,8 @@ public abstract class Leaderboard extends DBEntity {
     @DBField protected Integer season;
     @DBField protected Long createTime;
 
-    protected final HashMap<UUID, Integer> playerScoreMap;
-    protected final TreeMap<Integer, LinkedHashSet<UUID>> scorePlayersMap;
+    protected final Map<UUID, Integer> playerScoreMap;
+    protected final SortedMap<Integer, Set<UUID>> scorePlayersMap;
 
     public Leaderboard() {
         playerScoreMap = new HashMap<>();
@@ -72,9 +72,9 @@ public abstract class Leaderboard extends DBEntity {
 
         int lastSectPlace = 0;
         int currPlace = 0;
-        Iterator<Map.Entry<Integer, LinkedHashSet<UUID>>> spit = scorePlayersMap.entrySet().iterator();
+        Iterator<Map.Entry<Integer, Set<UUID>>> spit = scorePlayersMap.entrySet().iterator();
         while (spit.hasNext() && currPlace < startPlace + count) {
-            Map.Entry<Integer, LinkedHashSet<UUID>> entry = spit.next();
+            Map.Entry<Integer, Set<UUID>> entry = spit.next();
             lastSectPlace += entry.getValue().size();
             if (lastSectPlace > startPlace) {
                 for (UUID uuid : entry.getValue()) {
@@ -118,7 +118,7 @@ public abstract class Leaderboard extends DBEntity {
             return -1;
         }
         int placement = 0;
-        for (Map.Entry<Integer, LinkedHashSet<UUID>> entry : scorePlayersMap.entrySet()) {
+        for (Map.Entry<Integer, Set<UUID>> entry : scorePlayersMap.entrySet()) {
             if (!entry.getKey().equals(playerScoreMap.get(player))) {
                 placement += entry.getValue().size();
             } else {

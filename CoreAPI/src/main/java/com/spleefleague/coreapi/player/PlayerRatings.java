@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.player;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.database.variable.DBVariable;
+import com.spleefleague.coreapi.player.statistics.Rating;
 import com.spleefleague.coreapi.player.statistics.Ratings;
 import org.bson.Document;
 
@@ -73,6 +74,14 @@ public class PlayerRatings extends DBVariable<Document> {
 
     public int getLosses(String mode, int season) {
         return modeRatingsMap.get(mode).get(season).getLosses();
+    }
+
+    public int getGamesPlayed(String mode, int season) {
+        Rating rating = modeRatingsMap.get(mode).get(season);
+        if (rating != null) {
+            return rating.getWins() + rating.getLosses();
+        }
+        return 0;
     }
 
     public String getWinPercent(String mode, int season) {

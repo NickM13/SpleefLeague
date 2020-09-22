@@ -13,6 +13,7 @@ import com.spleefleague.core.util.variable.RaycastResult;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.GameWorldPlayer;
+import com.spleefleague.core.world.game.PortalPair;
 import net.minecraft.server.v1_16_R1.EntitySnowball;
 import net.minecraft.server.v1_16_R1.EntityTypes;
 import net.minecraft.server.v1_16_R1.MovingObjectPosition;
@@ -48,6 +49,7 @@ public class FakeEntitySnowball extends EntitySnowball {
     private BlockPosition lastBlock = null;
     private final Vector size;
     private double charge;
+    private int breakAfter;
 
     public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
         this(gameWorld, shooter, location, projectileStats, 1.);
@@ -79,13 +81,16 @@ public class FakeEntitySnowball extends EntitySnowball {
         Vector lookDir;
         if (projectileStats.shape == ProjectileStats.Shape.DEFAULT ||
                 projectileStats.shape == ProjectileStats.Shape.CONE) {
-            if (projectileStats.hSpread > 0) {
-                lookLoc.setYaw(lookLoc.getYaw() + rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f));
-            }
             if (projectileStats.vSpread > 0) {
                 lookLoc.setPitch(lookLoc.getPitch() + rand.nextInt(projectileStats.vSpread) - (projectileStats.vSpread / 2.f));
             }
-            lookDir = lookLoc.getDirection();
+            if (projectileStats.hSpread > 0) {
+                Location temp = lookLoc.clone();
+                temp.setPitch(lookLoc.getPitch() + 90);
+                lookDir = lookLoc.getDirection().rotateAroundNonUnitAxis(temp.getDirection(), Math.toRadians(rand.nextInt(projectileStats.hSpread) - (projectileStats.hSpread / 2.f)));
+            } else {
+                lookDir = lookLoc.getDirection();
+            }
         } else {
             lookDir = lookLoc.getDirection();
         }
@@ -98,6 +103,33 @@ public class FakeEntitySnowball extends EntitySnowball {
         this.bounces = projectileStats.bounces;
         this.noclip = projectileStats.noClip;
         this.lifeTicks = projectileStats.lifeTicks;
+        this.breakAfter = projectileStats.breakAfterBounces;
+    }
+
+    public CorePlayer getCpShooter() {
+        return cpShooter;
+    }
+
+    public ProjectileStats getStats() {
+        return projectileStats;
+    }
+
+    public void reducedStats(FakeEntitySnowball entity) {
+        this.lifeTicks = entity.getRemainingLife();
+        this.bounces = entity.getRemainingBounces();
+        this.breakAfter = entity.getRemainingBreakAfter();
+    }
+
+    public int getRemainingLife() {
+        return lifeTicks;
+    }
+
+    public int getRemainingBounces() {
+        return bounces;
+    }
+
+    public int getRemainingBreakAfter() {
+        return breakAfter;
     }
 
     protected void setStuck(BlockPosition pos) {
@@ -133,8 +165,9 @@ public class FakeEntitySnowball extends EntitySnowball {
             if (projectileStats.collidable) {
                 List<Entity> entities = new ArrayList<>();
                 for (GameWorldPlayer gwp : gameWorld.getPlayerMap().values()) {
-                    if (gwp.getCorePlayer().getBattleState() == BattleState.BATTLER
-                            && (!gwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10)) {
+                    if (gwp.getCorePlayer().getBattleState() == BattleState.BATTLER &&
+                            (!gwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10) &&
+                            gwp.hit()) {
                         entities.add(gwp.getPlayer());
                     }
                 }
@@ -156,6 +189,9 @@ public class FakeEntitySnowball extends EntitySnowball {
                 Material mat;
                 if (!blockResult.getBlockPos().equals(lastBlock)) {
                     blockChange(craftEntity, blockResult);
+                    if (checkPortals(craftEntity, blockResult)) {
+                        break;
+                    }
                 }
                 if (fb != null) {
                     mat = fb.getBlockData().getMaterial();
@@ -193,6 +229,21 @@ public class FakeEntitySnowball extends EntitySnowball {
 
     protected void blockChange(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
 
+    }
+
+    public boolean checkPortals(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
+        for (PortalPair pair : gameWorld.getPlayerPortals().values()) {
+            if (pair.isLinked()) {
+                if (pair.getPortal1().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal1().getBlockFace().equals(blockRaycastResult.getFace())) {
+                    gameWorld.portalize(this, pair.getPortal2().getTpLoc(), pair.getNewVelocityTo2(craftEntity));
+                    return true;
+                } else if (pair.getPortal2().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal2().getBlockFace().equals(blockRaycastResult.getFace())) {
+                    gameWorld.portalize(this, pair.getPortal1().getTpLoc(), pair.getNewVelocityTo1(craftEntity));
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected boolean blockBounce(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
@@ -267,22 +318,26 @@ public class FakeEntitySnowball extends EntitySnowball {
      * @return Should ignore next raycast results
      */
     protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
-        switch (projectileStats.breakStyle) {
-            case DEFAULT:
-                cpShooter.getStatistics().get("splegg").add("blocksBroken", gameWorld.breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                break;
-            case CORROSIVE:
-                cpShooter.getStatistics().get("splegg").add("blocksCorroded", gameWorld.corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                break;
-            case FIRE:
-                cpShooter.getStatistics().get("splegg").add("blocksBurnt", gameWorld.burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                break;
-            case ICE:
-                cpShooter.getStatistics().get("splegg").add("blocksIced", gameWorld.iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                break;
-            case REGENERATE:
-                cpShooter.getStatistics().get("splegg").add("blocksEndered", gameWorld.breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                break;
+        if (breakAfter <= 0) {
+            switch (projectileStats.breakStyle) {
+                case DEFAULT:
+                    cpShooter.getStatistics().get("splegg").add("blocksBroken", gameWorld.breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                    break;
+                case CORROSIVE:
+                    cpShooter.getStatistics().get("splegg").add("blocksCorroded", gameWorld.corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                    break;
+                case FIRE:
+                    cpShooter.getStatistics().get("splegg").add("blocksBurnt", gameWorld.burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                    break;
+                case ICE:
+                    cpShooter.getStatistics().get("splegg").add("blocksIced", gameWorld.iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                    break;
+                case REGENERATE:
+                    cpShooter.getStatistics().get("splegg").add("blocksEndered", gameWorld.breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                    break;
+            }
+        } else {
+            breakAfter--;
         }
 
         bounces--;

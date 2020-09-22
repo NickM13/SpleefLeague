@@ -4,7 +4,6 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.player.ProxyPlayerRatings;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.bson.Document;
 
@@ -21,7 +20,7 @@ public class Leaderboards {
 
     private static MongoCollection<Document> leaderboardCol;
 
-    private static ScheduledTask decayTask;
+    private static ScheduledTask decayTask, saveTask;
 
     public static void init() {
         leaderboardCol = ProxyCore.getInstance().getDatabase().getCollection("Leaderboards");
@@ -40,20 +39,32 @@ public class Leaderboards {
         }
 
         decayTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), Leaderboards::checkDecay, 0, 6, TimeUnit.HOURS);
+        saveTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), Leaderboards::save, 15, 15, TimeUnit.SECONDS);
+    }
+
+    private static boolean saving = false;
+
+    public static void save() {
+        if (!saving) {
+            saving = true;
+            try {
+                if (leaderboardCol.find(new Document("active", true)).first() != null) {
+                    leaderboardCol.deleteMany(new Document("active", true));
+                }
+                for (Map.Entry<String, LeaderboardCollection> entry : LEADERBOARDS.entrySet()) {
+                    leaderboardCol.insertOne(entry.getValue().getActive().toDocument());
+                }
+            } catch (NoClassDefFoundError | IllegalAccessError ignored) {
+
+            }
+            saving = false;
+        }
     }
 
     public static void close() {
         decayTask.cancel();
-        try {
-            if (leaderboardCol.find(new Document("active", true)).first() != null) {
-                leaderboardCol.deleteMany(new Document("active", true));
-            }
-            for (Map.Entry<String, LeaderboardCollection> entry : LEADERBOARDS.entrySet()) {
-                leaderboardCol.insertOne(entry.getValue().getActive().toDocument());
-            }
-        } catch (NoClassDefFoundError | IllegalAccessError ignored) {
-
-        }
+        saveTask.cancel();
+        save();
     }
 
     public static LeaderboardCollection get(String name) {

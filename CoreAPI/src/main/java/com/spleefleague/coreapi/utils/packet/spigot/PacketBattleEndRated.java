@@ -33,25 +33,4 @@ public class PacketBattleEndRated extends PacketSpigot {
         return PacketType.Spigot.BATTLE_END_RATED.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        mode = input.readUTF();
-        season = input.readInt();
-        int playerCount = input.readInt();
-        players = new ArrayList<>();
-        for (int i = 0; i < playerCount; i++) {
-            players.add(new RatedPlayerInfo(input));
-        }
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(mode);
-        output.writeInt(season);
-        output.writeInt(players.size());
-        for (RatedPlayerInfo rpi : players) {
-            rpi.toOutput(output);
-        }
-    }
-
 }

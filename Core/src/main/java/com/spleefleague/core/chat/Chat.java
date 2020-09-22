@@ -9,6 +9,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -145,6 +146,10 @@ public class Chat {
         Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), msg));
     }
 
+    public static void sendMessage(ChatChannel channel, String msg, Set<UUID> blacklist) {
+        Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), msg, blacklist));
+    }
+
     public static void sendMessage(PacketChatBungee packet) {
         UUID uuid = packet.sender;
         CorePlayer sender = uuid != null ? Core.getInstance().getPlayers().get(uuid) : null;
@@ -153,17 +158,19 @@ public class Chat {
 
         if (sender != null) {
             for (CorePlayer cp : chatChannel.getPlayers(sender)) {
-                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE
-                        && chatChannel.isAvailable(cp)
-                        && !cp.getOptions().isChannelDisabled(chatChannel.getName())) {
+                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
+                        chatChannel.isAvailable(cp) &&
+                        !cp.getOptions().isChannelDisabled(chatChannel.getName()) &&
+                        !packet.blacklist.contains(cp.getUniqueId())) {
                     cp.sendMessage(message);
                 }
             }
         } else {
             for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
-                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE
-                        && chatChannel.isAvailable(cp)
-                        && !cp.getOptions().isChannelDisabled(chatChannel.getName())) {
+                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
+                        chatChannel.isAvailable(cp) &&
+                        !cp.getOptions().isChannelDisabled(chatChannel.getName()) &&
+                        !packet.blacklist.contains(cp.getUniqueId())) {
                     cp.sendMessage(message);
                 }
             }

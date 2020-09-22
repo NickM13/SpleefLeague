@@ -376,9 +376,21 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         activeCollectibles.put(collectible.getType() + affix, collectible.getIdentifier());
         owner.refreshHotbar();
     }
-    
+
     public void removeActiveItem(Class<? extends Collectible> clazz) {
         String type = Vendorable.getTypeName(clazz);
+        if (activeCollectibles.containsKey(type)) {
+            Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
+            if (collectible != null) {
+                collectible.onDisable(owner);
+            }
+            activeCollectibles.remove(type);
+            owner.refreshHotbar();
+        }
+    }
+
+    public void removeActiveItem(Class<? extends Collectible> clazz, String affix) {
+        String type = Vendorable.getTypeName(clazz) + affix;
         if (activeCollectibles.containsKey(type)) {
             Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
             if (collectible != null) {

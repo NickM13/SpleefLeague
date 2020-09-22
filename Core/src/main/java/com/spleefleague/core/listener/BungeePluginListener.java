@@ -3,16 +3,8 @@ package com.spleefleague.core.listener;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.listener.bungee.BungeeListener;
-import com.spleefleague.core.listener.bungee.listener.BattleSpectateBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.BattleStartBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.ChatBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.ConnectionBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.RefreshAllBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.RefreshQueueBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.RefreshScoreBungeeListener;
-import com.spleefleague.core.listener.bungee.listener.TellBungeeListener;
+import com.spleefleague.core.listener.bungee.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.coreapi.utils.packet.Packet;
 import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import org.bukkit.entity.Player;
@@ -29,6 +21,7 @@ public class BungeePluginListener implements PluginMessageListener {
     public BungeePluginListener() {
         registeredListeners.put(PacketType.Bungee.BATTLE_SPECTATE, new BattleSpectateBungeeListener());
         registeredListeners.put(PacketType.Bungee.BATTLE_START, new BattleStartBungeeListener());
+        registeredListeners.put(PacketType.Bungee.CHALLENGE, new ChallengeBungeeListener());
         registeredListeners.put(PacketType.Bungee.CHAT, new ChatBungeeListener());
         registeredListeners.put(PacketType.Bungee.CONNECTION, new ConnectionBungeeListener());
         registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new RefreshAllBungeeListener());

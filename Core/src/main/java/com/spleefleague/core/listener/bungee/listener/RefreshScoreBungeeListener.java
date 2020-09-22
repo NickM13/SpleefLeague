@@ -1,7 +1,6 @@
 package com.spleefleague.core.listener.bungee.listener;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.bungee.BungeeListener;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
@@ -13,7 +12,7 @@ public class RefreshScoreBungeeListener extends BungeeListener<PacketRefreshScor
 
     @Override
     protected void receive(Player sender, PacketRefreshScore packet) {
-        Leaderboard leaderboard = Leaderboards.get(packet.mode).getLeaderboards().get(packet.season);
+        Leaderboard leaderboard = Core.getInstance().getLeaderboards().get(packet.mode).getLeaderboards().get(packet.season);
         for (RatedPlayerInfo rpi : packet.players) {
             CorePlayer cp = Core.getInstance().getPlayers().get(rpi.uuid);
             cp.getRatings().setRating(packet.mode, packet.season, rpi.elo);

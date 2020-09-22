@@ -16,15 +16,15 @@ public abstract class Packet {
 
     public abstract int getTag();
 
-    public abstract void fromByteArray(ByteArrayDataInput input);
+    public final void fromByteArray(ByteArrayDataInput input) {
+        PacketUtil.readToFields(this, input);
+    }
 
     public final byte[] toByteArray() {
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeInt(getTag());
-        toByteArray(output);
+        PacketUtil.writeFromFields(this, output);
         return output.toByteArray();
     }
-
-    protected abstract void toByteArray(ByteArrayDataOutput output);
 
 }

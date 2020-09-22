@@ -12,6 +12,7 @@ import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
@@ -23,9 +24,9 @@ import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
  */
 public class SpleefPlayer extends DBPlayer {
 
-    @DBField protected String activeUtility = "";
-    @DBField protected String activeOffensive = "";
-    @DBField protected String activeMobility = "";
+    @DBField protected String activeUtility = null;
+    @DBField protected String activeOffensive = null;
+    @DBField protected String activeMobility = null;
     
     public SpleefPlayer() {
         super();
@@ -68,16 +69,16 @@ public class SpleefPlayer extends DBPlayer {
         }
     }
 
-    public AbilityUtility getActiveUtility() {
-        return (AbilityUtility) Abilities.getAbility(Ability.Type.UTILITY, activeUtility);
+    public AbilityStats getActiveUtility() {
+        return Abilities.getAbility(Ability.Type.UTILITY, activeUtility);
     }
 
-    public AbilityOffensive getActiveOffensive() {
-        return (AbilityOffensive) Abilities.getAbility(Ability.Type.OFFENSIVE, activeOffensive);
+    public AbilityStats getActiveOffensive() {
+        return Abilities.getAbility(Ability.Type.OFFENSIVE, activeOffensive);
     }
 
-    public AbilityMobility getActiveMobility() {
-        return (AbilityMobility) Abilities.getAbility(Ability.Type.MOBILITY, activeMobility);
+    public AbilityStats getActiveMobility() {
+        return Abilities.getAbility(Ability.Type.MOBILITY, activeMobility);
     }
     
 }

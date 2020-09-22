@@ -56,6 +56,7 @@ public class ProjectileStats extends DBEntity {
     @DBField public Double      breakPercent = 1D;
     @DBField public Integer     bounces = 0;
     @DBField public Double      bounciness = 0.3;
+    @DBField public Integer     breakAfterBounces = 0;
     @DBField public Integer     lifeTicks = 100;
     @DBField public Integer     hSpread = 0;
     @DBField public Integer     vSpread = 0;

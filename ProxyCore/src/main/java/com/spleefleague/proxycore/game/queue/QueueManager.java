@@ -28,11 +28,16 @@ public class QueueManager {
         addQueueContainer("spleef:power", "Power Spleef", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("spleef:power_training", "Power Training", 1, 1, QueueContainer.TeamStyle.SOLO, false);
         //addQueueContainer("spleef:team", "Team Spleef", 2, 2, QueueContainer.TeamStyle.TEAM, false);
-        //addQueueContainer("spleef:multi", "Multispleef", 3, 32, QueueContainer.TeamStyle.DYNAMIC, true);
+        //addQueueContainer("spleef:multi", "Multispleef", 3, 32, QueueContainer.TeamStyle.DYNAMIC, false);
         //addQueueContainer("spleef:bonanza", "Bonanza Spleef", 1, 1, QueueContainer.TeamStyle.BONANZA, true);
 
-        addQueueContainer("splegg:classic", "Classic Splegg", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
-        addQueueContainer("splegg:multi", "Multisplegg", 3, 32, QueueContainer.TeamStyle.DYNAMIC, true);
+        addQueueContainer("splegg:versus", "Splegg Versus", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
+        addQueueContainer("splegg:multi", "Multisplegg", 2, 32, QueueContainer.TeamStyle.DYNAMIC, false);
+
+        addQueueContainer("sj:classic", "SuperJump: Classic", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
+        addQueueContainer("sj:shuffle", "SuperJump: Shuffle", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
+        addQueueContainer("sj:conquest", "SuperJump: Conquest", 1, 1, QueueContainer.TeamStyle.SOLO, false);
+        addQueueContainer("sj:endless", "SuperJump: Endless", 1, 1, QueueContainer.TeamStyle.SOLO, false);
 
         queueTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             for (QueueContainer queue : queueContainerMap.values()) {
@@ -96,36 +101,38 @@ public class QueueManager {
             case 0:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have joined the queue for " +
-                                queueContainer.getDisplayName() +
-                                ChatColor.GRAY + " (" + query + ")");
+                                queueContainer.getDisplayName()
+                                /*ChatColor.GRAY + " (" + query + ")"*/);
                 ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 1:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have rejoined the queue for " +
-                                queueContainer.getDisplayName() +
-                                ChatColor.GRAY + " (" + query + ")");
+                                queueContainer.getDisplayName()
+                                /*ChatColor.GRAY + " (" + query + ")"*/);
                 break;
         }
     }
 
-    public static boolean leaveQueue(UUID uuid, String mode) {
+    public static boolean leaveQueue(UUID uuid, String mode, boolean sendPacketUpdate) {
         QueueContainer queueContainer = queueContainerMap.get(mode);
         if (queueContainer != null && queueContainerMap.get(mode).leave(ProxyCore.getInstance().getPlayers().get(uuid)) != null) {
             // You have successfully left the queue for (mode)
             //ProxyCore.sendMessage(ProxyCore.getInstance().getPlayers().get(uuid), "You have left the queue for " + mode);
-            ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
-                    mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
+            if (sendPacketUpdate) {
+                ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
+                        mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
+            }
             return true;
         }
         return false;
     }
 
-    public static boolean leaveAllQueues(UUID uuid) {
+    public static boolean leaveAllQueues(UUID uuid, boolean sendPacketUpdate) {
         boolean hasLeft = false;
         for (String mode : queueContainerMap.keySet()) {
-            hasLeft |= leaveQueue(uuid, mode);
+            hasLeft |= leaveQueue(uuid, mode, sendPacketUpdate);
         }
         return hasLeft;
     }

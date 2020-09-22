@@ -1,6 +1,7 @@
 package com.spleefleague.proxycore.player;
 
 import com.spleefleague.coreapi.player.RatedPlayer;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -17,6 +18,7 @@ public class ProxyCorePlayer extends RatedPlayer {
     private ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
     private boolean battling = false;
     private QueueContainer battleContainer = null;
+    private PacketQueueJoin lastQueueRequest = null;
 
     public ProxyCorePlayer() {
 
@@ -88,6 +90,14 @@ public class ProxyCorePlayer extends RatedPlayer {
 
     public ProxyPlayerRatings getProxyRatings() {
         return proxyRatings;
+    }
+
+    public void setLastQueueRequest(PacketQueueJoin packet) {
+        lastQueueRequest = packet;
+    }
+
+    public PacketQueueJoin getLastQueueRequest() {
+        return lastQueueRequest;
     }
 
 }

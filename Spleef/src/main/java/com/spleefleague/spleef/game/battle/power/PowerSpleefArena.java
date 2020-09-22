@@ -6,6 +6,7 @@
 
 package com.spleefleague.spleef.game.battle.power;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
@@ -32,7 +33,7 @@ public class PowerSpleefArena {
     public static void createMenu(int x, int y) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lPower Spleef")
-                .setDescription("A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!" +
+                .setDescription(cp -> "A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!" +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.POWER.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
                 .createLinkedContainer("Power Spleef Menu");
@@ -61,7 +62,7 @@ public class PowerSpleefArena {
     }
     
     public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Leaderboards.get(SpleefMode.POWER.getName());
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.POWER.getName());
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName(mainColor + "Power Spleef")
                 .setDescription("View the top players of Power Spleef!")

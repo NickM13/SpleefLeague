@@ -2,13 +2,17 @@ package com.spleefleague.core.game.leaderboard;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.game.leaderboard.ActiveLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.ArchivedLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
+import com.spleefleague.coreapi.player.PlayerRatings;
+import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
 import org.bson.Document;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -16,14 +20,22 @@ import java.util.*;
  */
 public class Leaderboards {
     
-    private static final Map<String, LeaderboardCollection> LEADERBOARDS = new HashMap<>();
+    private final Map<String, LeaderboardCollection> LEADERBOARDS = new HashMap<>();
     
-    private static MongoCollection<Document> leaderboardCol;
+    private MongoCollection<Document> leaderboardCol;
     
-    private static BukkitTask decayTask;
-    
-    public static void init() {
+    private BukkitTask decayTask;
+
+    public Leaderboards() {
+        init();
+    }
+
+    public void init() {
         leaderboardCol = Core.getInstance().getPluginDB().getCollection("Leaderboards");
+        refresh();
+    }
+
+    public void refresh() {
         for (Document doc : leaderboardCol.find(new Document())) {
             Leaderboard leaderboard;
             if (doc.get("active", Boolean.class)) {
@@ -38,12 +50,31 @@ public class Leaderboards {
             LEADERBOARDS.get(leaderboard.getName()).addLeaderboard(leaderboard);
         }
     }
-    
-    public static void close() {
+
+    public void refresh(Set<UUID> players) {
+        Map<UUID, CorePlayer> playerMap = new HashMap<>();
+        for (UUID uuid : players) {
+            playerMap.put(uuid, Core.getInstance().getPlayers().get(uuid));
+        }
+        for (LeaderboardCollection leaderboard : LEADERBOARDS.values()) {
+            String name = leaderboard.getName();
+            int season = leaderboard.getActive().getSeason();
+            Set<RatedPlayerInfo> ratedPlayerInfos = new HashSet<>();
+            for (CorePlayer cp : playerMap.values()) {
+                PlayerRatings ratings = cp.getRatings();
+                if (ratings.isRanked(name, season) && ratings.getGamesPlayed(name, season) > 0) {
+                    ratedPlayerInfos.add(new RatedPlayerInfo(cp.getUniqueId(), ratings.getElo(name, season)));
+                }
+            }
+            leaderboard.getActive().refreshPlayers(ratedPlayerInfos);
+        }
+    }
+
+    public void close() {
 
     }
     
-    public static LeaderboardCollection get(String name) {
+    public LeaderboardCollection get(String name) {
         if (!LEADERBOARDS.containsKey(name)) {
             LEADERBOARDS.put(name, new LeaderboardCollection(name));
         }

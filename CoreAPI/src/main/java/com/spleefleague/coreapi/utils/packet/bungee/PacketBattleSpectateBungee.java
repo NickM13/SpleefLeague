@@ -2,7 +2,6 @@ package com.spleefleague.coreapi.utils.packet.bungee;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
@@ -20,20 +19,6 @@ public class PacketBattleSpectateBungee extends PacketBungee {
 
     public PacketBattleSpectateBungee() { }
 
-    /**
-     * This should be called after the tag is removed from start!
-     *
-     * @param input
-     */
-    public PacketBattleSpectateBungee(ByteArrayDataInput input) {
-        fromByteArray(input);
-    }
-
-    public PacketBattleSpectateBungee(DBPlayer spectator, DBPlayer target) {
-        this.spectator = spectator.getUniqueId();
-        this.target = target.getUniqueId();
-    }
-
     public PacketBattleSpectateBungee(PacketBattleSpectateSpigot packet) {
         this.spectator = packet.spectator;
         this.target = packet.target;
@@ -44,15 +29,4 @@ public class PacketBattleSpectateBungee extends PacketBungee {
         return PacketType.Bungee.BATTLE_SPECTATE.ordinal();
     }
 
-    @Override
-    public void fromByteArray(ByteArrayDataInput input) {
-        spectator = UUID.fromString(input.readUTF());
-        target = UUID.fromString(input.readUTF());
-    }
-
-    @Override
-    protected void toByteArray(ByteArrayDataOutput output) {
-        output.writeUTF(spectator.toString());
-        output.writeUTF(target.toString());
-    }
 }

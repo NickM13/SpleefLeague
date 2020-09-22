@@ -99,7 +99,7 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
 
     public void updatePowers() {
         for (PowerTrainingPlayer ptp : battlers.values()) {
-            ptp.updatePowers();
+            ptp.selectPowers();
             ptp.getCorePlayer().refreshHotbar();
         }
     }

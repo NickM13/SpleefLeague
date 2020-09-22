@@ -5,7 +5,11 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.mojang.authlib.GameProfile;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.packet.BlockPalette;
 import com.spleefleague.core.util.packet.ByteBufferReader;
 import com.spleefleague.core.util.packet.ChunkData;
@@ -15,13 +19,18 @@ import com.spleefleague.core.util.packet.ProtocolLongArrayBitWriter;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeBlock;
 import gnu.trove.list.array.TByteArrayList;
+import net.minecraft.server.v1_16_R1.EnumGamemode;
 import net.minecraft.server.v1_16_R1.IBlockData;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R1.PacketPlayOutPlayerInfo;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_16_R1.block.data.CraftBlockData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,12 +39,48 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author NickM13 and Jonas
  * @since 4/21/2020
  */
 public class PacketUtils {
+
+    public static PacketContainer createAddPlayerPacket(List<CorePlayer> corePlayers) {
+        try {
+            PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
+            Field playerListField = PacketPlayOutPlayerInfo.class.getDeclaredField("b");
+            playerListField.setAccessible(true);
+            List playerList = (List) playerListField.get(nmsPacket);
+            for (CorePlayer cp : corePlayers) {
+                playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
+                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getDisplayName()).getJson())));
+            }
+            return new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
+            CoreLogger.logError(exception);
+        }
+        return null;
+    }
+
+    public static PacketContainer createRemovePlayerPacket(List<UUID> uuids) {
+        try {
+            PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER);
+            Field playerListField = PacketPlayOutPlayerInfo.class.getDeclaredField("b");
+            playerListField.setAccessible(true);
+            List playerList = (List) playerListField.get(nmsPacket);
+            for (UUID uuid : uuids) {
+                playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
+                        .newInstance(nmsPacket, new GameProfile(uuid, null), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText("").getJson())));
+            }
+            PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
+            Core.sendPacketAll(packet);
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
+            CoreLogger.logError(exception);
+        }
+        return null;
+    }
     
     public static PacketContainer createMultiBlockChangePacket(ChunkCoord chunkCoord, Map<Short, FakeBlock> fakeChunkBlocks) {
         PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);

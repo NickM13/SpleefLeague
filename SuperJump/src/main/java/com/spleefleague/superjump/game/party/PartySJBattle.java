@@ -8,7 +8,6 @@ package com.spleefleague.superjump.game.party;
 
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.dynamic.DynamicBattle;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 

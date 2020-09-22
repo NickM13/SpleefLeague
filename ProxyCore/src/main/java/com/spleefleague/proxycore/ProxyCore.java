@@ -220,6 +220,19 @@ public class ProxyCore extends Plugin {
     }
 
     /**
+     * Send a packet to all servers with 1 or more players
+     *
+     * @param output
+     */
+    public void sendPacketExclude(ServerInfo exclude, Packet output) {
+        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServersCopy().entrySet()) {
+            if (!server.getValue().getPlayers().isEmpty() && !exclude.equals(server.getValue())) {
+                server.getValue().sendData("slcore:bungee", output.toByteArray());
+            }
+        }
+    }
+
+    /**
      * Send a packet to a specific server
      *
      * @param server

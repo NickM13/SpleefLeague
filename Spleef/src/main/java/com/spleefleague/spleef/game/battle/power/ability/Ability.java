@@ -1,6 +1,5 @@
 package com.spleefleague.spleef.game.battle.power.ability;
 
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingPlayer;
@@ -9,7 +8,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author NickM13
@@ -68,56 +71,47 @@ public abstract class Ability {
 
     }
 
-    protected Type type;
-    protected String name;
-    protected ItemStack displayItem;
-    protected int charges;
-    protected double cooldown;
-    protected double globalCooldown;
+    private PowerSpleefPlayer psp;
+    private AbilityStats stats;
+    private Consumer<PowerSpleefPlayer> onCooldownConsumer;
 
-    public Ability(Ability.Type type, ItemStack displayItem, int charges, double cooldown, double refreshCooldown) {
-        this.name = getClass().getSimpleName();
-        this.type = type;
-        this.displayItem = displayItem;
-        this.charges = charges;
-        this.cooldown = cooldown;
-        this.globalCooldown = refreshCooldown;
+    public Ability() { }
+
+    public void init(PowerSpleefPlayer psp, AbilityStats stats) {
+        this.psp = psp;
+        this.stats = stats;
     }
 
-    public Type getType() {
-        return type;
+    public PowerSpleefPlayer getUser() {
+        return psp;
+    }
+
+    public Player getPlayer() {
+        return psp.getPlayer();
+    }
+
+    public AbilityStats getStats() {
+        return stats;
     }
 
     public String getName() {
-        return name;
+        return stats.getName();
     }
 
-    public abstract String getDisplayName();
+    public String getDescription() {
+        return stats.getDescription();
+    }
 
     public ItemStack getDisplayItem() {
-        return displayItem;
+        return stats.getDisplayItem();
     }
 
-    public final String getFullDescription() {
-        String cooldownStr = getCooldownString();
-        if (cooldownStr.isEmpty()) return getDescription();
-        return getDescription() + "\n\n" + cooldownStr;
+    public void setOnCooldownConsumer(Consumer<PowerSpleefPlayer> consumer) {
+        onCooldownConsumer = consumer;
     }
 
-    public final String getCooldownString() {
-        if (charges == 0) {
-            return "";
-        } else if (charges == 1) {
-            return Chat.DESCRIPTION + "Cooldown: " + Chat.STAT + this.cooldown + Chat.DESCRIPTION + " seconds.";
-        } else {
-            return Chat.DESCRIPTION + "Cooldown: " + Chat.STAT + this.globalCooldown + Chat.DESCRIPTION + " seconds (" + Chat.STAT + this.cooldown + Chat.DESCRIPTION + " seconds/charge)";
-        }
-    }
-
-    public abstract String getDescription();
-
-    public int getCharges(PowerSpleefPlayer psp) {
-        return (int) Math.max(1, Math.min(charges, charges - ((psp.getCooldown(getType()) - psp.getBattle().getRoundTime()) / cooldown)));
+    public int getCharges() {
+        return (int) Math.max(1, Math.min(stats.getCharges(), stats.getCharges() - ((psp.getCooldown(stats.getType()) - psp.getBattle().getRoundTime()) / stats.getCooldown())));
     }
 
     private static final int HOTBAR_LEN = 5;
@@ -125,21 +119,20 @@ public abstract class Ability {
     /**
      * Returns a percent number of how much is remaining until the value is fully charged
      *
-     * @param psp Casting Player
      * @return percent
      */
-    protected double getMissingPercent(PowerSpleefPlayer psp) {
-        return Math.max(0, (psp.getCooldown(getType()) - psp.getBattle().getRoundTime()) / cooldown);
+    protected double getMissingPercent() {
+        return Math.max(0, (psp.getCooldown(stats.getType()) - psp.getBattle().getRoundTime()) / stats.getCooldown());
     }
 
     //private static char[] CD_ANIM = {'─', '░', '▒', '▓', '█'};
     private static char[] CD_ANIM = {'─', '═', '╪', '▓', '█'};
 
-    public String getHotbarString(String readyColor, String cdColor, PowerSpleefPlayer psp) {
-        double percent = getMissingPercent(psp);
+    public String getHotbarString(String readyColor, String cdColor) {
+        double percent = getMissingPercent();
         if (percent > 0) {
             int max;
-            boolean isReady = psp.getPlayer().getCooldown(getType().getMaterial()) <= 0;
+            boolean isReady = psp.getPlayer().getCooldown(stats.getType().getMaterial()) <= 0;
             if (percent % 1 == 0 && percent > 0) {
                 if (isReady) return Strings.repeat('─', HOTBAR_LEN);
                 return readyColor + Strings.repeat(' ', HOTBAR_LEN * 2);
@@ -160,112 +153,97 @@ public abstract class Ability {
         }
     }
 
-    protected void applyCooldown(PowerSpleefPlayer psp) {
+    protected boolean isFinishedRandom() {
+        return getCharges() <= 1;
+    }
+
+    protected void finishRandom() {
+        onCooldownConsumer.accept(getUser());
+    }
+
+    public void applyCooldown() {
         if (psp instanceof PowerTrainingPlayer && !((PowerTrainingBattle) psp.getBattle()).isCooldownEnabled()) {
-            applyCooldown(psp, 1);
+            applyCooldown(1);
         } else {
-            double newCooldown = Math.max(psp.getBattle().getRoundTime(), psp.getCooldown(type)) + cooldown;
-            psp.setCooldown(type, newCooldown);
-            psp.getPlayer().setCooldown(type.getMaterial(), (int) (20 * Math.max(globalCooldown, newCooldown - (psp.getBattle().getRoundTime()) - (cooldown * (charges - 1)))));
+            applyCooldown(stats.getCooldown());
         }
     }
 
-    protected void applyCooldown(PowerSpleefPlayer psp, double cooldown) {
-        double newCooldown = Math.max(psp.getBattle().getRoundTime(), psp.getCooldown(type)) + cooldown;
-        psp.setCooldown(type, newCooldown);
-        psp.getPlayer().setCooldown(type.getMaterial(), (int) (20 * Math.max(globalCooldown, newCooldown - (psp.getBattle().getRoundTime()) - (this.cooldown * (charges - 1)))));
+    protected void applyCooldown(double cooldown) {
+        double newCooldown = Math.max(psp.getBattle().getRoundTime(), psp.getCooldown(stats.getType())) + cooldown;
+        if (onCooldownConsumer != null) {
+            if (isFinishedRandom()) {
+                finishRandom();
+                return;
+            }
+            psp.setCooldown(Type.UTILITY, newCooldown);
+            psp.getPlayer().setCooldown(Type.UTILITY.getMaterial(), (int) (20 * Math.max(stats.getRefresh(), newCooldown - (psp.getBattle().getRoundTime()) - (this.stats.getCooldown() * (stats.getCharges() - 1)))));
+        } else {
+            psp.setCooldown(stats.getType(), newCooldown);
+            psp.getPlayer().setCooldown(stats.getType().getMaterial(), (int) (20 * Math.max(stats.getRefresh(), newCooldown - (psp.getBattle().getRoundTime()) - (this.stats.getCooldown() * (stats.getCharges() - 1)))));
+        }
     }
 
-    public boolean isReady(PowerSpleefPlayer psp) {
-        return psp.getPlayer().getCooldown(type.getMaterial()) <= 0;
+    public boolean isReady() {
+        return psp.getPlayer().getCooldown(stats.getType().getMaterial()) <= 0;
     }
 
     /**
      * Attempt to use the ability.
-     *
-     * @param psp Casting Player
      */
-    public final void activate(PowerSpleefPlayer psp) {
-        if (isReady(psp)) {
-            if (onUse(psp)) {
-                applyCooldown(psp);
+    public final void activate() {
+        if (isReady()) {
+            if (onUse()) {
+                applyCooldown();
             }
         } else {
-            onUseCooling(psp);
+            onUseCooling();
         }
     }
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.
-     *
-     * @param psp Casting Player
      */
-    public abstract boolean onUse(PowerSpleefPlayer psp);
+    public abstract boolean onUse();
 
     /**
      * This is called when a player tried to use an ability while it's on cooldown, used for
      * re-activatable abilities.
-     *
-     * @param psp Casting Player
      */
-    protected void onUseCooling(PowerSpleefPlayer psp) { }
+    protected void onUseCooling() { }
 
-    public void onHit(PowerSpleefPlayer psp) { }
+    public void onHit() { }
 
     /**
      * This is called when a player breaks a block.
-     *
-     * @param psp Casting Player
      */
-    public void onBlockBreak(PowerSpleefPlayer psp) { }
+    public void onBlockBreak() { }
 
     /**
      * This is called when a  player starts sneaking
-     *
-     * @param psp
      */
-    public void onStartSneak(PowerSpleefPlayer psp) { }
+    public void onStartSneak() { }
 
     /**
      * This is called when a  player starts sneaking
-     *
-     * @param psp
      */
-    public void onStopSneak(PowerSpleefPlayer psp) { }
+    public void onStopSneak() { }
 
     /**
      * This is called when a  player starts sneaking
-     *
-     * @param psp
      */
-    public void onPlayerPunch(PowerSpleefPlayer psp, PowerSpleefPlayer target) { }
+    public void onPlayerPunch(PowerSpleefPlayer target) { }
 
     /**
      * Called every 0.1 seconds (2 ticks)
      */
-    public void update(PowerSpleefPlayer psp) { }
+    public void update() {
+
+    }
 
     /**
      * Called at the start of a round
      */
-    public abstract void reset(PowerSpleefPlayer psp);
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Ability ability = (Ability) o;
-
-        if (type != ability.type) return false;
-        return name.equals(ability.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = type.hashCode();
-        result = 31 * result + name.hashCode();
-        return result;
-    }
+    public abstract void reset();
 
 }

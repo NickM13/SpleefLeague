@@ -74,6 +74,7 @@ public class InventoryMenuItem {
     }
     public InventoryMenuItem setDescription(List<String> lore) {
         this.descriptionFun = cp -> {
+            if (lore == null) return "";
             StringBuilder description = new StringBuilder();
             for (String line : lore) {
                 description.append(line);
