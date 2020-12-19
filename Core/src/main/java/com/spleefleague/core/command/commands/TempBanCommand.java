@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.TimeUtils;
@@ -32,14 +33,14 @@ public class TempBanCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void tempban(CommandSender sender,
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
 }

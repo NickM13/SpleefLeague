@@ -7,6 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
@@ -37,7 +38,7 @@ public class ReplyCommand extends CoreCommand {
         } else if (receiver.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
             error(sender, receiver.getDisplayName() + " is offline!");
         } else {
-            Core.getInstance().sendTell(sender, receiver, message);
+            Chat.sendTell(sender, receiver, message);
         }
     }
 

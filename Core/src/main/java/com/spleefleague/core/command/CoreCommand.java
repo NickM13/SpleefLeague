@@ -6,11 +6,13 @@
 
 package com.spleefleague.core.command;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import java.lang.reflect.InvocationTargetException;
@@ -22,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
+import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -34,10 +37,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import com.spleefleague.core.util.variable.TpCoord;
-import net.minecraft.server.v1_16_R1.CommandListenerWrapper;
-import net.minecraft.server.v1_16_R1.IChatBaseComponent;
+import net.minecraft.server.v1_15_R1.CommandListenerWrapper;
+import net.minecraft.server.v1_15_R1.IChatBaseComponent;
 import org.bukkit.command.Command;
-import org.bukkit.craftbukkit.v1_16_R1.command.CraftBlockCommandSender;
+import org.bukkit.craftbukkit.v1_15_R1.command.CraftBlockCommandSender;
 
 /**
  * @author NickM13
@@ -455,9 +458,9 @@ public class CoreCommand extends Command {
                 
                 if (cp != null &&
                         method.getParameters()[0].getType().equals(CorePlayer.class)) {
-                    if (!cp.getRank().hasPermission(Rank.getRank(method.getAnnotation(CommandAnnotation.class).minRank()))) {
+                    if (!cp.getRank().hasPermission(Ranks.getRank(method.getAnnotation(CommandAnnotation.class).minRank()))) {
                         for (String rankName : method.getAnnotation(CommandAnnotation.class).additionalRanks().split(",")) {
-                            if (cp.getRank().equals(Rank.getRank(rankName))) {
+                            if (cp.getRank().equals(Ranks.getRank(rankName))) {
                                 break;
                             }
                         }
@@ -621,6 +624,46 @@ public class CoreCommand extends Command {
                             ai++;
                             continue;
                         }
+                        if (paramClass.equals(Boolean.class)) {
+                            if ("true".startsWith(arg.toLowerCase())) {
+                                params.add(true);
+                                strParams.add("true");
+                            } else if ("false".startsWith(arg.toLowerCase())) {
+                                params.add(false);
+                                strParams.add("false");
+                            } else {
+                                invalidArg = true;
+                            }
+                            ai++;
+                            continue;
+                        }
+                        if (Enum.class.isAssignableFrom(paramClass)) {
+                            invalidArg = true;
+                            Enum possibleMatch = null;
+                            Enum match = null;
+                            for (Enum o : ((Class<? extends Enum>) param.getType()).getEnumConstants()) {
+                                String enumStr = o.name();
+                                if (enumStr.equalsIgnoreCase(arg)) {
+                                    match = o;
+                                    invalidArg = false;
+                                    break;
+                                } else if (possibleMatch == null && (enumStr.toLowerCase().startsWith(arg.toLowerCase()))) {
+                                    possibleMatch = o;
+                                }
+                            }
+                            if (invalidArg) {
+                                if (possibleMatch != null) {
+                                    match = possibleMatch;
+                                    invalidArg = false;
+                                } else {
+                                    continue;
+                                }
+                            }
+                            params.add(match);
+                            strParams.add(arg);
+                            ai++;
+                            continue;
+                        }
                     }
                     if (paramClass.equals(String.class)) {
                         if (param.isAnnotationPresent(LiteralArg.class)) {
@@ -682,12 +725,25 @@ public class CoreCommand extends Command {
                             }
                             return success;
                         } else {
-                            method.invoke(this, params.toArray(new Object[0]));
+                            if (method.getAnnotation(CommandAnnotation.class).confirmation()) {
+                                Chat.sendRequest("Are you sure you want to run this command?",
+                                        cp,
+                                        "cmd:" + method.getName(),
+                                        (r, s) -> {
+                                            try {
+                                                method.invoke(this, params.toArray(new Object[0]));
+                                            } catch (IllegalAccessException | InvocationTargetException ex) {
+                                                CoreLogger.logError(null, ex);
+                                            }
+                                        });
+                            } else {
+                                method.invoke(this, params.toArray(new Object[0]));
+                            }
                             return true;
                         }
                     } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                         //error(cp, "Command error");
-                        Logger.getLogger(CoreCommand.class.getName()).log(Level.SEVERE, null, ex);
+                        CoreLogger.logError(null, ex);
                     }
                 }
             }
@@ -732,14 +788,13 @@ public class CoreCommand extends Command {
             }
             
             if (method.getParameters()[0].getType().equals(CorePlayer.class) && cp != null) {
-                if (!cp.getRank().hasPermission(Rank.getRank(method.getAnnotation(CommandAnnotation.class).minRank()))) {
-                    boolean hasRank = false;
+                if (!cp.getRank().hasPermission(Ranks.getRank(method.getAnnotation(CommandAnnotation.class).minRank()))) {
                     for (String rankName : method.getAnnotation(CommandAnnotation.class).additionalRanks().split(",")) {
-                        if (cp.getRank().equals(Rank.getRank(rankName))) {
+                        if (cp.getRank().equals(Ranks.getRank(rankName))) {
                             break;
                         }
                     }
-                    if (!hasRank) continue;
+                    continue;
                 }
             } else if (!method.getParameters()[0].getType().equals(CommandSender.class)) {
                 continue;
@@ -824,8 +879,9 @@ public class CoreCommand extends Command {
                 }
                 if (paramClass.equals(Integer.class)) {
                     invalidArg = ((obj = toInt(arg)) == null);
-                    if (!invalidArg)
+                    if (!invalidArg) {
                         invalidArg = !isNumInbounds(cs, ((Integer) obj).doubleValue(), param.getAnnotation(NumberArg.class));
+                    }
                     strParams.add(arg);
                     ai++;
                     continue;
@@ -837,6 +893,41 @@ public class CoreCommand extends Command {
                     strParams.add(arg);
                     ai++;
                     continue;
+                }
+                if (paramClass.equals(Boolean.class)) {
+                    if ("true".startsWith(arg.toLowerCase())) {
+                        strParams.add("true");
+                    } else if ("false".startsWith(arg.toLowerCase())) {
+                        strParams.add("false");
+                    } else {
+                        invalidArg = true;
+                    }
+                    ai++;
+                    continue;
+                }
+                if (param.isAnnotationPresent(EnumArg.class)) {
+                    invalidArg = true;
+                    String possibleMatch = null;
+                    for (Enum o : ((Class<? extends Enum>) param.getType()).getEnumConstants()) {
+                        String enumStr = o.name();
+                        if (enumStr.equalsIgnoreCase(arg)) {
+                            arg = enumStr;
+                            invalidArg = false;
+                            break;
+                        } else if (possibleMatch == null && (enumStr.toLowerCase().startsWith(arg.toLowerCase()))) {
+                            possibleMatch = enumStr;
+                        }
+                    }
+                    if (invalidArg) {
+                        if (possibleMatch != null) {
+                            arg = possibleMatch;
+                            invalidArg = false;
+                        } else {
+                            continue;
+                        }
+                    }
+                    strParams.add(arg);
+                    ai++;
                 }
                 if (paramClass.equals(String.class)) {
                     if (param.isAnnotationPresent(LiteralArg.class)) {
@@ -917,6 +1008,14 @@ public class CoreCommand extends Command {
                 } else if (currParam.getType().equals(List.class)) {
                     addOption(options, "@a", lastArg);
                     addOption(options, "@e", lastArg);
+                } else if (currParam.isAnnotationPresent(EnumArg.class)) {
+                    for (Enum o : ((Class<? extends Enum>) currParam.getType()).getEnumConstants()) {
+                        String enumStr = o.name();
+                        addOption(options, enumStr, lastArg);
+                    }
+                } else if (currParam.getType().equals(Boolean.class)) {
+                    addOption(options, "true", lastArg);
+                    addOption(options, "false", lastArg);
                 }
                 if (optionSelected) {
                     String[] args2 = new String[args.length + 1];

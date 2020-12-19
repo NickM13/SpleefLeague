@@ -1,7 +1,7 @@
 package com.spleefleague.core.player.collectible.pet;
 
 import com.spleefleague.core.util.CoreUtils;
-import net.minecraft.server.v1_16_R1.PathfinderGoalSelector;
+import net.minecraft.server.v1_15_R1.PathfinderGoalSelector;
 
 import java.util.List;
 

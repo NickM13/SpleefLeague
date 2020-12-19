@@ -10,7 +10,9 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
+import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.TimeUtils;
 import javax.annotation.Nullable;
@@ -32,7 +34,7 @@ public class MuteCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void mutePublic(CommandSender sender,
@@ -40,7 +42,7 @@ public class MuteCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
     /**
@@ -61,7 +63,7 @@ public class MuteCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void muteSecret(CommandSender sender,
@@ -69,7 +71,7 @@ public class MuteCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Core.getInstance().muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
 }

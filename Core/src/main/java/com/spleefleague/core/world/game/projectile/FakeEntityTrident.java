@@ -1,24 +1,17 @@
 package com.spleefleague.core.world.game.projectile;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.game.GameWorld;
-import net.minecraft.server.v1_16_R1.EntityHuman;
-import net.minecraft.server.v1_16_R1.EntityThrownTrident;
-import net.minecraft.server.v1_16_R1.EntityTypes;
-import net.minecraft.server.v1_16_R1.MovingObjectPosition;
-import net.minecraft.server.v1_16_R1.Vec3D;
+import net.minecraft.server.v1_15_R1.EntityHuman;
+import net.minecraft.server.v1_15_R1.EntityThrownTrident;
+import net.minecraft.server.v1_15_R1.EntityTypes;
+import net.minecraft.server.v1_15_R1.MovingObjectPosition;
+import net.minecraft.server.v1_15_R1.Vec3D;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 /**

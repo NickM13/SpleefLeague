@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spleefleague.coreapi.database.variable.DBVariable;
-import net.minecraft.server.v1_16_R1.Vec3D;
+import net.minecraft.server.v1_15_R1.Vec3D;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;

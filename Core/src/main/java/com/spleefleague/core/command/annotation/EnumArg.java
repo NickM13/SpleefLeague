@@ -16,10 +16,7 @@ import java.lang.annotation.Target;
  */
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface CommandAnnotation {
-    boolean hidden() default false;
-    boolean confirmation() default false;
-    String minRank() default "DEFAULT";
-    String additionalRanks() default "";
+@Target(ElementType.PARAMETER)
+public @interface EnumArg {
+
 }

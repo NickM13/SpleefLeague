@@ -9,7 +9,7 @@ import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 
 /**

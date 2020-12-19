@@ -3,6 +3,7 @@ package com.spleefleague.core.world.build;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.FakeWorld;
@@ -90,17 +91,35 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     
     private final CorePlayer owner;
     private final BuildStructure structure;
+    private BlockPosition origin;
     private BlockPosition lowest, highest;
+    private boolean loadFail = false;
     
     private BuildWorld(World world, CorePlayer owner, BuildStructure structure) {
         super(2, world, BuildWorldPlayer.class);
         this.owner = owner;
+        this.origin = new BlockPosition(
+                owner.getLocation().getBlockX(),
+                owner.getLocation().getBlockY(),
+                owner.getLocation().getBlockZ());
         this.structure = structure;
         this.structure.setUnderConstruction(this);
         for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
-            setBlock(entry.getKey().add(structure.getOriginPos()), entry.getValue().getBlockData(), true);
+            setBlock(entry.getKey().add(origin), entry.getValue().getBlockData());
         }
-        addPlayer(owner);
+        if (lowest.getY() + origin.getY() < 0) {
+            loadFail = true;
+        }
+        if (highest.getY() + origin.getY() > 255) {
+            loadFail = true;
+        }
+        if (!loadFail) {
+            addPlayer(owner);
+        }
+    }
+
+    public boolean didLoadFail() {
+        return loadFail;
     }
 
     @Override
@@ -162,7 +181,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         PLAYER_BUILD_WORLDS.put(cp.getUniqueId(), this);
 
         if (!fakeBlocks.isEmpty()) {
-            cp.getPlayer().teleport(structure.getOriginPos().toLocation(getWorld()).add(0.5D, 0D, 0.5D));
+            cp.getPlayer().teleport(origin.toLocation(getWorld()).add(0.5D, 0D, 0.5D));
         }
     }
     
@@ -182,7 +201,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         return super.removePlayer(cp);
     }
 
-    public boolean setBlock(BlockPosition pos, BlockData blockData, boolean ignoreUpdate) {
+    public boolean setBlock(BlockPosition pos, BlockData blockData) {
         if (fakeBlocks.isEmpty()) {
             lowest = pos;
             highest = pos;
@@ -196,13 +215,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                     Math.max(pos.getY(), highest.getY()),
                     Math.max(pos.getZ(), highest.getZ()));
         }
-        return super.setBlock(pos, blockData, ignoreUpdate);
+        return super.setBlock(pos, blockData);
     }
 
     public void saveToStructure() {
         structure.getFakeBlocks().clear();
         for (Map.Entry<BlockPosition, FakeBlock> entry : fakeBlocks.entrySet()) {
-            structure.setBlock(entry.getKey(), entry.getValue());
+            structure.setBlock(entry.getKey().subtract(origin), entry.getValue());
         }
         BuildStructures.save(structure);
     }
@@ -210,7 +229,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     public BuildStructure getStructure() {
         return structure;
     }
-    
+
+    public void setOrigin(BlockPosition origin) {
+        BlockPosition shift = this.origin.subtract(origin);
+        this.origin = origin;
+        structure.shiftOrigin(shift);
+    }
+
     public void shift(BlockPosition shift) {
         Map<BlockPosition, FakeBlock> shiftedBlocks = FakeUtils.translateBlocks(new HashMap<>(fakeBlocks), shift);
         overwriteBlocks(shiftedBlocks);

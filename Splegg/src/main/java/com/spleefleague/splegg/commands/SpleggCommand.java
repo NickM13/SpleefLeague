@@ -6,13 +6,11 @@
 
 package com.spleefleague.splegg.commands;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
-import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
@@ -21,14 +19,11 @@ import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
-import com.spleefleague.splegg.player.SpleggPlayer;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author NickM13

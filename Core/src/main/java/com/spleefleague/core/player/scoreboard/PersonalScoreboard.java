@@ -17,10 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -105,7 +106,7 @@ public class PersonalScoreboard {
         
         this.showRanks = showRanks;
         if (showRanks) {
-            Rank.initScoreboard(scoreboard);
+            Ranks.initScoreboard(scoreboard);
         }
     }
 

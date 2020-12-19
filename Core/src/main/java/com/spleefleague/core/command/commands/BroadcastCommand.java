@@ -7,6 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.CoreCommand;
@@ -26,7 +27,7 @@ public class BroadcastCommand extends CoreCommand {
     
     @CommandAnnotation
     public void broadcast(CorePlayer sender, @HelperArg(value="<title/subtitle>") String message) {
-        Core.getInstance().broadcast(message);
+        Chat.broadcast(message);
     }
     
     @CommandAnnotation
@@ -35,7 +36,7 @@ public class BroadcastCommand extends CoreCommand {
             @HelperArg(value="<stay>") Integer stay,
             @HelperArg(value="<fadeOut>") Integer fadeOut,
             @HelperArg(value="<title/subtitle>") String message) {
-        Core.getInstance().broadcast(message);
+        Chat.broadcast(message);
     }
 
 }

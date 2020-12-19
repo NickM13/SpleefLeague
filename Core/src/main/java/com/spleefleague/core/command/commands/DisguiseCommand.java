@@ -16,7 +16,7 @@ import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 
 public class DisguiseCommand extends CoreCommand {
 

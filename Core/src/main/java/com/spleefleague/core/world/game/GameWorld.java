@@ -35,7 +35,7 @@ import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Snow;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -203,7 +203,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 .runTaskTimerAsynchronously(Core.getInstance(),
                         this::updateBurningBlocks, 0L, 5L);
 
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
+        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
@@ -216,14 +216,14 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         });
 
                 /*
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.ENTITY_DESTROY) {
+        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.ENTITY_DESTROY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
                 int[] entityIds = packet.getIntegerArrays().read(0);
                 List<Integer> uncancelled = new ArrayList<>();
                 for (int id : entityIds) {
-                    net.minecraft.server.v1_16_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
+                    net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
                     if (entity instanceof EntityPlayer) {
 
                     } else {
@@ -750,7 +750,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 setBlock(pos, BURNING_BLOCK);
             }
             for (BlockPosition pos : toParticle) {
-                spawnParticles(Particle.ASH, pos.getX(), pos.getY() + 1, pos.getZ(), 10);
+                spawnParticles(Particle.SMOKE_NORMAL, pos.getX(), pos.getY() + 1, pos.getZ(), 10);
             }
         });
     }
@@ -787,7 +787,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         }
     }
 
-    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
         return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone()
                 .add(shooter.getPlayer().getLocation().getDirection()
                         .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
@@ -796,7 +796,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 charge);
     }
 
-    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectileCharged(CorePlayer shooter, Location location, ProjectileStats projectileStats, double charge) {
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, Location location, ProjectileStats projectileStats, double charge) {
         if (projectileStats.repeat > 1) {
             if (!futureShots.containsKey(shooter.getUniqueId())) {
                 futureShots.put(shooter.getUniqueId(), new HashSet<>());
@@ -806,20 +806,20 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return shoot(shooter, location, projectileStats, charge);
     }
 
-    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
         return shootProjectile(shooter, shooter.getPlayer().getEyeLocation().clone()
                 .add(shooter.getPlayer().getLocation().getDirection()
                         .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
                         .multiply(0.15).add(new Vector(0, -0.15, 0))), projectileStats);
     }
 
-    private net.minecraft.server.v1_16_R1.Entity shoot(List<net.minecraft.server.v1_16_R1.Entity> entities,
+    private net.minecraft.server.v1_15_R1.Entity shoot(List<net.minecraft.server.v1_15_R1.Entity> entities,
                                                        CorePlayer shooter,
                                                        Location location,
                                                        ProjectileStats projectileStats,
                                                        double charge)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        net.minecraft.server.v1_16_R1.Entity entity = projectileStats.entityClass
+        net.minecraft.server.v1_15_R1.Entity entity = projectileStats.entityClass
                 .getDeclaredConstructor(GameWorld.class, CorePlayer.class, Location.class, ProjectileStats.class, Double.class)
                 .newInstance(this, shooter, location, projectileStats, charge);
         projectiles.put(entity.getUniqueID(), new GameProjectile(entity, projectileStats));
@@ -828,11 +828,11 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return entity;
     }
 
-    private List<net.minecraft.server.v1_16_R1.Entity> shoot(CorePlayer shooter,
+    private List<net.minecraft.server.v1_15_R1.Entity> shoot(CorePlayer shooter,
                                                              Location location,
                                                              ProjectileStats projectileStats,
                                                              double charge) {
-        List<net.minecraft.server.v1_16_R1.Entity> entities = new ArrayList<>();
+        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
         try {
             for (GameWorldPlayer gwp : playerMap.values()) {
                 gwp.getPlayer().playSound(location, projectileStats.soundEffect, projectileStats.soundVolume.floatValue(), projectileStats.soundPitch.floatValue());
@@ -867,7 +867,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return entities;
     }
 
-    public List<net.minecraft.server.v1_16_R1.Entity> shootProjectile(CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, Location location, ProjectileStats projectileStats) {
         if (projectileStats.repeat > 1) {
             if (!futureShots.containsKey(shooter.getUniqueId())) {
                 futureShots.put(shooter.getUniqueId(), new HashSet<>());

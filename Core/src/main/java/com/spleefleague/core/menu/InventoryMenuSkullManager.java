@@ -5,13 +5,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import net.minecraft.server.v1_16_R1.NBTTagCompound;
-import net.minecraft.server.v1_16_R1.NBTTagList;
-import net.minecraft.server.v1_16_R1.NBTTagString;
+import net.minecraft.server.v1_15_R1.NBTTagCompound;
+import net.minecraft.server.v1_15_R1.NBTTagList;
+import net.minecraft.server.v1_15_R1.NBTTagString;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -73,7 +73,7 @@ public class InventoryMenuSkullManager {
     }
 
     private static ItemStack getPlayerSkull(UUID uuid, Texture texture) {
-        net.minecraft.server.v1_16_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(new ItemStack(Material.PLAYER_HEAD));
+        net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(new ItemStack(Material.PLAYER_HEAD));
 
         if (!nmsStack.hasTag()) {
             nmsStack.setTag(new NBTTagCompound());

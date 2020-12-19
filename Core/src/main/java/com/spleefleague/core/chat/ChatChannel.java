@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.spleefleague.core.player.rank.Ranks;
 import org.bukkit.ChatColor;
 
 /**
@@ -161,12 +162,12 @@ public class ChatChannel {
         channels.put(Channel.GLOBAL, new ChatChannel(Channel.GLOBAL, "Global"));
         addChatChannel(Channel.PARTY, "Party", ChatColor.AQUA, cp -> cp.getParty() != null, cp -> cp.getParty().getPlayers(), Chat.PLAYER_CHAT);
         addChatChannel(Channel.LOCAL, "Local", ChatColor.GRAY, cp -> cp.getGlobalZone() != null, cp -> cp.getGlobalZone().getPlayers(), Chat.PLAYER_CHAT);
-        addChatChannel(Channel.VIP, "VIP", ChatColor.DARK_PURPLE, cp -> cp.getRank().hasPermission(Rank.getRank("VIP")), Chat.PLAYER_CHAT);
-        addChatChannel(Channel.BUILD, "Build", ChatColor.GREEN, cp -> cp.getRank().hasPermission(Rank.getRank("BUILDER")), Chat.PLAYER_CHAT);
-        addChatChannel(Channel.STAFF, "Staff", ChatColor.LIGHT_PURPLE, cp -> cp.getRank().hasPermission(Rank.getRank("MODERATOR")), Chat.PLAYER_CHAT);
-        addChatChannel(Channel.ADMIN, "Admin", ChatColor.RED, cp -> cp.getRank().hasPermission(Rank.getRank("DEVELOPER")), Chat.PLAYER_CHAT);
+        addChatChannel(Channel.VIP, "VIP", ChatColor.DARK_PURPLE, cp -> cp.getRank().hasPermission(Ranks.getRank("VIP")), Chat.PLAYER_CHAT);
+        addChatChannel(Channel.BUILD, "Build", ChatColor.GREEN, cp -> cp.getRank().hasPermission(Ranks.getRank("BUILDER")), Chat.PLAYER_CHAT);
+        addChatChannel(Channel.STAFF, "Staff", ChatColor.LIGHT_PURPLE, cp -> cp.getRank().hasPermission(Ranks.getRank("MODERATOR")), Chat.PLAYER_CHAT);
+        addChatChannel(Channel.ADMIN, "Admin", ChatColor.RED, cp -> cp.getRank().hasPermission(Ranks.getRank("DEVELOPER")), Chat.PLAYER_CHAT);
         addChatChannel(Channel.GAMES, "Games", ChatColor.AQUA, null, Chat.DEFAULT);
-        addChatChannel(Channel.TICKET, "Ticket", ChatColor.GOLD, cp -> cp.getRank().hasPermission(Rank.getRank("MODERATOR")), Chat.PLAYER_CHAT);
+        addChatChannel(Channel.TICKET, "Ticket", ChatColor.GOLD, cp -> cp.getRank().hasPermission(Ranks.getRank("MODERATOR")), Chat.PLAYER_CHAT);
         addChatChannel(Channel.SPLEEF, "Spleef", ChatColor.GOLD, null, Chat.DEFAULT);
         addChatChannel(Channel.SUPERJUMP, "SuperJump", ChatColor.GOLD, null, Chat.DEFAULT);
     }

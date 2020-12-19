@@ -27,7 +27,7 @@ public class TempRank extends DBEntity {
     }
 
     public Rank getRank() {
-        return Rank.getRank(rankName);
+        return Ranks.getRank(rankName);
     }
 
     public long getExpireTime() {

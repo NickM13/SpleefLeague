@@ -19,26 +19,22 @@ import com.spleefleague.core.util.packet.ProtocolLongArrayBitWriter;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeBlock;
 import gnu.trove.list.array.TByteArrayList;
-import net.minecraft.server.v1_16_R1.EnumGamemode;
-import net.minecraft.server.v1_16_R1.IBlockData;
-import net.minecraft.server.v1_16_R1.IChatBaseComponent;
-import net.minecraft.server.v1_16_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_15_R1.EnumGamemode;
+import net.minecraft.server.v1_15_R1.IBlockData;
+import net.minecraft.server.v1_15_R1.IChatBaseComponent;
+import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_16_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_15_R1.block.data.CraftBlockData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
