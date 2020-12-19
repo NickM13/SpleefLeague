@@ -1,10 +1,10 @@
 package com.spleefleague.core.util.packet;
 
-import net.minecraft.server.v1_16_R1.Block;
-import net.minecraft.server.v1_16_R1.IBlockData;
-import net.minecraft.server.v1_16_R1.RegistryBlockID;
+import net.minecraft.server.v1_15_R1.Block;
+import net.minecraft.server.v1_15_R1.IBlockData;
+import net.minecraft.server.v1_15_R1.RegistryBlockID;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_16_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_15_R1.block.data.CraftBlockData;
 
 import java.util.HashMap;
 import java.util.Map;

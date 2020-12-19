@@ -51,7 +51,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_16_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -180,7 +180,7 @@ public class CorePlayer extends RatedPlayer {
     @Override
     public void newPlayer(UUID uuid, String username) {
         super.newPlayer(uuid, username);
-        permRank.setRank(Rank.getDefaultRank());
+        permRank.setRank(Rank.DEFAULT);
     }
 
     public Player getPlayer() {

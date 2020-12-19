@@ -77,7 +77,7 @@ public class InventoryMenuDialog {
                             }
                         })
                         .text("Enter name here")
-                        .item(new ItemStack(Material.PAPER))
+                        .itemLeft(new ItemStack(Material.PAPER))
                         .title(dialog.tagName)
                         .plugin(Core.getInstance())
                         .open(cp.getPlayer());

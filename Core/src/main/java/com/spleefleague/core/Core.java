@@ -6,16 +6,10 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ticket.Tickets;
@@ -23,56 +17,36 @@ import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
+import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.credits.Credits;
 import com.spleefleague.core.music.NoteBlockMusic;
-import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.infraction.Infraction;
-import com.spleefleague.core.listener.*;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerOptions;
 import com.spleefleague.core.player.PlayerManager;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.infraction.Infraction;
+import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.core.util.variable.Warp;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.utils.packet.Packet;
 import com.spleefleague.coreapi.utils.packet.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
-import net.minecraft.server.v1_16_R1.ChatBaseComponent;
-import net.minecraft.server.v1_16_R1.EnumGamemode;
-import net.minecraft.server.v1_16_R1.IChatBaseComponent;
-import net.minecraft.server.v1_16_R1.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_16_R1.PlayerList;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.reflections.Reflections;
@@ -82,7 +56,10 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * SpleefLeague's Core Plugin
@@ -91,16 +68,10 @@ import javax.annotation.Nullable;
  */
 public class Core extends CorePlugin<CorePlayer> {
 
-    public static World DEFAULT_WORLD;
-
     private static Core instance;
-
+    public static World DEFAULT_WORLD;
     private QueueManager queueManager;
-
     private Leaderboards leaderboards;
-
-    // Command manager, contains list of all commands
-    // and registers them to the server
     private CommandManager commandManager;
     
     // For packet managing
@@ -120,7 +91,7 @@ public class Core extends CorePlugin<CorePlayer> {
         setPluginDB("SpleefLeague");
 
         Credits.init();
-        Rank.init();
+        Ranks.init();
         Chat.init();
         Warp.init();
         Infraction.init();
@@ -177,6 +148,7 @@ public class Core extends CorePlugin<CorePlayer> {
         NoteBlockMusic.close();
         playerManager.close();
         running = false;
+        protocolManager.removePacketListeners(Core.getInstance());
         ProtocolLibrary.getPlugin().onDisable();
         CorePlugin.closeMongo();
     }
@@ -239,8 +211,8 @@ public class Core extends CorePlugin<CorePlayer> {
             try {
                 addCommand(st.getConstructor().newInstance());
             } catch (InstantiationException | IllegalAccessException
-                    | NoSuchMethodException | InvocationTargetException ignored) {
-                //Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, exception);
+                    | NoSuchMethodException | InvocationTargetException exception) {
+                //CoreLogger.logError(exception);
             }
         });
     }
@@ -257,7 +229,8 @@ public class Core extends CorePlugin<CorePlayer> {
     public void initConfig() {
         FileConfiguration config = this.getConfig();
         if (config.getString("serverType") == null) {
-            config.addDefault("serverType", ServerType.MINIGAME.toString());
+            CoreLogger.logError("Null Server Type");
+            config.set("serverType", serverType.name());
         } else {
             serverType = ServerType.valueOf(config.getString("serverType"));
         }
@@ -322,7 +295,8 @@ public class Core extends CorePlugin<CorePlayer> {
     public void onBungeeConnect(UUID uuid) {
         CorePlayer cp = getPlayers().get(uuid);
         if (cp == null || cp.isVanished() || cp.getOnlineState() != DBPlayer.OnlineState.OTHER) return;
-        Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
+        //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
+
     }
 
     public void onBungeeDisconnect(UUID uuid) {
@@ -338,7 +312,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * removes players from Tab List when they become vanished
      */
     public void initTabList() {
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
+        addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
             @Override
             public void onPacketSending(PacketEvent pe) {
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
@@ -385,11 +359,8 @@ public class Core extends CorePlugin<CorePlayer> {
         });
     }
 
-    /**
-     * @return Protocol Manager
-     */
-    public static ProtocolManager getProtocolManager() {
-        return protocolManager;
+    public static void addProtocolPacketAdapter(PacketAdapter packetAdapter) {
+        protocolManager.addPacketListener(packetAdapter);
     }
     
     /**
@@ -551,227 +522,6 @@ public class Core extends CorePlugin<CorePlayer> {
     @Override
     public String getChatPrefix() {
         return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
-    }
-
-    /**
-     * Secretly mute a player
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param millis Time in milliseconds
-     * @param reason Reason
-     */
-    public void muteSecret(String sender, OfflinePlayer target, long millis, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_SECRET)
-                .setDuration(millis)
-                .setReason(reason);
-        Infraction.create(infraction);
-        
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Secretly muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Publicly mute a player
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param millis Time in milliseconds
-     * @param reason Reason
-     */
-    public void mutePublic(String sender, OfflinePlayer target, long millis, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_PUBLIC)
-                .setDuration(millis)
-                .setReason(reason);
-        Infraction.create(infraction);
-        
-        if (target.isOnline()) {
-            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Muted by " + sender + " for " + infraction.getRemainingTimeString() + ": " + reason);
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Public muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Unmute a player
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param reason Reason
-     */
-    public void unmute(String sender, OfflinePlayer target, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_SECRET)
-                .setDuration(0)
-                .setReason(reason);
-        Infraction.create(infraction);
-        
-        if (target.isOnline()) {
-            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "You've been unmuted by " + sender);
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Unmuted player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Temporarily ban a player from the server
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param millis Time in milliseconds
-     * @param reason Reason
-     */
-    public void tempban(String sender, OfflinePlayer target, long millis, String reason) {
-        if (target == null) return;
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.TEMPBAN)
-                .setDuration(millis)
-                .setReason(reason);
-        Infraction.create(infraction);
-
-        if (target.isOnline()) {
-            Player player = (Player) target;
-            if (player.getLocation().getWorld() != null) {
-                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-                player.kickPlayer("TempBan for " + infraction.getRemainingTimeString() + ": " + reason + "!");
-            }
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "TempBanned player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Ban a player from the server
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param reason Reason
-     */
-    public void ban(String sender, OfflinePlayer target, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.BAN)
-                .setDuration(0)
-                .setReason(reason);
-        Infraction.create(infraction);
-    
-        Player player = (Player) target;
-        if (player.getLocation().getWorld() != null) {
-            player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-            player.kickPlayer("Banned: " + reason + "!");
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Banned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Unban a player from the server
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param reason Reason
-     */
-    public void unban(String sender, OfflinePlayer target, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.UNBAN)
-                .setDuration(0)
-                .setReason(reason);
-        Infraction.create(infraction);
-
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Unbanned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Kick a player from the server
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param reason Reason
-     */
-    public void kick(String sender, OfflinePlayer target, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.WARNING)
-                .setDuration(0)
-                .setReason(reason);
-        Infraction.create(infraction);
-        
-        if (target.isOnline()) {
-            Player player = (Player) target;
-            if (player.getLocation().getWorld() != null) {
-                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-                player.kickPlayer("Kicked: " + reason + "!");
-            }
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Kicked player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Send a warning to a player
-     * Also used for post-ban information
-     *
-     * @param sender Name of punisher
-     * @param target OfflinePlayer
-     * @param reason Reason
-     */
-    public void warn(String sender, OfflinePlayer target, String reason) {
-        Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.WARNING)
-                .setDuration(0)
-                .setReason(reason);
-        Infraction.create(infraction);
-        
-        if (target.isOnline()) {
-            sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
-        }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Warned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
-    }
-
-    /**
-     * Send a message from one player to another
-     *
-     * @param sender CorePlayer
-     * @param target CorePlayer
-     * @param msg Message
-     */
-    public void sendTell(CorePlayer sender, CorePlayer target, String msg) {
-        sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
-        sendPacket(new PacketTellSpigot(sender.getUniqueId(), target.getUniqueId(), msg));
-    }
-
-    public void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
-        target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
-        target.setReply(sender.getPlayer());
-        target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-    }
-
-    /**
-     * Send a title to all players, stay is based on how long message is
-     * Used by /broadcast command
-     *
-     * @param msg Message
-     */
-    public void broadcast(String msg) {
-        String title, subtitle;
-        String[] msgs = msg.split("\\n");
-        title = msgs[0];
-        subtitle = msgs.length > 1 ? msgs[1] : "";
-        Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
     }
 
     /**

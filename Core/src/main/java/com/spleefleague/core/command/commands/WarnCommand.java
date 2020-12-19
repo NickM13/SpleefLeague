@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.OfflinePlayer;
@@ -25,19 +26,19 @@ public class WarnCommand extends CoreCommand {
     
     @CommandAnnotation
     public void warn(CorePlayer sender, OfflinePlayer op, String reason) {
-        Core.getInstance().warn(sender.getName(), op, reason);
+        Infractions.warn(sender.getName(), op, reason);
     }
     @CommandAnnotation
     public void warn(CorePlayer sender, OfflinePlayer op) {
-        Core.getInstance().warn(sender.getName(), op, "");
+        Infractions.warn(sender.getName(), op, "");
     }
     @CommandAnnotation
     public void warn(CommandSender sender, OfflinePlayer op, String reason) {
-        Core.getInstance().warn(sender.getName(), op, reason);
+        Infractions.warn(sender.getName(), op, reason);
     }
     @CommandAnnotation
     public void warn(CommandSender sender, OfflinePlayer op) {
-        Core.getInstance().warn(sender.getName(), op, "");
+        Infractions.warn(sender.getName(), op, "");
     }
     
 }

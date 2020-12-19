@@ -13,6 +13,7 @@ import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.Ranks;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -24,7 +25,7 @@ public class TempRankCommand extends CoreCommand {
         super("temprank", Rank.DEVELOPER);
         setUsage("/temprank <set/clear> <player> [rank] [hours]");
         setDescription("Give a temporary rank to a player");
-        setOptions("rankList", (cp) -> Rank.getRankNames());
+        setOptions("rankList", (cp) -> Ranks.getRankNames());
     }
     
     @CommandAnnotation

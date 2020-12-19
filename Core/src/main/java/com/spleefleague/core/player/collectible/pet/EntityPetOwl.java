@@ -2,7 +2,7 @@ package com.spleefleague.core.player.collectible.pet;
 
 import com.spleefleague.core.player.collectible.pet.pathfinder.PathfinderGoalPetFollow;
 import com.spleefleague.core.player.collectible.pet.pathfinder.PathfinderGoalPetFollowFlying;
-import net.minecraft.server.v1_16_R1.*;
+import net.minecraft.server.v1_15_R1.*;
 
 /**
  * @author NickM13

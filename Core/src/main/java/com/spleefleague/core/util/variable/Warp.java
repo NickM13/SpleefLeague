@@ -19,6 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -254,7 +255,7 @@ public class Warp extends DBEntity {
         return location;
     }
     public boolean isAvailable(CorePlayer cp) {
-        Rank rank = Rank.getRank(folderName);
+        Rank rank = Ranks.getRank(folderName);
         if (rank == null) {
             return cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER));
         } else {

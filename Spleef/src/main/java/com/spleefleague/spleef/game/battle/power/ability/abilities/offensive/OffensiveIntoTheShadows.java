@@ -41,9 +41,9 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
             if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
                 bp.getCorePlayer().getPlayer().hidePlayer(Spleef.getInstance(), getPlayer());
         });
-        getPlayer().getInventory().setItem(EquipmentSlot.OFF_HAND, new ItemStack(INDICATOR));
+        getPlayer().getInventory().setItem(149, new ItemStack(INDICATOR));
         getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
-            getPlayer().getInventory().setItem(EquipmentSlot.OFF_HAND, null);
+            getPlayer().getInventory().setItem(149, null);
             getUser().getBattle().getBattlers().forEach(bp -> {
                 if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
                     bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), getPlayer());

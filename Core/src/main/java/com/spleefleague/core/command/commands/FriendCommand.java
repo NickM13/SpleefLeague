@@ -9,7 +9,7 @@ import com.spleefleague.core.player.rank.Rank;
 
 public class FriendCommand extends CoreCommand {
 
-    protected FriendCommand() {
+    public FriendCommand() {
         super("friend", Rank.DEFAULT);
     }
 

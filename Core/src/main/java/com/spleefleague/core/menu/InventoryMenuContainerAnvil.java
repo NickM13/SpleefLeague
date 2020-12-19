@@ -71,7 +71,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
                     }
                 })
                 .text("Enter name here")
-                .item(new ItemStack(Material.PAPER))
+                .itemLeft(new ItemStack(Material.PAPER))
                 .title(title)
                 .plugin(Core.getInstance())
                 .open(cp.getPlayer());

@@ -123,21 +123,16 @@ public class BuildCommand extends CoreCommand {
         }
     }
     
-    @CommandAnnotation
+    @CommandAnnotation(confirmation = true)
     public void buildDestroy(CorePlayer sender,
             @LiteralArg("destroy") String l,
             @OptionArg(listName="structures") String structureName) {
         if (BuildStructures.get(structureName) != null) {
-            Chat.sendRequest("Are you sure you want to destroy " + structureName + "?",
-                    sender,
-                    "StructureDestroy",
-                    (r, s) -> {
-                        if (BuildStructures.destroy(structureName)) {
-                            success(sender, "Structure destroyed");
-                        } else {
-                            error(sender, "Structure can not be destroyed");
-                        }
-                    });
+            if (BuildStructures.destroy(structureName)) {
+                success(sender, "Structure destroyed");
+            } else {
+                error(sender, "Structure can not be destroyed!");
+            }
         } else {
             error(sender, "Structure does not exist!");
         }
@@ -152,10 +147,7 @@ public class BuildCommand extends CoreCommand {
         if (!structure.isUnderConstruction()) {
             if (BuildStructures.create(sender, newName)) {
                 BuildStructure clone = BuildStructures.get(newName);
-                clone.setOriginPos(structure.getOriginPos());
-                structure.getFakeBlocks().forEach((pos, fb) -> {
-                    clone.setBlock(pos.add(structure.getOriginPos()), fb);
-                });
+                structure.getFakeBlocks().forEach(clone::setBlock);
                 BuildStructures.save(clone);
                 success(sender, "Cloned structure to " + newName);
             } else {
@@ -166,42 +158,31 @@ public class BuildCommand extends CoreCommand {
         }
     }
     
-    @CommandAnnotation
+    @CommandAnnotation(confirmation = true)
     public void buildSetOrigin(CorePlayer sender,
             @LiteralArg("set") String l,
             @LiteralArg("origin") String o) {
         if (sender.isInBuildWorld()) {
-            BuildStructure structure = sender.getBuildWorld().getStructure();
-            Chat.sendRequest("Are you sure you want to move the origin of " + structure.getName() + "?",
-                    sender,
-                    "StructureSetOrigin",
-                    (r, s) -> {
-                        structure.setOriginPos(new BlockPosition(
-                                sender.getLocation().getBlockX(),
-                                sender.getLocation().getBlockY(),
-                                sender.getLocation().getBlockZ()));
-                        success(sender, "Origin relocated to " + structure.getOriginPos());
-                    });
+            BlockPosition origin = new BlockPosition(
+                    sender.getLocation().getBlockX(),
+                    sender.getLocation().getBlockY(),
+                    sender.getLocation().getBlockZ());
+            sender.getBuildWorld().setOrigin(origin);
+            success(sender, "Origin relocated to " + origin);
         } else {
             error(sender, "You aren't in a build world!");
         }
     }
     
-    @CommandAnnotation
+    @CommandAnnotation(confirmation = true)
     public void buildShift(CorePlayer sender,
             @LiteralArg("shift") String l,
             @HelperArg("<x>") Integer x,
             @HelperArg("<y>") Integer y,
             @HelperArg("<z>") Integer z) {
         if (sender.isInBuildWorld()) {
-            BuildStructure structure = sender.getBuildWorld().getStructure();
-            Chat.sendRequest("Are you sure you want to shift " + structure.getName() + "?",
-                    sender,
-                    "StructureShift",
-                    (r, s) -> {
-                        sender.getBuildWorld().shift(new BlockPosition(x, y, z));
-                        success(sender, "Structure has been moved");
-                    });
+            sender.getBuildWorld().shift(new BlockPosition(x, y, z));
+            success(sender, "Structure has been moved");
         } else {
             error(sender, "You aren't in a build world!");
         }
@@ -239,19 +220,14 @@ public class BuildCommand extends CoreCommand {
         }
     }
     
-    @CommandAnnotation
+    @CommandAnnotation(confirmation = true)
     public void buildFill(CorePlayer sender,
             @LiteralArg("fill") String l,
             @OptionArg(listName="materials") String materialName) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
-            Chat.sendRequest("Are you sure you want to fill?  This will overwrite current blocks, no undoing!",
-                    sender,
-                    "StructureFill",
-                    (r, s) -> {
-                        sender.getBuildWorld().fill(bwp.getPosBox(), Material.valueOf(materialName.toUpperCase()));
-                        success(sender, "Structure has been filled");
-                    });
+            sender.getBuildWorld().fill(bwp.getPosBox(), Material.valueOf(materialName.toUpperCase()));
+            success(sender, "Structure has been filled");
         } else {
             error(sender, "You aren't in a build world!");
         }

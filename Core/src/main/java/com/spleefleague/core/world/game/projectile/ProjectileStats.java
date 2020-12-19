@@ -10,7 +10,7 @@ import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -34,14 +34,14 @@ public class ProjectileStats extends DBEntity {
         DEFAULT, CHARGE
     }
 
-    public Class<? extends net.minecraft.server.v1_16_R1.Entity> entityClass = FakeEntitySnowball.class;
+    public Class<? extends net.minecraft.server.v1_15_R1.Entity> entityClass = FakeEntitySnowball.class;
     @DBField public BreakStyle  breakStyle = BreakStyle.DEFAULT;
     @DBField public FireSystem  fireSystem = FireSystem.DEFAULT;
     @DBField public Integer     chargeTime = 20;
-    @DBField public Sound       chargedSoundEffect = Sound.BLOCK_RESPAWN_ANCHOR_CHARGE;
+    @DBField public Sound       chargedSoundEffect = Sound.BLOCK_ANVIL_LAND;
     @DBField public Double      chargedSoundVolume = 1.;
     @DBField public Double      chargedSoundPitch = 1.;
-    @DBField public Sound       chargingSoundEffect = Sound.BLOCK_RESPAWN_ANCHOR_CHARGE;
+    @DBField public Sound       chargingSoundEffect = Sound.BLOCK_ANVIL_STEP;
     @DBField public Double      chargingSoundVolume = 1.;
     @DBField public Double      chargingSoundPitch = 1.;
     @DBField public Sound       soundEffect = Sound.ENTITY_SNOWBALL_THROW;
@@ -71,7 +71,7 @@ public class ProjectileStats extends DBEntity {
     @DBField public Double      size = 0D;
     @Deprecated
     @DBField public Double fireKnockback = 0D;
-    private net.minecraft.server.v1_16_R1.ItemStack projectileItem;
+    private net.minecraft.server.v1_15_R1.ItemStack projectileItem;
     
     public ProjectileStats() {
 
@@ -85,7 +85,7 @@ public class ProjectileStats extends DBEntity {
         projectileItem = CraftItemStack.asNMSCopy(itemStack);
     }
 
-    public net.minecraft.server.v1_16_R1.ItemStack getProjectileItem() {
+    public net.minecraft.server.v1_15_R1.ItemStack getProjectileItem() {
         return projectileItem;
     }
     

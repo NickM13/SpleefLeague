@@ -19,7 +19,9 @@ import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketChatBungee;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketChatSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 
 /**
  * @author NickM13
@@ -221,6 +223,38 @@ public class Chat {
     
     public static void sendRequest(String message, CorePlayer receiver, String requestType, BiConsumer<CorePlayer, String> action) {
         RequestManager.sendRequest(Core.getInstance().getChatPrefix(), message, receiver, requestType, new ConsoleRequest(action));
+    }
+
+    /**
+     * Send a message from one player to another
+     *
+     * @param sender CorePlayer
+     * @param target CorePlayer
+     * @param msg Message
+     */
+    public static void sendTell(CorePlayer sender, CorePlayer target, String msg) {
+        sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
+        Core.getInstance().sendPacket(new PacketTellSpigot(sender.getUniqueId(), target.getUniqueId(), msg));
+    }
+
+    public static void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
+        target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
+        target.setReply(sender.getPlayer());
+        target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+    }
+
+    /**
+     * Send a title to all players, stay is based on how long message is
+     * Used by /broadcast command
+     *
+     * @param msg Message
+     */
+    public static void broadcast(String msg) {
+        String title, subtitle;
+        String[] msgs = msg.split("\\n");
+        title = msgs[0];
+        subtitle = msgs.length > 1 ? msgs[1] : "";
+        Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
     }
 
 }

@@ -18,7 +18,6 @@ public class ConnectionBungeeListener extends BungeeListener<PacketConnection> {
                 plugin.getPlayers().onBungeeConnect(op);
             }
             Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> Core.getInstance().onBungeeConnect(packet.uuid), 10L);
-            Core.getInstance().onBungeeConnect(packet.uuid);
         } else if (packet.type == PacketConnection.ConnectionType.DISCONNECT) {
             for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
                 plugin.getPlayers().onBungeeDisconnect(packet.uuid);

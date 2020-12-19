@@ -214,9 +214,7 @@ public class LeaderboardCollection {
                 .setAction(cp -> {
                     cp.setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                             .setTitle("Search for Player")
-                            .setSuccessFunc(str -> {
-                                return leaderboards.get(cp.getMenuTag("season", Integer.class)).containsPlayer(Bukkit.getOfflinePlayer(str).getUniqueId());
-                            })
+                            .setSuccessFunc(str -> leaderboards.get(cp.getMenuTag("season", Integer.class)).containsPlayer(Bukkit.getOfflinePlayer(str).getUniqueId()))
                             .setAction((cp2, str) -> {
                                 int place = leaderboards.get(cp.getMenuTag("season", Integer.class)).getPlayerRank(Bukkit.getOfflinePlayer(str).getUniqueId());
                                 cp.setMenuTag("rankpage", place / menuContainer.getPageItemTotal());

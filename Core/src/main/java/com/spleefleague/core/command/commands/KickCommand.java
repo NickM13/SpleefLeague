@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.OfflinePlayer;
@@ -27,19 +28,19 @@ public class KickCommand extends CoreCommand {
     
     @CommandAnnotation
     public void kick(CorePlayer sender, OfflinePlayer op, String reason) {
-        Core.getInstance().kick(sender.getName(), op, reason);
+        Infractions.kick(sender.getName(), op, reason);
     }
     @CommandAnnotation
     public void kick(CorePlayer sender, OfflinePlayer op) {
-        Core.getInstance().kick(sender.getName(), op, "");
+        Infractions.kick(sender.getName(), op, "");
     }
     @CommandAnnotation
     public void kick(CommandSender sender, OfflinePlayer op, String reason) {
-        Core.getInstance().kick(sender.getName(), op, reason);
+        Infractions.kick(sender.getName(), op, reason);
     }
     @CommandAnnotation
     public void kick(CommandSender sender, OfflinePlayer op) {
-        Core.getInstance().kick(sender.getName(), op, "");
+        Infractions.kick(sender.getName(), op, "");
     }
     
 }

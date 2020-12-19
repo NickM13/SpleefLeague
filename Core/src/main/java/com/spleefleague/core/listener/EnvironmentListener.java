@@ -15,6 +15,7 @@ import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.global.lock.GlobalLock;
@@ -24,7 +25,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.craftbukkit.v1_16_R1.block.CraftSign;
+import org.bukkit.craftbukkit.v1_15_R1.block.CraftSign;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -142,12 +143,12 @@ public class EnvironmentListener implements Listener {
                         break;
                     case "[min-rank]":
                         // TODO: Would be cool if FakeWorld was incorporated to set fake block walls
-                        if (!cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
+                        if (!cp.getRank().hasPermission(Ranks.getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;
                     case "[max-rank]":
-                        if (cp.getRank().hasPermission(Rank.getRank(sign.getLine(1)))) {
+                        if (cp.getRank().hasPermission(Ranks.getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;
@@ -260,9 +261,9 @@ public class EnvironmentListener implements Listener {
     private static final Set<EntityType> damageableMobs = Sets.newHashSet(EntityType.BLAZE, EntityType.BOAT, EntityType.CAVE_SPIDER,
             EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.ENDER_DRAGON,
             EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE,
-            EntityType.MINECART, EntityType.PHANTOM, EntityType.PIGLIN, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER,
+            EntityType.MINECART, EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER,
             EntityType.SILVERFISH, EntityType.SKELETON, EntityType.SLIME, EntityType.SPIDER, EntityType.VEX, EntityType.VINDICATOR, EntityType.WITCH,
-            EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIFIED_PIGLIN);
+            EntityType.WITHER, EntityType.WITHER_SKELETON, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER);
 
     /**
      * Handle certain entity damaging events

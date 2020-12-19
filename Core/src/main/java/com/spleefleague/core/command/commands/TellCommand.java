@@ -7,6 +7,7 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
@@ -28,7 +29,7 @@ public class TellCommand extends CoreCommand {
     public void tell(CorePlayer sender,
             @CorePlayerArg(allowCrossServer = true) CorePlayer target,
             String msg) {
-        Core.getInstance().sendTell(sender, target, msg);
+        Chat.sendTell(sender, target, msg);
     }
     
 }

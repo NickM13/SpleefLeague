@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import javax.annotation.Nullable;
@@ -28,13 +29,13 @@ public class UnmuteCommand extends CoreCommand {
     public void unmute(CorePlayer sender,
             OfflinePlayer op,
             @Nullable String reason) {
-        Core.getInstance().unmute(sender.getName(), op, reason == null ? "" : reason);
+        Infractions.unmute(sender.getName(), op, reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void unmute(CommandSender sender,
             OfflinePlayer op,
             @Nullable String reason) {
-        Core.getInstance().unmute(sender.getName(), op, reason == null ? "" : reason);
+        Infractions.unmute(sender.getName(), op, reason == null ? "" : reason);
     }
-    
+
 }

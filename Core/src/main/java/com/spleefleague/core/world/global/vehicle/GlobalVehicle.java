@@ -21,7 +21,7 @@ public abstract class GlobalVehicle {
     protected static Map<Integer, LivingEntity> entityMap = new HashMap<>();
     
     public static void init() {
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
+        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();

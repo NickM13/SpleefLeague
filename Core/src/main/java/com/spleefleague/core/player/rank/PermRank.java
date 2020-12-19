@@ -14,7 +14,7 @@ public class PermRank extends DBEntity {
 
     @DBLoad(fieldName="rankName")
     private void loadRank(String rankName) {
-        rank = Rank.getRank(rankName);
+        rank = Ranks.getRank(rankName);
     }
 
     @DBSave(fieldName="rankName")
@@ -23,7 +23,7 @@ public class PermRank extends DBEntity {
     }
 
     public PermRank() {
-        rank = Rank.getDefaultRank();
+        rank = Rank.DEFAULT;
     }
 
     public void setRank(Rank rank) {

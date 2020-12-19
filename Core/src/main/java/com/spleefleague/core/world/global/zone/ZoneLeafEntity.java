@@ -4,27 +4,27 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import net.minecraft.server.v1_16_R1.EntityItem;
+import net.minecraft.server.v1_15_R1.EntityItem;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class ZoneLeafEntity extends net.minecraft.server.v1_16_R1.EntityItem {
+public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
 
     String zoneName;
     String leafName;
 
-    public ZoneLeafEntity(net.minecraft.server.v1_16_R1.World world, ZoneLeaf leaf, String zoneName) {
-        super(net.minecraft.server.v1_16_R1.EntityTypes.ITEM, world);
+    public ZoneLeafEntity(net.minecraft.server.v1_15_R1.World world, ZoneLeaf leaf, String zoneName) {
+        super(net.minecraft.server.v1_15_R1.EntityTypes.ITEM, world);
         this.zoneName = zoneName;
         this.leafName = leaf.getName();
         setPosition(leaf.getPos().getX(), leaf.getPos().getY(), leaf.getPos().getZ());
         setPickupDelay(0);
-        net.minecraft.server.v1_16_R1.ItemStack nmsItemStack = (CraftItemStack.asNMSCopy(new ItemStack(Material.HONEYCOMB)));
+        net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = (CraftItemStack.asNMSCopy(new ItemStack(Material.HONEYCOMB)));
         nmsItemStack.setCount(1);
         setItemStack(nmsItemStack);
         setNoGravity(true);
@@ -54,7 +54,7 @@ public class ZoneLeafEntity extends net.minecraft.server.v1_16_R1.EntityItem {
     }
 
     @Override
-    public void pickup(net.minecraft.server.v1_16_R1.EntityHuman entityhuman) {
+    public void pickup(net.minecraft.server.v1_15_R1.EntityHuman entityhuman) {
         CorePlayer cp = Core.getInstance().getPlayers().get(entityhuman.getUniqueID());
         if (!cp.canBuild() && cp.getCollectibles().addLeaf(zoneName + ":" + leafName)) {
             if (cp.getCollectibles().getLeafCount(zoneName) >= GlobalZone.getZone(zoneName).getLeaves().size()) {

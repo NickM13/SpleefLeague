@@ -18,10 +18,14 @@ public class NoteBlockMusic {
     private static final Map<String, NoteBlockSong> songMap = new HashMap<>();
     private static final Map<CorePlayer, NoteBlockPlayer> playerSongMap = new HashMap<>();
 
+    private static final String MUSIC_DIR = "../shared/music/";
+
     public static void init() {
-        File file = new File("music/");
-        for (String s : file.list()) {
-            getSong(s);
+        File file = new File(MUSIC_DIR);
+        if (file.exists()) {
+            for (String s : file.list()) {
+                getSong(s);
+            }
         }
         Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
             for (NoteBlockPlayer player : playerSongMap.values()) {
@@ -73,7 +77,7 @@ public class NoteBlockMusic {
     public static NoteBlockSong getSong(String songName) {
         NoteBlockSong song = songMap.get(songName);
         if (song != null) return song;
-        File file = new File("music/" + songName + (songName.endsWith(".nbs") ? "" : ".nbs"));
+        File file = new File(MUSIC_DIR + songName + (songName.endsWith(".nbs") ? "" : ".nbs"));
         try {
             Map<Short, NoteBlockSong.Layer> layerMap = new HashMap<>();
             FileInputStream fileInputStream = new FileInputStream(file);

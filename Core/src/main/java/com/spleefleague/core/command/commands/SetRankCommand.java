@@ -14,6 +14,7 @@ import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.Ranks;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 
@@ -25,7 +26,7 @@ public class SetRankCommand extends CoreCommand {
     public SetRankCommand() {
         super("setrank", Rank.DEVELOPER);
         setUsage("/setrank [name] <rank>");
-        setOptions("rankList", (cp) -> Rank.getRankNames());
+        setOptions("rankList", (cp) -> Ranks.getRankNames());
     }
     
     private boolean sr(CorePlayer sender, CorePlayer cp, Rank rank) {
@@ -65,12 +66,12 @@ public class SetRankCommand extends CoreCommand {
     
     @CommandAnnotation
     public void setrankPlayer(CorePlayer sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
-        sr(sender, cp, Rank.getRank(rank));
+        sr(sender, cp, Ranks.getRank(rank));
     }
     
     @CommandAnnotation
     public void setrankConsole(CommandSender sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
-        sr(sender, cp, Rank.getRank(rank));
+        sr(sender, cp, Ranks.getRank(rank));
     }
     
 }

@@ -89,7 +89,7 @@ public class DBEntity {
                         } else if (f.getType() == double.class) {
                             doc.append(fieldName, f.getDouble(this));
                         } else if (Enum.class.isAssignableFrom(f.getType())) {
-                            doc.append(fieldName, (f.get(this)).toString());
+                            doc.append(fieldName, ((Enum<?>) f.get(this)).name());
                         } else if (DBVariable.class.isAssignableFrom(f.getType())) {
                             doc.append(fieldName, ((DBVariable<?>) f.get(this)).save());
                         } else if (UUID.class.isAssignableFrom(f.getType())) {

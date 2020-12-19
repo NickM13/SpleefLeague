@@ -21,7 +21,7 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
@@ -51,12 +51,12 @@ public class GlobalZone extends DBEntity {
     private static final Map<String, UUID> globalLeafUuids = new HashMap<>();
 
     public static void init() {
-        Core.getProtocolManager().addPacketListener(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
+        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer spawnEntityPacket = event.getPacket();
                 UUID uuid = spawnEntityPacket.getUUIDs().read(0);
-                net.minecraft.server.v1_16_R1.Entity entity = ((CraftWorld) (event.getPlayer().getWorld())).getHandle().getEntity(uuid);
+                net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) (event.getPlayer().getWorld())).getHandle().getEntity(uuid);
                 if (entity instanceof ZoneLeafEntity) {
                     CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
                     ZoneLeafEntity zoneLeaf = (ZoneLeafEntity) entity;
