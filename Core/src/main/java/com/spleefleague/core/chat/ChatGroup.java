@@ -38,12 +38,20 @@ public class ChatGroup {
     private final Map<String, SimpleScore> scores = new HashMap<>();
     private final List<String> sortedScores = new ArrayList<>();
     private int rightSideBuffer = 0;
-    
+
+    private static int NEXT_ID = 0;
+    private final int chatId;
+
     public ChatGroup(String chatTag) {
         //addTeam("lastslotempty", Strings.repeat(' ', 30));
         this.chatTag = chatTag;
+        this.chatId = NEXT_ID++;
     }
-    
+
+    public int getChatId() {
+        return chatId;
+    }
+
     /**
      * Sets the name displayed at the top of the scoreboard
      *
@@ -268,6 +276,7 @@ public class ChatGroup {
         players.add(cp);
         
         PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
+        ps.resetObjective();
         ps.getSideBar().setDisplayName(scoreboardName);
         for (SimpleScore ss : scores.values()) {
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);

@@ -33,9 +33,17 @@ import org.bukkit.scoreboard.Team;
 public class PersonalScoreboard {
     
     protected static Map<UUID, PersonalScoreboard> scoreboards = new HashMap<>();
-    
+
+    public static void init() {
+        Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            for (PersonalScoreboard ps : scoreboards.values()) {
+                ps.update();
+            }
+        }, 20L, 20L));
+    }
+
     public static void initPlayerScoreboard(CorePlayer cp) {
-        PersonalScoreboard ps = new PersonalScoreboard(true);
+        PersonalScoreboard ps = new PersonalScoreboard(cp, true);
         scoreboards.put(cp.getUniqueId(), ps);
         ps.setScoreboardName("SpleefLeague, " + cp.getDisplayName());
         cp.getPlayer().setScoreboard(ps.getScoreboard());
@@ -58,8 +66,8 @@ public class PersonalScoreboard {
     }
 
     public static void closePlayerScoreboard(CorePlayer cp) {
-        if (scoreboards.containsKey(cp)) {
-            scoreboards.remove(cp).close();
+        if (scoreboards.containsKey(cp.getUniqueId())) {
+            scoreboards.remove(cp.getUniqueId()).close();
         }
     }
     
@@ -75,7 +83,7 @@ public class PersonalScoreboard {
     
     public static PersonalScoreboard createScoreboard(UUID uuid, boolean showRanks) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
-        PersonalScoreboard ps = new PersonalScoreboard(showRanks);
+        PersonalScoreboard ps = new PersonalScoreboard(cp, showRanks);
         scoreboards.put(uuid, ps);
         // Testing scoreboard display name for personal boards
         ps.setScoreboardName(cp.getDisplayName());
@@ -88,17 +96,32 @@ public class PersonalScoreboard {
         }
         return scoreboards.get(uuid);
     }
+
+    public static void onPlayerJoin(CorePlayer corePlayer) {
+        scoreboards.forEach((uuid2, sb) -> {
+            sb.getTabList().addPlayer(corePlayer);
+        });
+    }
+
+    public static void onPlayerQuit(UUID uuid) {
+        scoreboards.remove(uuid);
+        scoreboards.forEach((uuid2, sb) -> {
+            sb.getTabList().removePlayer(uuid);
+        });
+    }
     
     protected Scoreboard scoreboard;
     protected PersonalTablist tabList;
     protected Objective sideBar;
     protected boolean showRanks;
+    protected CorePlayer owner;
     
-    public PersonalScoreboard(boolean showRanks) {
+    public PersonalScoreboard(CorePlayer owner, boolean showRanks) {
+        this.owner = owner;
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         scoreboard.registerNewTeam("Players");
         scoreboard.getTeam("Players").setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
-        tabList = new PersonalTablist();
+        tabList = new PersonalTablist(owner);
 
         ((CraftServer) Bukkit.getServer()).getServer().getPlayerList();
 
@@ -111,13 +134,10 @@ public class PersonalScoreboard {
     }
 
     public void close() {
-        if (tabList != null) tabList.unregister();
         if (sideBar != null) sideBar.unregister();
     }
     
     public void resetObjective() {
-        tabList.register(scoreboard.registerNewObjective("Welcome to SL!", "dummy", "=-="));
-
         if (sideBar != null) sideBar.unregister();
         sideBar = scoreboard.registerNewObjective("ServerName", "dummy", "=---=");
         sideBar.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -146,6 +166,10 @@ public class PersonalScoreboard {
 
     public Objective getSideBar() {
         return sideBar;
+    }
+
+    public void update() {
+        //tabList.update();
     }
     
 }

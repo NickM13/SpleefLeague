@@ -51,7 +51,7 @@ public class PacketUtils {
             List playerList = (List) playerListField.get(nmsPacket);
             for (CorePlayer cp : corePlayers) {
                 playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
-                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getDisplayName()).getJson())));
+                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
             }
             return new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
@@ -70,8 +70,7 @@ public class PacketUtils {
                 playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
                         .newInstance(nmsPacket, new GameProfile(uuid, null), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText("").getJson())));
             }
-            PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
-            Core.sendPacketAll(packet);
+            return new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
             CoreLogger.logError(exception);
         }

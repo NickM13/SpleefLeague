@@ -6,26 +6,10 @@
 
 package com.spleefleague.core.player;
 
-import com.google.common.collect.Iterables;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.Core;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +18,6 @@ import java.util.stream.Collectors;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -43,7 +26,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 
 /**
  * Manager for custom DBPlayer objects based on Player UUIDs
@@ -55,6 +37,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
 
     private final Map<UUID, P> onlinePlayerList;
     private final Map<UUID, P> playerList;
+    private SortedSet<P> playerListSorted;
     private final Class<P> playerClass;
     private final MongoCollection<Document> playerCol;
     private final JavaPlugin plugin;
@@ -66,6 +49,16 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.playerClass = playerClass;
         this.playerCol = collection;
+        playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
+    }
+
+    public void setSortingComparible(Comparator<P> comparator) {
+        playerListSorted = new TreeSet<>(comparator);
+        playerListSorted.addAll(playerList.values());
+    }
+
+    public Collection<P> getSortedPlayers() {
+        return playerList.values();
     }
 
     /**
@@ -78,6 +71,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
             //p.kickPlayer("Sorry, reloads have to kick now :(");
             load(p.getUniqueId(), p.getName());
         }
+        playerListSorted.clear();
+        playerListSorted.addAll(playerList.values());
         for (P p : playerList.values()) {
             p.init();
             p.setOnline(DBPlayer.OnlineState.HERE);

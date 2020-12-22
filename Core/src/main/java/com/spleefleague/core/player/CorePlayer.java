@@ -17,6 +17,7 @@ import com.mongodb.lang.NonNull;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
@@ -69,16 +70,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -143,6 +135,8 @@ public class CorePlayer extends RatedPlayer {
     private GlobalZone globalZone;
     @DBField
     private final PlayerRatings ratings = new PlayerRatings();
+
+    private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
 
     /**
      * Constructor for CorePlayer
@@ -495,6 +489,19 @@ public class CorePlayer extends RatedPlayer {
         return skull;
     }
 
+    public String getTabName() {
+        return getRankedDisplayName();
+    }
+
+    public String getRankedDisplayName() {
+        String message = "";
+        if (getRank() != null && getRank().getDisplayNameUnformatted().length() > 0) {
+            message += Chat.TAG_BRACE + "[" + getRank().getDisplayName() + Chat.TAG_BRACE + "] ";
+        }
+        message += getDisplayName();
+        return message;
+    }
+
     /**
      * @return Display name of player including rank color, then resets color to default
      */
@@ -668,6 +675,10 @@ public class CorePlayer extends RatedPlayer {
             }
         }
         return permRank.getRank();
+    }
+
+    public int getRankLadder() {
+        return getRank().getLadder();
     }
 
     public void checkGlobalSpectate() {
@@ -951,6 +962,18 @@ public class CorePlayer extends RatedPlayer {
         packet.getChatTypes().write(0, EnumWrappers.ChatType.GAME_INFO);
         packet.getChatComponents().write(0, WrappedChatComponent.fromText(text));
         Core.sendPacket(this, packet);
+    }
+
+    public void joinChatGroup(ChatGroup chatGroup) {
+        chatGroups.put(chatGroup.getChatId(), chatGroup);
+    }
+
+    public void leaveChatGroup(ChatGroup chatGroup) {
+        chatGroups.remove(chatGroup.getChatId());
+    }
+
+    public Collection<ChatGroup> getChatGroups() {
+        return chatGroups.values();
     }
 
     public void addInvSwap() {

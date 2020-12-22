@@ -31,6 +31,7 @@ import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
@@ -49,6 +50,7 @@ import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -103,6 +105,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Arenas.init();
         NoteBlockMusic.init();
         GlobalZone.init();
+        PersonalScoreboard.init();
 
         // Initialize manager
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
@@ -294,15 +297,17 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public void onBungeeConnect(UUID uuid) {
         CorePlayer cp = getPlayers().get(uuid);
-        if (cp == null || cp.isVanished() || cp.getOnlineState() != DBPlayer.OnlineState.OTHER) return;
+        if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
+        PersonalScoreboard.onPlayerJoin(cp);
 
     }
 
     public void onBungeeDisconnect(UUID uuid) {
         CorePlayer cp = getPlayers().get(uuid);
         if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
-            Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
+            //Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
+            PersonalScoreboard.onPlayerQuit(uuid);
         }
     }
 
@@ -315,6 +320,8 @@ public class Core extends CorePlugin<CorePlayer> {
         addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
             @Override
             public void onPacketSending(PacketEvent pe) {
+                pe.setCancelled(true);
+                /*
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
                     PacketContainer packet = pe.getPacket();
                     switch (packet.getPlayerInfoAction().read(0)) {
@@ -355,6 +362,7 @@ public class Core extends CorePlugin<CorePlayer> {
                         default: break;
                     }
                 }
+                 */
             }
         });
     }
@@ -369,7 +377,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param p Player
      * @param packet Packet Container
      */
-    public static void sendPacket(Player p, PacketContainer packet) {
+    public static void sendPacket(@NotNull Player p, PacketContainer packet) {
         if (packet == null) return;
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
@@ -391,10 +399,23 @@ public class Core extends CorePlugin<CorePlayer> {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
                 if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException e) {
+                CoreLogger.logError(e);
             }
         }, 1L);
+    }
+
+    public static void sendPacketSilently(@NotNull Player p, PacketContainer packet) {
+        sendPacketSilently(p, packet, 1L);
+    }
+    public static void sendPacketSilently(@NotNull Player p, PacketContainer packet, long delay) {
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+            try {
+                protocolManager.sendServerPacket(p, packet, null, false);
+            } catch (InvocationTargetException e) {
+                CoreLogger.logError(e);
+            }
+        }, delay);
     }
 
     /**
