@@ -81,7 +81,8 @@ public class ProxyCore extends Plugin {
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
             Set<String> toFindMinigame = Sets.newHashSet(lobbyServers.keySet());
-            for (ServerInfo server : getProxy().getServers().values()) {
+            
+            for (ServerInfo server : getProxy().getServersCopy().values()) {
                 String name = server.getName();
                 if (name.toLowerCase().startsWith("lobby")) {
                     server.ping((serverPing, throwable) -> {

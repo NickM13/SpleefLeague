@@ -581,7 +581,7 @@ public class CorePlayer extends RatedPlayer {
         PersonalScoreboard.updatePlayerRank(this);
         getPlayer().setOp(getRank().getHasOp());
 
-        getPlayer().setPlayerListName(getDisplayName());
+        getPlayer().setPlayerListName(getTabName());
 
         permissions.getPermissions().clear();
         

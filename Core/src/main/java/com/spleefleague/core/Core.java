@@ -320,8 +320,6 @@ public class Core extends CorePlugin<CorePlayer> {
         addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.PLAYER_INFO) {
             @Override
             public void onPacketSending(PacketEvent pe) {
-                pe.setCancelled(true);
-                /*
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
                     PacketContainer packet = pe.getPacket();
                     switch (packet.getPlayerInfoAction().read(0)) {
@@ -334,7 +332,7 @@ public class Core extends CorePlugin<CorePlayer> {
                                             playerInfoData.getProfile(),
                                             playerInfoData.getLatency(),
                                             playerInfoData.getGameMode(),
-                                            WrappedChatComponent.fromText(cp.getDisplayName())));
+                                            WrappedChatComponent.fromText(cp.getTabName())));
                                 }
                             }
                             if (newData.isEmpty()) {
@@ -362,7 +360,6 @@ public class Core extends CorePlugin<CorePlayer> {
                         default: break;
                     }
                 }
-                 */
             }
         });
     }

@@ -21,6 +21,7 @@ public class PacketType {
         REFRESH_ALL(PacketRefreshAll.class),
         REFRESH_QUEUE(PacketRefreshQueue.class),
         REFRESH_SCORE(PacketRefreshScore.class),
+        SERVER_LIST(PacketServerList.class),
         TELL(PacketTellBungee.class);
 
         private final Class<? extends PacketBungee> clazz;

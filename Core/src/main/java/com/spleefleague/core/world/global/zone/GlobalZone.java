@@ -94,7 +94,7 @@ public class GlobalZone extends DBEntity {
             for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
                 cp.setGlobalZone(GlobalZone.getZone(new Point(cp.getLocation())));
             }
-        }, 5L, 5L);
+        }, 20L, 20L);
 
         InventoryMenuAPI.createItemHotbar(4, "ZoneScanner")
                 .setName("Zone Scanner")
