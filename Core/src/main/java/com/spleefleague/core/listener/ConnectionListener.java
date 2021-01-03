@@ -82,9 +82,9 @@ public class ConnectionListener implements Listener {
         //if (cp1.isVanished()) {
             event.setJoinMessage("");
         //}
-        if (!cp1.getRank().hasPermission(Rank.MODERATOR)) {
+        //if (!cp1.getRank().hasPermission(Rank.MODERATOR)) {
             cp1.gotoSpawn();
-        }
+        //}
         Core.getInstance().applyVisibilities(cp1);
     }
     

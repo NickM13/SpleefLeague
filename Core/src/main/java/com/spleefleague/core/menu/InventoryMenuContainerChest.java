@@ -10,14 +10,8 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.bukkit.Bukkit;
@@ -133,18 +127,18 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
                 .setName("Next Page")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem())
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
                 .setCloseOnAction(false)
-                .setVisibility(cp -> (cp.getMenuTag("page", Integer.class) < this.getPageCount(cp) - 1/* || editting*/))
-                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) + 1))));
+                .setVisibility(cp -> (cp.getMenu().getMenuTag("page", Integer.class) < this.getPageCount(cp) - 1/* || editting*/))
+                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) + 1))));
         
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
                 .setName("Prev Page")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem())
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
                 .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenuTag("page", Integer.class) > 0)
-                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) - 1))));
+                .setVisibility(cp -> cp.getMenu().getMenuTag("page", Integer.class) > 0)
+                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) - 1))));
     }
     
     public InventoryMenuContainerChest setParent(InventoryMenuContainer parentContainer) {
@@ -202,7 +196,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         int pageCount = this.getPageCount(cp);
         String title = titleFun != null ? titleFun.apply(cp) : "";
         if (pageCount > 1) {
-            title = title + " (" + (cp.getMenuTag("page", Integer.class) + 1) + "/" + pageCount + ")";
+            title = title + " (" + (cp.getMenu().getMenuTag("page", Integer.class) + 1) + "/" + pageCount + ")";
         }
         String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
     
@@ -214,7 +208,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
         }
 
-        int toSkip = pageItemTotal * cp.getMenuTag("page", Integer.class);
+        int toSkip = pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
     
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
@@ -252,7 +246,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         for (InventoryMenuControl control : controlItems) {
             if (control.menuItem.isVisible(cp) &&
                     (inv.getItem(control.slot) == null
-                    || inv.getItem(control.slot).equals(new ItemStack(Material.SNOW_BLOCK)))) {
+                    || Objects.equals(inv.getItem(control.slot), new ItemStack(Material.SNOW_BLOCK)))) {
                 ItemStack itemStack = control.menuItem.createItem(cp);
                 inv.setItem(control.slot, itemStack);
             }
@@ -306,7 +300,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     }
     
     public InventoryMenuItem getMenuItem(CorePlayer cp, int slot) {
-        int toSkip = pageItemTotal * cp.getMenuTag("page", Integer.class);
+        int toSkip = pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
 
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             int slotNum = (item.getKey() - toSkip);
@@ -362,7 +356,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             e.setCancelled(true);
         }
         else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
-            InventoryMenuContainer screen = cp.getInventoryMenuContainer();
+            InventoryMenuContainer screen = cp.getMenu().getInventoryMenuContainer();
             if (screen instanceof InventoryMenuContainerChest) {
                 InventoryMenuContainerChest container = (InventoryMenuContainerChest) screen;
                 InventoryMenuItem clicked = container.getMenuItem(cp, e.getSlot());
@@ -372,9 +366,9 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                     Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
                         clicked.callAction(cp);
                         if (clicked.shouldCloseOnAction() && clicked.isVisible(cp)) {
-                            cp.setInventoryMenuItem(clicked);
+                            cp.getMenu().setInventoryMenuItem(clicked);
                         } else {
-                            cp.refreshInventoryMenuContainer();
+                            cp.getMenu().refreshInventoryMenuContainer();
                         }
                     });
                 }

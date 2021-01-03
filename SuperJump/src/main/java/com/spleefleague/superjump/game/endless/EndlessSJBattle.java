@@ -8,7 +8,6 @@ package com.spleefleague.superjump.game.endless;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.battle.solo.SoloBattle;
 import com.spleefleague.core.player.CorePlayer;
@@ -82,7 +81,7 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
             BlockPosition pos = bpit.next();
             if (!bpit.hasNext()) {
                 getGameWorld().setBlock(pos, Material.REDSTONE_LAMP.createBlockData());
-                Dimension goal = new Dimension(new Point(pos.getX() - 0.29, pos.getY(), pos.getZ() - 0.29), new Point(pos.getX() + 1.29, pos.getY() + 3.1, pos.getZ() + 1.29));
+                Dimension goal = new Dimension(new Point(pos.getX() - 0.29, pos.getY(), pos.getZ() - 0.29), new Point(pos.getX() + 1.29, pos.getY() + 1.1, pos.getZ() + 1.29));
                 setGoals(Lists.newArrayList(goal));
             } else {
                 getGameWorld().setBlockDelayed(pos, Material.WHITE_CONCRETE.createBlockData(), 0.05, arena.getSpawns());

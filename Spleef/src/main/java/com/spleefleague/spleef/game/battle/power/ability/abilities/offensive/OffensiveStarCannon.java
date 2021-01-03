@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
@@ -24,7 +25,7 @@ public class OffensiveStarCannon extends AbilityOffensive {
     private static ProjectileStats boltStats = new ProjectileStats();
 
     static {
-        boltStats.customModelData = 1;
+        boltStats.customModelDatas = Lists.newArrayList(1);
         boltStats.fireRange = 5D;
         boltStats.count = COUNT;
         boltStats.hSpread = 30;

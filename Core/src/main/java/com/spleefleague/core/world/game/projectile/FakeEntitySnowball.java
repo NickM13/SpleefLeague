@@ -65,7 +65,7 @@ public class FakeEntitySnowball extends EntitySnowball {
         this.size = new Vector(this.projectileStats.size, this.projectileStats.size, this.projectileStats.size);
 
         if (projectileStats.customModelDatas.isEmpty()) {
-            ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelData));
+            ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, 0));
         } else {
             ((Snowball) getBukkitEntity()).setItem(InventoryMenuUtils.createCustomItem(Material.SNOWBALL, projectileStats.customModelDatas.get(new Random().nextInt(projectileStats.customModelDatas.size()))));
         }

@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
@@ -59,7 +60,7 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
 
     static {
         bombStats.entityClass = BouncingProjectile.class;
-        bombStats.customModelData = 13;
+        bombStats.customModelDatas = Lists.newArrayList(13);
         bombStats.fireRange = 4D;
         bombStats.breakRadius = 2D;
         bombStats.noClip = true;

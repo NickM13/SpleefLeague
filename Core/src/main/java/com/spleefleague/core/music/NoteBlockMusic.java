@@ -78,6 +78,9 @@ public class NoteBlockMusic {
         NoteBlockSong song = songMap.get(songName);
         if (song != null) return song;
         File file = new File(MUSIC_DIR + songName + (songName.endsWith(".nbs") ? "" : ".nbs"));
+        if (!file.exists()) {
+            return null;
+        }
         try {
             Map<Short, NoteBlockSong.Layer> layerMap = new HashMap<>();
             FileInputStream fileInputStream = new FileInputStream(file);

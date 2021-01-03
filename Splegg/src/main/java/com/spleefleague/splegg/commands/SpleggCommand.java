@@ -32,6 +32,7 @@ public class SpleggCommand extends CoreCommand {
 
     public SpleggCommand() {
         super("splegg", Rank.DEFAULT);
+        this.addAlias("sg");
         this.setOptions("gamemodes", pi -> CoreUtils.enumToStrSet(SpleggMode.class, true));
         this.setOptions("arenas", this::getArenas);
         this.setOptions("players", this::getPlayers);

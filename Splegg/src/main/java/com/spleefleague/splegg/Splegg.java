@@ -80,7 +80,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Splegg")
                 .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
-                .setDisplayItem(Material.EGG)
+                .setDisplayItem(Material.EGG, 1)
                 .createLinkedContainer("Splegg Menu");
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 0, 2);
         spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 1, 3);

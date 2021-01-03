@@ -79,7 +79,7 @@ public class Vendor extends DBEntity {
      * @param cp Core Player
      */
     public void openShop(CorePlayer cp) {
-        cp.setInventoryMenuChest(createVendorMenu(cp), true);
+        cp.getMenu().setInventoryMenuChest(createVendorMenu(cp), true);
     }
     
     /**
@@ -178,7 +178,7 @@ public class Vendor extends DBEntity {
                 })
                 .setTitle(this.getDisplayName() + "(" + this.getDisplayName() + ")");
         
-        cp.setInventoryMenuChest(editor, true);
+        cp.getMenu().setInventoryMenuChest(editor, true);
     }
     
     /**

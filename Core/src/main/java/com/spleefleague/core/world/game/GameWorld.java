@@ -859,7 +859,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                     break;
             }
             if (charge >= 0.2 && Math.abs(projectileStats.fireKnockback) > 0.001) {
-                shooter.getPlayer().setVelocity(shooter.getPlayer().getLocation().getDirection().multiply(projectileStats.fireKnockback * charge));
+                shooter.getPlayer().setVelocity(shooter.getPlayer().getLocation().getDirection().multiply(-projectileStats.fireKnockback * charge));
             }
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException exception) {
             CoreLogger.logError(exception);

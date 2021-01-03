@@ -3,17 +3,16 @@ package com.spleefleague.core.player.scoreboard;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.PacketUtils;
-import com.spleefleague.coreapi.utils.packet.PacketUtil;
 import net.minecraft.server.v1_15_R1.EnumGamemode;
 import net.minecraft.server.v1_15_R1.IChatBaseComponent;
 import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
+import org.bukkit.ChatColor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,17 +29,18 @@ public class PersonalTablist {
 
     public PersonalTablist(CorePlayer owner) {
         this.owner = owner;
-        //update();
+        updateHeaderFooter();
     }
 
     public void addPlayer(CorePlayer cp) {
         tabUuidList.add(cp.getUniqueId());
-        update();
+        updatePlayerList();
     }
 
     public void removePlayer(UUID uuid) {
         if (tabUuidList.remove(uuid)) {
-            update();
+            Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
+            //updatePlayerList();
         }
     }
 
@@ -50,7 +50,21 @@ public class PersonalTablist {
         tabUuidList.clear();
     }
 
-    public void update() {
+    public void updateHeaderFooter() {
+        PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+        packetContainer.getChatComponents().write(0, WrappedChatComponent.fromText(
+                        ChatColor.GOLD + "" + ChatColor.BOLD + "SpleefLeague\n" +
+                        ChatColor.GRAY + "Online: " + ChatColor.GREEN + Core.getInstance().getPlayers().getOnline().size() + "\n" +
+                        ChatColor.GRAY + "Ping: " + owner.getPingFormatted() + "\n" +
+                        ChatColor.GRAY + "==================="));
+        packetContainer.getChatComponents().write(1, WrappedChatComponent.fromText(
+                        ChatColor.GRAY + "===================" + "\n" +
+                        ChatColor.GRAY + "Discord: " + ChatColor.BLUE + "discord.gg/G5ppzgJ7YV" + "\n" +
+                        ChatColor.GRAY + "Twitch: " + ChatColor.DARK_PURPLE + "twitch.tv/wired26"));
+        Core.sendPacketSilently(owner.getPlayer(), packetContainer, 1L);
+    }
+
+    public void updatePlayerList() {
         clear();
         try {
             PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
@@ -68,6 +82,7 @@ public class PersonalTablist {
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
             CoreLogger.logError(exception);
         }
+        updateHeaderFooter();
     }
 
 }

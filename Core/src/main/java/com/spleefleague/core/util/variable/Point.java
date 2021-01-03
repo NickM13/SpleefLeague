@@ -51,7 +51,17 @@ public class Point extends DBVariable<List<Double>> {
         this.y = vec.getY();
         this.z = vec.getZ();
     }
-    
+    public Point(List<Double> list) {
+        super(list);
+    }
+
+    public Point rounded(double divisor) {
+        return new Point(
+                Math.round(x * divisor) / divisor,
+                Math.round(y * divisor) / divisor,
+                Math.round(z * divisor) / divisor);
+    }
+
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
@@ -257,6 +267,22 @@ public class Point extends DBVariable<List<Double>> {
         temp = Double.doubleToLongBits(z);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getZ() {
+        return z;
+    }
+
+    public double distance(Point pos) {
+        return Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2) + Math.pow(z - pos.z, 2));
     }
 
 }

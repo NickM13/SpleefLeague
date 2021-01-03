@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
@@ -37,7 +38,7 @@ public class OffensivePunch extends AbilityOffensive {
         projectileStats.count = 20;
         projectileStats.hSpread = 90;
         projectileStats.vSpread = 60;
-        projectileStats.customModelData = 1;
+        projectileStats.customModelDatas = Lists.newArrayList(1);
     }
 
     private double punchTime = -1;

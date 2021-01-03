@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.utility;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
@@ -74,7 +75,7 @@ public class UtilitySmokeBomb extends AbilityUtility {
 
     static {
         projectileStats.entityClass = SmokeBombProjectile.class;
-        projectileStats.customModelData = 10;
+        projectileStats.customModelDatas = Lists.newArrayList(10);
         projectileStats.breakRadius = 0D;
         projectileStats.gravity = true;
         projectileStats.lifeTicks = 200;

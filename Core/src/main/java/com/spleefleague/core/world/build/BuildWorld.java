@@ -107,11 +107,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
             setBlock(entry.getKey().add(origin), entry.getValue().getBlockData());
         }
-        if (lowest.getY() + origin.getY() < 0) {
-            loadFail = true;
-        }
-        if (highest.getY() + origin.getY() > 255) {
-            loadFail = true;
+        if (lowest != null) {
+            if (lowest.getY() + origin.getY() < 0) {
+                loadFail = true;
+            }
+            if (highest.getY() + origin.getY() > 255) {
+                loadFail = true;
+            }
         }
         if (!loadFail) {
             addPlayer(owner);

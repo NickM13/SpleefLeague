@@ -6,26 +6,20 @@
 
 package com.spleefleague.core.player.scoreboard;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.spleefleague.core.player.rank.Ranks;
-import com.spleefleague.core.util.PacketUtils;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -51,9 +45,10 @@ public class PersonalScoreboard {
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
-            scoreboard.getTeam(cp2.getRank().getIdentifierShort()).addEntry(cp2.getName());
+            Objects.requireNonNull(scoreboard.getTeam(cp2.getRank().getIdentifierShort())).addEntry(cp2.getName());
         }
 
+        /*
         List<CorePlayer> toScoreboardify = new ArrayList<>();
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getAll()) {
             if (cp2.getOnlineState() != DBPlayer.OnlineState.OFFLINE) {
@@ -63,6 +58,7 @@ public class PersonalScoreboard {
         if (!toScoreboardify.isEmpty()) {
             Core.sendPacket(cp, PacketUtils.createAddPlayerPacket(toScoreboardify));
         }
+         */
     }
 
     public static void closePlayerScoreboard(CorePlayer cp) {
@@ -73,11 +69,11 @@ public class PersonalScoreboard {
     
     public static void updatePlayerRank(CorePlayer cp) {
         Team team;
-        if ((team = Bukkit.getScoreboardManager().getMainScoreboard().getEntryTeam(cp.getName())) != null) {
+        if ((team = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard().getEntryTeam(cp.getName())) != null) {
             team.removeEntry(cp.getName());
         }
         for (PersonalScoreboard ps : scoreboards.values()) {
-            ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort()).addEntry(cp.getName());
+            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getName());
         }
     }
     
@@ -98,16 +94,12 @@ public class PersonalScoreboard {
     }
 
     public static void onPlayerJoin(CorePlayer corePlayer) {
-        scoreboards.forEach((uuid2, sb) -> {
-            sb.getTabList().addPlayer(corePlayer);
-        });
+        scoreboards.forEach((uuid2, sb) -> sb.getTabList().addPlayer(corePlayer));
     }
 
     public static void onPlayerQuit(UUID uuid) {
         scoreboards.remove(uuid);
-        scoreboards.forEach((uuid2, sb) -> {
-            sb.getTabList().removePlayer(uuid);
-        });
+        scoreboards.forEach((uuid2, sb) -> sb.getTabList().removePlayer(uuid));
     }
     
     protected Scoreboard scoreboard;
@@ -118,9 +110,9 @@ public class PersonalScoreboard {
     
     public PersonalScoreboard(CorePlayer owner, boolean showRanks) {
         this.owner = owner;
-        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
         scoreboard.registerNewTeam("Players");
-        scoreboard.getTeam("Players").setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        Objects.requireNonNull(scoreboard.getTeam("Players")).setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         tabList = new PersonalTablist(owner);
 
         ((CraftServer) Bukkit.getServer()).getServer().getPlayerList();
@@ -153,7 +145,7 @@ public class PersonalScoreboard {
     }
     
     public void setTeamName(String teamId, String displayName) {
-        scoreboard.getTeam(teamId);
+        Objects.requireNonNull(scoreboard.getTeam(teamId)).setDisplayName(displayName);
     }
     
     public Scoreboard getScoreboard() {
@@ -169,7 +161,7 @@ public class PersonalScoreboard {
     }
 
     public void update() {
-        //tabList.update();
+        tabList.updateHeaderFooter();
     }
     
 }

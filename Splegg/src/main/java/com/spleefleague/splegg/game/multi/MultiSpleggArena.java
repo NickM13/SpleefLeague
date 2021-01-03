@@ -42,7 +42,7 @@ public class MultiSpleggArena extends SpleggArena {
                 .setName(mainColor + "Multisplegg")
                 .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!" +
                         "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.MULTI.getBattleMode()).getPlaying())
-                .setDisplayItem(Material.CHICKEN_SPAWN_EGG)
+                .setDisplayItem(Material.EGG, 2)
                 .createLinkedContainer("Multisplegg");
 
         menuItem.getLinkedChest()
@@ -70,7 +70,7 @@ public class MultiSpleggArena extends SpleggArena {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lMultisplegg")
                 .setDescription("View the top players of Multisplegg!")
-                .setDisplayItem(Material.CHICKEN_SPAWN_EGG)
+                .setDisplayItem(Material.EGG, 2)
                 .setLinkedContainer(leaderboard.createMenuContainer());
 
         LeaderboardMenu.getItem()

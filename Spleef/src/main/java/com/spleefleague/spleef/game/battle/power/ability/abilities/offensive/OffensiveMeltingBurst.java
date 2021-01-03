@@ -1,6 +1,7 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
@@ -71,7 +72,7 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
         projectileStats.lifeTicks = (int) (BURST_DELAY * 20);
         projectileStats.collidable = true;
         projectileStats.noClip = true;
-        projectileStats.customModelData = 11;
+        projectileStats.customModelDatas = Lists.newArrayList(11);
     }
 
     /**

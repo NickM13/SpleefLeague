@@ -53,12 +53,12 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
     
     @Override
     public void open(CorePlayer cp) {
-        cp.addInvSwap();
+        cp.getMenu().addInvSwap();
         new AnvilGUI.Builder()
                 .onClose(player -> {
                     CorePlayer cp2 = Core.getInstance().getPlayers().get(player);
                     Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                        cp2.setInventoryMenuChest(parentContainer, false);
+                        cp2.getMenu().setInventoryMenuChest(parentContainer, false);
                     }, 1L);
                 })
                 .onComplete((player, str) -> {

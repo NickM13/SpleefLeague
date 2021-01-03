@@ -9,7 +9,7 @@ package com.spleefleague.core.menu;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
@@ -22,8 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author NickM13
  */
 public class InventoryMenuEditor extends InventoryMenuContainerChest {
-    
-    protected Map<Integer, InventoryMenuItem> edittableItems;
+
     protected Consumer<Map<Integer, InventoryMenuItem>> saveFun;
     
     public InventoryMenuEditor() {
@@ -41,27 +40,27 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
                 .setName("Next Page")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem())
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
                 .setCloseOnAction(false)
-                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) + 1))));
+                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) + 1))));
         
         controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
                 .setName("Prev Page")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem())
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
                 .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenuTag("page", Integer.class) > 0)
-                .setAction(cp -> cp.setMenuTag("page", cp.getMenuTag("page", Integer.class) - 1))));
+                .setVisibility(cp -> cp.getMenu().getMenuTag("page", Integer.class) > 0)
+                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) - 1))));
     }
     
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
         if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.CHEST) {
-            InventoryMenuContainerChest menu = (InventoryMenuContainerChest) cp.getInventoryMenuContainer();
+            InventoryMenuContainerChest menu = (InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer();
             InventoryMenuItem clicked = menu.getMenuItem(cp, e.getSlot());
             if (e.getSlot() < pageItemTotal) {
                 InventoryMenuItem prevItem = this.getMenuItem(cp, e.getSlot());
                 if (clicked != null) {
-                    removeMenuItem(cp.getMenuTag("page", Integer.class), e.getSlot());
+                    removeMenuItem(cp.getMenu().getMenuTag("page", Integer.class), e.getSlot());
                 }
                 // TODO: Is air a thing for cursors?
                 if (e.getCursor() != null && !e.getCursor().getType().equals(Material.AIR)) {
@@ -70,11 +69,11 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
                             .setName(meta != null ? meta.getDisplayName() : "")
                             .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
                             .setDisplayItem(e.getCursor()),
-                            cp.getMenuTag("page", Integer.class) * pageItemTotal + e.getSlot());
+                            cp.getMenu().getMenuTag("page", Integer.class) * pageItemTotal + e.getSlot());
                 }
                 cp.getPlayer().setItemOnCursor(prevItem == null ? null : prevItem.createItem(cp));
                 saveFun.accept(sortedItems);
-                cp.refreshInventoryMenuContainer();
+                cp.getMenu().refreshInventoryMenuContainer();
             } else {
                 e.setCancelled(true);
                 if (clicked != null &&
@@ -82,9 +81,9 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
                     Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
                         clicked.callAction(cp);
                         if (clicked.shouldCloseOnAction() && clicked.isVisible(cp)) {
-                            cp.setInventoryMenuItem(clicked);
+                            cp.getMenu().setInventoryMenuItem(clicked);
                         } else {
-                            cp.refreshInventoryMenuContainer();
+                            cp.getMenu().refreshInventoryMenuContainer();
                         }
                     });
                 }

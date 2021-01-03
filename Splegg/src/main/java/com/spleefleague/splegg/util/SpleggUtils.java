@@ -32,7 +32,10 @@ public class SpleggUtils {
         GameWorld gameWorld = battle.getGameWorld();
         gameWorld.clear();
         for (BuildStructure structure : battle.getArena().getStructures()) {
-            gameWorld.overwriteBlocks(FakeUtils.translateBlocks(structure.getFakeBlocks(), structure.getOriginPos()));
+            gameWorld.overwriteBlocks(
+                    FakeUtils.translateBlocks(
+                            FakeUtils.rotateBlocks(structure.getFakeBlocks(), (int) battle.getArena().getOrigin().getYaw()),
+                            battle.getArena().getOrigin().toBlockPosition()));
         }
     }
 

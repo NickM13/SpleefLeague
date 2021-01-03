@@ -148,9 +148,7 @@ public class BattleMode {
     public InventoryMenuContainerChest createEditMenu() {
         return InventoryMenuAPI.createContainer()
                 .setTitle(getDisplayName())
-                .setOpenAction((container, cp) -> {
-                    cp.setMenuTag("arenamode", this);
-                })
+                .setOpenAction((container, cp) -> cp.getMenu().setMenuTag("arenamode", this))
                 .setRefreshAction((container, cp) -> {
                     container.clearUnsorted();
                     container.addMenuItem(ArenaBuilder.createNewItem(getName()));

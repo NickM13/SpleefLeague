@@ -12,6 +12,7 @@ import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.ZoneLeaf;
+import com.spleefleague.coreapi.chat.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -34,8 +35,12 @@ public class ZoneCommand extends CoreCommand {
 
     public ZoneCommand() {
         super("zone", Rank.DEVELOPER);
-        setOptions("zoneNames", cp -> GlobalZone.getAll().keySet());
-        setOptions("leafNames", cp -> GlobalZone.getLeafNames());
+        setOptions("zoneNames", pi -> GlobalZone.getAll().keySet());
+        setOptions("leafNames", pi -> {
+            System.out.println(pi.getArgs().get(pi.getArgs().size() - 1));
+            GlobalZone zone = GlobalZone.getZone(pi.getArgs().get(pi.getArgs().size() - 1));
+            return zone.getLeafIds();
+        });
     }
 
     @CommandAnnotation
@@ -57,46 +62,47 @@ public class ZoneCommand extends CoreCommand {
 
     @CommandAnnotation
     public void zoneAddLeaf(CorePlayer sender,
-                               @LiteralArg("add") String l1,
-                               @LiteralArg("leaf") String l2,
-                               @OptionArg(listName = "zoneNames") String zoneName,
-                               @HelperArg("<identifier>") String identifier) {
-        if (GlobalZone.getLeafNames().contains(zoneName + ":" + identifier)) {
-            error(sender, "Leaf name already in use");
+                            @LiteralArg("leaf") String l2,
+                            @LiteralArg("add") String l1,
+                            @OptionArg(listName = "zoneNames") String zoneName) {
+        Point pos = new Point(sender.getLocation()).rounded(2);
+        GlobalZone zone = GlobalZone.getZone(zoneName);
+        ZoneLeaf leaf = zone.addLeaf(pos);
+        if (leaf == null) {
+            error(sender, "Leaf already here!");
         } else {
-            Position pos = new Position(sender.getLocation());
-            pos.x = Math.round(pos.x * 2) / 2D;
-            pos.z = Math.round(pos.z * 2) / 2D;
-            GlobalZone zone = GlobalZone.getZone(zoneName);
-            zone.addLeaf(identifier, pos);
-            success(sender, "Added leaf " + zoneName + ":" + identifier + ", " + pos);
+            success(sender, "Added leaf " + zoneName + ":" + leaf.getId() + " to " + pos);
         }
     }
 
     @CommandAnnotation
     public void zoneRemoveLeaf(CorePlayer sender,
-                                  @LiteralArg("remove") String l1,
-                                  @LiteralArg("leaf") String l2,
-                                  @OptionArg(listName = "leafNames") String leafName) {
-        if (GlobalZone.removeLeafGlobal(leafName)) {
-            success(sender, "Removed leaf " + leafName);
-        }
+                               @LiteralArg("leaf") String l2,
+                               @LiteralArg("remove") String l1) {
+        success(sender, "Removed " + GlobalZone.removeLeaves(new Point(sender.getLocation()), 1) + " leaves");
     }
 
     @CommandAnnotation
     public void zoneGotoLeaf(CorePlayer sender,
-                                @LiteralArg("goto") String l1,
-                                @LiteralArg("leaf") String l2,
-                                @OptionArg(listName = "leafNames") String leafName) {
-        ZoneLeaf leaf = GlobalZone.getLeafGlobal(leafName);
-        sender.teleport(leaf.getPos().getX(), leaf.getPos().getY(), leaf.getPos().getZ());
+                             @LiteralArg("leaf") String l2,
+                             @LiteralArg("goto") String l1,
+                             @OptionArg(listName = "zoneNames") String zoneName,
+                             @OptionArg(listName = "leafNames") String leafId) {
+        GlobalZone zone = GlobalZone.getZone(zoneName);
+        ZoneLeaf leaf = zone.getLeaf(leafId);
+        if (leaf != null) {
+            sender.teleport(leaf.getPos().getX(), leaf.getPos().getY(), leaf.getPos().getZ());
+            success(sender, "Teleported to leaf " + zoneName + ":" + leaf.getId());
+        } else {
+            error(sender, "Leaf does not exist!");
+        }
     }
 
     @CommandAnnotation
     public void zoneScanner(CorePlayer sender,
                              @LiteralArg("scanner") String l1) {
         if (GlobalZone.toggleScanner(sender)) {
-            success(sender, "You've been given a zone scanner, right click to update");
+            success(sender, "You've been given a zone scanner, right click to place a fragment at current location and shift-right click to remove");
         } else {
             success(sender, "Zone scanner removed");
         }
@@ -131,7 +137,10 @@ public class ZoneCommand extends CoreCommand {
                               @OptionArg(listName = "zoneNames") String zoneName) {
         GlobalZone zone = GlobalZone.getZone(zoneName);
         for (Dimension border : zone.getBorders()) {
-            TextComponent borderComponent = new TextComponent(border.toString());
+            if (border.isContained(new Point(sender.getLocation()))) {
+
+            }
+            TextComponent borderComponent = new TextComponent((border.isContained(new Point(sender.getLocation())) ? ChatColor.GREEN : ChatColor.YELLOW) + border.toString());
             borderComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Remove this border ").create()));
             borderComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/zone remove border " + zoneName + " "
                     + border.toCommandFormat()));
@@ -172,8 +181,8 @@ public class ZoneCommand extends CoreCommand {
 
     @CommandAnnotation
     public void zoneClearLeaves(CommandSender sender,
+                                @LiteralArg("leaf") String l2,
                                 @LiteralArg("clear") String l1,
-                                @LiteralArg("leaves") String l2,
                                 CorePlayer target,
                                 @OptionArg(listName = "zoneNames") String zoneName) {
         target.getCollectibles().clearLeaves(zoneName);
@@ -181,8 +190,8 @@ public class ZoneCommand extends CoreCommand {
 
     @CommandAnnotation
     public void zoneClearLeaves(CommandSender sender,
+                                @LiteralArg("leaf") String l2,
                                 @LiteralArg("clear") String l1,
-                                @LiteralArg("leaves") String l2,
                                 List<CorePlayer> targets,
                                 @OptionArg(listName = "zoneNames") String zoneName) {
         for (CorePlayer target : targets) {

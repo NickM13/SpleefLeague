@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author NickM13
@@ -48,8 +49,7 @@ public class ProjectileStats extends DBEntity {
     @DBField public Double      soundVolume = 1.;
     @DBField public Double      soundPitch = 1.;
     @DBField public Shape       shape = Shape.DEFAULT;
-    @DBField public Integer     customModelData = 0;
-    @DBField public List<Integer> customModelDatas = new ArrayList<>();
+    @DBField public List<Integer> customModelDatas = new ArrayList<>(0);
     @DBField public Double      fireRange = 6D;
     @DBField public Integer     fireCooldown = 0;
     @DBField public Double      breakRadius = 1D;
@@ -69,8 +69,7 @@ public class ProjectileStats extends DBEntity {
     @DBField public Boolean     collidable = true;
     @DBField public Double      hitKnockback = 0D;
     @DBField public Double      size = 0D;
-    @Deprecated
-    @DBField public Double fireKnockback = 0D;
+    @DBField public Double      fireKnockback = 0D;
     private net.minecraft.server.v1_15_R1.ItemStack projectileItem;
     
     public ProjectileStats() {
@@ -80,7 +79,7 @@ public class ProjectileStats extends DBEntity {
     public void updateProjectileItem() {
         ItemStack itemStack = new ItemStack(Material.SNOWBALL);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setCustomModelData(customModelData);
+        Objects.requireNonNull(itemMeta).setCustomModelData(customModelDatas.isEmpty() ? 0 : customModelDatas.get(0));
         itemStack.setItemMeta(itemMeta);
         projectileItem = CraftItemStack.asNMSCopy(itemStack);
     }

@@ -56,16 +56,15 @@ public class Warp extends DBEntity {
 
     public static InventoryMenuContainerChest createMenuContainer(String folderName) {
         InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
-                .setTitle(cp -> " Folder " + cp.getMenuTag("folderName", String.class))
+                .setTitle(cp -> " Folder " + cp.getMenu().getMenuTag("folderName", String.class))
                 .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp) -> {
-                    cp.setMenuTag("folderName", folderName == null ? DEFAULT_FOLDER : folderName);
-                    cp.setMenuTag("warpPage", 0);
+                    cp.getMenu().setMenuTag("folderName", folderName == null ? DEFAULT_FOLDER : folderName);
+                    cp.getMenu().setMenuTag("warpPage", 0);
                 })
                 .setRefreshAction((container, cp) -> {
                     container.clearUnsorted();
-                    int page = cp.getMenuTag("warpPage", Integer.class);
-                    SortedSet<String> warpNames = folders.get(cp.getMenuTag("folderName", String.class));
+                    SortedSet<String> warpNames = folders.get(cp.getMenu().getMenuTag("folderName", String.class));
                     for (String warpName : warpNames) {
                         Warp warp = warps.get(warpName);
                         container.addMenuItem(InventoryMenuAPI.createItem()
@@ -78,19 +77,19 @@ public class Warp extends DBEntity {
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                         .setName(ChatColor.RED + "" + ChatColor.BOLD + "Previous Page")
                         .setDescription("")
-                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem()),
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem()),
                 2, 4)
-                .setVisibility(cp -> cp.getMenuTag("warpPage", Integer.class) > 0)
-                .setAction(cp -> cp.setMenuTag("warpPage", cp.getMenuTag("warpPage", Integer.class) - 1))
+                .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) > 0)
+                .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) - 1))
                 .setCloseOnAction(false);
 
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                         .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Page")
                         .setDescription("")
-                        .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem()),
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem()),
                 6, 4)
-                .setVisibility(cp -> cp.getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
-                .setAction(cp -> cp.setMenuTag("warpPage", cp.getMenuTag("warpPage", Integer.class) + 1))
+                .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenu().getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
+                .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) + 1))
                 .setCloseOnAction(false);
 
         return menuContainer;
@@ -122,7 +121,7 @@ public class Warp extends DBEntity {
      * @return Warp Name Set
      */
     public static Set<Warp> getWarps(String folderName) {
-        return new TreeSet<>(folders.get(folderName).stream().map(warps::get).collect(Collectors.toSet()));
+        return folders.get(folderName).stream().map(warps::get).collect(Collectors.toCollection(TreeSet::new));
     }
     
     /**

@@ -1,6 +1,7 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
@@ -51,7 +52,7 @@ public class MobilityPortalGun extends AbilityMobility {
         projectileStats.gravity = true;
         projectileStats.lifeTicks = 3;
         projectileStats.fireRange = 16D;
-        projectileStats.customModelData = 12;
+        projectileStats.customModelDatas = Lists.newArrayList(12);
     }
 
     /**

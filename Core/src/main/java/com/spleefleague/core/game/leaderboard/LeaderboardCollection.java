@@ -59,28 +59,28 @@ public class LeaderboardCollection {
     }
     
     public int findPage(CorePlayer cp, int pageSize) {
-        int place = leaderboards.get(cp.getMenuTag("season", Integer.class)).getPlayerRank(cp.getUniqueId());
+        int place = leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class)).getPlayerRank(cp.getUniqueId());
         if (place != -1) return place / pageSize;
         return 0;
     }
     
     public void scrollSeason(CorePlayer cp, int num) {
-        cp.setMenuTag("season", cp.getMenuTag("season", Integer.class) + num);
-        cp.setMenuTag("rankpage", findPage(cp, createMenuContainer().getPageItemTotal()));
+        cp.getMenu().setMenuTag("season", cp.getMenu().getMenuTag("season", Integer.class) + num);
+        cp.getMenu().setMenuTag("rankpage", findPage(cp, createMenuContainer().getPageItemTotal()));
     }
     
     public InventoryMenuContainerChest createMenuContainer() {
         InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
-                .setTitle(cp -> BattleMode.get(name).getDisplayName() + " Season " + (cp.getMenuTag("season", Integer.class) + 1))
+                .setTitle(cp -> BattleMode.get(name).getDisplayName() + " Season " + (cp.getMenu().getMenuTag("season", Integer.class) + 1))
                 .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp) -> {
-                    cp.setMenuTag("season", activeLeaderboard.getSeason());
-                    cp.setMenuTag("rankpage", findPage(cp, container.getPageItemTotal()));
+                    cp.getMenu().setMenuTag("season", activeLeaderboard.getSeason());
+                    cp.getMenu().setMenuTag("rankpage", findPage(cp, container.getPageItemTotal()));
                 })
                 .setRefreshAction((container, cp) -> {
                     container.clearUnsorted();
-                    int season = cp.getMenuTag("season", Integer.class);
-                    int page = cp.getMenuTag("rankpage", Integer.class);
+                    int season = cp.getMenu().getMenuTag("season", Integer.class);
+                    int page = cp.getMenu().getMenuTag("rankpage", Integer.class);
                     List<UUID> players = new ArrayList<>();
                     Leaderboard leaderboard = leaderboards.get(season);
                     if (leaderboard != null) {
@@ -106,104 +106,101 @@ public class LeaderboardCollection {
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                 .setName(ChatColor.RED + "" + ChatColor.BOLD + "Previous Season")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem()),
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem()),
                 0, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) > 0)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) > 0)
                 .setAction(cp -> scrollSeason(cp, -1))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) - 2))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) - 3).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class) - 2)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) - 2))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) - 3).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class) - 2)),
                 1, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) > 2)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) > 2)
                 .setAction(cp -> scrollSeason(cp, -3))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) - 1))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) - 2).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class) - 1)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) - 1))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) - 2).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class) - 1)),
                 2, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) > 1)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) > 1)
                 .setAction(cp -> scrollSeason(cp, -2))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class)))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) - 1).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class))),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class)))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) - 1).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class))),
                 3, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) > 0)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) > 0)
                 .setAction(cp -> scrollSeason(cp, -1))
                 .setCloseOnAction(false);
-    
-        /**
-         * Current Season
-         */
+
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) + 1))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class)).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.RED_WOOL, cp.getMenuTag("season", Integer.class) + 1)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) + 1))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class)).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.RED_WOOL, cp.getMenu().getMenuTag("season", Integer.class) + 1)),
                 4, 0)
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) + 2))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) + 1).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class) + 2)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) + 2))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) + 1).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class) + 2)),
                 5, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) < leaderboards.size() - 1)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) < leaderboards.size() - 1)
                 .setAction(cp -> scrollSeason(cp, 1))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) + 3))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) + 2).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class) + 3)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) + 3))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) + 2).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class) + 3)),
                 6, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) < leaderboards.size() - 2)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) < leaderboards.size() - 2)
                 .setAction(cp -> scrollSeason(cp, 2))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
-                        .setName(cp -> "Season " + (cp.getMenuTag("season", Integer.class) + 4))
-                        .setDescription(cp -> leaderboards.get(cp.getMenuTag("season", Integer.class) + 3).getDescription())
-                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenuTag("season", Integer.class) + 4)),
+                        .setName(cp -> "Season " + (cp.getMenu().getMenuTag("season", Integer.class) + 4))
+                        .setDescription(cp -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class) + 3).getDescription())
+                        .setDisplayItem(cp -> InventoryMenuUtils.createCustomItemAmount(Material.WHITE_WOOL, cp.getMenu().getMenuTag("season", Integer.class) + 4)),
                 7, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) < leaderboards.size()  - 3)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) < leaderboards.size()  - 3)
                 .setAction(cp -> scrollSeason(cp, 3))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Season")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem()),
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem()),
                 8, 0)
-                .setVisibility(cp -> cp.getMenuTag("season", Integer.class) < leaderboards.size() - 1)
+                .setVisibility(cp -> cp.getMenu().getMenuTag("season", Integer.class) < leaderboards.size() - 1)
                 .setAction(cp -> scrollSeason(cp, 1))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                         .setName(ChatColor.RED + "" + ChatColor.BOLD + "Previous Page")
                         .setDescription("")
-                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem()),
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem()),
                 2, 4)
-                .setVisibility(cp -> cp.getMenuTag("rankpage", Integer.class) > 0)
-                .setAction(cp -> cp.setMenuTag("rankpage", cp.getMenuTag("rankpage", Integer.class) - 1))
+                .setVisibility(cp -> cp.getMenu().getMenuTag("rankpage", Integer.class) > 0)
+                .setAction(cp -> cp.getMenu().setMenuTag("rankpage", cp.getMenu().getMenuTag("rankpage", Integer.class) - 1))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Page")
                 .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT.getIconItem()),
+                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem()),
                 6, 4)
                 .setVisibility(cp -> {
-                    int playerCount = leaderboards.get(cp.getMenuTag("season", Integer.class)).getPlayerCount();
-                    return cp.getMenuTag("rankpage", Integer.class) < playerCount / menuContainer.getPageItemTotal();
+                    int playerCount = leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class)).getPlayerCount();
+                    return cp.getMenu().getMenuTag("rankpage", Integer.class) < playerCount / menuContainer.getPageItemTotal();
                 })
-                .setAction(cp -> cp.setMenuTag("rankpage", cp.getMenuTag("rankpage", Integer.class) + 1))
+                .setAction(cp -> cp.getMenu().setMenuTag("rankpage", cp.getMenu().getMenuTag("rankpage", Integer.class) + 1))
                 .setCloseOnAction(false);
     
         menuContainer.addStaticItem(InventoryMenuAPI.createItem()
@@ -211,17 +208,15 @@ public class LeaderboardCollection {
                 .setDescription("")
                 .setDisplayItem(Material.OAK_SIGN),
                 4, 4)
-                .setAction(cp -> {
-                    cp.setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
-                            .setTitle("Search for Player")
-                            .setSuccessFunc(str -> leaderboards.get(cp.getMenuTag("season", Integer.class)).containsPlayer(Bukkit.getOfflinePlayer(str).getUniqueId()))
-                            .setAction((cp2, str) -> {
-                                int place = leaderboards.get(cp.getMenuTag("season", Integer.class)).getPlayerRank(Bukkit.getOfflinePlayer(str).getUniqueId());
-                                cp.setMenuTag("rankpage", place / menuContainer.getPageItemTotal());
-                            })
-                            .setParentContainer(menuContainer)
-                            .setFailText("Player not rated!"));
-                })
+                .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
+                        .setTitle("Search for Player")
+                        .setSuccessFunc(str -> leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class)).containsPlayer(Bukkit.getOfflinePlayer(str).getUniqueId()))
+                        .setAction((cp2, str) -> {
+                            int place = leaderboards.get(cp.getMenu().getMenuTag("season", Integer.class)).getPlayerRank(Bukkit.getOfflinePlayer(str).getUniqueId());
+                            cp.getMenu().setMenuTag("rankpage", place / menuContainer.getPageItemTotal());
+                        })
+                        .setParentContainer(menuContainer)
+                        .setFailText("Player not rated!")))
                 .setCloseOnAction(false);
         
         return menuContainer;

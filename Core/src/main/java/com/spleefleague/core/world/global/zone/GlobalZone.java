@@ -11,7 +11,6 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
@@ -22,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
@@ -84,10 +84,11 @@ public class GlobalZone extends DBEntity {
                 CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
                 if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) {
                     editingPlayers.remove(uuid);
+                    continue;
                 }
                 for (GlobalZone zone : globalZoneMap.values()) {
                     for (ZoneLeaf leaf : zone.getLeaves()) {
-                        cp.getPlayer().spawnParticle(Particle.SWEEP_ATTACK, leaf.getPos().getX() + 0.5, leaf.getPos().getY() + 0.5, leaf.getPos().getZ() + 0.5, 1, 0, 0, 0);
+                        cp.getPlayer().spawnParticle(Particle.SWEEP_ATTACK, leaf.getPos().x + 0.5, leaf.getPos().y + 0.5, leaf.getPos().z + 0.5, 1, 0, 0, 0);
                     }
                 }
             }
@@ -106,7 +107,14 @@ public class GlobalZone extends DBEntity {
                             Chat.DEFAULT + "Leaves: " + zone.getLeaves().size();
                 })
                 .setAvailability(cp -> editingPlayers.contains(cp.getUniqueId()))
-                .setAction(CorePlayer::refreshHotbar);
+                .setAction(cp -> {
+                    if (cp.getPlayer().isSneaking()) {
+                        removeLeaves(new Point(cp.getLocation()), 1);
+                    } else {
+                        cp.getGlobalZone().addLeaf(new Point(cp.getLocation()));
+                    }
+                    cp.refreshHotbar();
+                });
     }
 
     public static void close() {
@@ -117,29 +125,6 @@ public class GlobalZone extends DBEntity {
 
     public static Set<String> getLeafNames() {
         return globalLeafNames;
-    }
-
-    public static boolean removeLeafGlobal(String identifier) {
-        if (globalLeafNames.contains(identifier)) {
-            UUID uuid = globalLeafUuids.remove(identifier);
-            if (uuid != null) {
-                Entity entity = Bukkit.getEntity(uuid);
-                if (entity != null) entity.remove();
-            }
-            String[] args = identifier.split(":", 2);
-            globalZoneMap.get(args[0]).removeLeaf(args[1]);
-            globalLeafNames.remove(identifier);
-            return true;
-        }
-        return false;
-    }
-    
-    public static ZoneLeaf getLeafGlobal(String identifier) {
-        if (globalLeafNames.contains(identifier)) {
-            String[] args = identifier.split(":", 2);
-            return globalZoneMap.get(args[0]).getLeaf(args[1]);
-        }
-        return null;
     }
 
     public static boolean toggleScanner(CorePlayer cp) {
@@ -215,6 +200,21 @@ public class GlobalZone extends DBEntity {
         return false;
     }
 
+    public static int removeLeaves(Point pos, double distance) {
+        int removed = 0;
+        for (GlobalZone zone : globalZoneMap.values()) {
+            removed += zone.removeLeaf(pos, distance);
+        }
+        for (Entity entity : Core.DEFAULT_WORLD.getEntities()) {
+            if (((CraftEntity) entity).getHandle() instanceof ZoneLeafEntity &&
+                    entity.getLocation().distance(pos.toVector().toLocation(Core.DEFAULT_WORLD)) < distance - 0.1) {
+                entity.remove();
+                System.out.println("Destroyed leaf!");
+            }
+        }
+        return removed;
+    }
+
     public static GlobalZone getZone(String identifier) {
         return globalZoneMap.getOrDefault(identifier, WILDERNESS);
     }
@@ -235,10 +235,12 @@ public class GlobalZone extends DBEntity {
     @DBField private String name;
     @DBField private String description = "";
     private final Set<Dimension> borders = new HashSet<>();
+    private final Map<String, ZoneLeaf> leafIds = new HashMap<>();
     private final List<ZoneLeaf> leaves = new ArrayList<>();
-    private final Map<Position, Integer> leafPosHash = new HashMap<>();
+    private final Map<Point, Integer> leafPosHash = new HashMap<>();
     private final Set<UUID> leafUuids = new HashSet<>();
     private final Set<CorePlayer> players = new HashSet<>();
+    private int nextLeafId = -1;
 
     public GlobalZone() {
 
@@ -254,7 +256,8 @@ public class GlobalZone extends DBEntity {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             for (ZoneLeaf leaf : leaves) {
                 leafUuids.add(dropLeaf(this.identifier, leaf));
-                globalLeafNames.add(this.identifier + ":" + leaf.getName());
+                globalLeafNames.add(this.identifier + ":" + leaf.getId());
+                nextLeafId = Math.max(leaf.getId(), nextLeafId);
             }
         }, 20L);
     }
@@ -286,6 +289,7 @@ public class GlobalZone extends DBEntity {
         for (Document doc : list) {
             ZoneLeaf leaf = new ZoneLeaf(doc);
             leaves.add(leaf);
+            leafIds.put(String.valueOf(leaf.getId()), leaf);
             leafPosHash.put(leaf.getPos(), leaves.size() - 1);
         }
     }
@@ -332,58 +336,40 @@ public class GlobalZone extends DBEntity {
         return borders;
     }
 
-    public boolean isLeaf(Position pos) {
+    public boolean hasLeaf(Point pos) {
         return (leafPosHash.containsKey(pos));
     }
 
-    public boolean removeLeaf(Position pos) {
-        if (leafPosHash.containsKey(pos)) {
-            ZoneLeaf leaf = leaves.remove((int) leafPosHash.get(pos));
-            for (int i = leafPosHash.get(pos); i < leaves.size(); i++) {
-                leafPosHash.put(leaves.get(i).getPos(), i);
-            }
-            leafPosHash.remove(pos);
-            globalLeafNames.remove(this.identifier + ":" + leaf.getName());
-            saveZone(this);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean removeLeaf(String identifier) {
-        for (int i = 0; i < leaves.size(); i++) {
+    public int removeLeaf(Point pos, double distance) {
+        int removed = 0;
+        for (int i = leaves.size() - 1; i >= 0; i--) {
             ZoneLeaf leaf = leaves.get(i);
-            if (leaf.getName().equalsIgnoreCase(identifier)) {
-                globalLeafNames.remove(this.identifier + ":" + leaf.getName());
+            if (leaf.getPos().distance(pos) < distance) {
+                globalLeafNames.remove(this.identifier + ":" + leaf.getId());
                 leafPosHash.remove(leaf.getPos());
                 leaves.remove(i);
-                saveZone(this);
-                return true;
+                leafIds.remove(String.valueOf(i));
+                removed++;
             }
         }
-        return false;
-    }
-    
-    public ZoneLeaf getLeaf(String identifier) {
-        for (ZoneLeaf leaf : leaves) {
-            if (leaf.getName().equalsIgnoreCase(identifier)) {
-                return leaf;
-            }
+        if (removed > 0) {
+            saveZone(this);
         }
-        return null;
+        return removed;
     }
 
-    public boolean addLeaf(String identifier, Position pos) {
-        if (!leafPosHash.containsKey(pos)) {
-            ZoneLeaf leaf = new ZoneLeaf(identifier, pos);
-            leaves.add(leaf);
-            leafPosHash.put(pos, leaves.size() - 1);
-            globalLeafNames.add(this.identifier + ":" + identifier);
-            leafUuids.add(dropLeaf(this.identifier, leaf));
-            saveZone(this);
-            return true;
-        }
-        return false;
+    public ZoneLeaf addLeaf(Point pos) {
+        pos = pos.rounded(2);
+        if (hasLeaf(pos)) return null;
+
+        ZoneLeaf leaf = new ZoneLeaf(++nextLeafId, pos);
+        leaves.add(leaf);
+        leafIds.put(String.valueOf(leaf.getId()), leaf);
+        leafPosHash.put(pos, leaves.size() - 1);
+        globalLeafNames.add(this.identifier + ":" + leaf.getId());
+        leafUuids.add(dropLeaf(this.identifier, leaf));
+        saveZone(this);
+        return leaf;
     }
 
     public void clearLeaves(CorePlayer cp) {
@@ -404,6 +390,10 @@ public class GlobalZone extends DBEntity {
         return leaves;
     }
 
+    public Set<String> getLeafIds() {
+        return leafIds.keySet();
+    }
+
     public void addPlayer(CorePlayer cp) {
         players.add(cp);
     }
@@ -422,6 +412,10 @@ public class GlobalZone extends DBEntity {
             return ((GlobalZone) o).getIdentifier().equalsIgnoreCase(getIdentifier());
         }
         return false;
+    }
+
+    public ZoneLeaf getLeaf(String leafId) {
+        return leafIds.get(leafId);
     }
 
 }

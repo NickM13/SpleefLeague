@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
@@ -141,7 +142,7 @@ public class MobilityHookshot extends AbilityMobility {
         projectileStats.size = 0.5;
         projectileStats.noClip = true;
         projectileStats.bounces = 1;
-        projectileStats.customModelData = 12;
+        projectileStats.customModelDatas = Lists.newArrayList(12);
     }
 
     private HookshotProjectile hookshot = null;

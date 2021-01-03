@@ -1,6 +1,7 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.collect.Lists;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.GameUtils;
@@ -38,7 +39,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
         projectileStats.vSpread = 30;
         projectileStats.collidable = false;
         //projectileStats.hitKnockback = 1D;
-        projectileStats.customModelData = 1;
+        projectileStats.customModelDatas = Lists.newArrayList(1);
     }
 
     private static final int TICK_COUNT = 6;

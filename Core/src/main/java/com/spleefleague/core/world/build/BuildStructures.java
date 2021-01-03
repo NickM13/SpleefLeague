@@ -3,6 +3,7 @@ package com.spleefleague.core.world.build;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 
@@ -16,6 +17,7 @@ public class BuildStructures {
     
     private static final SortedMap<String, BuildStructure> STRUCTURES = new TreeMap<>();
     private static MongoCollection<Document> fieldCol;
+    private static final BuildStructure EMPTY_STRUCTURE = new BuildStructure();
     
     public static void init() {
         fieldCol = Core.getInstance().getPluginDB().getCollection("Structures");
@@ -75,8 +77,11 @@ public class BuildStructures {
         return false;
     }
     
-    public static BuildStructure get(String fieldName) {
-        return STRUCTURES.get(fieldName);
+    public static BuildStructure get(String structureName) {
+        if (STRUCTURES.containsKey(structureName))
+            return STRUCTURES.get(structureName);
+        CoreLogger.logWarning("Attempted to retrieve non-existing structure {" + structureName + "}", null);
+        return EMPTY_STRUCTURE;
     }
 
     public static List<BuildStructure> getAll(String startStr) {

@@ -449,7 +449,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                         if (frozen) {
                             e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
                                     e.getFrom().getX(),
-                                    e.getFrom().getY(),
+                                    e.getTo().getY(),
                                     e.getFrom().getZ(),
                                     e.getTo().getYaw(),
                                     e.getTo().getPitch()));
@@ -1015,6 +1015,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         frozen = false;
         for (BattlePlayer bp : battlers.values()) {
             bp.getCorePlayer().refreshHotbar();
+            bp.respawn();
         }
     }
     

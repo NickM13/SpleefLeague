@@ -1,6 +1,7 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameUtils;
@@ -97,7 +98,7 @@ public class OffensiveBoomerang extends AbilityOffensive {
         projectileStats.collidable = false;
         projectileStats.noClip = true;
         projectileStats.bounces = 1;
-        projectileStats.customModelData = 12;
+        projectileStats.customModelDatas = Lists.newArrayList(12);
     }
 
     @Override

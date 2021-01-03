@@ -31,7 +31,7 @@ public class ClassicSpleggArena {
                 .setName(mainColor + "Splegg Versus")
                 .setDescription("Test your might against another player in this 1v1 competition of precision and movement." +
                         "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.VERSUS.getBattleMode()).getPlaying())
-                .setDisplayItem(Material.EGG)
+                .setDisplayItem(Material.EGG, 1)
                 .createLinkedContainer("Splegg Versus");
 
         menuItem.getLinkedChest()
@@ -60,7 +60,7 @@ public class ClassicSpleggArena {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
                 .setName("&6&lSplegg Versus")
                 .setDescription("View the top players of Splegg Versus!")
-                .setDisplayItem(Material.EGG)
+                .setDisplayItem(Material.EGG, 1)
                 .setLinkedContainer(leaderboard.createMenuContainer());
 
         LeaderboardMenu.getItem()

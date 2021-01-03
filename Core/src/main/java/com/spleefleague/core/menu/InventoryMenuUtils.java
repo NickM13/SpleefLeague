@@ -34,11 +34,13 @@ public class InventoryMenuUtils {
         return LOCKED_ICON;
     }
     
-    public static enum MenuIcon {
+    public enum MenuIcon {
         LOCKED(createCustomItem(Material.DIAMOND_AXE, 12)),
-        NEXT(createCustomItem(Material.DIAMOND_AXE, 8)),
-        PREVIOUS(createCustomItem(Material.DIAMOND_AXE, 9)),
-        RETURN(createCustomItem(Material.DIAMOND_AXE, 9));
+        PREVIOUS_GRAY(createCustomItem(Material.GRAY_DYE, 1)),
+        NEXT_GRAY(createCustomItem(Material.GRAY_DYE, 2)),
+        PREVIOUS(createCustomItem(Material.LIME_DYE, 1)),
+        NEXT(createCustomItem(Material.LIME_DYE, 2)),
+        RETURN(createCustomItem(Material.RED_DYE, 1));
         
         ItemStack iconItem;
         

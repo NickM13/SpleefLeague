@@ -40,7 +40,7 @@ public class RankCommand extends CoreCommand {
                              @Nullable String displayName) {
         if (displayName == null) displayName = "";
         if (Ranks.setRankName(rank, displayName)) {
-            success(sender, "Rank display name changed");
+            success(sender, "Rank display name set to " + displayName);
         }
     }
 
@@ -49,9 +49,9 @@ public class RankCommand extends CoreCommand {
                                @LiteralArg("edit") String l1,
                                @OptionArg(listName = "ranks") String rank,
                                @LiteralArg("ladder") String l2,
-                               @HelperArg("<ladder>") @NumberArg(minValue = -1000, maxValue = 1000) Integer ladder) {
+                               @HelperArg("<ladder>") @NumberArg(minValue = -10000, maxValue = 10000) Integer ladder) {
         if (Ranks.setRankLadder(rank, ladder)) {
-            success(sender, "Rank ladder value changed");
+            success(sender, "Rank ladder value set to " + ladder);
         }
     }
 
@@ -62,7 +62,7 @@ public class RankCommand extends CoreCommand {
                               @LiteralArg("color") String l2,
                               @EnumArg ChatColor color) {
         if (Ranks.setRankColor(rank, org.bukkit.ChatColor.valueOf(color.name()))) {
-            success(sender, "Rank color changed");
+            success(sender, "Rank color set to " + color.name());
         }
     }
 
@@ -73,8 +73,21 @@ public class RankCommand extends CoreCommand {
                               @LiteralArg("hasOp") String l2,
                               Boolean hasOp) {
         if (Ranks.setRankOp(rank, hasOp)) {
-            success(sender, "Rank color changed");
+            success(sender, "Rank hasOp set to " + hasOp);
         }
+    }
+
+    @CommandAnnotation
+    public void rankInfo(CorePlayer sender,
+                         @LiteralArg("info") String l1,
+                         @OptionArg(listName = "ranks") String rankName) {
+        Rank rank = Ranks.getRank(rankName);
+        String formatted = "{ identifier: " + rank.getIdentifier() + ", " +
+                "name: " + rank.getDisplayName() + ", " +
+                "ladder: " + rank.getLadder() + ", " +
+                "color: " + rank.getColor().name() + ", " +
+                "hasOp: " + rank.getHasOp() + " }";
+        success(sender, formatted);
     }
 
 }

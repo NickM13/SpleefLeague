@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.mobility;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
@@ -56,7 +57,7 @@ public class MobilityEnderPearl extends AbilityMobility {
 
     static {
         pearlStats.entityClass = EnderPearlProjectile.class;
-        pearlStats.customModelData = 13;
+        pearlStats.customModelDatas = Lists.newArrayList(13);
         pearlStats.fireRange = 6D;
     }
 

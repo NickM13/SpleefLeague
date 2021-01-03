@@ -726,7 +726,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         }
         return false;
     }
-    
+
+    private static final FakeBlock AIR = new FakeBlock(Material.AIR.createBlockData());
+
     /**
      * Send a fake block packet to all players
      *
@@ -734,13 +736,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * @return Success
      */
     public boolean updateBlock(BlockPosition pos) {
-        WrappedBlockData wbd;
-        FakeBlock fb = fakeBlocks.get(pos);
+        FakeBlock fb = fakeBlocks.getOrDefault(pos, AIR);
         ChunkCoord chunkCoord = ChunkCoord.fromBlockPos(pos);
         if (!chunkChanges.containsKey(chunkCoord)) {
             chunkChanges.put(chunkCoord, new HashMap<>());
         }
-        chunkChanges.get(chunkCoord).put((short) ((pos.getX() & 15) + (pos.getZ() & 15) + (pos.getY())), fb);
+        chunkChanges.get(chunkCoord).put((short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + ((pos.getY()))), fb);
         return fb != null;
     }
     
@@ -760,7 +761,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 return fakeBlock.getBlockData();
             }
         }
-        return cp.getLocation().getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getBlockData();
+        return Objects.requireNonNull(cp.getLocation().getWorld()).getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getBlockData();
     }
 
     public void updateAll(CorePlayer cp) {

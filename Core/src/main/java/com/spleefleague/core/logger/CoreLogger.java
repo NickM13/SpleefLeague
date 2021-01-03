@@ -23,6 +23,10 @@ public class CoreLogger {
         Core.getInstance().getLogger().log(Level.SEVERE, msg, throwable);
     }
 
+    public static void logWarning(@Nullable String msg) {
+        Core.getInstance().getLogger().log(Level.WARNING, msg);
+    }
+
     public static void logWarning(@Nullable String msg, @Nullable Throwable throwable) {
         if (throwable != null)
             Core.getInstance().getLogger().log(Level.WARNING, msg, throwable);

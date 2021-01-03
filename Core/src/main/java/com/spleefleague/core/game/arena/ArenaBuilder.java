@@ -20,7 +20,7 @@ public class ArenaBuilder {
                 .setName("New Arena")
                 .setDescription("Click to Create a New Arena")
                 .setDisplayItem(Material.STICKY_PISTON)
-                .setAction(cp2 -> cp2.setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
+                .setAction(cp2 -> cp2.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                         .setTitle("Arena Name")
                         .setFailText("Name in use or invalid!")
                         .setSuccessFunc(str -> Arenas.get(str) == null)
@@ -28,7 +28,7 @@ public class ArenaBuilder {
                             Arena arena = Arenas.createArena(str, str);
                             Arenas.addArenaMode(arena.getName(), BattleMode.get(modeName));
                         })
-                        .setParentContainer((InventoryMenuContainerChest) cp2.getInventoryMenuContainer())))
+                        .setParentContainer((InventoryMenuContainerChest) cp2.getMenu().getInventoryMenuContainer())))
                 .setCloseOnAction(false);
     }
     
@@ -37,7 +37,7 @@ public class ArenaBuilder {
                 .setName("Add Existing Arena")
                 .setDescription("Click to add an existing arena to this mode")
                 .setDisplayItem(Material.STICKY_PISTON)
-                .setAction(cp -> cp.setInventoryMenuContainer(InventoryMenuAPI.createContainer()
+                .setAction(cp -> cp.getMenu().setInventoryMenuContainer(InventoryMenuAPI.createContainer()
                         .setTitle("Add Arena: " + modeName)
                         .setOpenAction((container, cp2) -> {
                             container.clearUnsorted();
@@ -48,10 +48,10 @@ public class ArenaBuilder {
                                         .setDescription("Click to add this arena")
                                         .setAction(cp3 -> Arenas.addArenaMode(arena.getName(), BattleMode.get(modeName)))
                                         .setCloseOnAction(false)
-                                        .setParent((InventoryMenuContainerChest) cp2.getInventoryMenuContainer()));
+                                        .setParent((InventoryMenuContainerChest) cp2.getMenu().getInventoryMenuContainer()));
                             }
                         })
-                        .setParent((InventoryMenuContainerChest) cp.getInventoryMenuContainer())))
+                        .setParent((InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer())))
                 .setCloseOnAction(false);
     }
     
@@ -66,14 +66,14 @@ public class ArenaBuilder {
                 .setName("Rename")
                 .setDescription("Click to Rename Arena")
                 .setDisplayItem(Material.STICKY_PISTON)
-                .setAction(cp2 -> cp2.setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
+                .setAction(cp2 -> cp2.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                         .setTitle("Rename " + arena.getName())
                         .setFailText("Name in use or invalid!")
                         .setSuccessFunc(str -> Arenas.get(str) == null)
                         .setAction((cp3, str) -> {
                             Arenas.renameArena(arena.getName(), str);
                         })
-                        .setParentContainer((InventoryMenuContainerChest) cp2.getInventoryMenuContainer())))
+                        .setParentContainer((InventoryMenuContainerChest) cp2.getMenu().getInventoryMenuContainer())))
                 .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
@@ -81,7 +81,7 @@ public class ArenaBuilder {
                         .setName("Remove Borders")
                         .setDescription("")
                         .setDisplayItem(Material.PAPER)
-                        .setAction(cp -> cp.setInventoryMenuChest(InventoryMenuAPI.createContainer()
+                        .setAction(cp -> cp.getMenu().setInventoryMenuChest(InventoryMenuAPI.createContainer()
                                 .setTitle(arena.getName() + " Borders")
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();
@@ -105,7 +105,7 @@ public class ArenaBuilder {
                         .setName("Remove Goals")
                         .setDescription("")
                         .setDisplayItem(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)
-                        .setAction(cp -> cp.setInventoryMenuChest(InventoryMenuAPI.createContainer()
+                        .setAction(cp -> cp.getMenu().setInventoryMenuChest(InventoryMenuAPI.createContainer()
                                 .setTitle(arena.getName() + " Goals")
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();
@@ -129,7 +129,7 @@ public class ArenaBuilder {
                         .setName("Remove Checkpoints")
                         .setDescription("")
                         .setDisplayItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
-                        .setAction(cp -> cp.setInventoryMenuChest(InventoryMenuAPI.createContainer()
+                        .setAction(cp -> cp.getMenu().setInventoryMenuChest(InventoryMenuAPI.createContainer()
                                 .setTitle(arena.getName() + " Checkpoints")
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();
@@ -153,7 +153,7 @@ public class ArenaBuilder {
                         .setName("Remove Structures")
                         .setDescription("")
                         .setDisplayItem(Material.DARK_PRISMARINE_STAIRS)
-                        .setAction(cp -> cp.setInventoryMenuChest(InventoryMenuAPI.createContainer()
+                        .setAction(cp -> cp.getMenu().setInventoryMenuChest(InventoryMenuAPI.createContainer()
                                 .setTitle(arena.getName() + " Structures")
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();
@@ -174,7 +174,7 @@ public class ArenaBuilder {
                         .setName("Remove Spawns")
                         .setDescription("")
                         .setDisplayItem(Material.RED_BED)
-                        .setAction(cp -> cp.setInventoryMenuChest(InventoryMenuAPI.createContainer()
+                        .setAction(cp -> cp.getMenu().setInventoryMenuChest(InventoryMenuAPI.createContainer()
                                 .setTitle(arena.getName() + " Spawns")
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();

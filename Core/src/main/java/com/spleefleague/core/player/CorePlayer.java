@@ -19,15 +19,9 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
 import com.spleefleague.core.io.converter.LocationConverter;
-import com.spleefleague.core.menu.InventoryMenuContainer;
-import com.spleefleague.core.menu.InventoryMenuContainerAnvil;
-import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.menu.InventoryMenuDialog;
-import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
@@ -109,10 +103,6 @@ public class CorePlayer extends RatedPlayer {
     // Expiration time for url access (/url <player>)
     private long urlTime;
 
-    // Current inventory menu page
-    private final Map<String, Object> menuTags = new HashMap<>();
-    // Current inventory menu
-    private InventoryMenuContainer inventoryMenuContainer;
     // Current selected chat channel to send messages in
     private ChatChannel chatChannel;
     
@@ -137,6 +127,8 @@ public class CorePlayer extends RatedPlayer {
     private final PlayerRatings ratings = new PlayerRatings();
 
     private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
+
+    private final CorePlayerMenu menu = new CorePlayerMenu(this);
 
     /**
      * Constructor for CorePlayer
@@ -976,139 +968,8 @@ public class CorePlayer extends RatedPlayer {
         return chatGroups.values();
     }
 
-    public void addInvSwap() {
-        invSwap++;
-    }
-
-    private int invSwap = 0;
-    /**
-     * Set player's current InventoryMenuContainer
-     *
-     * @param inventoryMenuChest InventoryMenuContainer
-     * @param initialize Should Call OpenFunction
-     */
-    public void setInventoryMenuChest(InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
-        if (inventoryMenuChest != null) {
-            invSwap++;
-            menuTags.put("page", 0);
-            ItemStack item = getPlayer().getItemOnCursor();
-            getPlayer().setItemOnCursor(null);
-            if (initialize) inventoryMenuChest.open(this);
-            else            inventoryMenuChest.refreshInventory(this);
-            getPlayer().setItemOnCursor(item);
-            this.inventoryMenuContainer = inventoryMenuChest;
-        } else if (invSwap <= 0) {
-            this.inventoryMenuContainer = null;
-            this.menuTags.clear();
-        } else {
-            invSwap--;
-        }
-    }
-    
-    public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {
-        invSwap++;
-        ItemStack item = getPlayer().getItemOnCursor();
-        getPlayer().getInventory().addItem(item);
-        getPlayer().setItemOnCursor(null);
-        inventoryMenuAnvil.open(this);
-        this.inventoryMenuContainer = inventoryMenuAnvil;
-    }
-    
-    public void setInventoryMenuContainer(InventoryMenuContainer inventoryMenuContainer) {
-        if (inventoryMenuContainer instanceof InventoryMenuContainerAnvil) {
-            setInventoryMenuAnvil((InventoryMenuContainerAnvil) inventoryMenuContainer);
-        } else if (inventoryMenuContainer instanceof InventoryMenuContainerChest) {
-            setInventoryMenuChest((InventoryMenuContainerChest) inventoryMenuContainer, true);
-        }
-    }
-    
-    private InventoryMenuDialog inventoryMenuDialog = null;
-    private int nextDialog;
-    
-    public void setInventoryMenuDialog(InventoryMenuDialog inventoryMenuDialog) {
-        this.inventoryMenuDialog = inventoryMenuDialog;
-        nextDialog = 0;
-        openNextDialog();
-    }
-
-    public void openNextDialog() {
-        if (inventoryMenuDialog != null) {
-            if (inventoryMenuDialog.openNextContainer(this, nextDialog)) {
-                nextDialog++;
-            }
-        }
-    }
-    
-    /**
-     * Set player's current InventoryMenuContainer based on linked container of item
-     *
-     * @param inventoryMenuItem InventoryMenuItem
-     */
-    public void setInventoryMenuItem(InventoryMenuItem inventoryMenuItem) {
-        if (inventoryMenuItem != null) {
-            invSwap++;
-            menuTags.put("page", 0);
-            if (inventoryMenuItem.hasLinkedContainer()) {
-                ItemStack item = getPlayer().getItemOnCursor();
-                getPlayer().setItemOnCursor(null);
-                inventoryMenuItem.getLinkedChest().open(this);
-                getPlayer().setItemOnCursor(item);
-                inventoryMenuContainer = inventoryMenuItem.getLinkedChest();
-            } else {
-                getPlayer().closeInventory();
-                inventoryMenuContainer = null;
-            }
-        } else {
-            getPlayer().closeInventory();
-            inventoryMenuContainer = null;
-            menuTags.clear();
-        }
-    }
-
-    /**
-     * Updates the player's current inventoryMenuContainer
-     * For refreshing/page change
-     */
-    public void refreshInventoryMenuContainer() {
-        if (inventoryMenuContainer != null
-                && inventoryMenuContainer instanceof InventoryMenuContainerChest) {
-            invSwap++;
-            InventoryMenuContainerChest container = (InventoryMenuContainerChest) inventoryMenuContainer;
-            ItemStack itemStack = getPlayer().getItemOnCursor();
-            getPlayer().setItemOnCursor(null);
-            container.refreshInventory(this);
-            getPlayer().setItemOnCursor(itemStack);
-            inventoryMenuContainer = container;
-        }
-    }
-
-    /**
-     * @return Current InventoryMenuContainer
-     */
-    public InventoryMenuContainer getInventoryMenuContainer() {
-        return inventoryMenuContainer;
-    }
-    
-    /**
-     * @param <T> ? extends Collectible
-     * @param name Menu Tag Identifier
-     * @param clazz Class of T
-     * @return Current Menu Tags
-     */
-    public <T> T getMenuTag(String name, Class<T> clazz) {
-        if (menuTags.containsKey(name)
-                && clazz.isAssignableFrom(menuTags.get(name).getClass())) {
-            return clazz.cast(menuTags.get(name));
-        }
-        return null;
-    }
-    
-    public <T> void setMenuTag(String name, T obj) {
-        menuTags.put(name, obj);
-    }
-    
-    public boolean hasMenuTag(String name) {
-        return menuTags.containsKey(name);
+    public CorePlayerMenu getMenu() {
+        return menu;
     }
 
     /**

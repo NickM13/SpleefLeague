@@ -369,7 +369,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     }
 
     /**
-     * When a player leaves save their DBPlayer data
+     * Called when a player disconnects from the server
      *
      * @param event Event
      */

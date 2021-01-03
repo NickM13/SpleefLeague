@@ -10,19 +10,18 @@ import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Iterator;
 import java.util.List;
 
 public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
 
     String zoneName;
-    String leafName;
+    int leafId;
 
     public ZoneLeafEntity(net.minecraft.server.v1_15_R1.World world, ZoneLeaf leaf, String zoneName) {
         super(net.minecraft.server.v1_15_R1.EntityTypes.ITEM, world);
         this.zoneName = zoneName;
-        this.leafName = leaf.getName();
-        setPosition(leaf.getPos().getX(), leaf.getPos().getY(), leaf.getPos().getZ());
+        this.leafId = leaf.getId();
+        setPosition(leaf.getPos().x, leaf.getPos().y, leaf.getPos().z);
         setPickupDelay(0);
         net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = (CraftItemStack.asNMSCopy(new ItemStack(Material.HONEYCOMB)));
         nmsItemStack.setCount(1);
@@ -30,13 +29,9 @@ public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
         setNoGravity(true);
 
         double radius = 1;
-        List<EntityItem> list = this.world.a(EntityItem.class, this.getBoundingBox().grow(radius, radius, radius), (entityitemx) -> {
-            return entityitemx != this;
-        });
-        Iterator iterator = list.iterator();
+        List<EntityItem> list = this.world.a(EntityItem.class, this.getBoundingBox().grow(radius, radius, radius), (entityitemx) -> entityitemx != this);
 
-        while(iterator.hasNext()) {
-            EntityItem entityitem = (EntityItem) iterator.next();
+        for (EntityItem entityitem : list) {
             entityitem.die();
         }
     }
@@ -56,7 +51,7 @@ public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
     @Override
     public void pickup(net.minecraft.server.v1_15_R1.EntityHuman entityhuman) {
         CorePlayer cp = Core.getInstance().getPlayers().get(entityhuman.getUniqueID());
-        if (!cp.canBuild() && cp.getCollectibles().addLeaf(zoneName + ":" + leafName)) {
+        if (!cp.canBuild() && cp.getCollectibles().addLeaf(zoneName + ":" + leafId)) {
             if (cp.getCollectibles().getLeafCount(zoneName) >= GlobalZone.getZone(zoneName).getLeaves().size()) {
                 cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1.122462f);
                 cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1.334840f);
@@ -72,7 +67,7 @@ public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
     }
 
     public String getFullName() {
-        return zoneName + ":" + leafName;
+        return zoneName + ":" + leafId;
     }
 
 }

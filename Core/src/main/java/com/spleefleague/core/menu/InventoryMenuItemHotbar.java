@@ -193,7 +193,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItem {
     @Override
     public void callAction(CorePlayer cp) {
         if (getLinkedChest() != null) {
-            cp.setInventoryMenuChest(getLinkedChest(), true);
+            cp.getMenu().setInventoryMenuChest(getLinkedChest(), true);
         }
         super.callAction(cp);
     }

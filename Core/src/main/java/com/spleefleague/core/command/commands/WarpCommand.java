@@ -46,7 +46,7 @@ public class WarpCommand extends CoreCommand {
     
     @CommandAnnotation
     public void warp(CorePlayer sender) {
-        sender.setInventoryMenuChest(Warp.createMenuContainer(null), true);
+        sender.getMenu().setInventoryMenuChest(Warp.createMenuContainer(null), true);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
@@ -28,7 +29,7 @@ public class OffensiveStarfall extends AbilityOffensive {
     private static final ProjectileStats starStats = new ProjectileStats();
 
     static {
-        starStats.customModelData = 1;
+        starStats.customModelDatas = Lists.newArrayList(1);
         starStats.fireRange = 7D;
         starStats.gravity = false;
         starStats.count = 1;

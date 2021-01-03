@@ -108,7 +108,7 @@ public class VendorCommand extends CoreCommand {
             menu.addMenuItem(typeItem);
         }
         
-        sender.setInventoryMenuChest(menu, true);
+        sender.getMenu().setInventoryMenuChest(menu, true);
     }
     
     @CommandAnnotation

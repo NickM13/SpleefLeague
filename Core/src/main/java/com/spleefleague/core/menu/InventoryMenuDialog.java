@@ -55,22 +55,22 @@ public class InventoryMenuDialog {
         if (id < dialogs.size()) {
             Dialog dialog = dialogs.get(id);
             if (dialog instanceof DialogText) {
-                cp.addInvSwap();
+                cp.getMenu().addInvSwap();
                 new AnvilGUI.Builder()
                         .onClose(player -> {
                             CorePlayer cp2 = Core.getInstance().getPlayers().get(player);
                             Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                                if (cp2.hasMenuTag(dialog.tagName)) {
-                                    cp2.openNextDialog();
+                                if (cp2.getMenu().hasMenuTag(dialog.tagName)) {
+                                    cp2.getMenu().openNextDialog();
                                 } else {
-                                    cp2.setInventoryMenuChest(parentContainer, false);
+                                    cp2.getMenu().setInventoryMenuChest(parentContainer, false);
                                 }
                             }, 1L);
                         })
                         .onComplete((player, str) -> {
                             CorePlayer cp2 = Core.getInstance().getPlayers().get(player);
                             if (((DialogText) dialog).successFun.apply(str)) {
-                                cp2.setMenuTag(dialog.tagName, str);
+                                cp2.getMenu().setMenuTag(dialog.tagName, str);
                                 return AnvilGUI.Response.close();
                             } else {
                                 return AnvilGUI.Response.text("Invalid");
