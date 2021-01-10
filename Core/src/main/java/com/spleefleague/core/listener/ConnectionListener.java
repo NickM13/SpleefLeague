@@ -90,7 +90,7 @@ public class ConnectionListener implements Listener {
     
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
         //if (cp.isVanished()) {
             event.setQuitMessage("");
         //}

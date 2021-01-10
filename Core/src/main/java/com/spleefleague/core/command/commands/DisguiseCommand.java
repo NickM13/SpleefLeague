@@ -1,12 +1,5 @@
 package com.spleefleague.core.command.commands;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.spleefleague.core.Core;
@@ -36,7 +29,7 @@ public class DisguiseCommand extends CoreCommand {
                 texture.value,
                 texture.signature));
 
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
             cp2.getPlayer().hidePlayer(Core.getInstance(), sender.getPlayer());
             cp2.getPlayer().showPlayer(Core.getInstance(), sender.getPlayer());
         }

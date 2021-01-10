@@ -61,8 +61,7 @@ public class BuildStructures {
         if (!player.isInGlobal()) {
             return 3;
         }
-        BuildWorld.createBuildWorld(player, structure);
-        return 0;
+        return BuildWorld.createBuildWorld(player, structure) ? 0 : 4;
     }
     
     public static boolean destroy(String structureName) {

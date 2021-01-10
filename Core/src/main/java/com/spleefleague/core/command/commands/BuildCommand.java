@@ -108,6 +108,7 @@ public class BuildCommand extends CoreCommand {
             case 1: error(sender, "Structure does not exist!");             break;
             case 2: error(sender, "Structure is under construction!");      break;
             case 3: error(sender, "You're already in a fake world!");       break;
+            case 4: error(sender, "Structure would overlap with an existing block!"); break;
         }
     }
     

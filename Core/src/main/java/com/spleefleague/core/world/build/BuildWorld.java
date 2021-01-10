@@ -37,9 +37,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         //SelectTool.init();
     }
     
-    public static void createBuildWorld(CorePlayer corePlayer, BuildStructure structure) {
+    public static boolean createBuildWorld(CorePlayer corePlayer, BuildStructure structure) {
         BuildWorld buildWorld = new BuildWorld(corePlayer.getLocation().getWorld(), corePlayer, structure);
+        if (buildWorld.didLoadFail()) {
+            return false;
+        }
         BUILD_WORLDS.add(buildWorld);
+        return true;
     }
     
     /**
@@ -105,9 +109,12 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         this.structure = structure;
         this.structure.setUnderConstruction(this);
         for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
-            setBlock(entry.getKey().add(origin), entry.getValue().getBlockData());
+            if (setBlock(entry.getKey().add(origin), entry.getValue().getBlockData())) {
+                loadFail = true;
+                break;
+            }
         }
-        if (lowest != null) {
+        if (!loadFail && lowest != null) {
             if (lowest.getY() + origin.getY() < 0) {
                 loadFail = true;
             }
@@ -117,6 +124,8 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         }
         if (!loadFail) {
             addPlayer(owner);
+        } else {
+            this.structure.setUnderConstruction(null);
         }
     }
 

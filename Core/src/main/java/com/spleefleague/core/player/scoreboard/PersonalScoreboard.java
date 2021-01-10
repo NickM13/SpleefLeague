@@ -16,10 +16,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -44,7 +41,7 @@ public class PersonalScoreboard {
         
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
             Objects.requireNonNull(scoreboard.getTeam(cp2.getRank().getIdentifierShort())).addEntry(cp2.getName());
         }
 
@@ -65,6 +62,12 @@ public class PersonalScoreboard {
         if (scoreboards.containsKey(cp.getUniqueId())) {
             scoreboards.remove(cp.getUniqueId()).close();
         }
+    }
+
+    public static void refreshPlayers() {
+        scoreboards.forEach((uuid, sb) -> {
+            sb.getTabList().refreshPlayers();
+        });
     }
     
     public static void updatePlayerRank(CorePlayer cp) {
@@ -162,6 +165,7 @@ public class PersonalScoreboard {
 
     public void update() {
         tabList.updateHeaderFooter();
+        tabList.updatePlayerList();
     }
     
 }

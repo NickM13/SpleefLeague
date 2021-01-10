@@ -27,6 +27,7 @@ public class TeleportCommand extends CoreCommand {
         sender.teleport(cp.getLocation());
         success(sender, "Teleported to " + cp.getDisplayName());
     }
+
     @CommandAnnotation
     public void tp(CommandSender sender, CorePlayer cp1, CorePlayer cp2) {
         cp1.teleport(cp2.getLocation());

@@ -58,7 +58,7 @@ public class DebugCommand extends CoreCommand {
                 soundStr = new TextComponent(sound.toString().toLowerCase().replaceFirst("entity_", "").replaceFirst("block_", "").replaceFirst("item_", "").replaceFirst("ui_", "").replaceFirst("music_", "").replaceAll("_", "."));
                 soundStr.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to play sound '" + sound.toString() + "' at pitch " + pitch).create()));
                 soundStr.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/debug play " + pitch + " " + sound.toString()));
-                soundStr.setColor(Chat.getColor("DEFAULT").asBungee());
+                soundStr.setColor(org.bukkit.ChatColor.valueOf(Chat.getColor("DEFAULT").name()).asBungee());
                 message.addExtra(soundStr);
                 i++;
                 if (i > split) {

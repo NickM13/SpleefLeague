@@ -6,6 +6,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshAll;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.game.queue.QueueManager;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
@@ -15,6 +16,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author NickM13
@@ -24,7 +26,12 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onPostLogin(PostLoginEvent event) {
-        ProxyCore.getInstance().sendPacket(new PacketConnection(PacketConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId()));
+        PacketConnection packetConnection = new PacketConnection(PacketConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId());
+        ProxyCore.getInstance().sendPacket(packetConnection);
+
+        ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            ProxyCore.getInstance().sendPacket(event.getPlayer().getUniqueId(), new PacketConnection(PacketConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
+        }, 1000, TimeUnit.MILLISECONDS);
 
         ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
     }

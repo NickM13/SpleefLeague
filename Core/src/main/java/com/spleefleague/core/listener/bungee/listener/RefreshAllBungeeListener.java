@@ -5,6 +5,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.manager.BattleManager;
 import com.spleefleague.core.listener.bungee.BungeeListener;
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshAll;
@@ -24,6 +25,7 @@ public class RefreshAllBungeeListener extends BungeeListener<PacketRefreshAll> {
             manager.setPlaying(qci.playing);
             manager.setSpectators(qci.spectators);
         }
+        PersonalScoreboard.refreshPlayers();
     }
 
 }

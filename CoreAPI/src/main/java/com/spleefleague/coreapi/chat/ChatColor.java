@@ -30,6 +30,7 @@ public enum ChatColor {
     STRIKETHROUGH('m', "strikethrough"),
     UNDERLINE('n', "underline"),
     ITALIC('o', "italic"),
+    UNDO('u', "undo"),
     RESET('r', "reset");
 
     public static final char COLOR_CHAR = '§';

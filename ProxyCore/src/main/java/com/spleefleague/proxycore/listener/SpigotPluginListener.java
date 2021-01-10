@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class SpigotPluginListener implements Listener {
 
-    private Map<PacketType.Spigot, SpigotListener<?>> registeredListeners = new HashMap();
+    private final Map<PacketType.Spigot, SpigotListener<?>> registeredListeners = new HashMap();
 
     public SpigotPluginListener() {
         ProxyCore.getInstance().getProxy().registerChannel("slcore:spigot");
@@ -32,6 +32,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.CHALLENGE, new ChallengeSpigotListener());
         registeredListeners.put(PacketType.Spigot.CHAT, new ChatSpigotListener());
         registeredListeners.put(PacketType.Spigot.FORCE_START, new ForceStartSpigotListener());
+        registeredListeners.put(PacketType.Spigot.FRIEND, new FriendSpigotListener());
         registeredListeners.put(PacketType.Spigot.PARTY_CREATE, new PartyCreateSpigotListener());
         registeredListeners.put(PacketType.Spigot.PARTY_JOIN, new PartyJoinSpigotListener());
         registeredListeners.put(PacketType.Spigot.PARTY_LEAVE, new PartyLeaveSpigotListener());

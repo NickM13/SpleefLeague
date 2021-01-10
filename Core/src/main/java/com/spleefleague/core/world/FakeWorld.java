@@ -11,7 +11,6 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
@@ -25,8 +24,6 @@ import org.bukkit.util.BoundingBox;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author NickM13
@@ -44,7 +41,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         GlobalWorld.init();
 
         Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            Core.getInstance().getPlayers().getOnline().forEach(cp -> {
+            Core.getInstance().getPlayers().getAllHere().forEach(cp -> {
                 if (FakeUtils.isOnGround(cp)) {
                     net.minecraft.server.v1_15_R1.Entity entity = ((CraftEntity) cp.getPlayer()).getHandle();
                     entity.setMot(entity.getMot().getX(), 0, entity.getMot().getZ());
@@ -310,7 +307,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     protected final void applyVisibility(CorePlayer cp) {
         // Hide and hide from all players not in this GameWorld
         if (cp.getOnlineState() != DBPlayer.OnlineState.HERE) return;
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
             if (!cp.equals(cp2)) {
                 if (!playerMap.containsKey(cp2.getPlayer().getUniqueId())) {
                     cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());

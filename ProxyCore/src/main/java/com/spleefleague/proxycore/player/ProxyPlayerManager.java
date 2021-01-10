@@ -30,7 +30,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerJoin(ProxiedPlayer pp) {
         load(pp);
-        ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY +  " is now online.");
+        //ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY +  " is now online.");
     }
 
     private void load(ProxiedPlayer pp) {
@@ -57,7 +57,7 @@ public class ProxyPlayerManager {
 
     public void onPlayerQuit(ProxiedPlayer pp) {
         ProxyCore.getInstance().getPlayers().get(pp.getUniqueId()).setBattleContainer(null);
-        ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
+        //ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
         players.remove(pp.getUniqueId());
     }
 

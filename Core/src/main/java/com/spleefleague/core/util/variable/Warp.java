@@ -145,7 +145,7 @@ public class Warp extends DBEntity {
             warpstr = new TextComponent(warp.getIdentifier());
             warpstr.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to warp to '" + warpstr.getText() + "'").create()));
             warpstr.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warp " + warp.getIdentifier()));
-            warpstr.setColor(Chat.getColor("DEFAULT").asBungee());
+            warpstr.setColor(ChatColor.valueOf(Chat.getColor("DEFAULT").name()).asBungee());
             message.addExtra(warpstr);
         }
         

@@ -92,7 +92,7 @@ public class GlobalZone extends DBEntity {
                     }
                 }
             }
-            for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
+            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
                 cp.setGlobalZone(GlobalZone.getZone(new Point(cp.getLocation())));
             }
         }, 20L, 20L);

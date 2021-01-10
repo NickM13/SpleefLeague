@@ -130,9 +130,11 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     public void initCommands() {
         Core.getInstance().addCommand(new AffixCommand());
         Core.getInstance().addCommand(new ClassicSpleefCommand());
+        Core.getInstance().addCommand(new MultiSpleefCommand());
         Core.getInstance().addCommand(new PowerSpleefCommand());
         Core.getInstance().addCommand(new ShovelCommand());
         Core.getInstance().addCommand(new SpleefCommand());
+        Core.getInstance().addCommand(new TeamSpleefCommand());
     }
     
     /**

@@ -31,7 +31,7 @@ public class SPingCommand extends CoreCommand {
     
     @CommandAnnotation
     public void sping(CorePlayer sender) {
-        List<CorePlayer> players = Lists.newArrayList(Core.getInstance().getPlayers().getOnline());
+        List<CorePlayer> players = Lists.newArrayList(Core.getInstance().getPlayers().getAllHere());
         players.sort(Comparator.comparingInt(CorePlayer::getPing));
         
         sender.sendMessage(ChatUtils.centerChat(ChatColor.AQUA + "[" + ChatColor.GOLD + " Everyone's Ping " + ChatColor.AQUA + "]"));

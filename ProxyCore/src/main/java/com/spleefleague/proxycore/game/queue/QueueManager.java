@@ -21,29 +21,31 @@ import java.util.concurrent.TimeUnit;
 public class QueueManager {
 
     private static final Map<String, QueueContainer> queueContainerMap = new HashMap<>();
-    private static ScheduledTask queueTask;
+    //private static ScheduledTask queueTask;
 
     public static void init() {
         addQueueContainer("spleef:classic", "Classic Spleef", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("spleef:power", "Power Spleef", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("spleef:power_training", "Power Training", 1, 1, QueueContainer.TeamStyle.SOLO, false);
-        //addQueueContainer("spleef:team", "Team Spleef", 2, 2, QueueContainer.TeamStyle.TEAM, false);
-        //addQueueContainer("spleef:multi", "Multispleef", 3, 32, QueueContainer.TeamStyle.DYNAMIC, false);
-        //addQueueContainer("spleef:bonanza", "Bonanza Spleef", 1, 1, QueueContainer.TeamStyle.BONANZA, true);
+        addQueueContainer("spleef:team", "Team Spleef", 2, 2, QueueContainer.TeamStyle.TEAM, false);
+        addQueueContainer("spleef:multi", "Multispleef", 3, 32, QueueContainer.TeamStyle.DYNAMIC, false);
+        addQueueContainer("spleef:bonanza", "Bonanza Spleef", 1, 1, QueueContainer.TeamStyle.BONANZA, true);
 
         addQueueContainer("splegg:versus", "Splegg Versus", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
-        addQueueContainer("splegg:multi", "Multisplegg", 2, 32, QueueContainer.TeamStyle.DYNAMIC, false);
+        addQueueContainer("splegg:multi", "Multisplegg", 3, 32, QueueContainer.TeamStyle.DYNAMIC, false);
 
         addQueueContainer("sj:classic", "SuperJump: Classic", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("sj:shuffle", "SuperJump: Shuffle", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("sj:conquest", "SuperJump: Conquest", 1, 1, QueueContainer.TeamStyle.SOLO, false);
         addQueueContainer("sj:endless", "SuperJump: Endless", 1, 1, QueueContainer.TeamStyle.SOLO, false);
 
+        /*
         queueTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             for (QueueContainer queue : queueContainerMap.values()) {
-                //queue.checkQueue();
+                queue.checkQueue();
             }
         }, 5, 5, TimeUnit.SECONDS);
+        */
     }
 
     public static void addQueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, QueueContainer.TeamStyle teamStyle, boolean joinOngoing) {
@@ -55,7 +57,7 @@ public class QueueManager {
     }
 
     public static void close() {
-        queueTask.cancel();
+        //queueTask.cancel();
     }
 
     public static boolean forceStart(String mode, String query, List<QueuePlayer> players) {

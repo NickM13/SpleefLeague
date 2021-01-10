@@ -162,7 +162,7 @@ public class DBEntity {
                         f.setAccessible(true);
                         String fieldName = f.getAnnotation(DBField.class).fieldName();
                         if (fieldName.equals("")) fieldName = f.getName();
-                        if (doc.get(fieldName) == null) continue;
+                        if (!doc.containsKey(fieldName)) continue;
                         Object obj = null;
                         if (f.getType() == int.class) {
                             f.setInt(this, doc.getInteger(fieldName));

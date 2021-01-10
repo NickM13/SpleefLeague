@@ -21,17 +21,10 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
+import javax.annotation.Nonnull;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -239,8 +232,12 @@ public class ProxyCore extends Plugin {
      * @param server
      * @param packet
      */
-    public void sendPacket(ServerInfo server, PacketBungee packet) {
+    public void sendPacket(@Nonnull ServerInfo server, @Nonnull PacketBungee packet) {
         server.sendData("slcore:bungee", packet.toByteArray());
+    }
+
+    public void sendPacket(UUID target, PacketBungee packet) {
+        sendPacket(getPlayers().get(target).getCurrentServer(), packet);
     }
 
 }

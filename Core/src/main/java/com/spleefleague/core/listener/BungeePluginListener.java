@@ -24,6 +24,7 @@ public class BungeePluginListener implements PluginMessageListener {
         registeredListeners.put(PacketType.Bungee.CHALLENGE, new ChallengeBungeeListener());
         registeredListeners.put(PacketType.Bungee.CHAT, new ChatBungeeListener());
         registeredListeners.put(PacketType.Bungee.CONNECTION, new ConnectionBungeeListener());
+        registeredListeners.put(PacketType.Bungee.FRIEND, new FriendBungeeListener());
         registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new RefreshAllBungeeListener());
         registeredListeners.put(PacketType.Bungee.REFRESH_QUEUE, new RefreshQueueBungeeListener());
         registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new RefreshScoreBungeeListener());

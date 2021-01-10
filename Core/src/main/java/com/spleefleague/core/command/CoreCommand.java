@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.command;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
@@ -20,8 +19,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 import com.spleefleague.core.player.rank.Ranks;
@@ -193,9 +190,9 @@ public class CoreCommand extends Command {
     private boolean isValidCorePlayer(CommandSender cs, CorePlayer sender, CorePlayer cp, CorePlayerArg cpa) {
         if (cp == null) return false;
         if (cpa == null) return true;
-        if ((!cpa.allowOffline() && cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE)
-                || (!cpa.allowCrossServer() && cp.getOnlineState() == DBPlayer.OnlineState.OTHER)
-                || (!cpa.allowSelf() && sender != null && sender.equals(cp))) {
+        if ((!cpa.allowOffline() && !cp.isOnline()) ||
+                (!cpa.allowCrossServer() && cp.getOnlineState() == DBPlayer.OnlineState.OTHER) ||
+                (!cpa.allowSelf() && sender != null && sender.equals(cp))) {
             System.out.println(cp.getOnlineState().toString());
             cs.sendMessage(Chat.ERROR + "Invalid player");
             return false;
@@ -512,7 +509,7 @@ public class CoreCommand extends Command {
                                     if (cp != null) {
                                         obj = cp;
                                     } else if (bcs != null) {
-                                        for (CorePlayer cp2 : Core.getInstance().getPlayers().getOnline()) {
+                                        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
                                             if (obj == null
                                                     || (cp2.getLocation().getWorld().equals(loc.getWorld())
                                                     && cp2.getLocation().distance(loc) < ((CorePlayer) obj).getLocation().distance(loc))) {
@@ -540,7 +537,7 @@ public class CoreCommand extends Command {
                                         break;
                                     }
                                     entities = new ArrayList<>();
-                                    for (CorePlayer cp1 : Core.getInstance().getPlayers().getOnline()) {
+                                    for (CorePlayer cp1 : Core.getInstance().getPlayers().getAllHere()) {
                                         entities.add(cp1.getPlayer());
                                     }
                                     entities = getEntitiesByArgs(cs, loc, entities, arg.substring(1));
@@ -988,7 +985,7 @@ public class CoreCommand extends Command {
                     CorePlayerArg cpa = currParam.getAnnotation(CorePlayerArg.class);
                     Collection<CorePlayer> cpCollection;
                     if (cpa == null || !cpa.allowCrossServer()) {
-                        cpCollection = Core.getInstance().getPlayers().getOnline();
+                        cpCollection = Core.getInstance().getPlayers().getAllHere();
                     } else {
                         cpCollection = Core.getInstance().getPlayers().getAll();
                     }
@@ -1057,7 +1054,7 @@ public class CoreCommand extends Command {
     protected void success(CorePlayer cp, String msg) {
         Core.getInstance().sendMessage(cp, msg);
     }
-    
+
     protected void error(CommandSender cs, String msg) {
         Core.getInstance().sendMessage(cs, Chat.ERROR + msg);
     }

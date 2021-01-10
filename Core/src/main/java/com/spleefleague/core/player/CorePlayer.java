@@ -94,6 +94,8 @@ public class CorePlayer extends RatedPlayer {
     @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
     @DBField private final CorePlayerOptions options = new CorePlayerOptions();
     @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private final CorePlayerFriends friends = new CorePlayerFriends();
+    @DBField private final PlayerRatings ratings = new PlayerRatings();
     
     /**
      * Non-database variables
@@ -123,8 +125,6 @@ public class CorePlayer extends RatedPlayer {
     private BattleState battleState;
     private final PregameState pregameState;
     private GlobalZone globalZone;
-    @DBField
-    private final PlayerRatings ratings = new PlayerRatings();
 
     private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
 
@@ -183,6 +183,7 @@ public class CorePlayer extends RatedPlayer {
         setRank(permRank.getRank());
         PersonalScoreboard.initPlayerScoreboard(this);
         collectibles.setOwner(this);
+        friends.setOwner(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         FakeWorld.onPlayerJoin(getPlayer());
@@ -196,6 +197,7 @@ public class CorePlayer extends RatedPlayer {
     @Override
     public void initOffline() {
         collectibles.setOwner(this);
+        friends.setOwner(this);
         ratings.setOwner(this);
         super.initOffline();
     }
@@ -207,6 +209,7 @@ public class CorePlayer extends RatedPlayer {
     public void afterLoad() {
         super.afterLoad();
         collectibles.setOwner(this);
+        friends.setOwner(this);
     }
     
     /**
@@ -499,15 +502,15 @@ public class CorePlayer extends RatedPlayer {
      */
     public String getDisplayName() {
         if (getRank() != null)
-            return getRank().getColor() + this.getName() + Chat.DEFAULT;
-        return Chat.PLAYER_NAME + this.getName() + Chat.DEFAULT;
+            return getRank().getColor() + this.getName() + Chat.UNDO;
+        return Chat.PLAYER_NAME + this.getName() + Chat.UNDO;
     }
 
     /**
      * @return Returns display name with an 's
      */
     public String getDisplayNamePossessive() {
-        return getRank().getColor() + this.getName() + "'s" + Chat.DEFAULT;
+        return getRank().getColor() + this.getName() + "'s" + Chat.UNDO;
     }
 
     /**
@@ -972,6 +975,10 @@ public class CorePlayer extends RatedPlayer {
         return menu;
     }
 
+    public CorePlayerFriends getFriends() {
+        return friends;
+    }
+
     /**
      * @return Player's ping
      */
@@ -1119,6 +1126,10 @@ public class CorePlayer extends RatedPlayer {
     public final BuildWorld getBuildWorld() {
         return BuildWorld.getPlayerBuildWorld(this);
     }
+
+    public final boolean isOnline() {
+        return onlineState != OnlineState.OFFLINE;
+    }
     
     /**
      * Used to get the inventory of a player, if they have a
@@ -1172,5 +1183,12 @@ public class CorePlayer extends RatedPlayer {
     public final void loadPregameState(@Nullable Location arenaLoc) {
         pregameState.load(arenaLoc);
     }
-    
+
+    @Override
+    public String toString() {
+        return "CorePlayer{" +
+                "uuid=" + getUniqueId() +
+                ", username=" + getName() +
+                '}';
+    }
 }

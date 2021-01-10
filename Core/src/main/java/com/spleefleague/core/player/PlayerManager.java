@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.mongodb.client.model.ReplaceOptions;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bson.Document;
@@ -35,16 +37,24 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class PlayerManager <P extends DBPlayer> implements Listener {
 
+    // Players on this server (non-vanished)
+    private final Map<UUID, P> herePlayerList;
+    // Players on this server
+    private final Map<UUID, P> herePlayerListAll;
+    // Players on any server (non-vanished)
     private final Map<UUID, P> onlinePlayerList;
-    private final Map<UUID, P> playerList;
+    // Players on any server
+    private final Map<UUID, P> onlinePlayerListAll;
     private SortedSet<P> playerListSorted;
     private final Class<P> playerClass;
     private final MongoCollection<Document> playerCol;
     private final JavaPlugin plugin;
     
     public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
+        this.herePlayerList = new HashMap<>();
+        this.herePlayerListAll = new HashMap<>();
         this.onlinePlayerList = new HashMap<>();
-        this.playerList = new HashMap<>();
+        this.onlinePlayerListAll = new HashMap<>();
         this.plugin = plugin;
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.playerClass = playerClass;
@@ -54,11 +64,11 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
 
     public void setSortingComparible(Comparator<P> comparator) {
         playerListSorted = new TreeSet<>(comparator);
-        playerListSorted.addAll(playerList.values());
+        playerListSorted.addAll(onlinePlayerListAll.values());
     }
 
     public Collection<P> getSortedPlayers() {
-        return playerList.values();
+        return onlinePlayerListAll.values();
     }
 
     /**
@@ -66,17 +76,20 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * Add all online players to player list
      */
     public void initOnline() {
-        playerList.clear();
+        onlinePlayerListAll.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
             //p.kickPlayer("Sorry, reloads have to kick now :(");
             load(p.getUniqueId(), p.getName());
         }
         playerListSorted.clear();
-        playerListSorted.addAll(playerList.values());
-        for (P p : playerList.values()) {
+        playerListSorted.addAll(onlinePlayerListAll.values());
+        for (P p : onlinePlayerListAll.values()) {
             p.init();
             p.setOnline(DBPlayer.OnlineState.HERE);
-            onlinePlayerList.put(p.getUniqueId(), p);
+            if (!Core.getInstance().getPlayers().get(p).isVanished()) {
+                herePlayerList.put(p.getUniqueId(), p);
+            }
+            herePlayerListAll.put(p.getUniqueId(), p);
         }
     }
 
@@ -98,6 +111,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     public P get(Player player) {
         if (player != null) {
+            return get(player.getUniqueId());
+            /*
             P p;
             if ((p = PlayerManager.this.get(player.getUniqueId())) != null) {
                 return p;
@@ -108,6 +123,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
                     return PlayerManager.this.get(player.getUniqueId());
                 }
             }
+             */
         }
         return null;
     }
@@ -119,7 +135,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @return DBPlayer
      */
     public P get(UUID uniqueId) {
-        return playerList.get(uniqueId);
+        return onlinePlayerListAll.get(uniqueId);
     }
 
     /**
@@ -175,11 +191,16 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @return Players
      */
     public Collection<P> getAll() {
-        return playerList.values();
+        return onlinePlayerListAll.values();
     }
 
+    /**
+     * Get list of all player names, non-vanished
+     *
+     * @return
+     */
     public TreeSet<String> getAllNames() {
-        return playerList.values().stream().map(DBPlayer::getName).collect(Collectors.toCollection(TreeSet::new));
+        return onlinePlayerList.values().stream().map(DBPlayer::getName).collect(Collectors.toCollection(TreeSet::new));
     }
 
     /**
@@ -187,8 +208,35 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      *
      * @return Unvanished Players
      */
-    public Collection<P> getOnline() {
+    public Collection<P> getAllHere() {
+        return herePlayerList.values();
+    }
+
+    /**
+     * Get all players on this server, including vanished
+     *
+     * @return All players on this server
+     */
+    public Collection<P> getAllHereExtended() {
+        return herePlayerListAll.values();
+    }
+
+    /**
+     * Get all players on bungee, excluding vanished
+     *
+     * @return Bungee players, excluding vanished
+     */
+    public Collection<P> getAllOnline() {
         return onlinePlayerList.values();
+    }
+
+    /**
+     * Get all players on bungee, including vanished
+     *
+     * @return Bungee players, including vanished
+     */
+    public Collection<P> getAllOnlineExtended() {
+        return onlinePlayerListAll.values();
     }
 
     /**
@@ -211,11 +259,23 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @return DBPlayer
      */
     private P load(UUID uuid, String username) {
-        if (onlinePlayerList.containsKey(uuid)) {
-            if (!playerList.containsKey(uuid)) {
-                playerList.put(uuid, onlinePlayerList.get(uuid));
+        if (herePlayerListAll.containsKey(uuid)) {
+            P p = herePlayerListAll.get(uuid);
+            if (!onlinePlayerListAll.containsKey(uuid)) {
+                onlinePlayerListAll.put(uuid, p);
+                // Include vanished code here
+                if (plugin == Core.getInstance()) {
+                    CorePlayer cp = (CorePlayer) p;
+                    if (!cp.isVanished()) {
+                        onlinePlayerList.put(uuid, p);
+                        herePlayerList.put(uuid, p);
+                    }
+                } else {
+                    onlinePlayerList.put(uuid, p);
+                    herePlayerList.put(uuid, p);
+                }
             }
-            return onlinePlayerList.get(uuid);
+            return herePlayerListAll.get(uuid);
         }
         try {
             P p = playerClass.getDeclaredConstructor().newInstance();
@@ -227,16 +287,26 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
                 p.newPlayer(uuid, username);
             }
             p.setOnline(DBPlayer.OnlineState.OTHER);
-            playerList.put(p.getUniqueId(), p);
+            onlinePlayerListAll.put(p.getUniqueId(), p);
+
+            if (plugin == Core.getInstance()) {
+                CorePlayer cp = (CorePlayer) p;
+                if (!cp.isVanished()) {
+                    onlinePlayerList.put(uuid, p);
+                }
+            } else {
+                onlinePlayerList.put(uuid, p);
+            }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-        return playerList.get(uuid);
+        return onlinePlayerListAll.get(uuid);
     }
 
     public void refresh(Set<UUID> players) {
-        playerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
+        onlinePlayerListAll.entrySet().removeIf(p -> !players.contains(p.getKey()));
+        onlinePlayerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
         for (UUID uuid : players) {
             OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
             load(uuid, op.getName());
@@ -251,24 +321,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     public void save(P player) {
         try {
-            if (playerCol.find(new Document("identifier", player.getUniqueId().toString())).first() != null) {
-                playerCol.deleteMany(new Document("identifier", player.getUniqueId().toString()));
-            }
-            playerCol.insertOne(player.toDocument());
-
-            /*
-            ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-            output.writeUTF("players");
-            output.writeUTF(plugin.getName());
-
-            output.writeInt(1);
-            output.writeUTF(player.getUniqueId().toString());
-
-            if (plugin.isEnabled()) {
-                Objects.requireNonNull(Iterables.getFirst(Bukkit.getOnlinePlayers(), null)).sendPluginMessage(plugin, "slcore:refresh", output.toByteArray());
-            }
-            */
+            playerCol.replaceOne(new Document("identifier", player.getUniqueId().toString()), player.toDocument(), new ReplaceOptions().upsert(true));
         } catch (NoClassDefFoundError | IllegalAccessError exception) {
             CoreLogger.logError("Jar files updated, unable to save player " + player.getName(), null);
         } catch (IllegalArgumentException exception) {
@@ -277,12 +330,11 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     }
 
     public void saveForTransfer(UUID uuid) {
-        P p = get(uuid);
+        P p = herePlayerListAll.get(uuid);
         if (p != null) {
             save(p);
             p.setPresaved();
         }
-
     }
 
     /**
@@ -292,14 +344,18 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @param player Player
      */
     private void quit(Player player) {
-        if (playerList.containsKey(player.getUniqueId())) {
-            P p = onlinePlayerList.remove(player.getUniqueId());
-            if (p != null) {
-                if (!p.isPresaved())
-                    save(p);
-                p.close();
+        P p = herePlayerListAll.remove(player.getUniqueId());
+        herePlayerList.remove(player.getUniqueId());
+        if (p != null) {
+            if (!p.isPresaved()) {
+                save(p);
             }
-            playerList.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
+            p.close();
+            p.setOnline(DBPlayer.OnlineState.OTHER);
+        } else {
+            if (onlinePlayerListAll.containsKey(player.getUniqueId())) {
+                onlinePlayerListAll.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
+            }
         }
     }
 
@@ -314,7 +370,16 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
         if (p != null) {
             p.setOnline(DBPlayer.OnlineState.HERE);
             p.init();
-            onlinePlayerList.put(p.getUniqueId(), p);
+            herePlayerListAll.put(p.getUniqueId(), p);
+
+            if (plugin == Core.getInstance()) {
+                CorePlayer cp = (CorePlayer) p;
+                if (!cp.isVanished()) {
+                    herePlayerList.put(p.getUniqueId(), p);
+                }
+            } else {
+                herePlayerList.put(p.getUniqueId(), p);
+            }
             if (joinActions.containsKey(p.getUniqueId())) {
                 for (Consumer<P> action : joinActions.get(p.getUniqueId())) {
                     action.accept(p);
@@ -329,8 +394,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     private Map<UUID, List<Consumer<P>>> joinActions = new HashMap<>();
 
     public void addPlayerJoinAction(UUID uuid, Consumer<P> action, boolean runIfOnline) {
-        if (runIfOnline && onlinePlayerList.containsKey(uuid)) {
-            action.accept(onlinePlayerList.get(uuid));
+        if (runIfOnline && herePlayerListAll.containsKey(uuid)) {
+            action.accept(herePlayerListAll.get(uuid));
         } else {
             if (!joinActions.containsKey(uuid)) {
                 joinActions.put(uuid, new ArrayList<>());
@@ -347,7 +412,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     public P createFakePlayer(String username) {
         Document pdoc = playerCol.find(new Document("username", username)).first();
-        if (pdoc == null || playerList.containsKey(UUID.fromString(pdoc.get("identifier", String.class)))) {
+        if (pdoc == null || onlinePlayerListAll.containsKey(UUID.fromString(pdoc.get("identifier", String.class)))) {
             try {
                 P p = playerClass.getDeclaredConstructor().newInstance();
                 if (pdoc != null) {
@@ -358,14 +423,14 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
                 }
                 p.initOffline();
                 p.setOnline(DBPlayer.OnlineState.OFFLINE);
-                playerList.put(p.getUniqueId(), p);
+                onlinePlayerListAll.put(p.getUniqueId(), p);
                 return p;
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
                 Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
         }
-        return playerList.get(UUID.fromString(pdoc.get("identifier", String.class)));
+        return onlinePlayerListAll.get(UUID.fromString(pdoc.get("identifier", String.class)));
     }
 
     /**
@@ -382,7 +447,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * Save all DBPlayer
      */
     public void close() {
-        for (P p : onlinePlayerList.values()) {
+        for (P p : herePlayerListAll.values()) {
             save(p);
         }
     }
@@ -392,7 +457,8 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     }
 
     public void onBungeeDisconnect(UUID uuid) {
-        playerList.remove(uuid);
+        onlinePlayerListAll.remove(uuid);
+        onlinePlayerList.remove(uuid);
     }
 
 }

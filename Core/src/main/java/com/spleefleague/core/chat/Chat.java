@@ -8,19 +8,17 @@ package com.spleefleague.core.chat;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 
-import java.util.HashMap;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 import com.spleefleague.core.request.ConsoleRequest;
 import com.spleefleague.core.request.PlayerRequest;
 import com.spleefleague.core.request.RequestManager;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketChatBungee;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketChatSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 
 /**
@@ -31,7 +29,8 @@ import org.bukkit.Sound;
 public class Chat {
 
     private static final HashMap<String, ChatColor> chatColors = new HashMap<>();
-    public static String DEFAULT = ChatColor.GRAY + "",
+    public static String UNDO = ChatColor.UNDO + "",
+            DEFAULT = ChatColor.GRAY + "",
             WHISPER = ChatColor.WHITE + "" + ChatColor.ITALIC + "",
             SUCCESS = ChatColor.GREEN + "",
             INFO = ChatColor.YELLOW + "",
@@ -76,37 +75,49 @@ public class Chat {
     public static String colorize(String msg) {
         StringBuilder newmsg = new StringBuilder();
         int i;
+        Stack<ChatColor> colorStack = new Stack<>();
         for (i = 0; i < msg.length() - 1; i++) {
-            if (msg.charAt(i) == '&') {
+            if (msg.charAt(i) == '§') {
                 switch (msg.charAt(i+1)) {
-                    case 'b': newmsg.append(ChatColor.AQUA); break;
-                    case '0': newmsg.append(ChatColor.BLACK); break;
-                    case '9': newmsg.append(ChatColor.BLUE); break;
-                    case '3': newmsg.append(ChatColor.DARK_AQUA); break;
-                    case '1': newmsg.append(ChatColor.DARK_BLUE); break;
-                    case '8': newmsg.append(ChatColor.DARK_GRAY); break;
-                    case '2': newmsg.append(ChatColor.DARK_GREEN); break;
-                    case '5': newmsg.append(ChatColor.DARK_PURPLE); break;
-                    case '4': newmsg.append(ChatColor.DARK_RED); break;
-                    case '6': newmsg.append(ChatColor.GOLD); break;
-                    case '7': newmsg.append(ChatColor.GRAY); break;
-                    case 'a': newmsg.append(ChatColor.GREEN); break;
-                    case 'd': newmsg.append(ChatColor.LIGHT_PURPLE); break;
-                    case 'c': newmsg.append(ChatColor.RED); break;
-                    case 'f': newmsg.append(ChatColor.WHITE); break;
-                    case 'e': newmsg.append(ChatColor.YELLOW); break;
-                    case 'l': newmsg.append(ChatColor.BOLD); break;
-                    case 'i': newmsg.append(ChatColor.ITALIC); break;
-                    case 'r': newmsg.append(ChatColor.RESET); break;
-                    case 'n': newmsg.append(ChatColor.UNDERLINE); break;
-                    case 'm': newmsg.append(ChatColor.STRIKETHROUGH); break;
-                    case 'k': newmsg.append(ChatColor.MAGIC); break;
-                    default: newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1)))); break;
+                    case 'b': newmsg.append(colorStack.push(ChatColor.AQUA)); break;
+                    case '0': newmsg.append(colorStack.push(ChatColor.BLACK)); break;
+                    case '9': newmsg.append(colorStack.push(ChatColor.BLUE)); break;
+                    case '3': newmsg.append(colorStack.push(ChatColor.DARK_AQUA)); break;
+                    case '1': newmsg.append(colorStack.push(ChatColor.DARK_BLUE)); break;
+                    case '8': newmsg.append(colorStack.push(ChatColor.DARK_GRAY)); break;
+                    case '2': newmsg.append(colorStack.push(ChatColor.DARK_GREEN)); break;
+                    case '5': newmsg.append(colorStack.push(ChatColor.DARK_PURPLE)); break;
+                    case '4': newmsg.append(colorStack.push(ChatColor.DARK_RED)); break;
+                    case '6': newmsg.append(colorStack.push(ChatColor.GOLD)); break;
+                    case '7': newmsg.append(colorStack.push(ChatColor.GRAY)); break;
+                    case 'a': newmsg.append(colorStack.push(ChatColor.GREEN)); break;
+                    case 'd': newmsg.append(colorStack.push(ChatColor.LIGHT_PURPLE)); break;
+                    case 'c': newmsg.append(colorStack.push(ChatColor.RED)); break;
+                    case 'f': newmsg.append(colorStack.push(ChatColor.WHITE)); break;
+                    case 'e': newmsg.append(colorStack.push(ChatColor.YELLOW)); break;
+                    case 'l': newmsg.append(colorStack.push(ChatColor.BOLD)); break;
+                    case 'i': newmsg.append(colorStack.push(ChatColor.ITALIC)); break;
+                    case 'r': newmsg.append(colorStack.push(ChatColor.RESET)); break;
+                    case 'n': newmsg.append(colorStack.push(ChatColor.UNDERLINE)); break;
+                    case 'm': newmsg.append(colorStack.push(ChatColor.STRIKETHROUGH)); break;
+                    case 'k': newmsg.append(colorStack.push(ChatColor.MAGIC)); break;
+                    case 'u':
+                        if (colorStack.size() <= 1) {
+                            newmsg.append(ChatColor.RESET);
+                        } else {
+                            colorStack.pop();
+                            newmsg.append(colorStack.peek());
+                        }
+                        break;
+                    default:
+                        newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1)))); break;
                 }
                 i++;
             } else if (msg.charAt(i) == '\\') {
                 if (msg.charAt(i+1) == 'n') {
                     newmsg.append("\n");
+                } else if (msg.charAt(i+1) == '\\') {
+                    newmsg.append("\\");
                 } else {
                     newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1))));
                 }
@@ -152,6 +163,10 @@ public class Chat {
         Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), msg, blacklist));
     }
 
+    public static void sendMessageHere(ChatChannel channel, String msg) {
+        sendMessage(new PacketChatBungee(null, channel.getChannel().name(), msg));
+    }
+
     public static void sendMessage(PacketChatBungee packet) {
         UUID uuid = packet.sender;
         CorePlayer sender = uuid != null ? Core.getInstance().getPlayers().get(uuid) : null;
@@ -168,7 +183,7 @@ public class Chat {
                 }
             }
         } else {
-            for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
+            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
                 if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
                         chatChannel.isAvailable(cp) &&
                         !cp.getOptions().isChannelDisabled(chatChannel.getName()) &&
@@ -180,7 +195,7 @@ public class Chat {
     }
 
     public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
             if (!cp.getOptions().isChannelDisabled(channel.getName())
                     && channel.isAvailable(cp)) {
                 cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);

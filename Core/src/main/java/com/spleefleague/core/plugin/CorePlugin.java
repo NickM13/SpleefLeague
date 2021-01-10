@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketChallengeSpigot;

@@ -16,16 +16,14 @@ import org.bukkit.ChatColor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PersonalTablist {
 
-    private static final int SIZE = 10;
-
     private final CorePlayer owner;
-    private final List<UUID> tabUuidList = new ArrayList<>();
+    private final List<UUID> currentList = new ArrayList<>();
+    private final Map<UUID, CorePlayer> targetList = new HashMap<>();
+    private boolean changed = true;
 
     public PersonalTablist(CorePlayer owner) {
         this.owner = owner;
@@ -33,28 +31,29 @@ public class PersonalTablist {
     }
 
     public void addPlayer(CorePlayer cp) {
-        tabUuidList.add(cp.getUniqueId());
-        updatePlayerList();
+        targetList.put(cp.getUniqueId(), cp);
+        changed = true;
     }
 
     public void removePlayer(UUID uuid) {
-        if (tabUuidList.remove(uuid)) {
+        if (targetList.remove(uuid) != null) {
+            changed = true;
             Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
             //updatePlayerList();
         }
     }
 
     public void clear() {
-        if (tabUuidList.isEmpty()) return;
-        Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(tabUuidList), 0L);
-        tabUuidList.clear();
+        if (currentList.isEmpty()) return;
+        Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(currentList), 0L);
+        currentList.clear();
     }
 
     public void updateHeaderFooter() {
         PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         packetContainer.getChatComponents().write(0, WrappedChatComponent.fromText(
                         ChatColor.GOLD + "" + ChatColor.BOLD + "SpleefLeague\n" +
-                        ChatColor.GRAY + "Online: " + ChatColor.GREEN + Core.getInstance().getPlayers().getOnline().size() + "\n" +
+                        ChatColor.GRAY + "Online: " + ChatColor.GREEN + Core.getInstance().getPlayers().getAllHere().size() + "\n" +
                         ChatColor.GRAY + "Ping: " + owner.getPingFormatted() + "\n" +
                         ChatColor.GRAY + "==================="));
         packetContainer.getChatComponents().write(1, WrappedChatComponent.fromText(
@@ -65,14 +64,15 @@ public class PersonalTablist {
     }
 
     public void updatePlayerList() {
+        if (!changed) return;
         clear();
         try {
             PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
             Field playerListField = PacketPlayOutPlayerInfo.class.getDeclaredField("b");
             playerListField.setAccessible(true);
             List playerList = (List) playerListField.get(nmsPacket);
-            for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
-                tabUuidList.add(cp.getUniqueId());
+            for (CorePlayer cp : targetList.values()) {
+                currentList.add(cp.getUniqueId());
                 playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
                         .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 0, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
             }
@@ -83,6 +83,14 @@ public class PersonalTablist {
             CoreLogger.logError(exception);
         }
         updateHeaderFooter();
+        changed = false;
     }
 
+    public void refreshPlayers() {
+        targetList.clear();
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllOnline()) {
+            targetList.put(cp.getUniqueId(), cp);
+        }
+        changed = true;
+    }
 }

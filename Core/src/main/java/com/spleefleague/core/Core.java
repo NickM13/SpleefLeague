@@ -36,7 +36,6 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.request.RequestManager;
-import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.FakeWorld;
@@ -45,7 +44,6 @@ import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -124,7 +122,7 @@ public class Core extends CorePlugin<CorePlayer> {
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (CorePlayer cp : getPlayers().getOnline()) {
+            for (CorePlayer cp : getPlayers().getAllHere()) {
                 cp.checkAfk();
                 cp.checkTempRanks();
                 cp.checkGlobalSpectate();
@@ -269,7 +267,7 @@ public class Core extends CorePlugin<CorePlayer> {
         }
         // See and become seen by all players outside of games
         // getOnline doesn't return vanished players
-        for (CorePlayer cp2 : getPlayers().getOnline()) {
+        for (CorePlayer cp2 : getPlayers().getAllHere()) {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle() &&
                         cp.getBuildWorld() == cp2.getBuildWorld()) {
@@ -287,11 +285,9 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public void returnToHub(CorePlayer cp) {
         if (cp == null) return;
-        /*
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
             plugin.getPlayers().saveForTransfer(cp.getUniqueId());
         }
-        */
         Core.getInstance().sendPacket(new PacketHub(Lists.newArrayList(cp)));
     }
 
@@ -300,14 +296,26 @@ public class Core extends CorePlugin<CorePlayer> {
         if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
         PersonalScoreboard.onPlayerJoin(cp);
-
+        for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
+            if (cp.equals(cp2)) continue;
+            if (cp2.getFriends().isFriend(uuid)) {
+                Chat.sendMessageToPlayer(cp2, cp.getDisplayName() + " has logged in");
+            }
+        }
     }
 
     public void onBungeeDisconnect(UUID uuid) {
-        CorePlayer cp = getPlayers().get(uuid);
-        if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
-            //Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
-            PersonalScoreboard.onPlayerQuit(uuid);
+        CorePlayer cp = getPlayers().getOffline(uuid);
+        //Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
+        PersonalScoreboard.onPlayerQuit(uuid);
+
+        if (cp.isVanished()) return;
+
+        for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
+            if (cp.equals(cp2)) continue;
+            if (cp2.getFriends().isFriend(uuid)) {
+                Chat.sendMessageToPlayer(cp2, cp.getDisplayName() + " has logged out");
+            }
         }
     }
 
@@ -422,7 +430,7 @@ public class Core extends CorePlugin<CorePlayer> {
      */
     public static void sendPacketAll(PacketContainer packet) {
         if (packet == null) return;
-        for (CorePlayer cp : Core.getInstance().getPlayers().getOnline()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
             sendPacket(cp, packet);
         }
     }
@@ -502,7 +510,7 @@ public class Core extends CorePlugin<CorePlayer> {
     public List<CorePlayer> getPlayersInRadius(Location loc, Double minDist, Double maxDist) {
         List<CorePlayer> cpList = new ArrayList<>();
 
-        for (CorePlayer cp1 : playerManager.getOnline()) {
+        for (CorePlayer cp1 : playerManager.getAllHere()) {
             if (loc.getWorld() != null
                     && loc.getWorld().equals(cp1.getLocation().getWorld())
                     && loc.distance(cp1.getLocation()) >= minDist

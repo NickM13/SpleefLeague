@@ -12,7 +12,7 @@ import java.util.UUID;
 public class PacketConnection extends PacketBungee {
 
     public enum ConnectionType {
-        CONNECT, DISCONNECT
+        FIRST_CONNECT, CONNECT, DISCONNECT
     }
 
     public ConnectionType type;
