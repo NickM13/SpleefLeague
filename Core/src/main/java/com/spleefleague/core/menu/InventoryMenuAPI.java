@@ -17,7 +17,21 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  */
 public class InventoryMenuAPI {
-    
+
+    /**
+     * Creates an InventoryMenuOverlay
+     *
+     * @return New InventoryMenuOverlay
+     */
+    public static InventoryMenuOverlay createOverlay() {
+        return new InventoryMenuOverlay();
+    }
+
+    /**
+     * Creates an InventoryMenuContainerChest
+     *
+     * @return New InventoryMenuContainerChest
+     */
     public static InventoryMenuContainerChest createContainer() {
         return new InventoryMenuContainerChest();
     }
@@ -39,7 +53,12 @@ public class InventoryMenuAPI {
     public static InventoryMenuItem createItem() {
         return new InventoryMenuItem();
     }
-    
+
+    /**
+     * Creates an InventoryMenuContainerAnvil
+     *
+     * @return New InventoryMenuContainerAnvil
+     */
     public static InventoryMenuContainerAnvil createAnvil() {
         return new InventoryMenuContainerAnvil();
     }

@@ -7,6 +7,7 @@ import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBVariable;
@@ -479,7 +480,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     public void clearLeaves(String zoneName) {
         collectedLeaves.removeIf(next -> next.startsWith(zoneName));
         owner.updateLeaves();
-        GlobalZone.getZone(zoneName).clearLeaves(owner);
+        GlobalZones.getZone(zoneName).clearLeaves(owner);
     }
     
 }

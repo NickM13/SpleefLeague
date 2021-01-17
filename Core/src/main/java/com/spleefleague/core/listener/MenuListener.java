@@ -73,7 +73,8 @@ public class MenuListener implements Listener {
         
         if (cp.getMenu().getInventoryMenuContainer() instanceof InventoryMenuContainerChest
                 && event.getClickedInventory().getType() == InventoryType.CHEST) {
-            ((InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer()).onInventoryInteract(event, cp);
+            cp.getMenu().onInventoryInteract(event);
+            //((InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer()).onInventoryInteract(event, cp);
         } else if (event.getCurrentItem() != null && !cp.canBuild()) {
             InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getCurrentItem());
             if (menu != null) {

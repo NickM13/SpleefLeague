@@ -27,30 +27,11 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
     
     public InventoryMenuEditor() {
         super();
-        upperBorder = false;
     }
     
     public InventoryMenuEditor setSaveFun(Consumer<Map<Integer, InventoryMenuItem>> saveFun) {
         this.saveFun = saveFun;
         return this;
-    }
-    
-    @Override
-    protected void initControls() {
-        controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
-                .setName("Next Page")
-                .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) + 1))));
-        
-        controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
-                .setName("Prev Page")
-                .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenu().getMenuTag("page", Integer.class) > 0)
-                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) - 1))));
     }
     
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {

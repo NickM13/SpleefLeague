@@ -31,7 +31,8 @@ public class InventoryMenuItem {
     protected Function<CorePlayer, String> nameFun;
     protected Function<CorePlayer, String> descriptionFun;
     protected Function<CorePlayer, ItemStack> displayItemFun;
-    
+    protected Function<CorePlayer, ItemStack> selectedItemFun;
+
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
     protected InventoryMenuContainer linkedContainer;
@@ -45,6 +46,7 @@ public class InventoryMenuItem {
         nameFun = null;
         descriptionFun = null;
         displayItemFun = null;
+        selectedItemFun = null;
         
         closeOnAction = true;
         action = null;
@@ -98,6 +100,11 @@ public class InventoryMenuItem {
     }
     public InventoryMenuItem setDisplayItem(Function<CorePlayer, ItemStack> displayItemFun) {
         this.displayItemFun = displayItemFun;
+        return this;
+    }
+
+    public InventoryMenuItem setSelectedItem(Material material, int customModelData) {
+        this.selectedItemFun = cp -> InventoryMenuUtils.createCustomItem(material, customModelData);
         return this;
     }
     
@@ -182,7 +189,16 @@ public class InventoryMenuItem {
     }
     
     public ItemStack createItem(CorePlayer cp) {
-        ItemStack item = displayItemFun.apply(cp).clone();
+        return createItem(cp, false);
+    }
+
+    public ItemStack createItem(CorePlayer cp, boolean selected) {
+        ItemStack item;
+        if (selected && selectedItemFun != null) {
+            item = selectedItemFun.apply(cp).clone();
+        } else {
+            item = displayItemFun.apply(cp).clone();
+        }
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(Chat.MENU_NAME + Chat.colorize(nameFun.apply(cp)));

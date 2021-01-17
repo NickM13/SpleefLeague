@@ -426,6 +426,7 @@ public class CoreCommand extends Command {
                 || cp.getPlayer().hasPermission(this.getPermission())) {
             Random random = new Random();
             for (Method method : getClass().getMethods()) {
+                if (method.getParameterCount() < 1) continue;
                 if (!method.isAnnotationPresent(CommandAnnotation.class)) {
                     continue;
                 }

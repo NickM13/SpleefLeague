@@ -52,7 +52,7 @@ public class ZoneLeafEntity extends net.minecraft.server.v1_15_R1.EntityItem {
     public void pickup(net.minecraft.server.v1_15_R1.EntityHuman entityhuman) {
         CorePlayer cp = Core.getInstance().getPlayers().get(entityhuman.getUniqueID());
         if (!cp.canBuild() && cp.getCollectibles().addLeaf(zoneName + ":" + leafId)) {
-            if (cp.getCollectibles().getLeafCount(zoneName) >= GlobalZone.getZone(zoneName).getLeaves().size()) {
+            if (cp.getCollectibles().getLeafCount(zoneName) >= GlobalZones.getZone(zoneName).getLeaves().size()) {
                 cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1.122462f);
                 cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1.334840f);
                 cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_NOTE_BLOCK_BIT, 1, 1.781797f);

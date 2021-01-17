@@ -23,6 +23,7 @@ import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.credits.Credits;
+import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerOptions;
@@ -36,11 +37,13 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
 import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.request.RequestManager;
+import com.spleefleague.core.settings.Settings;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
@@ -102,8 +105,9 @@ public class Core extends CorePlugin<CorePlayer> {
         FakeWorld.init();
         Arenas.init();
         NoteBlockMusic.init();
-        GlobalZone.init();
+        GlobalZones.init();
         PersonalScoreboard.init();
+        Settings.init();
 
         // Initialize manager
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
@@ -250,6 +254,8 @@ public class Core extends CorePlugin<CorePlayer> {
         AfkHotbar.init();
         SLMainHotbar.init();
         HeldItemHotbar.init();
+
+        SLMainOverlay.init();
     }
 
     /**

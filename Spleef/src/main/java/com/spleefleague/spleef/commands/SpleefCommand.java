@@ -11,21 +11,17 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
-import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -68,7 +64,7 @@ public class SpleefCommand extends CoreCommand {
     }
 
     @CommandAnnotation(minRank="DEVELOPER")
-    public void spleggMatch(CorePlayer sender,
+    public void spleefMatch(CorePlayer sender,
                             @LiteralArg("match") String l,
                             @OptionArg(listName = "gamemodes") String mode,
                             @OptionArg(listName = "arenas") String arenaName,

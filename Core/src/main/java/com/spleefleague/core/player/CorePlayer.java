@@ -38,6 +38,7 @@ import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.RatedPlayer;
@@ -148,7 +149,7 @@ public class CorePlayer extends RatedPlayer {
         this.battle = null;
         this.battleState = BattleState.NONE;
         this.pregameState = new PregameState(this);
-        this.globalZone = null;
+        this.globalZone = GlobalZones.getWilderness();
     }
     
     public CorePlayer(Player player) {
@@ -191,6 +192,7 @@ public class CorePlayer extends RatedPlayer {
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
         ratings.setOwner(this);
+        GlobalZones.onPlayerJoin(this);
         super.init();
     }
     
@@ -874,7 +876,10 @@ public class CorePlayer extends RatedPlayer {
                 updateLeaves();
             }
         }
-        sendHotbarText(globalZone.getName());
+    }
+
+    public void showGlobalZone() {
+        sendHotbarText(this.globalZone.getName());
     }
 
     public void updateLeaves() {

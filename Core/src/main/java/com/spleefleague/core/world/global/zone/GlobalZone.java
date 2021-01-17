@@ -11,11 +11,13 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
+import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import javassist.util.proxy.ProxyObjectInputStream;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -42,198 +44,13 @@ import java.util.stream.Collectors;
  */
 public class GlobalZone extends DBEntity {
 
-    private static GlobalZone WILDERNESS;
-    private static final Map<String, GlobalZone> globalZoneMap = new HashMap<>();
-    private static final Set<String> globalLeafNames = new HashSet<>();
-    private static MongoCollection<Document> globalZoneCol;
-
-    private static final Set<UUID> editingPlayers = new HashSet<>();
-    private static final Map<String, UUID> globalLeafUuids = new HashMap<>();
-
-    public static void init() {
-        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer spawnEntityPacket = event.getPacket();
-                UUID uuid = spawnEntityPacket.getUUIDs().read(0);
-                net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) (event.getPlayer().getWorld())).getHandle().getEntity(uuid);
-                if (entity instanceof ZoneLeafEntity) {
-                    CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
-                    ZoneLeafEntity zoneLeaf = (ZoneLeafEntity) entity;
-                    if (cp.getCollectibles().hasLeaf(zoneLeaf.getFullName())) {
-                        event.setCancelled(true);
-                    }
-                }
-            }
-        });
-
-        globalZoneCol = Core.getInstance().getPluginDB().getCollection("Zones");
-        for (Document doc : globalZoneCol.find()) {
-            GlobalZone globalZone = new GlobalZone();
-            globalZone.load(doc);
-            globalZoneMap.put(doc.get("identifier", String.class), globalZone);
-        }
-        if (!globalZoneMap.containsKey("wild")) {
-            GlobalZone globalZone = new GlobalZone("wild", "Wilderness");
-            globalZoneMap.put("wild", globalZone);
-        }
-        WILDERNESS = globalZoneMap.get("wild");
-
-        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            for (UUID uuid : editingPlayers) {
-                CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-                if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) {
-                    editingPlayers.remove(uuid);
-                    continue;
-                }
-                for (GlobalZone zone : globalZoneMap.values()) {
-                    for (ZoneLeaf leaf : zone.getLeaves()) {
-                        cp.getPlayer().spawnParticle(Particle.SWEEP_ATTACK, leaf.getPos().x + 0.5, leaf.getPos().y + 0.5, leaf.getPos().z + 0.5, 1, 0, 0, 0);
-                    }
-                }
-            }
-            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
-                cp.setGlobalZone(GlobalZone.getZone(new Point(cp.getLocation())));
-            }
-        }, 20L, 20L);
-
-        InventoryMenuAPI.createItemHotbar(4, "ZoneScanner")
-                .setName("Zone Scanner")
-                .setDisplayItem(Material.HONEYCOMB)
-                .setDescription(cp -> {
-                    GlobalZone zone = getZone(new Point(cp.getLocation()));
-                    return Chat.DEFAULT + "Id: " + zone.getIdentifier() + "\n" +
-                            Chat.DEFAULT + "Name: " + zone.getName() + "\n" +
-                            Chat.DEFAULT + "Leaves: " + zone.getLeaves().size();
-                })
-                .setAvailability(cp -> editingPlayers.contains(cp.getUniqueId()))
-                .setAction(cp -> {
-                    if (cp.getPlayer().isSneaking()) {
-                        removeLeaves(new Point(cp.getLocation()), 1);
-                    } else {
-                        cp.getGlobalZone().addLeaf(new Point(cp.getLocation()));
-                    }
-                    cp.refreshHotbar();
-                });
-    }
-
-    public static void close() {
-        for (UUID uuid : globalLeafUuids.values()) {
-            Objects.requireNonNull(Bukkit.getEntity(uuid)).remove();
-        }
-    }
-
-    public static Set<String> getLeafNames() {
-        return globalLeafNames;
-    }
-
-    public static boolean toggleScanner(CorePlayer cp) {
-        if (editingPlayers.contains(cp.getUniqueId())) {
-            editingPlayers.remove(cp.getUniqueId());
-            return false;
-        } else {
-            editingPlayers.add(cp.getUniqueId());
-            return true;
-        }
-    }
-
-    public static Map<String, GlobalZone> getAll() {
-        return globalZoneMap;
-    }
-
-    public static boolean createZone(String identifier, String name) {
-        if (!globalZoneMap.containsKey(identifier)) {
-            GlobalZone globalZone = new GlobalZone(identifier, name);
-            globalZoneMap.put(identifier, globalZone);
-            return true;
-        }
-        return false;
-    }
-
-    public static void destroyZone(String identifier) {
-        GlobalZone zone;
-        if ((zone = globalZoneMap.remove(identifier)) != null) {
-            zone.unsave(globalZoneCol);
-        }
-    }
-
-    public static List<GlobalZone> getZones(Point point) {
-        List<GlobalZone> zones = new ArrayList<>();
-        for (GlobalZone zone : globalZoneMap.values()) {
-            if (!zone.getIdentifier().equals("wild")) {
-                for (Dimension border : zone.getBorders()) {
-                    if (border.isContained(point)) {
-                        zones.add(zone);
-                        break;
-                    }
-                }
-            } else {
-                zones.add(zone);
-            }
-        }
-        return zones;
-    }
-
-    public static GlobalZone getZone(Point point) {
-        for (GlobalZone zone : globalZoneMap.values()) {
-            if (!zone.getName().equals("wild")) {
-                for (Dimension border : zone.getBorders()) {
-                    if (border.isContained(point)) {
-                        return zone;
-                    }
-                }
-            }
-        }
-        return WILDERNESS;
-    }
-
-    public static boolean isNotWild(Point point) {
-        for (GlobalZone zone : globalZoneMap.values()) {
-            if (!zone.getName().equals("wild")) {
-                for (Dimension border : zone.getBorders()) {
-                    if (border.isContained(point)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    public static int removeLeaves(Point pos, double distance) {
-        int removed = 0;
-        for (GlobalZone zone : globalZoneMap.values()) {
-            removed += zone.removeLeaf(pos, distance);
-        }
-        for (Entity entity : Core.DEFAULT_WORLD.getEntities()) {
-            if (((CraftEntity) entity).getHandle() instanceof ZoneLeafEntity &&
-                    entity.getLocation().distance(pos.toVector().toLocation(Core.DEFAULT_WORLD)) < distance - 0.1) {
-                entity.remove();
-                System.out.println("Destroyed leaf!");
-            }
-        }
-        return removed;
-    }
-
-    public static GlobalZone getZone(String identifier) {
-        return globalZoneMap.getOrDefault(identifier, WILDERNESS);
-    }
-
-    public static void saveZone(GlobalZone zone) {
-        zone.save(globalZoneCol);
-    }
-
-    public static UUID dropLeaf(String zoneName, ZoneLeaf leaf) {
-        ZoneLeafEntity leafEntity = new ZoneLeafEntity(((CraftWorld) Core.DEFAULT_WORLD).getHandle(), leaf, zoneName);
-        ((CraftWorld) Core.DEFAULT_WORLD).getHandle().addEntity(
-                leafEntity,
-                CreatureSpawnEvent.SpawnReason.CUSTOM);
-        globalLeafUuids.put(leafEntity.getFullName(), leafEntity.getUniqueID());
-        return leafEntity.getUniqueID();
-    }
-
     @DBField private String name;
     @DBField private String description = "";
+
+    @DBField private Point drainPos = new Point();
+    @DBField private String monumentPrefix = "";
+    @DBField private Position monumentPos = new Position();
+
     private final Set<Dimension> borders = new HashSet<>();
     private final Map<String, ZoneLeaf> leafIds = new HashMap<>();
     private final List<ZoneLeaf> leaves = new ArrayList<>();
@@ -255,8 +72,7 @@ public class GlobalZone extends DBEntity {
     public void afterLoad() {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             for (ZoneLeaf leaf : leaves) {
-                leafUuids.add(dropLeaf(this.identifier, leaf));
-                globalLeafNames.add(this.identifier + ":" + leaf.getId());
+                leafUuids.add(GlobalZones.dropLeaf(this.identifier, leaf));
                 nextLeafId = Math.max(leaf.getId(), nextLeafId);
             }
         }, 20L);
@@ -294,13 +110,44 @@ public class GlobalZone extends DBEntity {
         }
     }
 
+    public Point getDrainPos() {
+        return drainPos;
+    }
+
+    public void setDrainPos(Point drainPos) {
+        this.drainPos = drainPos;
+        GlobalZones.saveZone(this);
+    }
+
+    public boolean isOnDrain(CorePlayer cp) {
+        return drainPos != null && drainPos.distance(new Point(cp.getLocation())) < 1;
+    }
+
+    public Position getMonumentPos() {
+        return monumentPos;
+    }
+
+    public void setMonumentPos(Position monumentPos) {
+        this.monumentPos = monumentPos;
+        GlobalZones.saveZone(this);
+    }
+
+    public String getMonumentPrefix() {
+        return monumentPrefix;
+    }
+
+    public void setMonumentPrefix(String monumentPrefix) {
+        this.monumentPrefix = monumentPrefix;
+        GlobalZones.saveZone(this);
+    }
+
     public boolean isWild() {
         return identifier.equals("wild");
     }
 
     public void setName(String name) {
         this.name = Chat.colorize(name);
-        saveZone(this);
+        GlobalZones.saveZone(this);
     }
 
     public String getName() {
@@ -309,7 +156,7 @@ public class GlobalZone extends DBEntity {
 
     public void setDescription(String description) {
         this.description = description;
-        saveZone(this);
+        GlobalZones.saveZone(this);
     }
 
     public String getDescription() {
@@ -318,7 +165,7 @@ public class GlobalZone extends DBEntity {
 
     public boolean addBorder(Dimension border) {
         if (this.borders.add(border)) {
-            saveZone(this);
+            GlobalZones.saveZone(this);
             return true;
         }
         return false;
@@ -326,7 +173,7 @@ public class GlobalZone extends DBEntity {
 
     public boolean removeBorder(Dimension border) {
         if (this.borders.remove(border)) {
-            saveZone(this);
+            GlobalZones.saveZone(this);
             return true;
         }
         return false;
@@ -345,7 +192,6 @@ public class GlobalZone extends DBEntity {
         for (int i = leaves.size() - 1; i >= 0; i--) {
             ZoneLeaf leaf = leaves.get(i);
             if (leaf.getPos().distance(pos) < distance) {
-                globalLeafNames.remove(this.identifier + ":" + leaf.getId());
                 leafPosHash.remove(leaf.getPos());
                 leaves.remove(i);
                 leafIds.remove(String.valueOf(i));
@@ -353,7 +199,7 @@ public class GlobalZone extends DBEntity {
             }
         }
         if (removed > 0) {
-            saveZone(this);
+            GlobalZones.saveZone(this);
         }
         return removed;
     }
@@ -366,9 +212,8 @@ public class GlobalZone extends DBEntity {
         leaves.add(leaf);
         leafIds.put(String.valueOf(leaf.getId()), leaf);
         leafPosHash.put(pos, leaves.size() - 1);
-        globalLeafNames.add(this.identifier + ":" + leaf.getId());
-        leafUuids.add(dropLeaf(this.identifier, leaf));
-        saveZone(this);
+        leafUuids.add(GlobalZones.dropLeaf(this.identifier, leaf));
+        GlobalZones.saveZone(this);
         return leaf;
     }
 
@@ -382,7 +227,7 @@ public class GlobalZone extends DBEntity {
             }
         }
         for (ZoneLeaf leaf : leaves) {
-            leafUuids.add(dropLeaf(this.identifier, leaf));
+            leafUuids.add(GlobalZones.dropLeaf(this.identifier, leaf));
         }
     }
 

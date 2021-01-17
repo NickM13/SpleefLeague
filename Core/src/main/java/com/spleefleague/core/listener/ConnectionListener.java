@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.spleefleague.core.world.global.zone.GlobalZones;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -78,36 +79,17 @@ public class ConnectionListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        CorePlayer cp1 = Core.getInstance().getPlayers().get(event.getPlayer());
-        //if (cp1.isVanished()) {
-            event.setJoinMessage("");
-        //}
-        //if (!cp1.getRank().hasPermission(Rank.MODERATOR)) {
-            cp1.gotoSpawn();
-        //}
-        Core.getInstance().applyVisibilities(cp1);
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        event.setJoinMessage("");
+        cp.gotoSpawn();
+        Core.getInstance().applyVisibilities(cp);
     }
     
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
-        //if (cp.isVanished()) {
-            event.setQuitMessage("");
-        //}
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO);
-        packet.getPlayerInfoAction().write(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
-        List<PlayerInfoData> playerInfoDataList = new ArrayList<>();
-        playerInfoDataList.add(new PlayerInfoData(
-                WrappedGameProfile.fromPlayer(event.getPlayer()),
-                1,
-                EnumWrappers.NativeGameMode.fromBukkit(cp.getPlayer().getGameMode()),
-                WrappedChatComponent.fromText(cp.getDisplayName())));
-
-        // TODO: Fix this
-        /*packet.getPlayerInfoDataLists().write(0, playerInfoDataList);
-        
-        Core.sendPacketAll(packet);
-         */
+        event.setQuitMessage("");
+        GlobalZones.onPlayerLeave(cp);
     }
     
     @EventHandler(priority = EventPriority.HIGH)

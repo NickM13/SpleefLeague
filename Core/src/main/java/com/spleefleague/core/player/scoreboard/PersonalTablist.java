@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.settings.Settings;
 import com.spleefleague.core.util.PacketUtils;
 import net.minecraft.server.v1_15_R1.EnumGamemode;
 import net.minecraft.server.v1_15_R1.IChatBaseComponent;
@@ -58,8 +59,8 @@ public class PersonalTablist {
                         ChatColor.GRAY + "==================="));
         packetContainer.getChatComponents().write(1, WrappedChatComponent.fromText(
                         ChatColor.GRAY + "===================" + "\n" +
-                        ChatColor.GRAY + "Discord: " + ChatColor.BLUE + "discord.gg/G5ppzgJ7YV" + "\n" +
-                        ChatColor.GRAY + "Twitch: " + ChatColor.DARK_PURPLE + "twitch.tv/wired26"));
+                        ChatColor.GRAY + "Discord: " + ChatColor.BLUE + Settings.getDiscord().getUrl()));
+                                //+ "\n" + ChatColor.GRAY + "Twitch: " + ChatColor.DARK_PURPLE + "twitch.tv/wired26"));
         Core.sendPacketSilently(owner.getPlayer(), packetContainer, 1L);
     }
 

@@ -1,8 +1,7 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.player.CorePlayer;
-
-import java.util.function.Function;
+import org.bukkit.inventory.Inventory;
 
 /**
  * @author NickM13
@@ -14,6 +13,6 @@ public abstract class InventoryMenuContainer {
     
     }
     
-    public abstract void open(CorePlayer cp);
+    public abstract Inventory open(CorePlayer cp);
 
 }

@@ -3,6 +3,7 @@ package com.spleefleague.proxycore.game.queue;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshQueue;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.utils.CoreUtils;
 import net.md_5.bungee.api.ChatColor;
@@ -82,6 +83,29 @@ public class QueueManager {
         return stringBuilder.toString();
     }
 
+    private static String formatArenaQuery(String mode, String query) {
+        for (SubQuery subQuery : SubQuery.splitQuery(query)) {
+            if (subQuery.type.equalsIgnoreCase("arena")) {
+                if (subQuery.hasStar) {
+                    return "";
+                }
+                StringBuilder stringBuilder = new StringBuilder(ChatColor.GOLD + ": ");
+                for (int i = 0; i < subQuery.values.size(); i++) {
+                    if (i > 0) {
+                        stringBuilder.append(", ");
+                    }
+                    if (i > 3) {
+                        stringBuilder.append("...");
+                        break;
+                    }
+                    stringBuilder.append(ArenaManager.getArena(mode, subQuery.values.get(i)).getName());
+                }
+                return stringBuilder.toString() + ChatColor.GRAY;
+            }
+        }
+        return "";
+    }
+
     public static void joinQueue(UUID uuid, String mode, String query) {
         QueueContainer queueContainer = queueContainerMap.get(mode);
         if (queueContainer == null) {
@@ -92,6 +116,12 @@ public class QueueManager {
             joinSolo(uuid, mode, query);
             return;
         }
+        String formatted = formatQuery(query);
+        if (formatted.length() > 0) {
+            ArenaManager.getArena(mode, formatted);
+
+        }
+        String arenaAffix = formatArenaQuery(mode, query);
         switch (queueContainer.join(ProxyCore.getInstance().getPlayers().get(uuid), query)) {
             case -1:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
@@ -103,16 +133,16 @@ public class QueueManager {
             case 0:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have joined the queue for " +
-                                queueContainer.getDisplayName()
-                                /*ChatColor.GRAY + " (" + query + ")"*/);
+                                queueContainer.getDisplayName() +
+                                arenaAffix);
                 ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 1:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have rejoined the queue for " +
-                                queueContainer.getDisplayName()
-                                /*ChatColor.GRAY + " (" + query + ")"*/);
+                                queueContainer.getDisplayName() +
+                                arenaAffix);
                 break;
         }
     }

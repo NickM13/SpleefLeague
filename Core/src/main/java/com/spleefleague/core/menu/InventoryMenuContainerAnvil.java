@@ -5,6 +5,7 @@ import com.spleefleague.core.player.CorePlayer;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.function.BiConsumer;
@@ -52,7 +53,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
     }
     
     @Override
-    public void open(CorePlayer cp) {
+    public Inventory open(CorePlayer cp) {
         cp.getMenu().addInvSwap();
         new AnvilGUI.Builder()
                 .onClose(player -> {
@@ -75,6 +76,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
                 .title(title)
                 .plugin(Core.getInstance())
                 .open(cp.getPlayer());
+        return null;
     }
     
 }

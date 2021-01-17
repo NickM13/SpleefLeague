@@ -40,8 +40,6 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         }
     }
     
-    protected boolean upperBorder = true, lowerBorder = true;
-    
     protected BiConsumer<InventoryMenuContainerChest, CorePlayer> openAction;
     protected BiConsumer<InventoryMenuContainerChest, CorePlayer> refreshAction;
     
@@ -50,7 +48,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     protected SortedMap<Integer, InventoryMenuItem> sortedItems;
     protected List<InventoryMenuControl> controlItems;
     protected Set<Integer> deadSpaces;
-    protected InventoryMenuControl backButton;
+    protected InventoryMenuContainer parentContainer = null;
     
     protected int rowFirst;
     protected int rowLast;
@@ -66,7 +64,6 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         sortedItems = new TreeMap<>();
         controlItems = new ArrayList<>();
         deadSpaces = new HashSet<>();
-        initControls();
         
         setPageBoundaries(0, 4, 0, 9);
     }
@@ -116,36 +113,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     public void clearUnsorted() {
         unsortedItems.clear();
     }
-    
-    protected void initControls() {
-        backButton = new InventoryMenuControl((6 * 9 - 9), InventoryMenuAPI.createItem()
-                .setName(ChatColor.RED + "" + ChatColor.BOLD + "Return")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.RETURN.getIconItem())
-                .setVisibility(cp -> backButton.menuItem.hasLinkedContainer()));
-        controlItems.add(backButton);
-        
-        controlItems.add(0, new InventoryMenuControl(5 * 9 - 3, InventoryMenuAPI.createItem()
-                .setName("Next Page")
-                .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setVisibility(cp -> (cp.getMenu().getMenuTag("page", Integer.class) < this.getPageCount(cp) - 1/* || editting*/))
-                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) + 1))));
-        
-        controlItems.add(0, new InventoryMenuControl(5 * 9 - 7, InventoryMenuAPI.createItem()
-                .setName("Prev Page")
-                .setDescription("")
-                .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenu().getMenuTag("page", Integer.class) > 0)
-                .setAction(cp -> cp.getMenu().setMenuTag("page", cp.getMenu().getMenuTag("page", Integer.class) - 1))));
-    }
-    
+
     public InventoryMenuContainerChest setParent(InventoryMenuContainer parentContainer) {
-        backButton.menuItem.setLinkedContainer(parentContainer);
+        this.parentContainer = parentContainer;
         return this;
     }
-    
+
+    public InventoryMenuContainer getParent() {
+        return parentContainer;
+    }
+
     public InventoryMenuContainerChest setTitle(String title) {
         this.titleFun = (cp) -> Chat.colorize(title);
         return this;
@@ -190,7 +167,9 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         sortedItems.remove((page * pageItemTotal) + slot);
     }
     
-    public void refreshInventory(CorePlayer cp) {
+    public Inventory refreshInventory(CorePlayer cp) {
+        ItemStack[] contents = new ItemStack[MENU_SIZE];
+
         if (refreshAction != null) refreshAction.accept(this, cp);
         
         int pageCount = this.getPageCount(cp);
@@ -199,14 +178,6 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             title = title + " (" + (cp.getMenu().getMenuTag("page", Integer.class) + 1) + "/" + pageCount + ")";
         }
         String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
-    
-        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, formattedTitle);
-    
-        if (lowerBorder) {
-            for (int i = 0; i < 9; i++) {
-                inv.setItem(i + 9 * 5, new ItemStack(Material.SNOW_BLOCK));
-            }
-        }
 
         int toSkip = pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
     
@@ -218,7 +189,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                     int leftSpacing = colFirst;
                     int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
                     int topSpacing = rowFirst * 9;
-                    inv.setItem(leftSpacing + rightSpacing + slotNum + topSpacing, itemStack);
+                    contents[leftSpacing + rightSpacing + slotNum + topSpacing] = itemStack;
                 }
             }
         }
@@ -238,42 +209,28 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                 int leftSpacing = colFirst;
                 int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
                 int topSpacing = rowFirst * 9;
-                inv.setItem(leftSpacing + rightSpacing + slotNum + topSpacing, itemStack);
+                contents[leftSpacing + rightSpacing + slotNum + topSpacing] = itemStack;
             }
             i++;
         }
     
         for (InventoryMenuControl control : controlItems) {
             if (control.menuItem.isVisible(cp) &&
-                    (inv.getItem(control.slot) == null
-                    || Objects.equals(inv.getItem(control.slot), new ItemStack(Material.SNOW_BLOCK)))) {
+                    contents[control.slot] == null) {
                 ItemStack itemStack = control.menuItem.createItem(cp);
-                inv.setItem(control.slot, itemStack);
+                contents[control.slot] = itemStack;
             }
         }
-    
-        if (upperBorder) {
-            boolean hasTopRow = false;
-            for (i = 0; i < 9; i++) {
-                if (inv.getItem(i) != null) {
-                    hasTopRow = true;
-                    break;
-                }
-            }
-            if (!hasTopRow) {
-                for (i = 0; i < 9; i++) {
-                    inv.setItem(i, new ItemStack(Material.SNOW_BLOCK));
-                }
-            }
-        }
-    
-        cp.getPlayer().openInventory(inv);
+
+        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, formattedTitle);
+        inv.setContents(contents);
+        return inv;
     }
     
     @Override
-    public void open(CorePlayer cp) {
+    public Inventory open(CorePlayer cp) {
         if (openAction != null) openAction.accept(this, cp);
-        refreshInventory(cp);
+        return refreshInventory(cp);
     }
     
     public int getPageCount(CorePlayer cp) {

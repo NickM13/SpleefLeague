@@ -50,8 +50,16 @@ public class Position extends DBVariable<List<?>> {
         x = Math.round(loc.getX() * 4) / 4D;
         y = Math.round(loc.getY() * 4) / 4D;
         z = Math.round(loc.getZ() * 4) / 4D;
-        yaw = Math.round(loc.getYaw() / 15) * 15;
-        pitch = Math.round(loc.getPitch() / 15) * 15;
+        yaw = Math.round(loc.getYaw() / 15) * 15L;
+        pitch = Math.round(loc.getPitch() / 15) * 15L;
+    }
+
+    public Position(Location loc, double roundDivisor) {
+        x = Math.round(loc.getX() * roundDivisor) / roundDivisor;
+        y = Math.round(loc.getY() * roundDivisor) / roundDivisor;
+        z = Math.round(loc.getZ() * roundDivisor) / roundDivisor;
+        yaw = (long) (Math.round(loc.getYaw() / (90 / roundDivisor)) * (90 / roundDivisor));
+        pitch = (long) (Math.round(loc.getPitch() / (90 / roundDivisor)) * (90 / roundDivisor));
     }
     
     public Position(List<?> list) {

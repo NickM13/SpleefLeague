@@ -40,6 +40,7 @@ import com.spleefleague.coreapi.database.variable.DBEntity;
  */
 public class Arena extends DBEntity {
 
+    @DBField protected String name;
     @DBField protected Set<String> modes;
     @DBField protected Boolean paused = false;
     @DBField protected Integer teamCount = 1;
@@ -56,6 +57,15 @@ public class Arena extends DBEntity {
         this.identifier = identifier;
         modes = new HashSet<>();
         paused = false;
+    }
+
+    /**
+     * Returns the display name of this arena
+     *
+     * @return Display Name
+     */
+    public String getName() {
+        return name;
     }
 
     /**

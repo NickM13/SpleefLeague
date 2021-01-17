@@ -5,6 +5,7 @@ import com.spleefleague.core.player.CorePlayer;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.function.Function;
  * @since 5/1/2020
  */
 public class InventoryMenuDialog {
-    
+
     private class Dialog {
         String tagName;
         

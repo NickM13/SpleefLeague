@@ -1,5 +1,6 @@
 package com.spleefleague.core.command.commands;
 
+import com.mongodb.lang.Nullable;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
@@ -11,6 +12,7 @@ import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.global.zone.GlobalZone;
+import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.core.world.global.zone.ZoneLeaf;
 import com.spleefleague.coreapi.chat.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -35,10 +37,10 @@ public class ZoneCommand extends CoreCommand {
 
     public ZoneCommand() {
         super("zone", Rank.DEVELOPER);
-        setOptions("zoneNames", pi -> GlobalZone.getAll().keySet());
+        setOptions("zoneNames", pi -> GlobalZones.getAll().keySet());
         setOptions("leafNames", pi -> {
             System.out.println(pi.getArgs().get(pi.getArgs().size() - 1));
-            GlobalZone zone = GlobalZone.getZone(pi.getArgs().get(pi.getArgs().size() - 1));
+            GlobalZone zone = GlobalZones.getZone(pi.getArgs().get(pi.getArgs().size() - 1));
             return zone.getLeafIds();
         });
     }
@@ -48,7 +50,50 @@ public class ZoneCommand extends CoreCommand {
                            @LiteralArg("create") String l,
                            @HelperArg("<identifier>") String identifier,
                            @HelperArg("<name>") String name) {
-        GlobalZone.createZone(identifier, name);
+        GlobalZones.createZone(identifier, name);
+    }
+
+    @CommandAnnotation
+    public void zoneUnfreeze(CorePlayer sender,
+                             @LiteralArg("unfreeze") String l1) {
+        GlobalZones.unfreezePlayer(sender);
+    }
+
+    @CommandAnnotation
+    public void zoneFreeze(CorePlayer sender,
+                           @LiteralArg("freeze") String l1,
+                           @OptionArg(listName = "zoneNames") String zoneName) {
+        GlobalZones.freezePlayer(sender, GlobalZones.getZone(zoneName));
+    }
+
+    @CommandAnnotation
+    public void zoneSetMonumentStructPos(CorePlayer sender,
+                                         @LiteralArg("set") String l1,
+                                         @LiteralArg("monument") String l2,
+                                         @LiteralArg("structPos") String l3) {
+        Position pos = new Position(sender.getLocation(), 1);
+        sender.getGlobalZone().setMonumentPos(pos);
+        success(sender, "Monument drain pos for " + sender.getGlobalZone().getIdentifier() + " set to " + pos);
+    }
+
+    @CommandAnnotation
+    public void zoneSetMonumentStructPrefix(CorePlayer sender,
+                                            @LiteralArg("set") String l1,
+                                            @LiteralArg("monument") String l2,
+                                            @LiteralArg("structPref") String l3,
+                                            String structPref) {
+        sender.getGlobalZone().setMonumentPrefix(structPref);
+        success(sender, "Monument structure prefix for " + sender.getGlobalZone().getIdentifier() + " set to " + structPref + "...");
+    }
+
+    @CommandAnnotation
+    public void zoneSetMonumentDrainPos(CorePlayer sender,
+                                        @LiteralArg("set") String l1,
+                                        @LiteralArg("monument") String l2,
+                                        @LiteralArg("drainPos") String l3) {
+        Point point = new Point(sender.getLocation()).rounded(2);
+        sender.getGlobalZone().setDrainPos(point);
+        success(sender, "Monument drain pos for " + sender.getGlobalZone().getIdentifier() + " set to " + point);
     }
 
     @CommandAnnotation
@@ -57,7 +102,7 @@ public class ZoneCommand extends CoreCommand {
                             @LiteralArg("name") String l2,
                             @OptionArg(listName = "zoneNames") String zoneName,
                             @HelperArg("<displayName>") String name) {
-        GlobalZone.getZone(zoneName).setName(name);
+        GlobalZones.getZone(zoneName).setName(name);
     }
 
     @CommandAnnotation
@@ -66,7 +111,7 @@ public class ZoneCommand extends CoreCommand {
                             @LiteralArg("add") String l1,
                             @OptionArg(listName = "zoneNames") String zoneName) {
         Point pos = new Point(sender.getLocation()).rounded(2);
-        GlobalZone zone = GlobalZone.getZone(zoneName);
+        GlobalZone zone = GlobalZones.getZone(zoneName);
         ZoneLeaf leaf = zone.addLeaf(pos);
         if (leaf == null) {
             error(sender, "Leaf already here!");
@@ -79,7 +124,7 @@ public class ZoneCommand extends CoreCommand {
     public void zoneRemoveLeaf(CorePlayer sender,
                                @LiteralArg("leaf") String l2,
                                @LiteralArg("remove") String l1) {
-        success(sender, "Removed " + GlobalZone.removeLeaves(new Point(sender.getLocation()), 1) + " leaves");
+        success(sender, "Removed " + GlobalZones.removeLeaves(new Point(sender.getLocation()), 1) + " leaves");
     }
 
     @CommandAnnotation
@@ -88,7 +133,7 @@ public class ZoneCommand extends CoreCommand {
                              @LiteralArg("goto") String l1,
                              @OptionArg(listName = "zoneNames") String zoneName,
                              @OptionArg(listName = "leafNames") String leafId) {
-        GlobalZone zone = GlobalZone.getZone(zoneName);
+        GlobalZone zone = GlobalZones.getZone(zoneName);
         ZoneLeaf leaf = zone.getLeaf(leafId);
         if (leaf != null) {
             sender.teleport(leaf.getPos().getX(), leaf.getPos().getY(), leaf.getPos().getZ());
@@ -101,7 +146,7 @@ public class ZoneCommand extends CoreCommand {
     @CommandAnnotation
     public void zoneScanner(CorePlayer sender,
                              @LiteralArg("scanner") String l1) {
-        if (GlobalZone.toggleScanner(sender)) {
+        if (GlobalZones.toggleScanner(sender)) {
             success(sender, "You've been given a zone scanner, right click to place a fragment at current location and shift-right click to remove");
         } else {
             success(sender, "Zone scanner removed");
@@ -119,7 +164,7 @@ public class ZoneCommand extends CoreCommand {
         } else if (!posTwoMap.containsKey(sender.getUniqueId())) {
             error(sender, "Your pos2 isn't set!");
         } else {
-            GlobalZone zone = GlobalZone.getZone(zoneName);
+            GlobalZone zone = GlobalZones.getZone(zoneName);
             Position pos1 = posOneMap.get(sender.getUniqueId());
             Position pos2 = posTwoMap.get(sender.getUniqueId());
             Dimension dim = new Dimension(
@@ -135,7 +180,7 @@ public class ZoneCommand extends CoreCommand {
                               @LiteralArg("remove") String l1,
                               @LiteralArg("border") String l2,
                               @OptionArg(listName = "zoneNames") String zoneName) {
-        GlobalZone zone = GlobalZone.getZone(zoneName);
+        GlobalZone zone = GlobalZones.getZone(zoneName);
         for (Dimension border : zone.getBorders()) {
             if (border.isContained(new Point(sender.getLocation()))) {
 
@@ -155,7 +200,7 @@ public class ZoneCommand extends CoreCommand {
                                  @OptionArg(listName = "zoneNames") String zoneName,
                                  Double x, Double y, Double z,
                                  Double w, Double h, Double d) {
-        GlobalZone zone = GlobalZone.getZone(zoneName);
+        GlobalZone zone = GlobalZones.getZone(zoneName);
         if (zone.removeBorder(new Dimension(new Point(x, y, z), new Point(w, h, d)))) {
             success(sender, "Removed border");
         } else {

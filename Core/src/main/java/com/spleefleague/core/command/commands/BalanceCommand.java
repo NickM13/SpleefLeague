@@ -26,7 +26,7 @@ public class BalanceCommand extends CoreCommand {
     
     @CommandAnnotation
     public void balance(CorePlayer sender) {
-        Core.getInstance().sendMessage(sender, "You have " + sender.getPurse().getCoins() + " coins");
+        Core.getInstance().sendMessage(sender, "You have " + sender.getPurse().getCoins().getAmount() + " coins");
     }
 
 }
