@@ -39,6 +39,8 @@ import java.util.Set;
 public class SpleggGun extends Holdable {
 
     private static MongoCollection<Document> spleggGunCol;
+
+    private static final ItemStack RANDOM_GUN = InventoryMenuUtils.createCustomItem(Material.IRON_INGOT, 1);
     
     public static void init() {
         Vendorable.registerVendorableType(SpleggGun.class);
@@ -105,7 +107,7 @@ public class SpleggGun extends Holdable {
     }
 
     private static InventoryMenuItem createActiveSpleggGunMenuItem(String affix) {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> {
                     SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
                     if (active != null) {
@@ -127,14 +129,14 @@ public class SpleggGun extends Holdable {
                     if (active != null) {
                         return active.getDisplayItem();
                     } else {
-                        return InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11);
+                        return RANDOM_GUN;
                     }
                 })
                 .setCloseOnAction(false);
     }
 
     public static InventoryMenuItem createMenu(String affix, String secondary) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> {
                     SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
                     if (active != null) {
@@ -156,29 +158,25 @@ public class SpleggGun extends Holdable {
                     if (active != null) {
                         return active.getDisplayItem();
                     } else {
-                        return InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11);
+                        return RANDOM_GUN;
                     }
                 })
                 .createLinkedContainer("Active Splegg Gun");
 
-        menuItem.getLinkedChest().setPageBoundaries(1, 3, 1, 7);
-        menuItem.getLinkedChest().addDeadSpace(0, 1);
-        menuItem.getLinkedChest().addDeadSpace(2, 1);
-        menuItem.getLinkedChest().addDeadSpace(3, 1);
-        menuItem.getLinkedChest().addDeadSpace(4, 1);
-        menuItem.getLinkedChest().addDeadSpace(6, 1);
+        menuItem.getLinkedChest()
+                .setItemBuffer(2)
+                .addDeadSpace(2, 2)
+                .addStaticItem(createActiveSpleggGunMenuItem(affix), 6, 2);
 
-        menuItem.getLinkedChest().addStaticItem(createActiveSpleggGunMenuItem(affix), 4, 4);
-
-        menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Random Splegg Gun")
                 .setDescription("Select a random Splegg Gun for your next match!")
-                .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.NETHER_BRICK, 11))
+                .setDisplayItem(RANDOM_GUN)
                 .setAction(cp -> cp.getCollectibles().removeActiveItem(SpleggGun.class, affix))
-                .setCloseOnAction(false), 4, 2);
+                .setCloseOnAction(false), 2, 3);
 
         for (SpleggGun spleggGun : Vendorables.getAll(SpleggGun.class).values()) {
-            InventoryMenuItem smi = InventoryMenuAPI.createItem()
+            InventoryMenuItem smi = InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> spleggGun.isAvailable(cp) ? spleggGun.getName() : "Locked")
                     .setDisplayItem(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
                     .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")

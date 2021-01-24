@@ -22,7 +22,7 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveMeltingBurst.class)
-                .setCustomModelData(6)
+                .setCustomModelData(7)
                 .setName("Melting Burst")
                 .setDescription("Throw a sticky bomb, latching onto the first terrain hit. After %BURST_DELAY% seconds, detonate in a large radius.")
                 .setUsage(10);

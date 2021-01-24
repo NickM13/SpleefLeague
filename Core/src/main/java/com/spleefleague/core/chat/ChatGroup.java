@@ -11,6 +11,8 @@ import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 
 import java.util.*;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.Team;
@@ -32,7 +34,7 @@ public class ChatGroup {
     }
     
     private final Set<CorePlayer> players = new HashSet<>();
-    private final String chatTag;
+    private final BaseComponent chatTag;
     
     private String scoreboardName = "empty";
     private final Map<String, SimpleScore> scores = new HashMap<>();
@@ -42,7 +44,7 @@ public class ChatGroup {
     private static int NEXT_ID = 0;
     private final int chatId;
 
-    public ChatGroup(String chatTag) {
+    public ChatGroup(BaseComponent chatTag) {
         //addTeam("lastslotempty", Strings.repeat(' ', 30));
         this.chatTag = chatTag;
         this.chatId = NEXT_ID++;
@@ -324,7 +326,17 @@ public class ChatGroup {
      */
     public void sendMessage(String msg) {
         for (CorePlayer cp : players) {
-            Chat.sendMessageToPlayer(cp, chatTag + msg);
+            Chat.sendMessageToPlayer(cp, Chat.DEFAULT + chatTag.toPlainText() + msg);
+        }
+    }
+
+    public void sendMessage(BaseComponent... text) {
+        for (CorePlayer cp : players) {
+            BaseComponent message = new TextComponent(chatTag);
+            for (BaseComponent base : text) {
+                message.addExtra(base);
+            }
+            Chat.sendMessageToPlayer(cp, message);
         }
     }
     

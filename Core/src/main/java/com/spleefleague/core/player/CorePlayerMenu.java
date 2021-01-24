@@ -22,6 +22,7 @@ public class CorePlayerMenu {
     private InventoryMenuOverlay overlay;
     // Current inventory menu
     private InventoryMenuContainer inventoryMenuContainer;
+    private int overlaySelect = -1;
 
     private CorePlayer owner;
 
@@ -61,19 +62,20 @@ public class CorePlayerMenu {
 
     private void openInventory(InventoryMenuContainerChest inventoryMenuContainerChest) {
         Inventory inventory = inventoryMenuContainerChest.open(owner);
-        if (overlay != null) overlay.openOverlay(inventory, owner, -1);
+        if (overlay != null) overlay.openOverlay(inventory, owner, inventoryMenuContainerChest);
         owner.getPlayer().openInventory(inventory);
     }
 
     private void refreshInventory(InventoryMenuContainerChest inventoryMenuContainerChest) {
         Inventory inventory = inventoryMenuContainerChest.refreshInventory(owner);
-        if (overlay != null) overlay.openOverlay(inventory, owner, -1);
+        if (overlay != null) overlay.openOverlay(inventory, owner, inventoryMenuContainerChest);
         owner.getPlayer().openInventory(inventory);
     }
 
     private void closeInventory() {
         owner.getPlayer().closeInventory();
         inventoryMenuContainer = null;
+        overlaySelect = -1;
     }
 
     public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {
@@ -142,11 +144,9 @@ public class CorePlayerMenu {
         if (inventoryMenuContainer != null
                 && inventoryMenuContainer instanceof InventoryMenuContainerChest) {
             invSwap++;
-            InventoryMenuContainerChest container = (InventoryMenuContainerChest) inventoryMenuContainer;
             ItemStack itemStack = owner.getPlayer().getItemOnCursor();
             owner.getPlayer().setItemOnCursor(null);
-            inventoryMenuContainer = container;
-            container.refreshInventory(owner);
+            refreshInventory((InventoryMenuContainerChest) inventoryMenuContainer);
             owner.getPlayer().setItemOnCursor(itemStack);
         }
     }
@@ -190,11 +190,9 @@ public class CorePlayerMenu {
             if (screen instanceof InventoryMenuContainerChest) {
                 InventoryMenuItem clicked = null;
                 if (overlay != null) {
-                    System.out.print("testing primary");
                     clicked = overlay.getMenuItem(owner, e.getSlot());
                 }
                 if (clicked == null) {
-                    System.out.print("testing secondary");
                     InventoryMenuContainerChest container = (InventoryMenuContainerChest) screen;
                     clicked = container.getMenuItem(owner, e.getSlot());
                 }
@@ -229,8 +227,10 @@ public class CorePlayerMenu {
     }
 
     public void onPagePrevious() {
-        if (hasPagePrevious())
+        if (hasPagePrevious()) {
             setMenuTag("page", getMenuTag("page", Integer.class) - 1);
+            refreshInventoryMenuContainer();
+        }
     }
 
     public boolean hasPageNext() {
@@ -238,8 +238,22 @@ public class CorePlayerMenu {
     }
 
     public void onPageNext() {
-        if (hasPageNext())
+        if (hasPageNext()) {
             setMenuTag("page", getMenuTag("page", Integer.class) + 1);
+            refreshInventoryMenuContainer();
+        }
+    }
+
+    public void setPage(int page) {
+        setMenuTag("page", page);
+    }
+
+    public int getPage() {
+        return getMenuTag("page", Integer.class);
+    }
+
+    public boolean hasPages() {
+        return ((InventoryMenuContainerChest) inventoryMenuContainer).hasPages();
     }
 
 }

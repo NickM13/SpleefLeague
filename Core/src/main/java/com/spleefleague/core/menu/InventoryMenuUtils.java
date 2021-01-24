@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -69,7 +68,7 @@ public class InventoryMenuUtils {
      * @return Locked InventoryMenuItem
      */
     public static InventoryMenuItem createLockedMenuItem(String displayName) {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName(displayName)
                 .setDisplayItem(LOCKED_ICON)
                 .setCloseOnAction(false);

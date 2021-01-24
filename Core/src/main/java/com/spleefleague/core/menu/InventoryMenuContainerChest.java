@@ -16,7 +16,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -55,6 +54,11 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     protected int colFirst;
     protected int colLast;
     protected int pageItemTotal;
+
+    protected int forcedPageCount = -1;
+    protected int forcedPageStart = 0;
+
+    protected int itemBuffer = 1;
     
     public InventoryMenuContainerChest() {
         openAction = null;
@@ -65,7 +69,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         controlItems = new ArrayList<>();
         deadSpaces = new HashSet<>();
         
-        setPageBoundaries(0, 4, 0, 9);
+        setPageBoundaries(1, 5, 0, 5);
     }
     
     /**
@@ -103,6 +107,11 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     
     public InventoryMenuContainerChest setRefreshAction(BiConsumer<InventoryMenuContainerChest, CorePlayer> refreshAction) {
         this.refreshAction = refreshAction;
+        return this;
+    }
+
+    public InventoryMenuContainerChest setItemBuffer(int buffer) {
+        this.itemBuffer = buffer;
         return this;
     }
     
@@ -200,7 +209,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             while ((sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
                     deadSpaces.contains(i % pageItemTotal)) {
-                i++;
+                i += itemBuffer;
             }
             if (i >= toSkip + pageItemTotal) break;
             if (i >= toSkip) {
@@ -211,7 +220,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                 int topSpacing = rowFirst * 9;
                 contents[leftSpacing + rightSpacing + slotNum + topSpacing] = itemStack;
             }
-            i++;
+            i += itemBuffer;
         }
     
         for (InventoryMenuControl control : controlItems) {
@@ -232,8 +241,23 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         if (openAction != null) openAction.accept(this, cp);
         return refreshInventory(cp);
     }
-    
+
+    public void setForcedPageCount(int count) {
+        forcedPageCount = count;
+    }
+
+    public void setForcedPageStart(int start) {
+        forcedPageStart = start;
+    }
+
+    public boolean hasPages() {
+        return unsortedItems.size() > 0 || sortedItems.size() > 0;
+    }
+
     public int getPageCount(CorePlayer cp) {
+        if (forcedPageCount >= 0) {
+            return forcedPageCount;
+        }
         int pageCount = 1;
         
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
@@ -242,15 +266,15 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
         }
         
-        int i = 0;
+        int i = forcedPageStart;
         for (InventoryMenuItem item : unsortedItems) {
             if (!item.isVisible(cp)) continue;
             while (sortedItems.containsKey(i)
                     && sortedItems.get(i).isVisible(cp)) {
-                i++;
+                i += itemBuffer;
             }
             pageCount = Math.max(pageCount, i / pageItemTotal + 1);
-            i++;
+            i += itemBuffer;
         }
         
         return pageCount;
@@ -277,9 +301,11 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             if (!item.isVisible(cp)) continue;
             while ((sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
+                    (sortedItems.containsKey(i) &&
+                    sortedItems.get(i).isVisible(cp)) ||
                     deadSpaces.contains(i % pageItemTotal) ||
                     i - toSkip < 0) {
-                i++;
+                i += itemBuffer;
             }
             if (i >= toSkip) {
                 int slotNum = (i - toSkip);
@@ -294,7 +320,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                     break;
                 }
             }
-            i++;
+            i += itemBuffer;
         }
         
         for (InventoryMenuControl control : controlItems) {

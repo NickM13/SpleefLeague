@@ -114,7 +114,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         super.startRound();
         for (PowerSpleefPlayer psp : battlers.values()) {
             psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
-            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("biogra.nbs"), 0.2f);
+            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("Country_Roads.nbs"), 0.2f);
         }
     }
 

@@ -24,7 +24,7 @@ public class OffensiveBoomerang extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveBoomerang.class)
-                .setCustomModelData(12)
+                .setCustomModelData(2)
                 .setName("Boomerang")
                 .setDescription("Throw a boomerang forward destroying all destructible blocks it passes, returning to the sender after %X1% second.")
                 .setUsage(3);

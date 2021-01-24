@@ -38,7 +38,7 @@ public class MultiSpleggArena extends SpleggArena {
         Splegg.getInstance().getSpleggMenu().getLinkedChest().addMenuItem(menuItem, x, y);
         */
         String mainColor = ChatColor.GOLD + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "Multisplegg")
                 .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!" +
                         "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.MULTI.getBattleMode()).getPlaying())
@@ -49,7 +49,7 @@ public class MultiSpleggArena extends SpleggArena {
                 .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp2) -> {
                     container.clearUnsorted();
-                    container.addMenuItem(InventoryMenuAPI.createItem()
+                    container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("&a&lRandom Arena")
                             .setDisplayItem(new ItemStack(Material.EMERALD))
                             .setAction(cp -> Splegg.getInstance().queuePlayer(SpleggMode.MULTI.getBattleMode(), cp)));
@@ -62,12 +62,12 @@ public class MultiSpleggArena extends SpleggArena {
         menuItem.getLinkedChest().addStaticItem(SpleggGun.createMenu("m1", "m2"), 3, 4);
         menuItem.getLinkedChest().addStaticItem(SpleggGun.createMenu("m2", "m1"), 5, 4);
 
-        Splegg.getInstance().getSpleggMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Splegg.getInstance().getSpleggMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
 
-    public static void initLeaderboard(int x, int y) {
+    public static void initLeaderboard() {
         LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleggMode.MULTI.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lMultisplegg")
                 .setDescription("View the top players of Multisplegg!")
                 .setDisplayItem(Material.EGG, 2)
@@ -75,7 +75,7 @@ public class MultiSpleggArena extends SpleggArena {
 
         LeaderboardMenu.getItem()
                 .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+                .addMenuItem(menuItem);
     }
     
 }

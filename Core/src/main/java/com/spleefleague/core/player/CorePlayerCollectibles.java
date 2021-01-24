@@ -6,7 +6,6 @@ import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
-import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -427,7 +426,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         container.setOpenAction((container2, cp1) -> {
                 container2.clearUnsorted();
                 if (canHaveNone) {
-                    container2.addMenuItem(InventoryMenuAPI.createItem()
+                    container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("None")
                             .setDescription("")
                             .setDisplayItem(Material.BAKED_POTATO)
@@ -436,7 +435,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
                 }
             
                 for (Collectible collectible : cp1.getCollectibles().getAll(clazz)) {
-                    container2.addMenuItem(InventoryMenuAPI.createItem()
+                    container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName(collectible.getName())
                             .setDescription(collectible.getDescription())
                             .setDisplayItem(collectible.getDisplayItem())
@@ -445,7 +444,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
                 }
             });
     
-        container.addStaticItem(InventoryMenuAPI.createItem()
+        container.addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Selected Collectible")
                 .setDescription(cp -> cp.getCollectibles().getActive(clazz).getDescription())
                 .setDisplayItem(cp -> cp.getCollectibles().getActive(clazz).getDisplayItem())

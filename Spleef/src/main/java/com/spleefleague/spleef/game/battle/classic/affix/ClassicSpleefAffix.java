@@ -23,7 +23,7 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     }
 
     public InventoryMenuItem createMenuItem() {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName(identifier)
                 .setDescription("")
                 .setDisplayItem(cp -> new ItemStack(isActive() ? Material.GLOWSTONE : Material.REDSTONE_LAMP))
@@ -36,6 +36,7 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     }
 
     public void setActive(boolean state) {
+        System.out.println("Activity!" + state);
         active = state;
         ClassicSpleefAffixes.updateAffix(this);
     }

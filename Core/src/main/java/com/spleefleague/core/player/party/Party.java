@@ -34,7 +34,7 @@ public class Party {
                         container.clearUnsorted();
                         Party party = cp.getParty();
                         if (party != null) {
-                            party.getPlayers().forEach(cp2 -> container.addMenuItem(InventoryMenuAPI.createItem()
+                            party.getPlayers().forEach(cp2 -> container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                     .setName(cp2.getDisplayName())
                                     .setDescription(party.getOwner().equals(cp2) ? "Owner" : "")
                                     .setDisplayItem(cp2.getSkull())));
@@ -42,14 +42,12 @@ public class Party {
                     }));
     
     public static Party createParty(CorePlayer cp) {
-        Party party = new Party(cp);
-
-        return party;
+        return new Party(cp);
     }
     
     private CorePlayer owner;
     private final Set<CorePlayer> players = new LinkedHashSet<>();
-    private final ChatGroup chatGroup = new ChatGroup("");
+    private final ChatGroup chatGroup = new ChatGroup(new TextComponent(""));
     private boolean disbanded = false;
     
     public ChatGroup getChatGroup() {

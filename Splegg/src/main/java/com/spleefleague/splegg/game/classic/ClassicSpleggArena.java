@@ -27,7 +27,7 @@ public class ClassicSpleggArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.GOLD + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "Splegg Versus")
                 .setDescription("Test your might against another player in this 1v1 competition of precision and movement." +
                         "\n\n&7&lCurrently Playing: &6" + Splegg.getInstance().getBattleManager(SpleggMode.VERSUS.getBattleMode()).getPlaying())
@@ -38,7 +38,7 @@ public class ClassicSpleggArena {
                 .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp2) -> {
                     container.clearUnsorted();
-                    container.addMenuItem(InventoryMenuAPI.createItem()
+                    container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("&a&lRandom Arena")
                             .setDescription("Join the queue for a random " + mainColor + "Splegg Versus &7map!")
                             .setDisplayItem(new ItemStack(Material.EMERALD))
@@ -52,12 +52,12 @@ public class ClassicSpleggArena {
         menuItem.getLinkedChest().addStaticItem(SpleggGun.createMenu("s1", "s2"), 3, 4);
         menuItem.getLinkedChest().addStaticItem(SpleggGun.createMenu("s2", "s1"), 5, 4);
 
-        Splegg.getInstance().getSpleggMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Splegg.getInstance().getSpleggMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
 
-    public static void initLeaderboard(int x, int y) {
+    public static void initLeaderboard() {
         LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleggMode.VERSUS.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lSplegg Versus")
                 .setDescription("View the top players of Splegg Versus!")
                 .setDisplayItem(Material.EGG, 1)
@@ -65,7 +65,7 @@ public class ClassicSpleggArena {
 
         LeaderboardMenu.getItem()
                 .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+                .addMenuItem(menuItem);
     }
     
 }

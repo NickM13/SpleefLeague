@@ -86,9 +86,7 @@ public class SpleefCommand extends CoreCommand {
         }
         if (corePlayers.size() < battleMode.getRequiredTeams()) {
             error(sender, "Not enough players! (" + corePlayers.size() + "/" + battleMode.getRequiredTeams() + ")");
-            Chat.sendRequest("Force start anyway?", sender, "spleefforce", (s, r) -> {
-                Spleef.getInstance().forceStart(battleMode, corePlayers, arena);
-            });
+            Chat.sendRequest(sender, "spleefforce", (s, r) -> Spleef.getInstance().forceStart(battleMode, corePlayers, arena), "Force start anyway?");
         } else {
             Spleef.getInstance().forceStart(battleMode, corePlayers, arena);
         }
@@ -100,8 +98,7 @@ public class SpleefCommand extends CoreCommand {
                                 @OptionArg(listName = "chalModes") String mode,
                                 @OptionArg(listName = "arenas") String arenaName,
                                 @CorePlayerArg(allowCrossServer = true, allowSelf = false) CorePlayer target) {
-        BattleMode battleMode = SpleefMode.valueOf(mode.toUpperCase()).getBattleMode();
-        Spleef.getInstance().challengePlayer(battleMode, sender, target, Arenas.get(arenaName, battleMode));
+        Spleef.getInstance().challengePlayer(sender, target, SpleefMode.valueOf(mode.toUpperCase()).getBattleMode(), arenaName);
     }
 
     @CommandAnnotation

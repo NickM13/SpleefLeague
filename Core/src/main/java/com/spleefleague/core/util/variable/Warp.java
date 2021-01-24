@@ -67,30 +67,30 @@ public class Warp extends DBEntity {
                     SortedSet<String> warpNames = folders.get(cp.getMenu().getMenuTag("folderName", String.class));
                     for (String warpName : warpNames) {
                         Warp warp = warps.get(warpName);
-                        container.addMenuItem(InventoryMenuAPI.createItem()
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + warp.getName())
                                 .setDisplayItem(Material.SAND)
                                 .setAction(cp2 -> cp2.warp(warp)));
                     }
                 });
 
-        menuContainer.addStaticItem(InventoryMenuAPI.createItem()
+        menuContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
                         .setName(ChatColor.RED + "" + ChatColor.BOLD + "Previous Page")
                         .setDescription("")
-                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem()),
-                2, 4)
-                .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) > 0)
-                .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) - 1))
-                .setCloseOnAction(false);
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
+                        .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) > 0)
+                        .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) - 1))
+                        .setCloseOnAction(false),
+                2, 4);
 
-        menuContainer.addStaticItem(InventoryMenuAPI.createItem()
+        menuContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
                         .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Page")
                         .setDescription("")
-                        .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem()),
-                6, 4)
-                .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenu().getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
-                .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) + 1))
-                .setCloseOnAction(false);
+                        .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
+                        .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenu().getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
+                        .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) + 1))
+                        .setCloseOnAction(false),
+                6, 4);
 
         return menuContainer;
     }

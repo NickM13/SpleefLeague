@@ -15,7 +15,7 @@ public class ArenaMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Arena Setup")
                 .setDisplayItem(Material.GRASS_BLOCK)
                 .setDescription("For editing arena values of all gamemodes")
@@ -26,7 +26,7 @@ public class ArenaMenu {
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
                     for (BattleMode battleMode : BattleMode.getAllModes()) {
-                        container.addMenuItem(InventoryMenuAPI.createItem()
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(battleMode.getDisplayName())
                                 .setDescription("")
                                 .setDisplayItem(Material.SAND)

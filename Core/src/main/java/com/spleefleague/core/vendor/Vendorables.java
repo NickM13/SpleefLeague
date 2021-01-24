@@ -6,9 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -64,7 +62,29 @@ public class Vendorables {
     public static void unregister(Class<? extends Vendorable> clazz, String identifier) {
         unregister(Vendorable.getTypeName(clazz), identifier);
     }
-    
+
+    public enum SortType {
+        CUSTOM_MODEL_DATA,
+        PRICE
+    }
+
+    public static <T extends Vendorable> SortedSet<T> getAllSorted(Class<T> clazz, SortType sortType) {
+        SortedSet<T> vendorables;
+        switch (sortType) {
+            case PRICE:
+                vendorables = new TreeSet<>(Comparator.comparingInt(Vendorable::getCoinCost));
+                break;
+            case CUSTOM_MODEL_DATA:
+            default:
+                vendorables = new TreeSet<>(Comparator.comparingInt(Vendorable::getCustomModelData));
+                break;
+        }
+
+        vendorables.addAll(getAll(clazz).values());
+
+        return vendorables;
+    }
+
     public static Map<String, Vendorable> getAll(String type) {
         return VENDORABLE_MAP.get(type);
     }

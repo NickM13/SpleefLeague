@@ -27,7 +27,7 @@ public class UtilityWall extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilityWall.class)
-                .setCustomModelData(6)
+                .setCustomModelData(11)
                 .setName("Wall")
                 .setDescription("Raise a destructible wall of snow from the ground at a target location.")
                 .setUsage(15);

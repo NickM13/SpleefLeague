@@ -55,19 +55,17 @@ public class SeasonCommand extends CoreCommand {
     @CommandAnnotation
     public void seasonReset(CorePlayer sender,
             @LiteralArg("reset") String l) {
-        Chat.sendRequest("Are you sure you want to start a new season?",
-                sender,
+        Chat.sendRequest(sender,
                 "SeasonReset",
                 (cp, s) -> {
-                    Chat.sendRequest("Are you REALLY sure you want to do this?",
-                            sender,
+                    Chat.sendRequest(sender,
                             "SeasonReset2",
                             (cp2, s2) -> {
                                 //Leaderboards.startNewSeason();
                                 success(sender, "Seasons have been reset!");
                                 error(sender, CoreError.SETUP);
-                            });
-                });
+                            }, "Are you REALLY sure you want to do this?");
+                }, "Are you sure you want to start a new season?");
     }
     
 }

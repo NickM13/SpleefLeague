@@ -39,18 +39,18 @@ public class EndlessSJArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "SuperJump: Endless")
                 .setDescription("Endless Description.")
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getBattleMode(), cp));
         
-        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addMenuItem(menuItem, x, y);
+        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
     public static void initLeaderboard(int x, int y) {
         LeaderboardCollection bestLevelLeaderboard = Core.getInstance().getLeaderboards().get(SJMode.ENDLESS.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("SuperJump Endless")
                 .setDescription("View the top players of SuperJump Endless!")
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)

@@ -20,7 +20,7 @@ public class HatMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Hats")
                 .setDisplayItem(Material.LEATHER_HELMET)
                 .setDescription("Pick a hat, any hat!")

@@ -54,6 +54,7 @@ public class PacketType {
         PARTY_LEAVE(PacketPartyLeave.class),
         QUEUE_JOIN(PacketQueueJoin.class),
         QUEUE_LEAVE(PacketQueueLeave.class),
+        SERVER_CONNECT(PacketServerConnect.class),
         REQUEUE(PacketRequeue.class),
         TELL(PacketTellSpigot.class);
 

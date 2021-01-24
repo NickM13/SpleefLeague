@@ -4,10 +4,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.annotation.OptionArg;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
@@ -37,10 +34,10 @@ public class ArenaCommand extends CoreCommand {
 
     public ArenaCommand() {
         super("arena", Rank.DEVELOPER);
-        setOptions("battleModes", cp -> BattleMode.getAllNames());
-        setOptions("arenas", cp -> Arenas.getAll().keySet());
-        setOptions("structures", cp -> BuildStructures.getNames());
-        setOptions("materials", cp -> getMaterialNames());
+        setOptions("battleModes", pi -> BattleMode.getAllNames());
+        setOptions("arenas", pi -> Arenas.getAll().keySet());
+        setOptions("structures", pi -> BuildStructures.getNames());
+        setOptions("materials", pi -> getMaterialNames());
     }
 
     private static Set<String> materialNameSet;
@@ -59,10 +56,10 @@ public class ArenaCommand extends CoreCommand {
                           @LiteralArg("info") String l,
                           @OptionArg(listName = "arenas") String identifier) {
         Arena arena = Arenas.get(identifier);
-        sender.sendMessage(ChatUtils.centerChat(Chat.colorize("&7[&c" + identifier + " &7Info ]")));
-        Chat.sendMessageToPlayer(sender, "&7Name: " + arena.getName());
-        Chat.sendMessageToPlayer(sender, "&7Description: " + arena.getDescription());
-        Chat.sendMessageToPlayer(sender, "&7Modes: " + arena.getModes());
+        sender.sendMessage(ChatUtils.centerChat(Chat.colorize("&7[&c" + identifier + " &7Info]")));
+        Chat.sendMessageToPlayer(sender, "Name: " + arena.getName());
+        Chat.sendMessageToPlayer(sender, "Description: " + arena.getDescription());
+        Chat.sendMessageToPlayer(sender, "Modes: " + arena.getModes());
     }
 
     @CommandAnnotation
@@ -129,10 +126,11 @@ public class ArenaCommand extends CoreCommand {
                              @LiteralArg("set") String l1,
                              @LiteralArg("item") String l2,
                              @OptionArg(listName = "arenas") String arenaName,
-                             @OptionArg(listName = "materials") String materialName) {
+                             @EnumArg Material material,
+                             @HelperArg("<cmd>") Integer cmd) {
         Arena arena = Arenas.get(arenaName);
-        arena.setDisplayItem(Material.valueOf(materialName.toUpperCase()));
-        success(sender, "Set display item of " + arenaName + " to " + materialName);
+        arena.setDisplayItem(material, cmd);
+        success(sender, "Set display item of " + arenaName + " to " + material.name());
     }
 
     @CommandAnnotation

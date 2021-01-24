@@ -10,7 +10,10 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketChallengeBungee;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
+
+import java.util.Objects;
 
 public class ChallengeBungeeListener extends BungeeListener<PacketChallengeBungee> {
 
@@ -20,16 +23,15 @@ public class ChallengeBungeeListener extends BungeeListener<PacketChallengeBunge
         CorePlayer cpReceiver = Core.getInstance().getPlayers().get(packet.receiver);
         BattleMode battleMode = BattleMode.get(packet.mode);
         if (cpSender != null && cpReceiver != null) {
-            Chat.sendRequest(cpSender.getDisplayName() + " has challenged you to " + Chat.GAMEMODE + battleMode.getDisplayName(), cpReceiver, cpSender, (cp1, cp2) -> {
+            Chat.sendRequest(cpReceiver, cpSender, (cp1, cp2) -> {
                 if (cp1.getOnlineState() != DBPlayer.OnlineState.OFFLINE && cp2.getOnlineState() != DBPlayer.OnlineState.OFFLINE) {
-                    System.out.println(packet.query);
                     SubQuery subQuery = SubQuery.getSubQuery(packet.query, "arena");
                     Core.getInstance().forceStart(
                             battleMode,
                             Lists.newArrayList(cp1, cp2),
-                            subQuery == null || subQuery.hasStar ? Arenas.getRandom(battleMode) : Arenas.get(subQuery.values.get(0), battleMode));
+                            subQuery == null || subQuery.hasStar ? Objects.requireNonNull(Arenas.getRandom(battleMode)) : Arenas.get(subQuery.values.get(0), battleMode));
                 }
-            });
+            }, cpSender.getChatName(), new TextComponent(" has challenged you to " + Chat.GAMEMODE + battleMode.getDisplayName()));
         }
     }
 

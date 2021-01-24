@@ -52,6 +52,8 @@ public class QueueContainer {
     private final Set<UUID> spectating;
     private final Set<UUID> playing;
 
+    private final int DYNAMIC_DELAY_START = 3;
+
     public QueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, TeamStyle teamStyle, boolean joinOngoing) {
         this.identifier = identifier;
         this.displayName = displayName;
@@ -99,10 +101,10 @@ public class QueueContainer {
                 TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Queue Now" + Chat.TAG_BRACE + "]");
                 accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to join!").create()));
                 accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request queue " + identifier));
-                TextComponent text = new TextComponent(ProxyCore.getChatTag() + getDisplayName() + " match starting in 2 minutes ");
+                TextComponent text = new TextComponent(ProxyCore.getChatTag() + getDisplayName() + " match starting in " + DYNAMIC_DELAY_START + " seconds ");
                 text.addExtra(accept);
                 ProxyCore.getInstance().sendMessage(text);
-                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, 120 * 1000L, TimeUnit.MILLISECONDS);
+                nextCheck = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkQueue, DYNAMIC_DELAY_START * 1000L, TimeUnit.MILLISECONDS);
             }
         }
         return replaced != null ? 1 : 0;

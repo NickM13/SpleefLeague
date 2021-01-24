@@ -1,6 +1,7 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.player.CorePlayer;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -13,12 +14,20 @@ import java.util.TreeMap;
  */
 public class InventoryMenuOverlay {
 
+    private final int BG_SLOT = 6 * 9 - 3;
+
     private SortedMap<Integer, InventoryMenuItem> sortedItems = new TreeMap<>();
 
     protected int rowFirst;
     protected int rowLast;
     protected int colFirst;
     protected int colLast;
+
+    protected int background = -1;
+    protected InventoryMenuItem BG_ITEM = InventoryMenuAPI.createItemDynamic()
+            .setName("")
+            .setDisplayItem(cp -> InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, background))
+            .setVisibility(cp -> background != -1);
 
     public InventoryMenuOverlay() {
         setPageBoundaries(0, 6, 0, 9);
@@ -41,6 +50,11 @@ public class InventoryMenuOverlay {
         return this;
     }
 
+    public InventoryMenuOverlay setBackground(int cmd) {
+        background = cmd;
+        return this;
+    }
+
     public void addItem(InventoryMenuItem item, int x, int y) {
         addItem(item, (x) + (y * (colLast - colFirst + 1)));
     }
@@ -49,10 +63,15 @@ public class InventoryMenuOverlay {
         sortedItems.put(slot, item);
     }
 
-    public void openOverlay(Inventory inventory, CorePlayer cp, int selected) {
+    public void openOverlay(Inventory inventory, CorePlayer cp, InventoryMenuContainerChest currentScreen) {
         ItemStack[] contents = inventory.getContents();
         for (Map.Entry<Integer, InventoryMenuItem> entry : sortedItems.entrySet()) {
-            contents[entry.getKey()] = entry.getValue().createItem(cp, entry.getKey() == selected);
+            if (entry.getValue().isVisible(cp)) {
+                contents[entry.getKey()] = entry.getValue().createItem(cp, entry.getValue().getLinkedChest() == currentScreen);
+            }
+        }
+        if (background != -1) {
+            contents[BG_SLOT] = BG_ITEM.createItem(cp);
         }
         inventory.setContents(contents);
     }

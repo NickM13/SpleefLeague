@@ -20,7 +20,7 @@ public class UtilityArena extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilityArena.class)
-                .setCustomModelData(1)
+                .setCustomModelData(2)
                 .setName("Arena")
                 .setDescription("A wall of snow quickly surrounds the caster, rapidly decaying after %X5% seconds.")
                 .setUsage(15);

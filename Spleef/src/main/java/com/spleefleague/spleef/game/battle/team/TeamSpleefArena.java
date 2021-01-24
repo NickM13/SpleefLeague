@@ -27,10 +27,10 @@ import org.bukkit.inventory.ItemStack;
 public class TeamSpleefArena {
 
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lTeam Spleef")
                 .setDescription(cp -> "United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode." +
-                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.TEAM.getBattleMode()).getPlaying())
+                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.TEAM.getBattleMode()).getPlaying())/*
                 .setAvailability(cp -> {
                     Party party = cp.getParty();
                     if (party == null) {
@@ -42,33 +42,18 @@ public class TeamSpleefArena {
                         return false;
                     }
                     return true;
-                })
+                })*/
                 .setDisplayItem(Material.LEATHER_HELMET, 56)
                 .createLinkedContainer("Team Spleef Menu");
+
+        menuItem.getLinkedChest().setOpenAction((container, cp2) -> Arenas.fillMenu(Spleef.getInstance(), container, SpleefMode.TEAM.getBattleMode()));
         
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
-                .setName("Random Arena")
-                .setDisplayItem(new ItemStack(Material.EMERALD))
-                .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp)));
-        
-        Arenas.getAll(SpleefMode.TEAM.getBattleMode()).values().forEach(arena -> menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
-                        .setName(arena.getName())
-                        .setVisibility(cp -> {
-                            Party party = cp.getParty();
-                            return party != null
-                                    && (party.getPlayers().size() == arena.getTeamSize());
-                        })
-                        .setDescription(cp -> arena.getDescription())
-                        .setDisplayItem(cp -> new ItemStack(Material.FILLED_MAP))
-                        .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.TEAM.getBattleMode(), cp, arena))));
-        
-        Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Spleef.getInstance().getSpleefMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
-    public static void initLeaderboard(int x, int y) {
+    public static void initLeaderboard() {
         LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.TEAM.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lTeam Spleef")
                 .setDescription("View the top players of Team Spleef!")
                 .setDisplayItem(Material.LEATHER_HELMET, 56)
@@ -76,7 +61,7 @@ public class TeamSpleefArena {
         
         LeaderboardMenu.getItem()
                 .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+                .addMenuItem(menuItem);
     }
     
 }

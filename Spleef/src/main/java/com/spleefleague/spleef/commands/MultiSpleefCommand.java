@@ -13,6 +13,7 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
+import net.md_5.bungee.api.chat.TextComponent;
 
 import javax.annotation.Nullable;
 
@@ -32,16 +33,8 @@ public class MultiSpleefCommand extends CoreCommand {
     public void multiChallenge(CorePlayer sender,
                                  @LiteralArg("challenge") String l,
                                  @OptionArg(listName = "arenas") String arenaName,
-                                 @CorePlayerArg(allowSelf = false) CorePlayer target) {
-        if (!target.canJoinBattle()) {
-            error(sender, "That player is in a battle!");
-            return;
-        }
-        Arena arena = Arenas.get(arenaName);
-        success(sender, "You have challenged " + target.getDisplayName() + " to a game of " + Chat.GAMEMODE + SpleefMode.MULTI.getBattleMode().getDisplayName() + Chat.DEFAULT + " on " + Chat.GAMEMAP + arena.getName());
-        Chat.sendRequest(sender.getDisplayName() + " has challenged you to a game of " + Chat.GAMEMODE + SpleefMode.MULTI.getBattleMode().getDisplayName() + Chat.DEFAULT + " on " + Chat.GAMEMAP + arena.getName(), target, sender, (r, s) -> {
-            Spleef.getInstance().getBattleManager(SpleefMode.MULTI.getBattleMode()).startMatch(Lists.newArrayList(r, s), arenaName);
-        });
+                                 @CorePlayerArg(allowSelf = false, allowCrossServer = true) CorePlayer target) {
+        Spleef.getInstance().challengePlayer(sender, target, SpleefMode.MULTI.getBattleMode(), arenaName);
     }
 
     @CommandAnnotation

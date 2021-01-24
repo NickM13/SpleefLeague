@@ -16,7 +16,7 @@ public class MobilityJetpack extends AbilityMobility {
 
     public static AbilityStats init() {
         return init(MobilityJetpack.class)
-                .setCustomModelData(3)
+                .setCustomModelData(8)
                 .setName("Jetpack")
                 .setDescription("Blast off to the skies, allowing flight in the direction of your mouse cursor for up to %MAX_FLY_TIME% seconds. May be reactivated to cancel early.")
                 .setUsage(10);

@@ -36,7 +36,7 @@ public class ClassicSpleefAffixes {
     private static MongoCollection<Document> affixCol;
 
     public static void createMenu() {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Classic Spleef Affixes")
                 .setDisplayItem(Material.DAYLIGHT_DETECTOR)
                 .setDescription("Enable/Disable Affixes for Classic Spleef.  Only usable during the offseason!")

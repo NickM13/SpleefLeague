@@ -2,6 +2,7 @@ package com.spleefleague.core.chat;
 
 import com.google.common.collect.Lists;
 import joptsimple.internal.Strings;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
@@ -78,8 +79,9 @@ public class ChatUtils {
         int msgPxSize = 0;
         boolean prevCode = false;
         boolean isBold = false;
-        String prevColor = Chat.DEFAULT;
-        
+        List<String> prevColors = new ArrayList<>();
+        prevColors.add(Chat.DEFAULT);
+
         for (char c : message.toCharArray()) {
             if (c == '§') {
                 prevCode = true;
@@ -87,7 +89,7 @@ public class ChatUtils {
                 prevCode = false;
                 isBold = (c == 'l' || c == 'L');
                 word.append("§").append(c);
-                prevColor = ChatColor.getByChar(c) + "";
+                prevColors.add(ChatColor.getByChar(c) + "");
             } else {
                 DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
                 int change = isBold ? dFI.getBoldLength() : dFI.getLength() + 1;
@@ -98,7 +100,10 @@ public class ChatUtils {
                         word = new StringBuilder();
                     }
                     msgs.add(line.toString());
-                    line = new StringBuilder(prevColor);
+                    line = new StringBuilder();
+                    for (String s : prevColors) {
+                        line.append(s);
+                    }
                 }
                 msgPxSize += change;
                 if (c == ' ') {
@@ -135,8 +140,8 @@ public class ChatUtils {
         return msgs;
     }
     
-    public static String centerChat(String msg) {
-        return centerText(msg, 160);
+    public static TextComponent centerChat(String msg) {
+        return new TextComponent(centerText(msg, 160));
     }
     
 }

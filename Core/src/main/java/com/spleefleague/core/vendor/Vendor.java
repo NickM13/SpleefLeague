@@ -196,7 +196,7 @@ public class Vendor extends DBEntity {
             if (vendorable != null) {
                 menu.addMenuItem(vendorable.getVendorMenuItem(), item.getKey());
             } else {
-                menu.addMenuItem(InventoryMenuAPI.createItem()
+                menu.addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Unknown Item")
                         .setDescription("")
                         .setDisplayItem(Material.BARRIER)

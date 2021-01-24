@@ -6,9 +6,16 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
+import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemDynamic;
+import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.coreapi.queue.SubQuery;
 import org.bson.Document;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -43,11 +50,7 @@ public class Arenas {
                     if (!modeArenaMap.containsKey(modeName)) {
                         modeArenaMap.put(modeName, new TreeMap<>());
                     }
-                    if (arena.getIdentifier().contains(":")) {
-                        modeArenaMap.get(modeName).put(arena.getIdentifier().split(":")[1], arena);
-                    } else {
-                        modeArenaMap.get(modeName).put(arena.getIdentifier(), arena);
-                    }
+                    modeArenaMap.get(modeName).put(arena.getIdentifierNoTag(), arena);
                 }
                 arenaMap.put(arena.getIdentifier(), arena);
             }
@@ -56,7 +59,7 @@ public class Arenas {
             CoreLogger.logInfo("Arenas for " + entry.getKey() + ": " + entry.getValue());
         }
     }
-    
+
     public static void saveArenaDB(Arena arena) {
         arena.save(arenaCol);
     }
@@ -234,6 +237,38 @@ public class Arenas {
     
     public static Arena get(String name) {
         return arenaMap.get(name);
+    }
+
+    public static InventoryMenuItem createMenu(CorePlugin<?> plugin, BattleMode mode) {
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
+                .setName(mode.getDisplayName())
+                .setDescription(cp -> mode.getDescription() +
+                        "\n\n&7&lCurrently Playing: &6" + plugin.getBattleManager(mode).getPlaying())
+                .setDisplayItem(mode.getDisplayItem());
+
+        if (mode.isForceRandom()) {
+            menuItem.setAction(cp -> plugin.queuePlayer(mode, cp));
+        } else {
+            menuItem.createLinkedContainer(ChatColor.stripColor(mode.getDisplayName()) + " Menu");
+            menuItem.getLinkedChest().setOpenAction((container, cp2) -> Arenas.fillMenu(plugin, container, mode));
+            menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
+                    .setDisplayItem(mode.getDisplayItem()), 6, 1)
+                    .setName(mode.getDisplayName())
+                    .setDescription(mode.getDescription())
+                    .setCloseOnAction(false);
+        }
+
+        return menuItem;
+    }
+
+    public static void fillMenu(CorePlugin<?> plugin, InventoryMenuContainerChest container, BattleMode mode) {
+        container.clearUnsorted();
+        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName("&a&lRandom Arena")
+                .setDisplayItem(Material.PAPER, 1)
+                .setAction(cp -> plugin.queuePlayer(mode, cp)));
+
+        Arenas.getAll(mode).values().forEach(arena -> container.addMenuItem(arena.createMenu((cp -> plugin.queuePlayer(mode, cp, arena)))));
     }
     
 }

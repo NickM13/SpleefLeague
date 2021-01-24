@@ -21,18 +21,20 @@ public class PacketChatBungee extends PacketBungee {
     public String channel;
     public String message;
     public Set<UUID> blacklist;
+    public boolean url;
 
     public PacketChatBungee() { }
 
-    public PacketChatBungee(UUID sender, String channel, String message) {
-        this(sender, channel, message, new HashSet<>());
+    public PacketChatBungee(UUID sender, String channel, String message, boolean url) {
+        this(sender, channel, message, new HashSet<>(), url);
     }
 
-    public PacketChatBungee(UUID sender, String channel, String message, Set<UUID> blacklist) {
+    public PacketChatBungee(UUID sender, String channel, String message, Set<UUID> blacklist, boolean url) {
         this.sender = sender;
         this.channel = channel;
         this.message = message;
         this.blacklist = blacklist;
+        this.url = url;
     }
 
     public PacketChatBungee(PacketChatSpigot packet) {
@@ -40,6 +42,7 @@ public class PacketChatBungee extends PacketBungee {
         this.channel = packet.channel;
         this.message = packet.message;
         this.blacklist = packet.blacklist;
+        this.url = packet.url;
     }
 
     @Override

@@ -9,8 +9,6 @@ package com.spleefleague.core.menu.hotbars.main;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuItemOption;
-import com.spleefleague.core.player.CorePlayerOptions;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -31,14 +29,14 @@ public class OptionsMenu {
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             // Options Menus
-            menuItem = InventoryMenuAPI.createItem()
+            menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Options")
-                    .setDisplayItem(new ItemStack(Material.WRITABLE_BOOK))
+                    .setDisplayItem(Material.WRITABLE_BOOK, 1)
                     .setDescription("Customize your SpleefLeague experience")
                     .createLinkedContainer("Options Menu");
 
             // Chat Options Menus
-            InventoryMenuItem chatOptionsItem = InventoryMenuAPI.createItem()
+            InventoryMenuItem chatOptionsItem = InventoryMenuAPI.createItemDynamic()
                     .setName("Chat Channels")
                     .setDisplayItem(new ItemStack(Material.WRITABLE_BOOK))
                     .setDescription("Toggle Chat Channels")
@@ -46,7 +44,7 @@ public class OptionsMenu {
 
             for (ChatChannel.Channel channel : ChatChannel.Channel.values()) {
                 chatOptionsItem.getLinkedChest()
-                        .addMenuItem(InventoryMenuAPI.createItem()
+                        .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName(ChatChannel.getChannel(channel).getName())
                         .setDescription(cp -> { return "This chat is "
                                 + (cp.getOptions().isChannelDisabled(channel.toString()) ? (ChatColor.RED + "Disabled") : (ChatColor.GREEN + "Enabled")); })

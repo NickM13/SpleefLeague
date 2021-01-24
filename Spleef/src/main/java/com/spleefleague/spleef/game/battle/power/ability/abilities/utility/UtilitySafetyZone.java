@@ -22,7 +22,7 @@ public class UtilitySafetyZone extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilitySafetyZone.class)
-                .setCustomModelData(4)
+                .setCustomModelData(7)
                 .setName("Safety Zone")
                 .setDescription("For %DURATION% seconds, blocks around the caster are made invulnerable.")
                 .setUsage(15);

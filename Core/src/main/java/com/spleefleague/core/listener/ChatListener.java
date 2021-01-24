@@ -64,9 +64,6 @@ public class ChatListener implements Listener {
                     formattedMessage += "!";
                 }
             }
-            for (Map.Entry<String, String> entry : ChatEmoticons.getEmoticons().entrySet()) {
-                formattedMessage = formattedMessage.replaceAll(entry.getKey(), entry.getValue());
-            }
         }
         
         Chat.sendMessage(cp, formattedMessage, url);

@@ -18,7 +18,7 @@ public class OffensiveStarfall extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveStarfall.class)
-                .setCustomModelData(2)
+                .setCustomModelData(10)
                 .setName("Starfall")
                 .setDescription("Activate to channel a volley of %X15% falling stars every second around your opponent for %MAX_TIME% seconds. During the duration of starfall you are afflicted with Slowness III. Reactivate to cancel.")
                 .setUsage(15);

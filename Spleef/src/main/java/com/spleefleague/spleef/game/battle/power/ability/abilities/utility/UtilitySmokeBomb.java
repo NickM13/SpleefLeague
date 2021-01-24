@@ -23,7 +23,7 @@ public class UtilitySmokeBomb extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilitySmokeBomb.class)
-                .setCustomModelData(5)
+                .setCustomModelData(8)
                 .setName("Smoke Bomb")
                 .setDescription("Throw a smoke bomb onto the ground lasting %DURATION% seconds, blinding players in a small radius around the bomb.")
                 .setUsage(15);

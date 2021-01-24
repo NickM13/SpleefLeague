@@ -46,7 +46,10 @@ import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketServerList;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -79,7 +82,11 @@ public class Core extends CorePlugin<CorePlayer> {
     
     // For packet managing
     private static ProtocolManager protocolManager;
-    
+
+    private Set<String> lobbyServers = new HashSet<>();
+    private Set<String> minigameServers = new HashSet<>();
+    private Set<String> servers = new HashSet<>();
+
     /**
      * Called when the plugin is enabling
      */
@@ -166,6 +173,27 @@ public class Core extends CorePlugin<CorePlayer> {
     public void refreshPlayers(Set<UUID> players) {
         super.refreshPlayers(players);
         leaderboards.refresh(players);
+    }
+
+    public void updateServerList(PacketServerList packet) {
+        servers.clear();
+        lobbyServers.clear();
+        minigameServers.clear();
+        servers.addAll(packet.lobbyServers);
+        lobbyServers.addAll(packet.lobbyServers);
+        minigameServers.addAll(packet.minigameServers);
+    }
+
+    public Set<String> getServers() {
+        return servers;
+    }
+
+    public Set<String> getLobbyServers() {
+        return lobbyServers;
+    }
+
+    public Set<String> getMinigameServers() {
+        return minigameServers;
     }
 
     private static List<BukkitTask> taskList = new ArrayList<>();
@@ -302,10 +330,12 @@ public class Core extends CorePlugin<CorePlayer> {
         if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
         PersonalScoreboard.onPlayerJoin(cp);
+        TextComponent text = cp.getChatName();
+        text.addExtra(" has logged in");
         for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
             if (cp.equals(cp2)) continue;
             if (cp2.getFriends().isFriend(uuid)) {
-                Chat.sendMessageToPlayer(cp2, cp.getDisplayName() + " has logged in");
+                Chat.sendMessageToPlayer(cp2, text);
             }
         }
     }
@@ -316,11 +346,13 @@ public class Core extends CorePlugin<CorePlayer> {
         PersonalScoreboard.onPlayerQuit(uuid);
 
         if (cp.isVanished()) return;
+        TextComponent text = cp.getChatName();
+        text.addExtra(" has logged out");
 
         for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
             if (cp.equals(cp2)) continue;
             if (cp2.getFriends().isFriend(uuid)) {
-                Chat.sendMessageToPlayer(cp2, cp.getDisplayName() + " has logged out");
+                Chat.sendMessageToPlayer(cp2, text);
             }
         }
     }
@@ -552,8 +584,8 @@ public class Core extends CorePlugin<CorePlayer> {
      * @return Chat Prefix
      */
     @Override
-    public String getChatPrefix() {
-        return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    public TextComponent getChatPrefix() {
+        return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT);
     }
 
     /**

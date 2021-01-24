@@ -29,6 +29,8 @@ public class PacketUtil {
                 return str.isEmpty() ? null : UUID.fromString(str);
             } else if (type.equals(String.class)) {
                 return input.readUTF();
+            } else if (type.equals(boolean.class)) {
+                return input.readBoolean();
             } else if (type.equals(int.class)) {
                 return input.readInt();
             } else if (type.equals(double.class)) {
@@ -74,6 +76,8 @@ public class PacketUtil {
                 return str.isEmpty() ? null : UUID.fromString(str);
             } else if (field.getType().equals(String.class)) {
                 return input.readUTF();
+            } else if (field.getType().equals(boolean.class)) {
+                return input.readBoolean();
             } else if (field.getType().equals(int.class)) {
                 return input.readInt();
             } else if (field.getType().equals(double.class)) {
@@ -127,6 +131,8 @@ public class PacketUtil {
             output.writeUTF(o == null ? "" : o.toString());
         } else if (type.equals(String.class)) {
             output.writeUTF((String) o);
+        } else if (type.equals(boolean.class)) {
+            output.writeBoolean((boolean) o);
         } else if (type.equals(int.class)) {
             output.writeInt((int) o);
         } else if (type.equals(double.class)) {

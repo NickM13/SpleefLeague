@@ -139,8 +139,8 @@ public class CollectibleCommand extends CoreCommand {
                                     @HelperArg("<customModelData>") Integer customModelData) {
         Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
         if (collectible != null) {
-            Integer prevModel = collectible.getCustomModelDataNbt();
-            collectible.setCustomModelDataNbt(customModelData);
+            Integer prevModel = collectible.getCustomModelData();
+            collectible.setCustomModelData(customModelData);
             success(sender, "Changed customModelData value of " + collectible.getIdentifier() + " from " + prevModel + " to " + customModelData);
             sender.setHeldItem(collectible.getDisplayItem());
         } else {
@@ -177,9 +177,9 @@ public class CollectibleCommand extends CoreCommand {
                                CorePlayer target,
                                @OptionArg(listName = "collectibles") String identifier) {
         if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
-            sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
+            sender.sendMessage("Added collectible " + identifier + " to " + target.getChatNamePossessive() + " collection");
         } else {
-            sender.sendMessage(target.getDisplayName() + " already had " + identifier);
+            sender.sendMessage(target.getChatName() + " already had " + identifier);
         }
     }
 
@@ -197,9 +197,9 @@ public class CollectibleCommand extends CoreCommand {
                                   CorePlayer target,
                                   @OptionArg(listName = "collectibles") String identifier) {
         if (target.getCollectibles().remove(Vendorables.get(collectibleClass, identifier))) {
-            success(sender, "Removed collectible " + identifier + " from " + target.getDisplayNamePossessive() + " collection");
+            success(sender, "Removed collectible " + identifier + " from " + target.getChatNamePossessive() + " collection");
         } else {
-            error(sender, target.getDisplayName() + " didn't have " + identifier);
+            error(sender, target.getChatName() + " didn't have " + identifier);
         }
     }
 

@@ -76,10 +76,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     protected void setupScoreboard() {
         chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
         chatGroup.addTeam("time", "00:00:00:000");
-        chatGroup.addTeam("p1", "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(0).getCorePlayer().getName());
-        chatGroup.addTeam("p1score", BattleUtils.toScoreSquares(sortedBattlers.get(0), playToPoints));
-        chatGroup.addTeam("p2", "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(1).getCorePlayer().getName());
-        chatGroup.addTeam("p2score", BattleUtils.toScoreSquares(sortedBattlers.get(1), playToPoints));
+        for (int i = 0; i < sortedBattlers.size(); i++) {
+            chatGroup.addTeam("p" + i, "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(i).getCorePlayer().getName());
+            chatGroup.addTeam("p" + i + "score", BattleUtils.toScoreSquares(sortedBattlers.get(i), playToPoints));
+        }
         updateScoreboard();
     }
     
@@ -88,12 +88,13 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void sendStartMessage() {
-        getPlugin().sendMessage("Starting "
-                + getMode().getDisplayName()
-                + " match on "
-                + arena.getName()
-                + " between "
-                + CoreUtils.mergePlayerNames(battlers.keySet()) + "!");
+        getPlugin().sendMessage(new TextComponent(
+                new TextComponent("Starting "),
+                new TextComponent(getMode().getDisplayName()),
+                new TextComponent(" match on "),
+                new TextComponent(Chat.GAMEMAP + arena.getName()),
+                new TextComponent(" between "),
+                CoreUtils.mergePlayerNames(battlers.keySet())));
     }
     
     @Override
@@ -129,8 +130,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     public void updateScoreboard() {
         chatGroup.setTeamDisplayName("time", Chat.DEFAULT + getRuntimeString());
-        chatGroup.setTeamDisplayName("p1score", BattleUtils.toScoreSquares(sortedBattlers.get(0), playToPoints));
-        chatGroup.setTeamDisplayName("p2score", BattleUtils.toScoreSquares(sortedBattlers.get(1), playToPoints));
+        for (int i = 0; i < sortedBattlers.size(); i++) {
+            chatGroup.setTeamDisplayName("p" + i + "score", BattleUtils.toScoreSquares(sortedBattlers.get(i), playToPoints));
+        }
     }
     
     /**
@@ -154,23 +156,27 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     public void updatePhysicalScoreboard() {
         for (Position scoreboard : scoreboards) {
-            BuildStructure score0 = BuildStructures.get("score" + sortedBattlers.get(0).getRoundWins());
-            if (score0 != null) {
-                Map<BlockPosition, FakeBlock> blocks = score0.getFakeBlocks();
-                blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(blocks, (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
-                gameWorld.setBlocks(blocks);
+            if (sortedBattlers.size() > 0) {
+                BuildStructure score0 = BuildStructures.get("score" + sortedBattlers.get(0).getRoundWins());
+                if (score0 != null) {
+                    Map<BlockPosition, FakeBlock> blocks = score0.getFakeBlocks();
+                    blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(blocks, (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
+                    gameWorld.setBlocks(blocks);
+                }
             }
-            BuildStructure score1 = BuildStructures.get("score" + sortedBattlers.get(1).getRoundWins());
-            if (score1 != null) {
-                Map<BlockPosition, FakeBlock> blocks = score1.getFakeBlocks();
-                blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(FakeUtils.translateBlocks(blocks, new BlockPosition(6, 0, 0)), (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
-                gameWorld.setBlocks(blocks);
+            if (sortedBattlers.size() > 1) {
+                BuildStructure score1 = BuildStructures.get("score" + sortedBattlers.get(1).getRoundWins());
+                if (score1 != null) {
+                    Map<BlockPosition, FakeBlock> blocks = score1.getFakeBlocks();
+                    blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(FakeUtils.translateBlocks(blocks, new BlockPosition(6, 0, 0)), (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
+                    gameWorld.setBlocks(blocks);
+                }
             }
         }
     }
 
     protected void onScorePoint(BP winner) {
-        chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " has scored a point!");
+        chatGroup.sendMessage(winner.getCorePlayer().getChatName(), new TextComponent(" has scored a point!"));
         updatePhysicalScoreboard();
     }
     
@@ -243,9 +249,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             Core.getInstance().sendPacket(new PacketBattleEndUnrated(
                     getMode().getName(),
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
-            getPlugin().sendMessageBlacklisted(Chat.DEFAULT + "Battle between "
-                    + Chat.PLAYER_NAME + CoreUtils.mergePlayerNames(battlers.keySet())
-                    + Chat.DEFAULT + " was peacefully concluded.",
+            getPlugin().sendMessageBlacklisted(new TextComponent(
+                    new TextComponent("Battle between "),
+                    CoreUtils.mergePlayerNames(battlers.keySet()),
+                    new TextComponent(" was peacefully concluded.")),
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
         } else {
             BP loser = null;

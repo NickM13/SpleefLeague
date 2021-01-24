@@ -28,7 +28,7 @@ public class UtilityIcePillar extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilityIcePillar.class)
-                .setCustomModelData(2)
+                .setCustomModelData(3)
                 .setName("Ice Pillar")
                 .setDescription("Raise a pillar of ice beneath the caster, quickly lifting them upward.")
                 .setUsage(20);

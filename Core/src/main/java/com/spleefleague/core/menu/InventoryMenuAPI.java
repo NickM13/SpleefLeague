@@ -46,12 +46,21 @@ public class InventoryMenuAPI {
     }
     
     /**
-     * Creates a base InventoryMenuItem
+     * Creates a base InventoryMenuItemDynamic
      *
-     * @return New InventoryMenuItem
+     * @return New InventoryMenuItemDynamic
      */
-    public static InventoryMenuItem createItem() {
-        return new InventoryMenuItem();
+    public static InventoryMenuItemDynamic createItemDynamic() {
+        return new InventoryMenuItemDynamic();
+    }
+
+    /**
+     * Create a base InventoryMenuItemStatic
+     *
+     * @return New InventoryMenuItemStatic
+     */
+    public static InventoryMenuItemStatic createItemStatic() {
+        return new InventoryMenuItemStatic();
     }
 
     /**

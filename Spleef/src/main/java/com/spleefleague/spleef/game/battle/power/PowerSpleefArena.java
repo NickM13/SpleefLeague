@@ -15,6 +15,8 @@ import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.game.battle.power.ability.Abilities;
+import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
@@ -31,7 +33,7 @@ public class PowerSpleefArena {
     private static final String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
     
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lPower Spleef")
                 .setDescription(cp -> "A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!" +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.POWER.getBattleMode()).getPlaying())
@@ -39,31 +41,20 @@ public class PowerSpleefArena {
                 .createLinkedContainer("Power Spleef Menu");
 
         menuItem.getLinkedChest()
-                .setPageBoundaries(1, 3, 1, 7)
-                .setOpenAction((container, cp2) -> {
-                    container.clearUnsorted();
-                    container.addMenuItem(InventoryMenuAPI.createItem()
-                            .setName("&a&lRandom Arena")
-                            .setDisplayItem(new ItemStack(Material.EMERALD))
-                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getBattleMode(), cp)));
-
-                    Arenas.getAll(SpleefMode.POWER.getBattleMode()).values().forEach(arena -> {
-                        menuItem.getLinkedChest().addMenuItem(arena.createMenu((cp -> Spleef.getInstance().queuePlayer(SpleefMode.POWER.getBattleMode(), cp, arena))));
-                    });
-                });
+                .setOpenAction((container, cp2) -> Arenas.fillMenu(Spleef.getInstance(), container, SpleefMode.POWER.getBattleMode()));
 
         menuItem.getLinkedChest().addStaticItem(PowerTrainingArena.createMenu(), 0, 4);
 
-        menuItem.getLinkedChest().addStaticItem(AbilityOffensive.createMenu(), 2, 4);
-        menuItem.getLinkedChest().addStaticItem(AbilityUtility.createMenu(), 4, 4);
-        menuItem.getLinkedChest().addStaticItem(AbilityMobility.createMenu(), 6, 4);
+        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE), 2, 4);
+        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY), 4, 4);
+        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY), 6, 4);
 
-        Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Spleef.getInstance().getSpleefMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
-    public static void initLeaderboard(int x, int y) {
+    public static void initLeaderboard() {
         LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.POWER.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "Power Spleef")
                 .setDescription("View the top players of Power Spleef!")
                 .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
@@ -71,7 +62,7 @@ public class PowerSpleefArena {
         
         LeaderboardMenu.getItem()
                 .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+                .addMenuItem(menuItem);
     }
     
 }

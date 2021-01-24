@@ -16,7 +16,7 @@ import org.bukkit.Material;
 public class ArenaBuilder {
     
     public static InventoryMenuItem createNewItem(String modeName) {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName("New Arena")
                 .setDescription("Click to Create a New Arena")
                 .setDisplayItem(Material.STICKY_PISTON)
@@ -33,7 +33,7 @@ public class ArenaBuilder {
     }
     
     public static InventoryMenuItem createExistingItem(String modeName) {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName("Add Existing Arena")
                 .setDescription("Click to add an existing arena to this mode")
                 .setDisplayItem(Material.STICKY_PISTON)
@@ -42,7 +42,7 @@ public class ArenaBuilder {
                         .setOpenAction((container, cp2) -> {
                             container.clearUnsorted();
                             for (Arena arena : Arenas.getAll().values()) {
-                                container.addMenuItem(InventoryMenuAPI.createItem()
+                                container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                         .setName(arena.getName())
                                         .setDisplayItem(Material.SNOW_BLOCK)
                                         .setDescription("Click to add this arena")
@@ -56,13 +56,13 @@ public class ArenaBuilder {
     }
     
     public static InventoryMenuItem createEditItem(Arena arena) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(arena.getName() + " (" + arena.getName() + ")")
                 .setDescription("Click to Edit")
                 .setDisplayItem(Material.DIAMOND)
                 .createLinkedContainer("Editing: " + arena.getName());
         
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Rename")
                 .setDescription("Click to Rename Arena")
                 .setDisplayItem(Material.STICKY_PISTON)
@@ -77,7 +77,7 @@ public class ArenaBuilder {
                 .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
+                .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Borders")
                         .setDescription("")
                         .setDisplayItem(Material.PAPER)
@@ -88,7 +88,7 @@ public class ArenaBuilder {
                                     int i = 0;
                                     for (Dimension border : arena.getBorders()) {
                                         int id = i;
-                                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                                 .setName("Remove Border")
                                                 .setDisplayItem(Material.SPRUCE_LOG)
                                                 .setDescription(border.getLow() + "\n" + border.getHigh())
@@ -101,7 +101,7 @@ public class ArenaBuilder {
                         .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
+                .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Goals")
                         .setDescription("")
                         .setDisplayItem(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)
@@ -112,7 +112,7 @@ public class ArenaBuilder {
                                     int i = 0;
                                     for (Dimension goal : arena.getGoals()) {
                                         int id = i;
-                                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                                 .setName("Remove Goal")
                                                 .setDisplayItem(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)
                                                 .setDescription(goal.getLow() + "\n" + goal.getHigh())
@@ -125,7 +125,7 @@ public class ArenaBuilder {
                         .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
+                .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Checkpoints")
                         .setDescription("")
                         .setDisplayItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
@@ -136,7 +136,7 @@ public class ArenaBuilder {
                                     int i = 0;
                                     for (Position pos : arena.getCheckpoints()) {
                                         int id = i;
-                                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                                 .setName("Remove Checkpoint")
                                                 .setDisplayItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE)
                                                 .setDescription(pos.toString())
@@ -149,7 +149,7 @@ public class ArenaBuilder {
                         .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
+                .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Structures")
                         .setDescription("")
                         .setDisplayItem(Material.DARK_PRISMARINE_STAIRS)
@@ -158,7 +158,7 @@ public class ArenaBuilder {
                                 .setRefreshAction((container, cp2) -> {
                                     container.clearUnsorted();
                                     for (String structure : arena.getStructureNames()) {
-                                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                                 .setName("Remove Structure")
                                                 .setDisplayItem(Material.SPRUCE_LOG)
                                                 .setDescription(structure)
@@ -170,7 +170,7 @@ public class ArenaBuilder {
                         .setCloseOnAction(false));
     
         menuItem.getLinkedChest()
-                .addMenuItem(InventoryMenuAPI.createItem()
+                .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Spawns")
                         .setDescription("")
                         .setDisplayItem(Material.RED_BED)
@@ -181,7 +181,7 @@ public class ArenaBuilder {
                                     int i = 0;
                                     for (Position pos : arena.getSpawns()) {
                                         int id = i;
-                                        container.addMenuItem(InventoryMenuAPI.createItem()
+                                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                                 .setName("Remove Spawn")
                                                 .setDisplayItem(Material.RED_BED)
                                                 .setDescription(pos.toString())

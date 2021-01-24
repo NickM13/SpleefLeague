@@ -17,7 +17,7 @@ public class PetMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Pets")
                 .setDescription("Collection of Pets!")
                 .setDisplayItem(Material.FOX_SPAWN_EGG)
@@ -27,7 +27,7 @@ public class PetMenu {
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
                     for (Vendorable vendorable : Vendorables.getAll(Pet.class).values()) {
-                        container.addMenuItem(InventoryMenuAPI.createItem()
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(vendorable.getName())
                                 .setDisplayItem(vendorable.getDisplayItem())
                                 .setDescription(vendorable.getDescription())

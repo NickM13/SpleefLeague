@@ -18,7 +18,7 @@ public class MobilityAirDash extends AbilityMobility {
 
     public static AbilityStats init() {
         return init(MobilityAirDash.class)
-                .setCustomModelData(1)
+                .setCustomModelData(2)
                 .setName("Air Dash")
                 .setDescription("Dash a short distance forward. Holds up to %charges% charges.")
                 .setUsage(3, 10D, 1D);

@@ -48,6 +48,18 @@ public class SpleefUtils {
         battle.getGameWorld().addBreakTool(Material.DIAMOND_SHOVEL);
     }
 
+    public static void fillFieldFast(Battle<?> battle) {
+        if (battle == null || battle.getGameWorld() == null) return;
+        GameWorld gameWorld = battle.getGameWorld();
+        gameWorld.clear();
+        for (BuildStructure structure : battle.getArena().getStructures()) {
+            gameWorld.overwriteBlocks(
+                    FakeUtils.translateBlocks(
+                            FakeUtils.rotateBlocks(structure.getFakeBlocks(), (int) battle.getArena().getOrigin().getYaw()),
+                            battle.getArena().getOrigin().toBlockPosition()));
+        }
+    }
+
     /**
      * Fill the field without any delay
      *
@@ -57,13 +69,6 @@ public class SpleefUtils {
         if (battle == null || battle.getGameWorld() == null) return;
         GameWorld gameWorld = battle.getGameWorld();
         List<Map<BlockPosition, FakeBlock>> toMerge = new ArrayList<>();
-        /*
-        for (BuildStructure structure : battle.getArena().getStructures()) {
-            if (structure != null) {
-                toMerge.add(structure.getFakeBlocks());
-            }
-        }
-        */
         if (field != null) {
             toMerge.add(field.getFakeBlocks());
         }

@@ -40,6 +40,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.QUEUE_LEAVE, new QueueLeaveSpigotListener());
         registeredListeners.put(PacketType.Spigot.REQUEUE, new RequeueSpigotListener());
         registeredListeners.put(PacketType.Spigot.HUB, new HubSpigotListener());
+        registeredListeners.put(PacketType.Spigot.SERVER_CONNECT, new ServerConnectListener());
         registeredListeners.put(PacketType.Spigot.SET_RATING, new SetRatingSpigotListener());
         registeredListeners.put(PacketType.Spigot.TELL, new TellSpigotListener());
     }

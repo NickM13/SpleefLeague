@@ -89,8 +89,9 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     @DBField protected String name = "";
     @DBField protected String description = "";
     @DBField protected Material material;
-    @DBField protected Document nbts;
     @DBField protected Integer coinCost = 0;
+    @DBField protected UUID skullOwner = null;
+    @DBField protected Integer customModelData = 0;
     
     private final InventoryMenuItem vendorMenuItem;
     private ItemStack displayItem;
@@ -100,9 +101,8 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      */
     public Vendorable() {
         this.type = getTypeName(getClass());
-        this.nbts = new Document();
         this.coinCost = 0;
-        vendorMenuItem = InventoryMenuAPI.createItem()
+        vendorMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setAction(this::attemptPurchase);
     }
     
@@ -203,34 +203,24 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         return material;
     }
 
-    public final Integer getCustomModelDataNbt() {
-        return nbts.get("CustomModelData", Integer.class);
+    public final int getCustomModelData() {
+        return customModelData;
     }
 
-    public final void setCustomModelDataNbt(int customModelData) {
-        nbts.put("CustomModelData", customModelData);
+    public final void setCustomModelData(int customModelData) {
+        this.customModelData = customModelData;
         updateDisplayItem();
         saveChanges();
     }
 
-    public final String getSkullOwnerNbt() {
-        return nbts.get("SkullOwner", String.class);
+    public final UUID getSkullOwner() {
+        return skullOwner;
     }
 
-    public final void setCustomModelDataNbt(String skullOwner) {
-        nbts.put("SkullOwner", skullOwner);
+    public final void setSkullOwner(UUID skullOwner) {
+        this.skullOwner = skullOwner;
         updateDisplayItem();
         saveChanges();
-    }
-
-    public final void setDamageNbt(int damage) {
-        nbts.put("Damage", damage);
-        updateDisplayItem();
-        saveChanges();
-    }
-    
-    public final Integer getDamageNbt() {
-        return nbts.get("Damage", Integer.class);
     }
     
     /**
@@ -328,21 +318,10 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
-            for (Map.Entry<String, Object> nbt : nbts.entrySet()) {
-                if (nbt.getKey().equalsIgnoreCase("damage")) {
-                    if (itemMeta instanceof Damageable) {
-                        ((Damageable) itemMeta).setDamage((Integer) nbt.getValue());
-                    }
-                } else if (nbt.getKey().equalsIgnoreCase("skullowner")) {
-                    if (itemMeta instanceof SkullMeta) {
-                        ((SkullMeta) itemMeta).setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString((String) nbt.getValue())));
-                    }
-                } else if (nbt.getKey().equalsIgnoreCase("custommodeldata")) {
-                    itemMeta.setCustomModelData((Integer) nbt.getValue());
-                } else {
-                    CoreLogger.logError("\"" + nbt.getKey() + "\" tag not set up yet, Vendorable.java:324", null);
-                }
+            if (skullOwner != null && itemMeta instanceof SkullMeta) {
+                ((SkullMeta) itemMeta).setOwningPlayer(Bukkit.getOfflinePlayer(skullOwner));
             }
+            itemMeta.setCustomModelData(customModelData);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(name);

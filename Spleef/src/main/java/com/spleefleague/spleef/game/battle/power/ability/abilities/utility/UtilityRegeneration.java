@@ -15,7 +15,7 @@ public class UtilityRegeneration extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilityRegeneration.class)
-                .setCustomModelData(3)
+                .setCustomModelData(6)
                 .setName("Regeneration")
                 .setDescription("For %TOTAL% seconds, quickly regenerate the field and empty ground around the caster.")
                 .setUsage(15);

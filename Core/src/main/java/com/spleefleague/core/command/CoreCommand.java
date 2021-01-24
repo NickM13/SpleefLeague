@@ -23,6 +23,8 @@ import javax.annotation.Nullable;
 
 import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -724,8 +726,7 @@ public class CoreCommand extends Command {
                             return success;
                         } else {
                             if (method.getAnnotation(CommandAnnotation.class).confirmation()) {
-                                Chat.sendRequest("Are you sure you want to run this command?",
-                                        cp,
+                                Chat.sendRequest(cp,
                                         "cmd:" + method.getName(),
                                         (r, s) -> {
                                             try {
@@ -733,7 +734,8 @@ public class CoreCommand extends Command {
                                             } catch (IllegalAccessException | InvocationTargetException ex) {
                                                 CoreLogger.logError(null, ex);
                                             }
-                                        });
+                                        },
+                                        "Are you sure you want to run this command?");
                             } else {
                                 method.invoke(this, params.toArray(new Object[0]));
                             }
@@ -1053,6 +1055,9 @@ public class CoreCommand extends Command {
         Core.getInstance().sendMessage(cs, msg);
     }
     protected void success(CorePlayer cp, String msg) {
+        Core.getInstance().sendMessage(cp, msg);
+    }
+    protected void success(CorePlayer cp, BaseComponent... msg) {
         Core.getInstance().sendMessage(cp, msg);
     }
 

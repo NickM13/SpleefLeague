@@ -23,29 +23,29 @@ public class PracticeSJArena {
     
     public static InventoryMenuItem createMenu() {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
-        InventoryMenuItem spleefMenuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem spleefMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "SuperJump: Practice")
                 .setDescription("Practice Description.")
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .createLinkedContainer("Practice SuperJump Menu");
         
-        InventoryMenuItem mapMenuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem mapMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Map Select: Practice Spleef")
                 .setDisplayItem(new ItemStack(Material.FILLED_MAP))
                 .createLinkedContainer("Map Select: Practice Spleef");
         
-        mapMenuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        mapMenuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getBattleMode(), cp)));
     
-        Arenas.getAll(SJMode.PRACTICE.getBattleMode()).forEach((String s, Arena arena) -> mapMenuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        Arenas.getAll(SJMode.PRACTICE.getBattleMode()).forEach((String s, Arena arena) -> mapMenuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(arena.getName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRACTICE.getBattleMode(), cp, arena))));
         
-        spleefMenuItem.getLinkedChest().addMenuItem(mapMenuItem, 0);
+        spleefMenuItem.getLinkedChest().addStaticItem(mapMenuItem, 0);
         
         return spleefMenuItem;
     }

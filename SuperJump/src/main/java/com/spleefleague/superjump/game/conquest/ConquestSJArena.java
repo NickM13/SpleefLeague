@@ -19,7 +19,7 @@ public class ConquestSJArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "SuperJump: Conquest")
                 .setDescription("Conquest Description.")
                 .setDisplayItem(Material.DIAMOND_AXE, 21)
@@ -31,6 +31,6 @@ public class ConquestSJArena {
                     .addMenuItem(pack.createMenu());
         }
         
-        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addMenuItem(menuItem, x, y);
+        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addStaticItem(menuItem, x, y);
     }
 }

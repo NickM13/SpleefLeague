@@ -2,8 +2,6 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
-import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -16,10 +14,11 @@ public class GamemodeMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Gamemodes")
                 .setDescription("Check these out!")
                 .setDisplayItem(Material.COMPASS, 2)
+                .setSelectedItem(Material.COMPASS, 3)
                 .createLinkedContainer("Gamemodes");
     }
     

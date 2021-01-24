@@ -8,18 +8,28 @@ package com.spleefleague.spleef;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
+import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
+import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import com.spleefleague.spleef.commands.*;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
+import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
+import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.bonanza.BonanzaSpleefArena;
@@ -27,6 +37,8 @@ import com.spleefleague.spleef.game.battle.classic.ClassicSpleefArena;
 import com.spleefleague.spleef.game.battle.multi.MultiSpleefArena;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefArena;
 import com.spleefleague.spleef.game.battle.team.TeamSpleefArena;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -52,7 +64,6 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         ClassicSpleefAffixes.init();
         Abilities.init();
         Shovel.init();
-        //Power.init();
         
         // Initialize player manager
         playerManager = new PlayerManager<>(this, SpleefPlayer.class, getPluginDB().getCollection("Players"));
@@ -97,34 +108,46 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     }
 
     public void initMenu() {
-        spleefMenuItem = InventoryMenuAPI.createItem()
+        spleefMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Spleef")
                 .setDescription(cp -> "A competitive gamemode in which you must knock your opponent into the water while avoiding a similar fate." +
                         "\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .createLinkedContainer("Spleef Menu");
-        
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 0, 2);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 1, 3);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 2, 2);
-        ClassicSpleefArena.createMenu(3, 3);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 4, 2);
-        PowerSpleefArena.createMenu(5, 3);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 6, 2);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 7, 3);
-        spleefMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 8, 2);
+
+        InventoryMenuContainerChest mainContainer = spleefMenuItem.getLinkedChest();
+
+        InventoryMenuItem classicMenu = Arenas.createMenu(getInstance(), SpleefMode.CLASSIC.getBattleMode());
+
+        InventoryMenuItem powerMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER.getBattleMode());
+
+        InventoryMenuItem powerTrainingMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER_TRAINING.getBattleMode());
+        powerMenu.getLinkedChest().addStaticItem(powerTrainingMenu, 4, 5);
+
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE), 6, 2);
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY), 6, 3);
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY), 6, 4);
+
+        InventoryMenuItem teamMenu = Arenas.createMenu(getInstance(), SpleefMode.TEAM.getBattleMode());
+
+        InventoryMenuItem multiMenu = Arenas.createMenu(getInstance(), SpleefMode.MULTI.getBattleMode());
+
+        mainContainer.addStaticItem(classicMenu, 6, 1);
+        mainContainer.addStaticItem(powerMenu, 5, 1);
+        mainContainer.addStaticItem(teamMenu, 4, 1);
+        mainContainer.addStaticItem(multiMenu, 3, 1);
 
         Shovel.createMenu();
     
-        SLMainHotbar.getItemHotbar().getLinkedChest().addMenuItem(spleefMenuItem, 4, 2);
+        GamemodeMenu.getItem().getLinkedChest().addStaticItem(spleefMenuItem, 6, 1);
 
         ClassicSpleefAffixes.createMenu();
-    
-        ClassicSpleefArena.initLeaderboard(0, 1);
-        TeamSpleefArena.initLeaderboard(2, 1);
-        MultiSpleefArena.initLeaderboard(1, 2);
-        PowerSpleefArena.initLeaderboard(3, 2);
+
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.CLASSIC.getBattleMode());
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.TEAM.getBattleMode());
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.MULTI.getBattleMode());
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.POWER.getBattleMode());
     }
     
     public void initCommands() {
@@ -140,8 +163,8 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     /**
      * @return Chat Prefix
      */
-    public String getChatPrefix() {
-        return Chat.TAG_BRACE + "[" + Chat.TAG + "Spleef" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    public TextComponent getChatPrefix() {
+        return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "Spleef" + Chat.TAG_BRACE + "] " + Chat.DEFAULT);
     }
     
 }

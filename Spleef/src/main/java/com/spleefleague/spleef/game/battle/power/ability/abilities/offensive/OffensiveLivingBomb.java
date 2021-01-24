@@ -23,7 +23,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveLivingBomb.class)
-                .setCustomModelData(5)
+                .setCustomModelData(6)
                 .setName("Living Bomb")
                 .setDescription("Ignite a living bomb inside yourself, detonating after %DETONATE_AFTER% seconds, firing destructive shrapnel, destroying blocks in a small radius around the player and shooting them upwards. Players caught by the blast are knocked back.")
                 .setUsage(15);

@@ -19,12 +19,13 @@ import com.spleefleague.core.request.RequestManager;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author NickM13
  */
 public class RequestCommand extends CoreCommand {
-    
+
     public RequestCommand() {
         super("request", Rank.DEFAULT);
         setUsage("Sends requests while in battle");
@@ -52,7 +53,7 @@ public class RequestCommand extends CoreCommand {
     public void requestAccept(CorePlayer sender,
                               @LiteralArg(value="accept") String l,
                               String target) {
-        if (!RequestManager.acceptRequest(sender, target)) {
+        if (!RequestManager.acceptRequest(sender, UUID.fromString(target))) {
             error(sender, "No pending request");
         }
     }
@@ -61,7 +62,7 @@ public class RequestCommand extends CoreCommand {
     public void requestDecline(CorePlayer sender,
                                @LiteralArg(value="decline") String l,
                                String target) {
-        if (!RequestManager.declineRequest(sender, target)) {
+        if (!RequestManager.declineRequest(sender, UUID.fromString(target))) {
             error(sender, "No pending request");
         }
     }

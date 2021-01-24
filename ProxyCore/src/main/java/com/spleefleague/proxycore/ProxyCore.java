@@ -8,6 +8,7 @@ import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.utils.packet.Packet;
 import com.spleefleague.coreapi.utils.packet.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketServerList;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
 import com.spleefleague.proxycore.game.queue.QueueManager;
@@ -73,7 +74,7 @@ public class ProxyCore extends Plugin {
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
-            Set<String> toFindMinigame = Sets.newHashSet(lobbyServers.keySet());
+            Set<String> toFindMinigame = Sets.newHashSet(minigameServers.keySet());
             
             for (ServerInfo server : getProxy().getServersCopy().values()) {
                 String name = server.getName();
@@ -85,7 +86,7 @@ public class ProxyCore extends Plugin {
                             lobbyServers.remove(name);
                         }
                     });
-                    toFindMinigame.remove(name);
+                    toFindLobby.remove(name);
                 } else if (name.toLowerCase().startsWith("minigame")) {
                     server.ping((serverPing, throwable) -> {
                         if (serverPing != null) {
@@ -103,6 +104,8 @@ public class ProxyCore extends Plugin {
             for (String name : toFindMinigame) {
                 minigameServers.remove(name);
             }
+            System.out.println(lobbyServers);
+            sendPacket(new PacketServerList(Lists.newArrayList(lobbyServers.keySet()), Lists.newArrayList(minigameServers.keySet())));
             // TODO: Probably increase this value on release?
         }, 0, 10, TimeUnit.SECONDS);
     }
@@ -121,6 +124,16 @@ public class ProxyCore extends Plugin {
 
     public List<ServerInfo> getMinigameServers() {
         return Lists.newArrayList(minigameServers.values());
+    }
+
+    public ServerInfo getServerByName(String name) {
+        if (lobbyServers.containsKey(name)) {
+            return lobbyServers.get(name);
+        }
+        if (minigameServers.containsKey(name)) {
+            return minigameServers.get(name);
+        }
+        return null;
     }
 
     /**

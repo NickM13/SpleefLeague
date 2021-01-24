@@ -22,9 +22,10 @@ public class HeldItemMenu {
     protected static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Held Item")
-                .setDisplayItem(Material.BAKED_POTATO)
+                .setDisplayItem(Material.DIAMOND_CHESTPLATE, 1)
+                .setSelectedItem(Material.DIAMOND_CHESTPLATE, 2)
                 .setDescription("Change your held item")
                 .setAvailability(cp -> cp.getRank().hasPermission(Rank.DONOR_1))
                 .createLinkedContainer("Held Item");
@@ -33,7 +34,7 @@ public class HeldItemMenu {
                 .setOpenAction((container, cp1) -> {
                     container.clearUnsorted();
                     
-                    menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+                    menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("None")
                             .setDescription("")
                             .setDisplayItem(Material.BAKED_POTATO)
@@ -41,7 +42,7 @@ public class HeldItemMenu {
                             .setCloseOnAction(false));
                     
                     for (Holdable holdable : cp1.getCollectibles().getAllHoldables()) {
-                        container.addMenuItem(InventoryMenuAPI.createItem()
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(holdable.getName())
                                 .setDescription(holdable.getDescription())
                                 .setDisplayItem(holdable.getDisplayItem())
@@ -51,7 +52,7 @@ public class HeldItemMenu {
                 });
     
         menuItem.getLinkedChest()
-                .addStaticItem(InventoryMenuAPI.createItem()
+                .addStaticItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Held Item")
                         .setDescription(cp -> cp.getCollectibles().hasHeldItem()
                                 ? cp.getCollectibles().getHeldItem().getDescription() : "")

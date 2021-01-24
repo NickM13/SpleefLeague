@@ -25,7 +25,7 @@ import java.util.Set;
  *
  * @author NickM13
  */
-public class InventoryMenuItemHotbar extends InventoryMenuItem {
+public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     
     // <"hotbar" NBT, Item>
     private static final Map<String, InventoryMenuItemHotbar> HOTBAR_ITEMS = new HashMap<>();

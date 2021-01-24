@@ -23,24 +23,24 @@ public class ProSJArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "SuperJump: Pro")
                 .setDescription("Pro Description.")
                 .setDisplayItem(Material.DIAMOND_AXE, 23)
                 .createLinkedContainer("Pro SuperJump Menu");
         
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Random Arena")
                 .setDisplayItem(new ItemStack(Material.EMERALD))
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getBattleMode(), cp)));
         
-        Arenas.getAll(SJMode.PRO.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        Arenas.getAll(SJMode.PRO.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(arena.getName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(cp -> { return new ItemStack(Material.FILLED_MAP); })
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.PRO.getBattleMode(), cp, arena))));
         
-        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addMenuItem(menuItem, x, y);
+        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addStaticItem(menuItem, x, y);
     }
 
 }

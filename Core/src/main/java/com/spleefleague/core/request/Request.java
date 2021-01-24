@@ -7,29 +7,30 @@
 package com.spleefleague.core.request;
 
 import com.spleefleague.core.player.CorePlayer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author NickM13
  */
 public abstract class Request {
-    
-    protected String tag;
+
     protected long timeout;
+    protected CorePlayer receiver;
+    protected BaseComponent tag;
     
-    public Request() {
+    public Request(CorePlayer receiver, BaseComponent tag) {
         this.timeout = System.currentTimeMillis() + 120 * 1000;
-    }
-    
-    public void setTag(String tag) {
+        this.receiver = receiver;
         this.tag = tag;
     }
-    
+
     public boolean isExpired() {
         return timeout < System.currentTimeMillis();
     }
     
-    public abstract void accept(CorePlayer receiver, String sender);
-    public abstract void decline(CorePlayer receiver, String sender);
-    public abstract void timeout(CorePlayer receiver, String sender);
+    public abstract void accept();
+    public abstract void decline();
+    public abstract void timeout();
     
 }

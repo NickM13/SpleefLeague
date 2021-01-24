@@ -30,7 +30,7 @@ public class StaffChatCommand extends CoreCommand {
     public void staffchat(CorePlayer sender,
             String message) {
         ChatChannel sc = ChatChannel.Channel.STAFF.getChatChannel();
-        Chat.sendMessage(sc, sc.formatMessage(sender, message, false));
+        Chat.sendMessage(sc, sender, message, false);
     }
     
 }

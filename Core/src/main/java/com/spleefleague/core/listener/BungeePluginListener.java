@@ -29,6 +29,7 @@ public class BungeePluginListener implements PluginMessageListener {
         registeredListeners.put(PacketType.Bungee.REFRESH_QUEUE, new RefreshQueueBungeeListener());
         registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new RefreshScoreBungeeListener());
         registeredListeners.put(PacketType.Bungee.TELL, new TellBungeeListener());
+        registeredListeners.put(PacketType.Bungee.SERVER_LIST, new ServerListBungeeListener());
     }
 
     @Override

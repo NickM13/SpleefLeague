@@ -20,7 +20,7 @@ public class UtilityLuckyDraw extends AbilityUtility {
 
     public static AbilityStats init() {
         return init(UtilityLuckyDraw.class)
-                .setCustomModelData(2)
+                .setCustomModelData(4)
                 .setName("Luck of the Draw")
                 .setDescription("Generate a random one time use power.")
                 .setUsage(15);

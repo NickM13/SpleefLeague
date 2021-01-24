@@ -24,42 +24,20 @@ import org.bukkit.inventory.ItemStack;
 public class ClassicSpleefArena {
 
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lClassic Spleef")
                 .setDescription(cp -> "The classic version in which you duel a single opponent with a basic diamond shovel." +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .createLinkedContainer("Classic Spleef Menu");
-        
-        menuItem.getLinkedChest()
-                .setPageBoundaries(1, 3, 1, 7)
-                .setOpenAction((container, cp2) -> {
-                    container.clearUnsorted();
-                    container.addMenuItem(InventoryMenuAPI.createItem()
-                            .setName("&a&lRandom Arena")
-                            .setDisplayItem(new ItemStack(Material.EMERALD))
-                            .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getBattleMode(), cp)));
 
-                    Arenas.getAll(SpleefMode.CLASSIC.getBattleMode()).values().forEach(arena -> {
-                        menuItem.getLinkedChest().addMenuItem(arena.createMenu((cp -> Spleef.getInstance().queuePlayer(SpleefMode.CLASSIC.getBattleMode(), cp, arena))));
-                    });
-                });
+        menuItem.getLinkedChest().setOpenAction((container, cp2) -> Arenas.fillMenu(Spleef.getInstance(), container, SpleefMode.CLASSIC.getBattleMode()));
         
-        Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Spleef.getInstance().getSpleefMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
-    public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.CLASSIC.getName());
-
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
-                .setName("&6&lClassic Spleef")
-                .setDescription("View the top players of Classic Spleef!")
-                .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
-                .setLinkedContainer(leaderboard.createMenuContainer());
-        
-        LeaderboardMenu.getItem()
-                .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+    public static void initLeaderboard() {
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.CLASSIC.getBattleMode());
     }
     
 }

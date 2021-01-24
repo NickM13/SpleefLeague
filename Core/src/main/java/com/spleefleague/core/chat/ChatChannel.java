@@ -10,11 +10,14 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import com.spleefleague.core.player.rank.Ranks;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
 /**
@@ -63,7 +66,7 @@ public class ChatChannel {
         this.name = name;
         this.color = null;
         this.availableFun = null;
-        this.playerNameFormat = PlayerNameFormat.BRACKET;
+        this.playerNameFormat = PlayerNameFormat.COLON;
         this.playerListFun = null;
         this.messageColor = Chat.PLAYER_CHAT;
     }
@@ -89,33 +92,59 @@ public class ChatChannel {
         this.messageColor = messageColor;
     }
     
-    public String formatMessage(CorePlayer sender, String msg, boolean url) {
-        String message = "";
-        switch (playerNameFormat) {
-            case BRACKET:
-                message += Chat.BRACKET + "<";
-                if (sender.getRank().getDisplayNameUnformatted().length() > 0) {
-                    message += Chat.TAG_BRACE + "[" + sender.getRank().getDisplayName() + Chat.TAG_BRACE + "] ";
-                }
-                message += sender.getDisplayName() + Chat.BRACKET + "> ";
-                break;
-            case COLON:
-                message += Chat.TAG_BRACE + "[" + color + name + Chat.TAG_BRACE + "] ";
-                message += sender.getDisplayName() + Chat.BRACKET + ": ";
-                break;
-            default: break;
+    public TextComponent formatMessage(CorePlayer sender, String msg, boolean url) {
+        TextComponent textComponent = new TextComponent();
+        if (sender != null) {
+            switch (playerNameFormat) {
+                case BRACKET:
+                    /*
+                    message += Chat.BRACKET + "<";
+                    if (sender.getRank().getDisplayNameUnformatted().length() > 0) {
+                        message += Chat.TAG_BRACE + "[" + sender.getRank().getDisplayName() + Chat.TAG_BRACE + "] ";
+                    }
+                    message += sender.getDisplayName() + Chat.BRACKET + "> ";
+                    */
+                    break;
+                case COLON:
+                    textComponent.addExtra(sender.getChatNameRanked());
+                    textComponent.addExtra(Chat.BRACKET + ": ");
+                    //componentBuilder.append(sender.getChatNameRanked()).append(": ");
+                    //message += sender.getRank().getDisplayName();
+                    //message += sender.getDisplayName() + Chat.BRACKET + ": ";
+                    break;
+                default:
+                    break;
+            }
         }
-        message += Chat.PLAYER_CHAT;
-        if (url) message += msg;
-        else message += Chat.colorize(msg);
-        return message;
-    }
-    
-    public String formatMessage(String msg) {
-        String message = "";
-        message += "[" + name + "] ";
-        message += Chat.colorize(msg);
-        return message;
+        if (!url) {
+            StringBuilder piece = new StringBuilder();
+            boolean regular = true;
+            for (char c : msg.toCharArray()) {
+                if (c == ':') {
+                    if (regular) {
+                        textComponent.addExtra(Chat.PLAYER_CHAT + piece.toString());
+                        piece = new StringBuilder(":");
+                    } else {
+                        piece.append(":");
+                        if (ChatEmoticons.getEmoticons().containsKey(piece.toString())) {
+                            textComponent.addExtra(new ComponentBuilder(ChatEmoticons.getEmoticons().get(piece.toString())).event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(piece.toString()).create())).create()[0]);
+                        } else {
+                            textComponent.addExtra(Chat.PLAYER_CHAT + piece.toString());
+                        }
+                        piece = new StringBuilder();
+                    }
+                    regular = !regular;
+                } else {
+                    piece.append(c);
+                }
+            }
+            if (piece.length() > 0) {
+                textComponent.addExtra(Chat.PLAYER_CHAT + piece.toString());
+            }
+        } else {
+            textComponent.addExtra(msg);
+        }
+        return textComponent;
     }
 
     public Channel getChannel() {

@@ -19,18 +19,20 @@ public class PacketChatSpigot extends PacketSpigot {
     public String channel;
     public String message;
     public Set<UUID> blacklist;
+    public boolean url;
 
     public PacketChatSpigot() { }
 
-    public PacketChatSpigot(UUID sender, String channel, String message) {
-        this(sender, channel, message, new HashSet<>());
+    public PacketChatSpigot(UUID sender, String channel, String message, boolean url) {
+        this(sender, channel, message, new HashSet<>(), url);
     }
 
-    public PacketChatSpigot(UUID sender, String channel, String message, Set<UUID> blacklist) {
+    public PacketChatSpigot(UUID sender, String channel, String message, Set<UUID> blacklist, boolean url) {
         this.sender = sender;
         this.channel = channel;
         this.message = message;
         this.blacklist = blacklist;
+        this.url = url;
     }
 
     @Override

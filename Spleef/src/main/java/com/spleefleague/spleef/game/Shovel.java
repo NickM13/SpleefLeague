@@ -9,6 +9,7 @@ package com.spleefleague.spleef.game;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.InventoryMenuItemDynamic;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.CollectiblesMenu;
 import com.spleefleague.core.player.BattleState;
@@ -55,7 +56,7 @@ public class Shovel extends Holdable {
             }
         }
         if (!hasDefault) {
-            Shovel shovel = Shovel.create(Shovel.class, "default", "Default Shovel");
+            Shovel.create(Shovel.class, "default", "Default Shovel");
         }
         
         InventoryMenuAPI.createItemHotbar(0, "shovelHotbarItem")
@@ -96,7 +97,7 @@ public class Shovel extends Holdable {
     }
     
     private static InventoryMenuItem createActiveShovelMenuItem() {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getName())
                 .setDescription(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDescription())
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
@@ -107,7 +108,7 @@ public class Shovel extends Holdable {
         for (Vendorable vendorable : Vendorables.getAll(Shovel.class).values()) {
             Shovel shovel = (Shovel) vendorable;
             if (shovel.getShovelType().equals(shovelType)) {
-                InventoryMenuItem smi = InventoryMenuAPI.createItem()
+                InventoryMenuItem smi = InventoryMenuAPI.createItemDynamic()
                         .setName(cp -> shovel.isUnlocked(cp) ? shovel.getName() : "Locked")
                         .setDisplayItem(cp -> shovel.isUnlocked(cp) ? shovel.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
                         .setDescription(cp -> shovel.isUnlocked(cp) ? shovel.getDescription() : "")
@@ -122,48 +123,82 @@ public class Shovel extends Holdable {
         menuItem.getLinkedChest().addStaticItem(createActiveShovelMenuItem(), 4, 4);
         return menuItem;
     }
+
+    public static InventoryMenuItem createDyedMenu() {
+        InventoryMenuItemDynamic menuItem = InventoryMenuAPI.createItemDynamic();
+
+        menuItem
+                .setName("Dyed Shovels")
+                .setDescription(cp -> "View the dyed shovels of " + cp.getCollectibles().getActiveOrDefault(Shovel.class, getDefault()).getName())
+                .setDisplayItem(Material.LAVA_BUCKET, 1);
+
+        return menuItem;
+    }
     
     public static void createMenu() {
-        InventoryMenuItem shovelMenu = InventoryMenuAPI.createItem()
+        InventoryMenuItem shovelMenu = InventoryMenuAPI.createItemStatic()
                 .setName("Shovels")
                 .setDescription("Set your active shovel")
-                .setDisplayItem(cp -> cp.getCollectibles().getActiveOrDefault(Shovel.class, Shovel.getDefault()).getDisplayItem())
+                .setDisplayItem(Material.DIAMOND_SHOVEL, 10)
                 .createLinkedContainer("Active Shovel");
         shovelMenu.getLinkedChest()
-                .addStaticItem(createActiveShovelMenuItem(), 4, 4);
-        
-        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItem()
+                .addStaticItem(createActiveShovelMenuItem(), 6, 2);
+
+        shovelMenu.getLinkedChest()
+                .addStaticItem(createDyedMenu(), 3, 0);
+
+        shovelMenu.getLinkedChest()
+                .setOpenAction((container, cp) -> {
+                    container.clearUnsorted();
+                    for (Shovel shovel : Vendorables.getAllSorted(Shovel.class, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                                .setName(cp2 -> shovel.isUnlocked(cp2) ? shovel.getName() : "Locked")
+                                .setDisplayItem(cp2 -> shovel.isUnlocked(cp2) ? shovel.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
+                                .setDescription(cp2 -> shovel.isUnlocked(cp2) ? shovel.getDescription() : "")
+                                .setAction(cp2 -> {
+                                    if (shovel.isUnlocked(cp2)) {
+                                        cp2.getCollectibles().setActiveItem(shovel);
+                                    }
+                                })
+                                .setCloseOnAction(false));
+                    }
+                });
+
+        /*
+        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItemDynamic()
                 .setName("Default Shovels")
                 .setDescription("Shovels you have unlocked by default!")
                 .setDisplayItem(Material.LIGHT_BLUE_BANNER)
                 .createLinkedContainer("Default Shovels"), ShovelType.DEFAULT), 4, 2);
         
-        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItem()
+        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItemDynamic()
                 .setName("Hidden Shovels")
                 .setDescription("Shh-ovels!")
                 .setDisplayItem(Material.BLACK_BANNER)
                 .createLinkedContainer("Hidden Shovels"), ShovelType.HIDDEN), 3, 3);
         
-        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItem()
+        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItemDynamic()
                 .setName("Event Shovels")
                 .setDescription("Unlock these by attending special events!")
                 .setDisplayItem(Material.RED_BANNER)
                 .createLinkedContainer("Event Shovels"), ShovelType.EVENT), 2, 2);
         
-        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItem()
+        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItemDynamic()
                 .setName("Tournament Shovels")
                 .setDescription("Unlock these by winning tournaments!")
                 .setDisplayItem(Material.ORANGE_BANNER)
                 .createLinkedContainer("Tournament Shovels"), ShovelType.TOURNAMENT), 5, 3);
         
-        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItem()
+        shovelMenu.getLinkedChest().addMenuItem(createMenuTyped(InventoryMenuAPI.createItemDynamic()
                 .setName("Purchased Shovels")
                 .setDescription("Shovels you have unlocked by default!")
                 .setDisplayItem(Material.GREEN_BANNER)
                 .createLinkedContainer("Purchased Shovels"), ShovelType.SHOP), 6, 2);
 
+         */
+
         //CollectiblesMenu.getItem().getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 4, 3);
-        CollectiblesMenu.getItem().getLinkedChest().addMenuItem(shovelMenu, 4, 3);
+        CollectiblesMenu.getItem().getLinkedChest().addStaticItem(shovelMenu, 6, 2);
     }
     
     protected enum ShovelType {

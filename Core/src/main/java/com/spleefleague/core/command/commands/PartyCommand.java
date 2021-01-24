@@ -16,6 +16,7 @@ import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.rank.Rank;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author NickM13
@@ -49,9 +50,7 @@ public class PartyCommand extends CoreCommand {
         if (party != null &&
                 sender.getParty() == null) {
             success(sender, "You requested to join " + receiver.getDisplayName() + "'s party");
-            Chat.sendRequest(sender.getDisplayName() + " wants to join your party!", receiver, sender, (r, s) -> {
-                r.getParty().add(s);
-            });
+            Chat.sendRequest(receiver, sender, (r, s) -> r.getParty().add(s), sender.getChatName(), new TextComponent(" wants to join your party!"));
         }
     }
     
@@ -77,9 +76,7 @@ public class PartyCommand extends CoreCommand {
         if (party.isOwner(sender)) {
             if (receiver.getParty() == null) {
                 success(sender, "You sent a party invite to " + receiver.getDisplayName());
-                Chat.sendRequest(sender.getDisplayName() + " has invited you to a party!", receiver, sender, (r, s) -> {
-                    s.getParty().add(r);
-                });
+                Chat.sendRequest(receiver, sender, (r, s) -> s.getParty().add(r), sender.getChatName(), new TextComponent(" has invited you to a party!"));
             } else {
                 error(sender, receiver.getDisplayName() + " is already in a party");
             }

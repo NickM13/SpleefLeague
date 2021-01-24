@@ -21,20 +21,24 @@ import java.util.function.Function;
 public abstract class Ability {
 
     public enum Type {
-        OFFENSIVE(3, Material.NETHER_BRICK, ChatColor.RED + "" + ChatColor.BOLD, Color.fromRGB(255, 63, 63)),
-        UTILITY(4, Material.IRON_INGOT, ChatColor.BLUE + "" + ChatColor.BOLD, Color.fromRGB(63, 63, 255)),
-        MOBILITY(5, Material.GOLD_INGOT, ChatColor.GREEN + "" + ChatColor.BOLD, Color.fromRGB(127, 255, 127));
+        OFFENSIVE(3, Material.NETHER_BRICK, ChatColor.RED + "" + ChatColor.BOLD, "Offensive", "(Drop Item)", Color.fromRGB(255, 63, 63)),
+        UTILITY(4, Material.IRON_INGOT, ChatColor.BLUE + "" + ChatColor.BOLD, "Utility", "(Swap Item)", Color.fromRGB(63, 63, 255)),
+        MOBILITY(5, Material.GOLD_INGOT, ChatColor.GREEN + "" + ChatColor.BOLD, "Mobility", "(Place Block)", Color.fromRGB(127, 255, 127));
 
         private final int slot;
         private final Material material;
         private final String chatColor;
+        private final String displayName;
+        private final String bindName;
         private final Color particleColor;
         private final Particle.DustOptions dustSmall, dustMedium, dustBig;
 
-        Type(int slot, Material material, String chatColor, Color particleColor) {
+        Type(int slot, Material material, String chatColor, String displayName, String bindName, Color particleColor) {
             this.slot = slot;
             this.material = material;
             this.chatColor = chatColor;
+            this.displayName = displayName;
+            this.bindName = bindName;
             this.particleColor = particleColor;
             this.dustSmall = new Particle.DustOptions(particleColor, 0.75f);
             this.dustMedium = new Particle.DustOptions(particleColor, 1.5f);
@@ -51,6 +55,14 @@ public abstract class Ability {
 
         public String getColor() {
             return chatColor;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getBindName() {
+            return bindName;
         }
 
         public Color getParticleColor() {

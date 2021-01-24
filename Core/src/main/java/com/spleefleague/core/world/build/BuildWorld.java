@@ -1,6 +1,7 @@
 package com.spleefleague.core.world.build;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Position;
@@ -109,7 +110,9 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         this.structure = structure;
         this.structure.setUnderConstruction(this);
         for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
-            if (setBlock(entry.getKey().add(origin), entry.getValue().getBlockData())) {
+            if (!setBlock(entry.getKey().add(origin), entry.getValue().getBlockData())) {
+                BlockPosition fail = entry.getKey().add(origin);
+                CoreLogger.logError("Build World failed at " + fail.toString());
                 loadFail = true;
                 break;
             }
@@ -117,9 +120,11 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         if (!loadFail && lowest != null) {
             if (lowest.getY() + origin.getY() < 0) {
                 loadFail = true;
+                CoreLogger.logError("Build World due to going below world (" + (lowest.getY() + origin.getY()) + ")");
             }
             if (highest.getY() + origin.getY() > 255) {
                 loadFail = true;
+                CoreLogger.logError("Build World due to exceeding world height (" + (lowest.getY() + origin.getY()) + ")");
             }
         }
         if (!loadFail) {

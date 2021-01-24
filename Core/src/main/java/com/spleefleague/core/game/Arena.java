@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
@@ -35,7 +36,6 @@ import org.bson.Document;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * Arena is a set of variables loaded from a specified Database<br>
@@ -82,6 +82,7 @@ public class Arena extends DBEntity {
     protected List<Position> scoreboards = new ArrayList<>();
 
     @DBField protected Material displayItem = Material.MAP;
+    @DBField protected Integer displayCmd = 0;
 
     protected List<Dimension> borders = new ArrayList<>();
 
@@ -114,8 +115,9 @@ public class Arena extends DBEntity {
         this.teamSize = from.getTeamSize();
         this.spawns = Lists.newArrayList(from.getSpawns());
         this.checkpoints = Lists.newArrayList(from.getCheckpoints());
-        this.spectatorSpawn = new Position(from.getSpectatorSpawn());
+        this.spectatorSpawn = from.getSpectatorSpawnPosition();
         this.displayItem = from.getDisplayItem();
+        this.displayCmd = from.getDisplayCmd();
         this.borders = Lists.newArrayList(from.getBorders());
         this.goals = Lists.newArrayList(from.getGoals());
         this.structures = Sets.newHashSet(from.getStructureNames());
@@ -214,15 +216,19 @@ public class Arena extends DBEntity {
         return name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     /**
-     * Returns the formatted descriptoin of an arena, including
+     * Returns the formatted description of an arena, including
      * number of players in queue and number of ongoing matches
      *
      * @return Description
      */
-    public String getDescription() {
+    public String getMenuDescription() {
         String desc = description;
-        desc += "\n\n&7&lIn Queue: &6" + getOngoingQueues();
+        desc += ChatColor.GRAY + "" + ChatColor.BOLD + "\n\nIn Queue: " + ChatColor.GOLD + getOngoingQueues();
         //desc += "\n&6Matches: " + getOngoingMatches();
         return desc;
     }
@@ -236,8 +242,13 @@ public class Arena extends DBEntity {
         return displayItem;
     }
 
-    public void setDisplayItem(Material displayItem) {
+    public int getDisplayCmd() {
+        return displayCmd;
+    }
+
+    public void setDisplayItem(Material displayItem, int cmd) {
         this.displayItem = displayItem;
+        this.displayCmd = cmd;
         Arenas.saveArenaDB(this);
     }
 
@@ -346,6 +357,10 @@ public class Arena extends DBEntity {
     public Location getSpectatorSpawn() {
         Position pos = spectatorSpawn;
         return pos != null ? pos.toLocation(getWorld()) : null;
+    }
+
+    public Position getSpectatorSpawnPosition() {
+        return spectatorSpawn;
     }
 
     /**
@@ -502,10 +517,10 @@ public class Arena extends DBEntity {
      * @return Inventory Menu Item
      */
     public InventoryMenuItem createMenu(Consumer<CorePlayer> queueAction) {
-        return InventoryMenuAPI.createItem()
+        return InventoryMenuAPI.createItemDynamic()
                 .setName("&a&l" + getName())
-                .setDescription(cp -> getDescription())
-                .setDisplayItem(cp -> new ItemStack(displayItem))
+                .setDescription(cp -> getMenuDescription())
+                .setDisplayItem(displayItem, displayCmd)
                 .setAction(queueAction);
     }
 

@@ -17,7 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * @author NickM13
  */
-public class InventoryMenuItemOption extends InventoryMenuItem {
+public class InventoryMenuItemOption extends InventoryMenuItemDynamic {
     
     public class Option {
         private String name;

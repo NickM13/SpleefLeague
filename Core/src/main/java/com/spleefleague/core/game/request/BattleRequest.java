@@ -68,7 +68,7 @@ public abstract class BattleRequest {
     protected abstract boolean attemptStartRequest(CorePlayer cp, int total, @Nullable String requestValue);
     
     protected void startRequestMessage(CorePlayer cp) {
-        battle.getChatGroup().sendMessage("Request to " + getChatName() + " has started");
+        battle.getChatGroup().sendMessage("Request to " + getChatName() + " was started by " + cp.getDisplayName());
     }
     
     /**

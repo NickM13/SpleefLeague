@@ -33,6 +33,7 @@ public class Rank extends DBEntity {
             DONOR_3;
 
     @DBField private String displayName = "";
+    private String formattedName = "";
     
     @DBField private Integer ladder = 0;
     @DBField private Boolean hasOp = false;
@@ -49,7 +50,12 @@ public class Rank extends DBEntity {
         this.identifier = identifier;
         this.ladder = ladder;
         this.color = chatColor;
-        this.displayName = identifier;
+        setDisplayName(identifier);
+    }
+
+    @Override
+    public void afterLoad() {
+        setDisplayName(displayName);
     }
 
     public String getIdentifierShort() {
@@ -58,12 +64,13 @@ public class Rank extends DBEntity {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+        this.formattedName = Chat.colorize(this.displayName);
     }
     public String getDisplayName() {
-        return Chat.RANK + displayName + Chat.DEFAULT;
+        return formattedName;
     }
     public String getDisplayNameUnformatted() {
-        return displayName;
+        return formattedName;
     }
 
     public void setLadder(int ladder) {

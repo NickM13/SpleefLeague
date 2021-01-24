@@ -8,9 +8,11 @@ package com.spleefleague.superjump;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
+import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.superjump.commands.*;
@@ -22,6 +24,8 @@ import com.spleefleague.superjump.game.classic.ClassicSJArena;
 import com.spleefleague.superjump.game.shuffle.ShuffleSJArena;
 import com.spleefleague.superjump.player.SuperJumpPlayer;
 import com.spleefleague.superjump.util.SJUtils;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -65,8 +69,8 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     }
     
     @Override
-    public String getChatPrefix() {
-        return Chat.TAG_BRACE + "[" + Chat.TAG + "SuperJump" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    public TextComponent getChatPrefix() {
+        return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "SuperJump" + Chat.TAG_BRACE + "] ");
     }
     
     private void initCommands() {
@@ -88,7 +92,7 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     }
     
     private void initMenu() {
-        superJumpMenuItem = InventoryMenuAPI.createItem()
+        superJumpMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "SuperJump")
                 .setDescription("Jump and run your way to the finish line as fast as you can. Whether you are racing a single opponent, a group of friends, or even the clock, the objective is the same!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
@@ -96,20 +100,25 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
                 .createLinkedContainer("SuperJump");
         
         InventoryMenuContainerChest container = superJumpMenuItem.getLinkedChest();
-        
-        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Party"), 0, 2);
-        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Tetronimo"), 1, 3);
-        ShuffleSJArena.createMenu(2, 2);
-        ConquestSJArena.createMenu(3, 3);
-        EndlessSJArena.createMenu(4, 2);
-        ClassicSJArena.createMenu(5, 3);
-        ProSJArena.createMenu(6, 2);
-        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Memory"), 7, 3);
-        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Practice"), 8, 2);
-        //superJumpMenu.addMenuItem(PartySJArena.createMenu(), 5);
-        //superJumpMenu.addMenuItem(PracticeSJArena.createMenu(), 6);
+
+        InventoryMenuItem shuffleMenu = Arenas.createMenu(getInstance(), SJMode.SHUFFLE.getBattleMode());
+        InventoryMenuItem conquestMenu = Arenas.createMenu(getInstance(), SJMode.CONQUEST.getBattleMode());
+        InventoryMenuItem endlessMenu = Arenas.createMenu(getInstance(), SJMode.ENDLESS.getBattleMode());
+        InventoryMenuItem classicMenu = Arenas.createMenu(getInstance(), SJMode.CLASSIC.getBattleMode());
+        InventoryMenuItem proMenu = Arenas.createMenu(getInstance(), SJMode.PRO.getBattleMode());
+
+        container.addStaticItem(shuffleMenu, 2, 1);
+        container.addStaticItem(conquestMenu, 3, 1);
+        container.addStaticItem(endlessMenu, 4, 1);
+        container.addStaticItem(classicMenu, 5, 1);
+        container.addStaticItem(proMenu, 6, 1);
+
+        //container.addStaticItem(InventoryMenuUtils.createLockedMenuItem("Party"), 3, 2);
+        //container.addStaticItem(InventoryMenuUtils.createLockedMenuItem("Tetronimo"), 4, 2);
+        //container.addStaticItem(InventoryMenuUtils.createLockedMenuItem("Memory"), 6, 2);
+        //container.addStaticItem(InventoryMenuUtils.createLockedMenuItem("Practice"), 5, 2);
     
-        SLMainHotbar.getItemHotbar().getLinkedChest().addMenuItem(superJumpMenuItem, 3, 3);
+        GamemodeMenu.getItem().getLinkedChest().addStaticItem(superJumpMenuItem, 5, 1);
     }
     
     private void initLeaderboards() {

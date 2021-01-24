@@ -21,7 +21,7 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveBouncingBomb.class)
-                .setCustomModelData(1)
+                .setCustomModelData(3)
                 .setName("Bouncing Bomb")
                 .setDescription("Throw a bouncing bomb forward, destroying blocks in a small radius around its impact point. The bomb may bounce off of surrounding blocks and players up to %BOUNCES% times.")
                 .setUsage(10);

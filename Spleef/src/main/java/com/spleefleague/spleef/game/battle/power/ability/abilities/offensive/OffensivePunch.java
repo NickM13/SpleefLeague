@@ -19,7 +19,7 @@ public class OffensivePunch extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensivePunch.class)
-                .setCustomModelData(7)
+                .setCustomModelData(8)
                 .setName("Punch")
                 .setDescription("Empowers your next punch for %REMAIN% seconds, heavily knocking players back on impact")
                 .setUsage(10);

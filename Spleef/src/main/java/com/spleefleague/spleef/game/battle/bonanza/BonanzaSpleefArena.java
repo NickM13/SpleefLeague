@@ -18,7 +18,7 @@ import org.bukkit.Material;
 public class BonanzaSpleefArena {
     
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lBonanzaSpleef")
                 .setDescription("Drop in anytime to this fast paced, constant battleground of Spleef glory!" +
                         "  Compete for kill streaks against other players and become a champion." +

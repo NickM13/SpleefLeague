@@ -42,6 +42,7 @@ import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.RatedPlayer;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -519,12 +520,38 @@ public class CorePlayer extends RatedPlayer {
      * @return Name of player as TextComponent to allow for quick /tell
      */
     public TextComponent getChatName() {
-        TextComponent text = new TextComponent(getName());
-        
+        TextComponent text = new TextComponent(getRank().getColor() + getName());
+
         text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
         text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + getName()));
         text.setColor(getRank().getColor().asBungee());
-        
+
+        return text;
+    }
+
+    /**
+     * @return Name of player as TextComponent to allow for quick /tell
+     */
+    public TextComponent getChatNamePossessive() {
+        TextComponent text = new TextComponent(getRank().getColor() + getName() + "'s");
+
+        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
+        text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + getName()));
+        text.setColor(getRank().getColor().asBungee());
+
+        return text;
+    }
+
+    /**
+     * @return Name of player as TextComponent to allow for quick /tell
+     */
+    public TextComponent getChatNameRanked() {
+        TextComponent text = new TextComponent(getRank().getDisplayName() + " " + getName());
+
+        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
+        text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + getName()));
+        text.setColor(getRank().getColor().asBungee());
+
         return text;
     }
 
@@ -911,7 +938,8 @@ public class CorePlayer extends RatedPlayer {
      */
     public void setChatChannel(ChatChannel cc) {
         chatChannel = cc;
-        Chat.sendMessageToPlayer(this, "Chat Channel set to " + cc.getName());
+        sendMessage("Chat Channel set to ");
+        Chat.sendMessageToPlayer(this, new TextComponent("Chat Channel set to " + cc.getName()));
     }
 
     /**
@@ -940,7 +968,7 @@ public class CorePlayer extends RatedPlayer {
      *
      * @param message BaseComponent
      */
-    public void sendMessage(BaseComponent message) {
+    public void sendMessage(BaseComponent... message) {
         getPlayer().spigot().sendMessage(message);
     }
 

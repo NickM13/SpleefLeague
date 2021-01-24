@@ -66,7 +66,7 @@ public class ConquestPack extends DBEntity {
     }
     
     public InventoryMenuItem createMenu() {
-        InventoryMenuItem menu = InventoryMenuAPI.createItem()
+        InventoryMenuItem menu = InventoryMenuAPI.createItemDynamic()
                 .setName("Pack: " + name)
                 .setDescription(description)
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
@@ -76,7 +76,7 @@ public class ConquestPack extends DBEntity {
             Arena arena = Arenas.get(arenaName, SJMode.CONQUEST.getBattleMode());
             if (arena != null) {
                 menu.getLinkedChest()
-                        .addMenuItem(InventoryMenuAPI.createItem()
+                        .addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(arena.getName())
                                 .setDescription(cp -> {
                                     String desc = arena.getDescription() + "\n";

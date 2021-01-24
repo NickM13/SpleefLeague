@@ -33,15 +33,16 @@ public class StaffToolsMenu {
      */
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
-            menuItem = InventoryMenuAPI.createItem()
+            menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Staff Tools")
-                    .setDisplayItem(Material.REDSTONE)
+                    .setDisplayItem(Material.GOLDEN_PICKAXE, 1)
+                    .setSelectedItem(Material.GOLDEN_PICKAXE, 2)
                     .setDescription("A variety of tools useful for the maintenance and quality of SpleefLeague.")
                     .setAvailability(cp -> cp.getRank().hasPermission(Rank.MODERATOR))
                     .createLinkedContainer("Staff Tools");
             
             menuItem.getLinkedChest()
-                    .addMenuItem(InventoryMenuAPI.createItem()
+                    .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Clear Effects")
                             .setDisplayItem(Material.MILK_BUCKET)
                             .setAction(cp -> {
@@ -52,21 +53,21 @@ public class StaffToolsMenu {
                             .setCloseOnAction(false), 0, 3);
             
             menuItem.getLinkedChest()
-                    .addMenuItem(InventoryMenuAPI.createItem()
+                    .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Night Vision")
                             .setDisplayItem(InventoryMenuUtils.createCustomPotion(PotionType.NIGHT_VISION))
                             .setAction(cp -> cp.getPlayer().addPotionEffect(PotionEffectType.NIGHT_VISION.createEffect(Integer.MAX_VALUE, 0)))
                             .setCloseOnAction(false), 1, 3);
             
             menuItem.getLinkedChest()
-                    .addMenuItem(InventoryMenuAPI.createItem()
+                    .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Command Block")
                             .setDisplayItem(Material.COMMAND_BLOCK)
                             .setAction(cp -> cp.getPlayer().getInventory().addItem(new ItemStack(Material.COMMAND_BLOCK)))
                             .setCloseOnAction(false), 2, 3);
 
             menuItem.getLinkedChest()
-                    .addMenuItem(InventoryMenuAPI.createItem()
+                    .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Barrier")
                             .setDisplayItem(Material.BARRIER)
                             .setAction(cp -> cp.getPlayer().getInventory().addItem(new ItemStack(Material.BARRIER)))

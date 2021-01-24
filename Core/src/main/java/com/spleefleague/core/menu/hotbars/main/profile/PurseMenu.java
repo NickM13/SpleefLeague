@@ -10,37 +10,37 @@ public class PurseMenu {
     private static InventoryMenuItem menuItem = null;
 
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Purse")
                 .setDisplayItem(Material.CHEST)
                 .setDescription("View your various currencies")
                 .createLinkedContainer("Purse");
 
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "Coins")
                 .setDisplayItem(Material.GOLD_NUGGET)
                 .setDescription(cp -> "You Have: " + cp.getPurse().getCoins().getAmount())
                 .setCloseOnAction(false));
 
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "Common Ores")
                 .setDisplayItem(Material.COAL_ORE)
                 .setDescription(cp -> "You Have: " + cp.getPurse().getCommonOre().getAmount())
                 .setCloseOnAction(false));
 
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.AQUA + "Rare Ores")
                 .setDisplayItem(Material.IRON_ORE)
                 .setDescription(cp -> "You Have: " + cp.getPurse().getRareOre().getAmount())
                 .setCloseOnAction(false));
 
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.DARK_PURPLE + "Epic Ores")
                 .setDisplayItem(Material.GOLD_ORE)
                 .setDescription(cp -> "You Have: " + cp.getPurse().getEpicOre().getAmount())
                 .setCloseOnAction(false));
 
-        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.YELLOW + "Legendary Ores")
                 .setDisplayItem(Material.DIAMOND_ORE)
                 .setDescription(cp -> "You Have: " + cp.getPurse().getLegendaryOre().getAmount())

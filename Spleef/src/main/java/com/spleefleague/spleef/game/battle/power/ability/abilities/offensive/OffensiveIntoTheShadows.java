@@ -21,7 +21,7 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveIntoTheShadows.class)
-                .setCustomModelData(3)
+                .setCustomModelData(5)
                 .setName("Into the Shadows")
                 .setDescription("Turn invisible for %DURATION% seconds. Holds up to %charges% charges.")
                 .setUsage(3, 5, 2);

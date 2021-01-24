@@ -29,7 +29,6 @@ public class ConnectionBungeeListener extends BungeeListener<PacketConnection> {
         } else if (packet.type == PacketConnection.ConnectionType.FIRST_CONNECT) {
             CorePlayer cp = Core.getInstance().getPlayers().get(packet.uuid);
             Core.getInstance().sendMessage(cp, "Welcome to SpleefLeague!");
-            
         }
     }
 

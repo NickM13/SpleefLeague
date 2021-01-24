@@ -12,7 +12,8 @@ public class ChatEmoticons {
     static Map<String, String> EMOTICONS = new HashMap<>();
     
     static {
-        EMOTICONS.put(":fingerguns:", "(☞•◡•)☞");
+        EMOTICONS.put(":fingerguns:", "ꍜ");
+        EMOTICONS.put(":heart:", "ꍁ");
         EMOTICONS.put(":shrug:", "¯\\\\(°_o)/¯");
         EMOTICONS.put(":what:", "ಠ_ಠ");
         EMOTICONS.put(":tableflip:", "(ノಠ益ಠ)ノ彡┻━┻");

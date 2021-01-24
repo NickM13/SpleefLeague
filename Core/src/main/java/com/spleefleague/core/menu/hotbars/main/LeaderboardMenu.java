@@ -6,10 +6,12 @@
 
 package com.spleefleague.core.menu.hotbars.main;
 
+import com.spleefleague.core.Core;
+import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 
-import com.spleefleague.core.menu.InventoryMenuUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -29,17 +31,24 @@ public class LeaderboardMenu {
     public static InventoryMenuItem getItem() {
         if (menuItem == null) {
             // Options Menus
-            menuItem = InventoryMenuAPI.createItem()
+            menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Leaderboards")
-                    .setDisplayItem(new ItemStack(Material.OAK_SIGN))
+                    .setDisplayItem(Material.OAK_SIGN, 1)
+                    .setSelectedItem(Material.OAK_SIGN, 2)
                     .setDescription("View the Top Players of SpleefLeague!")
                     .createLinkedContainer("Leaderboards");
-            
-            for (int i = 0; i < menuItem.getLinkedChest().getPageItemTotal() / 2; i++) {
-                menuItem.getLinkedChest().addStaticItem(InventoryMenuUtils.createLockedMenuItem("Other"), i * 2 + 9);
-            }
         }
         return menuItem;
+    }
+
+    public static void addLeaderboardMenu(BattleMode mode) {
+        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(mode.getName());
+
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(mode.getDisplayName())
+                .setDescription("View the top players of " + mode.getDisplayName())
+                .setDisplayItem(mode.getDisplayItem())
+                .setLinkedContainer(leaderboard.createMenuContainer()));
     }
 
 }

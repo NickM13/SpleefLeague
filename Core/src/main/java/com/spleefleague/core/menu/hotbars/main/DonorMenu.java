@@ -8,8 +8,6 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.util.variable.Warp;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -21,9 +19,10 @@ public class DonorMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "SpleefLeague Store")
-                .setDisplayItem(Material.EMERALD)
+                .setDisplayItem(Material.EMERALD, 1)
+                .setSelectedItem(Material.EMERALD, 2)
                 .setDescription("")
                 .createLinkedContainer("SpleefLeague Store");
     }

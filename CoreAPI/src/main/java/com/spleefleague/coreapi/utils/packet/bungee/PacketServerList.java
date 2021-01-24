@@ -16,12 +16,13 @@ import java.util.UUID;
  */
 public class PacketServerList extends PacketBungee {
 
-    public List<String> serverNames;
+    public List<String> lobbyServers, minigameServers;
 
     public PacketServerList() { }
 
-    public PacketServerList(List<String> serverNames) {
-        this.serverNames = serverNames;
+    public PacketServerList(List<String> lobbyServers, List<String> minigameServers) {
+        this.lobbyServers = lobbyServers;
+        this.minigameServers = minigameServers;
     }
 
     public int getTag() {

@@ -9,7 +9,7 @@ public class FriendsMenu {
     private static InventoryMenuItem menuItem = null;
 
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Friends")
                 .setDisplayItem(Material.FEATHER)
                 .setDescription("View your friends list")

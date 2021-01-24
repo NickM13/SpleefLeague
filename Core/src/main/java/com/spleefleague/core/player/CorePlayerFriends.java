@@ -6,6 +6,7 @@ import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBVariable;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketFriendSpigot;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 
@@ -49,12 +50,12 @@ public class CorePlayerFriends extends DBVariable<Document> {
 
     public void addFriend(CorePlayer cp) {
         friends.put(cp.getUniqueId(), new FriendInfo());
-        Chat.sendMessageToPlayerSuccess(owner, "You are now friends with " + cp.getName() + "!");
+        Chat.sendMessageToPlayer(owner, new TextComponent(Chat.SUCCESS + "You are now friends with "), cp.getChatName());
     }
 
     public void removeFriend(CorePlayer cp) {
         if (receiveFriendRemove(cp)) {
-            Chat.sendMessageToPlayerSuccess(owner, "You are no longer friends with " + cp.getDisplayName());
+            Chat.sendMessageToPlayer(owner, new TextComponent(Chat.SUCCESS + "You are no longer friends with "), cp.getChatName());
         }
         if (!cp.isOnline()) {
             cp.getFriends().removeFriend(owner);
@@ -70,7 +71,7 @@ public class CorePlayerFriends extends DBVariable<Document> {
             requesting.remove(cp.getUniqueId());
             Core.getInstance().sendPacket(new PacketFriendSpigot(PacketFriendSpigot.FriendType.ADD, owner.getUniqueId(), cp.getUniqueId()));
         } else {
-            Chat.sendMessageToPlayerInfo(owner, "Friend request sent to " + cp.getName() + "");
+            Chat.sendMessageToPlayer(owner, new TextComponent(Chat.INFO + "Friend request sent to "), cp.getChatName());
             Core.getInstance().sendPacket(new PacketFriendSpigot(PacketFriendSpigot.FriendType.ADD, owner.getUniqueId(), cp.getUniqueId()));
             pending.add(cp.getUniqueId());
         }
@@ -82,8 +83,8 @@ public class CorePlayerFriends extends DBVariable<Document> {
             pending.remove(cp.getUniqueId());
         } else if (!requesting.contains(cp.getUniqueId())) {
             requesting.add(cp.getUniqueId());
-            Chat.sendMessageToPlayerInfo(owner, "Friend request from " + cp.getName() + "!");
-            Chat.sendMessageToPlayerInfo(owner, "To accept, type /friend add " + cp.getName());
+            Chat.sendMessageToPlayer(owner, new TextComponent(Chat.INFO + "Friend request from "), cp.getChatName());
+            Chat.sendMessageToPlayer(owner, new TextComponent(Chat.INFO + "To accept, type /friend add " + cp.getName()));
         }
     }
 

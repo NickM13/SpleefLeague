@@ -186,7 +186,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             }
         });
 
-        Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> FAKE_WORLDS.forEach(FakeWorld::pushChanges), 1L, 1L));
+        Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> FAKE_WORLDS.forEach(FakeWorld::pushChanges), 1L, 1L));
 
         globalFakeWorld = new GlobalWorld(Core.DEFAULT_WORLD);
     }

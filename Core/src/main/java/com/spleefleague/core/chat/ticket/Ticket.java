@@ -13,6 +13,7 @@ import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
+import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,37 +77,43 @@ public class Ticket extends DBEntity {
         }
     }
     
-    protected String formatSender(String issue) {
-        String msg = "";
-        
-        msg += Chat.TICKET_PREFIX + "[Ticket: " + getSenderPlayer().getDisplayName() + Chat.TICKET_PREFIX + "] ";
-        msg += Chat.TICKET_ISSUE + issue;
-        
+    protected TextComponent formatSender(String issue) {
+        TextComponent msg = new TextComponent();
+
+        msg.addExtra(Chat.TICKET_PREFIX + "[Ticket: ");
+        msg.addExtra(getSenderPlayer().getChatName());
+        msg.addExtra(Chat.TICKET_PREFIX + "] " + Chat.TICKET_ISSUE + issue);
+
         return msg;
     }
     
     // Ticket sender sees this one
-    protected String formatStaff1(CorePlayer player, String issue) {
-        String msg = "";
-        
-        msg += Chat.TICKET_PREFIX + "[Ticket";
-        if (player != null)
-            msg += Chat.TICKET_PREFIX + ": " + player.getDisplayName();
-        msg += Chat.TICKET_PREFIX + "] ";
-        msg += Chat.TICKET_ISSUE + issue;
+    protected TextComponent formatStaff1(CorePlayer player, String issue) {
+        TextComponent msg = new TextComponent();
+
+        msg.addExtra(Chat.TICKET_PREFIX + "[Ticket");
+        if (player != null){
+            msg.addExtra(Chat.TICKET_PREFIX + ":");
+            msg.addExtra(player.getChatName());
+        }
+        msg.addExtra(Chat.TICKET_PREFIX + "] ");
+        msg.addExtra(Chat.TICKET_ISSUE + issue);
         
         return msg;
     }
     
     // Staff sees this one
-    protected String formatStaff2(CorePlayer player, String issue) {
-        String msg = "";
-        
-        msg += Chat.TICKET_PREFIX + "[Ticket: " + getSenderPlayer().getDisplayName();
-        if (player != null)
-            msg += Chat.TICKET_PREFIX + ":" + player.getDisplayName();
-        msg += Chat.TICKET_PREFIX + "] ";
-        msg += Chat.TICKET_ISSUE + issue;
+    protected TextComponent formatStaff2(CorePlayer player, String issue) {
+        TextComponent msg = new TextComponent();
+
+        msg.addExtra(Chat.TICKET_PREFIX + "[Ticket: ");
+        msg.addExtra(getSenderPlayer().getChatName());
+        if (player != null) {
+            msg.addExtra(Chat.TICKET_PREFIX + ":");
+            msg.addExtra(player.getChatName());
+        }
+        msg.addExtra(Chat.TICKET_PREFIX + "] ");
+        msg.addExtra(Chat.TICKET_ISSUE + issue);
         
         return msg;
     }
@@ -119,13 +126,13 @@ public class Ticket extends DBEntity {
     
     public void sendMessageToSender(CorePlayer staff, String msg) {
         if (responseTimeout < System.currentTimeMillis() || staff == null) {
-            String formatted = formatStaff1(staff, msg);
+            TextComponent formatted = formatStaff1(staff, msg);
             Chat.sendMessageToPlayer(getSenderPlayer(), formatted);
             Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), formatStaff2(staff, msg));
             // 10 second response timeout
             if (staff != null) responseTimeout = System.currentTimeMillis() + 10000;
             resetTimeout();
-            messages.add(formatted);
+            messages.add(formatted.toPlainText());
         } else {
             Chat.sendMessageToPlayer(staff, "Try again in " + (int)((responseTimeout - System.currentTimeMillis()) / 1000) + " seconds");
         }
@@ -133,10 +140,10 @@ public class Ticket extends DBEntity {
     
     public void sendMessageToStaff(String msg) {
         if (responseTimeout < System.currentTimeMillis()) {
-            String formatted = formatSender(msg);
+            TextComponent formatted = formatSender(msg);
             Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), formatted);
             resetTimeout();
-            messages.add(formatted);
+            messages.add(formatted.toPlainText());
         } else {
             Chat.sendMessageToPlayer(getSenderPlayer(), "Try again in " + (int)((responseTimeout - System.currentTimeMillis()) / 1000) + " seconds");
         }
@@ -150,8 +157,11 @@ public class Ticket extends DBEntity {
         if (!open) return;
         open = false;
         Chat.sendMessageToPlayer(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + " Your ticket has been closed.");
-        
-        Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), Chat.TICKET_PREFIX + "[Ticket: " + getSenderPlayer().getDisplayName() + Chat.TICKET_PREFIX + "]" + Chat.TICKET_ISSUE + " Ticket closed.");
+
+        TextComponent text = new TextComponent(Chat.TICKET_PREFIX + "[Ticket: ");
+        text.addExtra(getSenderPlayer().getChatName());
+        text.addExtra(Chat.TICKET_PREFIX + "]" + Chat.TICKET_ISSUE + " Ticket closed.");
+        Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), text);
     }
     
 }

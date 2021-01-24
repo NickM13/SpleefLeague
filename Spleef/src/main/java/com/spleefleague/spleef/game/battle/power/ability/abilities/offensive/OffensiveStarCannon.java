@@ -14,7 +14,7 @@ public class OffensiveStarCannon extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveStarCannon.class)
-                .setCustomModelData(2)
+                .setCustomModelData(9)
                 .setName("Star Cannon")
                 .setDescription("Fires a blast of %COUNT% snowballs in front of you, destroying blocks hit and slightly knocking back players hit by the blast.")
                 .setUsage(12);

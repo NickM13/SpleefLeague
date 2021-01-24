@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -68,21 +69,24 @@ public class CoreUtils {
         return null;
     }
     
-    public static String mergePlayerNames(Collection<CorePlayer> players) {
-        StringBuilder formatted = new StringBuilder();
+    public static TextComponent mergePlayerNames(Collection<CorePlayer> players) {
+        TextComponent formatted = new TextComponent();
         Iterator<CorePlayer> cpit = players.iterator();
+        boolean first = true;
         while (cpit.hasNext()) {
             CorePlayer cp = cpit.next();
-            if (formatted.length() > 0) {
+            if (!first) {
                 if (!cpit.hasNext()) {
-                    formatted.append(" and ");
+                    formatted.addExtra(" and ");
                 } else {
-                    formatted.append(", ");
+                    formatted.addExtra(", ");
                 }
+            } else {
+                first = false;
             }
-            formatted.append(cp.getDisplayName());
+            formatted.addExtra(cp.getChatName());
         }
-        return formatted.toString();
+        return formatted;
     }
 
     /**

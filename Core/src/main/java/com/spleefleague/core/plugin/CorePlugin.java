@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.plugin;
 
+import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
@@ -14,6 +15,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
 import com.spleefleague.core.logger.CoreLoggerFilter;
@@ -32,6 +34,10 @@ import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketChallengeSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketForceStart;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.CommandSender;
 
@@ -168,12 +174,8 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             queuePlayer(mode, cp);
             return;
         }
+        System.out.println(arena.getIdentifierNoTag());
         Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
-    }
-
-    public final void challengePlayer(BattleMode mode, CorePlayer sender, CorePlayer receiver, Arena arena) {
-        Core.getInstance().sendMessage(sender, "You have challenged " + receiver.getDisplayName() + " to " + Chat.GAMEMODE + mode.getDisplayName());
-        Core.getInstance().sendPacket(new PacketChallengeSpigot(sender.getUniqueId(), receiver.getUniqueId(), mode.getName(), "arena:" + (arena != null ? arena.getIdentifierNoTag() : "*")));
     }
     
     /**
@@ -302,7 +304,36 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         }
     }
     
-    public abstract String getChatPrefix();
+    public abstract TextComponent getChatPrefix();
+
+    public void challengePlayer(CorePlayer sender, CorePlayer target, BattleMode battleMode, String arenaName) {
+        if (!target.canJoinBattle()) {
+            sender.sendMessage(Chat.ERROR + "That player is in a battle!");
+            return;
+        }
+        Arena arena = Arenas.get(arenaName, battleMode);
+        sender.sendMessage(new ComponentBuilder().append("You have challenged ")
+                .append(target.getChatName())
+                .append(" to a game of ")
+                .append(Chat.GAMEMODE + battleMode.getDisplayName())
+                .append(" on ")
+                .append(Chat.GAMEMAP + arena.getName()).create());
+        /*
+        Chat.sendRequest(target,
+                sender,
+                (r, s) -> getBattleManager(battleMode).startMatch(Lists.newArrayList(r, s), arenaName),
+                new ComponentBuilder().append(sender.getChatName())
+                .append(" has challenged you to a game of ")
+                .append(Chat.GAMEMODE + battleMode.getDisplayName())
+                .append(" on ")
+                .append(Chat.GAMEMAP + arena.getName()).create());
+        */
+        Core.getInstance().sendPacket(new PacketChallengeSpigot(
+                sender.getUniqueId(),
+                target.getUniqueId(),
+                battleMode.getName(),
+                "arena:" + arena.getIdentifierNoTag()));
+    }
 
     /**
      * Send a message to the global channel
@@ -310,7 +341,15 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessage(String msg) {
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg);
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent);
+    }
+
+    public final void sendMessage(TextComponent text) {
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(text);
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent);
     }
 
     /**
@@ -319,7 +358,20 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessageBlacklisted(String msg, Set<UUID> blacklist) {
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), getChatPrefix() + msg, blacklist);
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent, blacklist);
+    }
+
+    /**
+     * Send a message to the global channel with a list of players that can't receive it
+     *
+     * @param msg Message
+     */
+    public final void sendMessageBlacklisted(TextComponent msg, Set<UUID> blacklist) {
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent, blacklist);
     }
     
     /**
@@ -329,7 +381,17 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessage(CorePlayer cp, String msg) {
-        Chat.sendMessageToPlayer(cp, getChatPrefix() + msg);
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessageToPlayer(cp, textComponent);
+    }
+
+    public final void sendMessage(CorePlayer cp, BaseComponent... messages) {
+        TextComponent textComponent = getChatPrefix();
+        for (BaseComponent msg : messages) {
+            textComponent.addExtra(msg);
+        }
+        Chat.sendMessageToPlayer(cp, textComponent);
     }
     
     /**
@@ -350,7 +412,9 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessage(ChatChannel cc, String msg) {
-        Chat.sendMessage(cc, getChatPrefix() + msg);
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessage(cc, textComponent);
     }
 
     /**
@@ -362,7 +426,9 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param blacklist Blacklist of Players
      */
     public final void sendMessageBlacklisted(ChatChannel cc, String msg, Set<UUID> blacklist) {
-        Chat.sendMessage(cc, getChatPrefix() + msg, blacklist);
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(msg);
+        Chat.sendMessage(cc, textComponent, blacklist);
     }
     
 }

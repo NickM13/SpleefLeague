@@ -22,16 +22,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * @author NickM13
  */
-public class InventoryMenuItem {
-    
+public abstract class InventoryMenuItem {
+
     protected Rank minRank;
-    protected Function<CorePlayer, Boolean> visibilityFun;
-    protected Function<CorePlayer, Boolean> availableFun;
-    
-    protected Function<CorePlayer, String> nameFun;
-    protected Function<CorePlayer, String> descriptionFun;
-    protected Function<CorePlayer, ItemStack> displayItemFun;
-    protected Function<CorePlayer, ItemStack> selectedItemFun;
 
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
@@ -40,82 +33,26 @@ public class InventoryMenuItem {
     
     public InventoryMenuItem() {
         minRank = Rank.DEFAULT;
-        visibilityFun = null;
-        availableFun = null;
-        
-        nameFun = null;
-        descriptionFun = null;
-        displayItemFun = null;
-        selectedItemFun = null;
-        
+
         closeOnAction = true;
         action = null;
         linkedContainer = null;
+        parentContainer = null;
     }
 
-    public String toString(CorePlayer cp) {
-        return nameFun.apply(cp);
-    }
-    
-    public InventoryMenuItem setName(String name) {
-        this.nameFun = (cp) -> name;
-        return this;
-    }
-    public InventoryMenuItem setName(Function<CorePlayer, String> nameFun) {
-        this.nameFun = nameFun;
-        return this;
-    }
-    
-    public InventoryMenuItem setDescription(String description) {
-        this.descriptionFun = (cp) -> Chat.colorize(description);
-        return this;
-    }
-    public InventoryMenuItem setDescription(Function<CorePlayer, String> descriptionFun) {
-        this.descriptionFun = descriptionFun;
-        return this;
-    }
-    public InventoryMenuItem setDescription(List<String> lore) {
-        this.descriptionFun = cp -> {
-            if (lore == null) return "";
-            StringBuilder description = new StringBuilder();
-            for (String line : lore) {
-                description.append(line);
-            }
-            return description.toString();
-        };
-        return this;
-    }
-    
-    public InventoryMenuItem setDisplayItem(Material material) {
-        this.displayItemFun = (cp) -> new ItemStack(material);
-        return this;
-    }
-    public InventoryMenuItem setDisplayItem(Material material, int customModelData) {
-        this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, customModelData);
-        return this;
-    }
-    public InventoryMenuItem setDisplayItem(ItemStack displayItem) {
-        this.displayItemFun = (cp) -> displayItem;
-        return this;
-    }
-    public InventoryMenuItem setDisplayItem(Function<CorePlayer, ItemStack> displayItemFun) {
-        this.displayItemFun = displayItemFun;
-        return this;
-    }
+    public abstract InventoryMenuItem setName(String name);
 
-    public InventoryMenuItem setSelectedItem(Material material, int customModelData) {
-        this.selectedItemFun = cp -> InventoryMenuUtils.createCustomItem(material, customModelData);
-        return this;
-    }
-    
-    public InventoryMenuItem setCloseOnAction(boolean closeOnAction) {
-        this.closeOnAction = closeOnAction;
-        return this;
-    }
-    public InventoryMenuItem setAction(Consumer<CorePlayer> action) {
-        this.action = action;
-        return this;
-    }
+    public abstract InventoryMenuItem setDescription(String description);
+    public abstract InventoryMenuItem setDescription(List<String> lore);
+
+    public abstract InventoryMenuItem setDisplayItem(Material material);
+    public abstract InventoryMenuItem setDisplayItem(Material material, int customModelData);
+    public abstract InventoryMenuItem setDisplayItem(ItemStack displayItem);
+
+    public abstract InventoryMenuItem setSelectedItem(Material material, int customModelData);
+
+    public abstract InventoryMenuItem setCloseOnAction(boolean closeOnAction);
+    public abstract InventoryMenuItem setAction(Consumer<CorePlayer> action);
     
     public boolean hasLinkedContainer() {
         return linkedContainer != null;
@@ -152,25 +89,10 @@ public class InventoryMenuItem {
         }
         return this;
     }
-    
-    public InventoryMenuItem setVisibility(Function<CorePlayer, Boolean> visibilityFun) {
-        this.visibilityFun =  visibilityFun;
-        return this;
-    }
-    public boolean isVisible(CorePlayer cp) {
-        if (!cp.getRank().hasPermission(getMinRank())) {
-            return false;
-        }
-        return visibilityFun == null || visibilityFun.apply(cp);
-    }
-    
-    public InventoryMenuItem setAvailability(Function<CorePlayer, Boolean> availableFun) {
-        this.availableFun = availableFun;
-        return this;
-    }
-    public boolean isAvailable(CorePlayer cp) {
-        return availableFun == null || availableFun.apply(cp);
-    }
+
+    public abstract boolean isVisible(CorePlayer cp);
+
+    public abstract boolean isAvailable(CorePlayer cp);
     
     public InventoryMenuItem setMinRank(Rank minRank) {
         this.minRank = minRank;
@@ -179,35 +101,12 @@ public class InventoryMenuItem {
     public Rank getMinRank() {
         return minRank;
     }
-    
-    protected List<String> getWrappedDescription(CorePlayer cp) {
-        if (descriptionFun != null) {
-            return ChatUtils.wrapDescription("\n" + Chat.colorize(descriptionFun.apply(cp)));
-        } else {
-            return Lists.newArrayList();
-        }
-    }
-    
+
     public ItemStack createItem(CorePlayer cp) {
         return createItem(cp, false);
     }
 
-    public ItemStack createItem(CorePlayer cp, boolean selected) {
-        ItemStack item;
-        if (selected && selectedItemFun != null) {
-            item = selectedItemFun.apply(cp).clone();
-        } else {
-            item = displayItemFun.apply(cp).clone();
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(Chat.MENU_NAME + Chat.colorize(nameFun.apply(cp)));
-            meta.setLore(getWrappedDescription(cp));
-            meta.addItemFlags(ItemFlag.values());
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
+    public abstract ItemStack createItem(CorePlayer cp, boolean selected);
     
     public boolean shouldCloseOnAction() {
         return closeOnAction;

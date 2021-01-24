@@ -2,7 +2,9 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.hotbars.main.collectible.FragmentMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
+import com.spleefleague.core.menu.hotbars.main.collectible.OreMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,17 +18,24 @@ public class CollectiblesMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItem()
+        menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Collectibles")
                 .setDescription("Collection of Collectibles!")
-                .setDisplayItem(Material.CHEST)
+                .setDisplayItem(Material.ITEM_FRAME, 1)
+                .setSelectedItem(Material.ITEM_FRAME, 2)
                 .createLinkedContainer("Collectibles Menu");
     
         menuItem.getLinkedChest()
-                .addMenuItem(PetMenu.getItem(), 5, 2);
-        
+                .addStaticItem(PetMenu.getItem(), 5, 2);
+
         menuItem.getLinkedChest()
-                .addMenuItem(HatMenu.getItem(), 3, 2);
+                .addStaticItem(HatMenu.getItem(), 4, 2);
+
+        menuItem.getLinkedChest()
+                .addStaticItem(FragmentMenu.getItem(), 3, 2);
+
+        menuItem.getLinkedChest()
+                .addStaticItem(OreMenu.getItem(), 2, 2);
     }
     
     /**

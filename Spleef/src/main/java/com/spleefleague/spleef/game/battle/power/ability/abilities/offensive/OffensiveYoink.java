@@ -20,7 +20,7 @@ public class OffensiveYoink extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveYoink.class)
-                .setCustomModelData(10)
+                .setCustomModelData(11)
                 .setName("Yoink")
                 .setDescription("Fire a hook forward, if the projectile collides with another player they are quickly pulled to the casters locations.")
                 .setUsage(10);

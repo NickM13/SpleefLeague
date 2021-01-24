@@ -10,7 +10,10 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
+import com.spleefleague.core.game.arena.Arenas;
+import com.spleefleague.core.menu.hotbars.main.CollectiblesMenu;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.rank.Rank;
 import com.spleefleague.core.settings.Settings;
 
@@ -33,6 +36,20 @@ public class ReloadDataCommand extends CoreCommand {
                                    @LiteralArg("settings") String l) {
         Settings.reload();
         success(sender, "Reloaded settings from database");
+    }
+
+    @CommandAnnotation
+    public void reloaddataArenas(CorePlayer sender,
+                                 @LiteralArg("arenas") String l) {
+        Arenas.init();
+        success(sender, "Reloaded arenas from database");
+    }
+
+    @CommandAnnotation
+    public void reloaddataCollectibles(CorePlayer sender,
+                                 @LiteralArg("collectibles") String l) {
+        Collectible.init();
+        success(sender, "Reloaded collectibles from database");
     }
 
 }

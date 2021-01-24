@@ -7,11 +7,8 @@
 package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
@@ -25,6 +22,9 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -42,6 +42,16 @@ public class DebugCommand extends CoreCommand {
         setDescription("debu" + ChatColor.MAGIC + "g more read?");
         setOptions("sounds", pi -> CoreUtils.enumToStrSet(Sound.class, true));
     }
+
+    @CommandAnnotation
+    public void debug(CorePlayer sender,
+                           @EnumArg InventoryType type,
+                           @HelperArg("<title>") String title) {
+        Inventory inventory = Bukkit.createInventory(null, type, Chat.colorize(title));
+        sender.getPlayer().openInventory(inventory);
+    }
+
+    /*
     
     @CommandAnnotation
     public void debug(CorePlayer sender, @HelperArg("<pitch>") Double pitch, @Nullable @OptionArg(listName = "sounds", force=false) String startsWith) {
@@ -80,5 +90,7 @@ public class DebugCommand extends CoreCommand {
                       String name) {
         Bukkit.getOnlinePlayers().forEach(p -> p.playSound(sender.getPlayer().getLocation(), Sound.valueOf(name), 1, pitch.floatValue()));
     }
-    
+
+    */
+
 }

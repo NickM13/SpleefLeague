@@ -41,19 +41,19 @@ public class ShuffleSJArena {
     
     public static void createMenu(int x, int y) {
         String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mainColor + "SuperJump: Shuffle")
                 .setDescription("Shuffle Description")
                 .setDisplayItem(Material.DIAMOND_AXE, 24)
                 .createLinkedContainer("Shuffle SuperJump Menu");
         
-        Arenas.getAll(SJMode.SHUFFLE.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+        Arenas.getAll(SJMode.SHUFFLE.getBattleMode()).forEach((String s, Arena arena) -> menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(arena.getName())
                 .setDescription(cp -> arena.getDescription())
                 .setDisplayItem(Material.DIAMOND_AXE, 16)
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.SHUFFLE.getBattleMode(), cp, arena))));
         
-        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addMenuItem(menuItem, x, y);
+        SuperJump.getInstance().getSJMenuItem().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
 }

@@ -15,6 +15,9 @@ import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.menu.InventoryMenuUtils;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -34,42 +37,29 @@ public class BattleMode {
     }
     
     protected static Map<String, BattleMode> battleGameModes = new HashMap<>();
-    
+
+    private static final ItemStack DEFAULT_ITEM = new ItemStack(Material.BARRIER);
+
     protected final String name;
-    protected final String displayName;
-    protected final int requiredTeams, maximumTeams;
-    protected final TeamStyle teamStyle;
-    protected final Set<Integer> requiredTeamSizes;
-    protected final boolean joinOngoing;
-    protected final Class<? extends Battle<?>> battleClass;
+    protected String displayName = "";
+    protected String description = "";
+    protected ItemStack displayItem = DEFAULT_ITEM;
+    protected int requiredTeams = -1, maximumTeams = -1;
+    protected TeamStyle teamStyle;
+    protected Set<Integer> requiredTeamSizes = new HashSet<>();
+    protected boolean joinOngoing = false;
+    protected boolean forceRandom = false;
+    protected Class<? extends Battle<?>> battleClass = null;
     protected final Set<Battle<?>> ongoingBattles = new HashSet<>();
 
-    private BattleMode(String name,
-            String displayName,
-            int requiredTeams,
-            int maximumTeams,
-            TeamStyle teamStyle,
-            boolean joinOngoing,
-            Class<? extends Battle<?>> battleClass) {
+    private BattleMode(String name) {
         this.name = name;
-        this.displayName = displayName;
-        this.requiredTeams = requiredTeams;
-        this.maximumTeams = maximumTeams;
-        this.teamStyle = teamStyle;
-        this.requiredTeamSizes = new HashSet<>();
-        this.joinOngoing = joinOngoing;
-        this.battleClass = battleClass;
     }
-    
-    public static void addArenaMode(String name,
-            String displayName,
-            int requiredTeams,
-            int maximumTeams,
-            TeamStyle teamStyle,
-            boolean joinOngoing,
-            Class<? extends Battle<?>> battleClass) {
-        battleGameModes.put(name, new BattleMode(name, displayName, requiredTeams, maximumTeams, teamStyle, joinOngoing, battleClass));
-        System.out.println(name);
+
+    public static BattleMode createArenaMode(String name) {
+        BattleMode battleMode = new BattleMode(name);
+        battleGameModes.put(name, battleMode);
+        return battleMode;
     }
     
     public static BattleMode get(String name) {
@@ -83,7 +73,76 @@ public class BattleMode {
     public static Collection<BattleMode> getAllModes() {
         return battleGameModes.values();
     }
-    
+
+    public BattleMode setDisplayName(String displayName) {
+        this.displayName = displayName;
+        return this;
+    }
+
+    public BattleMode setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public BattleMode setDisplayItem(Material material, int cmd) {
+        this.displayItem = InventoryMenuUtils.createCustomItem(material, cmd);
+        return this;
+    }
+
+    public BattleMode setRequiredTeams(int requiredTeams) {
+        this.requiredTeams = requiredTeams;
+        return this;
+    }
+
+    public BattleMode setMaximumTeams(int maximumTeams) {
+        this.maximumTeams = maximumTeams;
+        return this;
+    }
+
+    public BattleMode setTeamStyle(TeamStyle teamStyle) {
+        if (requiredTeams == -1) {
+            switch (teamStyle) {
+                case SOLO:
+                    requiredTeams = 1;
+                    maximumTeams = 1;
+                    break;
+                case VERSUS:
+                    requiredTeams = 2;
+                    maximumTeams = 2;
+                    break;
+                case DYNAMIC:
+                    requiredTeams = 2;
+                    maximumTeams = 32;
+                    break;
+                case TEAM:
+                    requiredTeams = 2;
+                    maximumTeams = 16;
+                    break;
+                case BONANZA:
+                    requiredTeams = 0;
+                    maximumTeams = 0;
+                    break;
+            }
+        }
+        this.teamStyle = teamStyle;
+        return this;
+    }
+
+    public BattleMode setJoinOngoing(boolean joinOngoing) {
+        this.joinOngoing = joinOngoing;
+        return this;
+    }
+
+    public BattleMode setForceRandom(boolean forceRandom) {
+        this.forceRandom = forceRandom;
+        return this;
+    }
+
+    public BattleMode setBattleClass(Class<? extends Battle<?>> clazz) {
+        this.battleClass = clazz;
+        return this;
+    }
+
     public Set<Battle<?>> getOngoingBattles() {
         return ongoingBattles;
     }
@@ -131,6 +190,18 @@ public class BattleMode {
     
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public ItemStack getDisplayItem() {
+        return displayItem;
+    }
+
+    public boolean isForceRandom() {
+        return forceRandom;
     }
     
     public String getChatTag() {

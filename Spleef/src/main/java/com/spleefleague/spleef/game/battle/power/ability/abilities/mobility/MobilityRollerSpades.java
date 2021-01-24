@@ -22,7 +22,7 @@ public class MobilityRollerSpades extends AbilityMobility {
 
     public static AbilityStats init() {
         return init(MobilityRollerSpades.class)
-                .setCustomModelData(9)
+                .setCustomModelData(10)
                 .setName("Roller Spades")
                 .setDescription("Gain %XSpeed II% for %DURATION% seconds. Blocks you pass over turn to dust, exploding violently after %DURATION% seconds. May be reactivated to detonate early.")
                 .setUsage(10);

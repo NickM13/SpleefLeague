@@ -21,7 +21,7 @@ public class MobilityPortalGun extends AbilityMobility {
 
     public static AbilityStats init() {
         return init(MobilityPortalGun.class)
-                .setCustomModelData(1)
+                .setCustomModelData(9)
                 .setName("Portal Gun")
                 .setDescription("Activate to shoot a portal at the wall. Placing two portals allows players and projectiles to pass through the portal up to %MAX_PASSES% times. A maximum of 2 portals may be active at once.")
                 .setUsage(3);

@@ -45,6 +45,32 @@ public class SpleefPlayer extends DBPlayer {
     @Override
     public void close() { }
 
+    public void setActive(Ability.Type type, String powerName) {
+        switch (type) {
+            case UTILITY:
+                activeUtility = powerName;
+                break;
+            case MOBILITY:
+                activeMobility = powerName;
+                break;
+            case OFFENSIVE:
+                activeOffensive = powerName;
+                break;
+        }
+    }
+
+    public AbilityStats getActive(Ability.Type type) {
+        switch (type) {
+            case MOBILITY:
+                return Abilities.getAbility(type, activeMobility);
+            case UTILITY:
+                return Abilities.getAbility(type, activeUtility);
+            case OFFENSIVE:
+                return Abilities.getAbility(type, activeOffensive);
+        }
+        return null;
+    }
+
     public void setActiveUtility(String powerName) {
         activeUtility = powerName;
         Battle<?> battle = Core.getInstance().getPlayers().get(this).getBattle();

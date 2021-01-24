@@ -2,11 +2,15 @@ package com.spleefleague.splegg;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
+import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
+import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.splegg.commands.SpleggCommand;
@@ -16,6 +20,8 @@ import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.game.classic.ClassicSpleggArena;
 import com.spleefleague.splegg.game.multi.MultiSpleggArena;
 import com.spleefleague.splegg.player.SpleggPlayer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -53,8 +59,8 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     /**
      * @return Chat Prefix
      */
-    public String getChatPrefix() {
-        return Chat.TAG_BRACE + "[" + Chat.TAG + "Splegg" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+    public TextComponent getChatPrefix() {
+        return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "Splegg" + Chat.TAG_BRACE + "] ");
     }
     
     public static Splegg getInstance() {
@@ -76,26 +82,30 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     }
 
     public void initMenu() {
-        spleggMenuItem = InventoryMenuAPI.createItem()
+        spleggMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Splegg")
                 .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
                 .setDisplayItem(Material.EGG, 1)
                 .createLinkedContainer("Splegg Menu");
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 0, 2);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 1, 3);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 2, 2);
-        ClassicSpleggArena.createMenu(3, 3);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 4, 2);
-        MultiSpleggArena.createMenu(5, 3);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 6, 2);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 7, 3);
-        spleggMenuItem.getLinkedChest().addMenuItem(InventoryMenuUtils.createLockedMenuItem("Coming Soon!"), 8, 2);
 
-        SLMainHotbar.getItemHotbar().getLinkedChest().addMenuItem(spleggMenuItem, 5, 3);
+        InventoryMenuContainerChest container = spleggMenuItem.getLinkedChest();
 
-        ClassicSpleggArena.initLeaderboard(0, 3);
-        MultiSpleggArena.initLeaderboard(2, 3);
+        InventoryMenuItem classicMenu = Arenas.createMenu(getInstance(), SpleggMode.VERSUS.getBattleMode());
+        classicMenu.getLinkedChest().addStaticItem(SpleggGun.createMenu("s1", "s2"), 6, 2);
+        classicMenu.getLinkedChest().addStaticItem(SpleggGun.createMenu("s2", "s1"), 6, 3);
+
+        InventoryMenuItem multiMenu = Arenas.createMenu(getInstance(), SpleggMode.MULTI.getBattleMode());
+        multiMenu.getLinkedChest().addStaticItem(SpleggGun.createMenu("m1", "m2"), 6, 2);
+        multiMenu.getLinkedChest().addStaticItem(SpleggGun.createMenu("m2", "m1"), 6, 3);
+
+        container.addStaticItem(classicMenu, 6, 1);
+        container.addStaticItem(multiMenu, 5, 1);
+
+        GamemodeMenu.getItem().getLinkedChest().addStaticItem(spleggMenuItem, 4, 1);
+
+        LeaderboardMenu.addLeaderboardMenu(SpleggMode.VERSUS.getBattleMode());
+        LeaderboardMenu.addLeaderboardMenu(SpleggMode.MULTI.getBattleMode());
     }
 
     protected void initCommands() {

@@ -30,7 +30,7 @@ public class ArenaManager {
                 if (!modeArenaMap.containsKey(mode)) {
                     modeArenaMap.put(mode, new TreeMap<>());
                 }
-                modeArenaMap.get(mode).put(arena.getIdentifier(), arena);
+                modeArenaMap.get(mode).put(arena.getIdentifierNoTag(), arena);
             }
         }
     }

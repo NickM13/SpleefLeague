@@ -46,7 +46,7 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
                 // TODO: Is air a thing for cursors?
                 if (e.getCursor() != null && !e.getCursor().getType().equals(Material.AIR)) {
                     ItemMeta meta = e.getCursor().getItemMeta();
-                    menu.addMenuItem(InventoryMenuAPI.createItem()
+                    menu.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName(meta != null ? meta.getDisplayName() : "")
                             .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
                             .setDisplayItem(e.getCursor()),

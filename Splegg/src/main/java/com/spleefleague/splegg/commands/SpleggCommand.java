@@ -80,9 +80,9 @@ public class SpleggCommand extends CoreCommand {
         }
         if (corePlayers.size() < battleMode.getRequiredTeams()) {
             error(sender, "Not enough players! (" + corePlayers.size() + "/" + battleMode.getRequiredTeams() + ")");
-            Chat.sendRequest("Force start anyway?", sender, "spleggforce", (s, r) -> {
+            Chat.sendRequest(sender, "spleggforce", (s, r) -> {
                 Splegg.getInstance().forceStart(battleMode, corePlayers, arena);
-            });
+            }, "Force start anyway?");
         } else {
             Splegg.getInstance().forceStart(battleMode, corePlayers, arena);
         }

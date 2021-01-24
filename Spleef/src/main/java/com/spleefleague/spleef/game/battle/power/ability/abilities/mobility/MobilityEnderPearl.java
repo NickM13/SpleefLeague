@@ -21,7 +21,7 @@ public class MobilityEnderPearl extends AbilityMobility {
 
     public static AbilityStats init() {
         return init(MobilityEnderPearl.class)
-                .setCustomModelData(1)
+                .setCustomModelData(3)
                 .setName("Ender Pearl")
                 .setDescription("Throw an ender pearl, teleporting to the location it lands.")
                 .setUsage(10D);

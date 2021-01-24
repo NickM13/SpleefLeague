@@ -40,7 +40,7 @@ public class PowerTrainingArena {
 
     public static InventoryMenuItem createMenu() {
         if (menuItem == null) {
-            menuItem = InventoryMenuAPI.createItem()
+            menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName("&6&lTraining Field")
                     .setDescription("Hone your skills in this solo sandbox version of Power Spleef! Change your powers in game, control field regeneration and learn new combos to best your foes.")
                     .setDisplayItem(Material.WOODEN_SHOVEL, 1)
@@ -57,7 +57,7 @@ public class PowerTrainingArena {
                     .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility() != null)
                     .createLinkedContainer("Training Options");
 
-            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lTraining Field")
                     .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
@@ -79,7 +79,7 @@ public class PowerTrainingArena {
                     .setAction(cp -> ((PowerTrainingBattle) cp.getBattle()).nextField())
                     .setCloseOnAction(false));
 
-            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lPower Cooldowns")
                     .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
@@ -89,13 +89,13 @@ public class PowerTrainingArena {
                     .setAction(cp -> ((PowerTrainingBattle) cp.getBattle()).setCooldownEnabled(!((PowerTrainingBattle) cp.getBattle()).isCooldownEnabled()))
                     .setCloseOnAction(false));
 
-            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lReset Field")
                     .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription("")
                     .setAction(cp -> cp.getBattle().reset()));
 
-            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lRegeneration Speed")
                     .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription(cp -> {
@@ -109,7 +109,7 @@ public class PowerTrainingArena {
                     .setAction(cp -> ((PowerTrainingBattle) cp.getBattle()).nextRegenSpeed())
                     .setCloseOnAction(false));
 
-            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItem()
+            options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lLeave Match")
                     .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
                     .setDescription("")

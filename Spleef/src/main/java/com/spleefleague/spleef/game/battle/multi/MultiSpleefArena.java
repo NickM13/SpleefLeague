@@ -23,19 +23,20 @@ import org.bukkit.Material;
 public class MultiSpleefArena {
     
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lMultispleef")
                 .setDescription(cp -> "Fight your dominance in this free-for-all edition of Spleef." +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.MULTI.getBattleMode()).getPlaying())
-                .setDisplayItem(Material.SHEARS, 238)
+                .setDisplayItem(SpleefMode.MULTI.getBattleMode().getDisplayItem())
                 .setAction(cp -> Spleef.getInstance().queuePlayer(SpleefMode.MULTI.getBattleMode(), cp));
         
-        Spleef.getInstance().getSpleefMenu().getLinkedChest().addMenuItem(menuItem, x, y);
+        Spleef.getInstance().getSpleefMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
-    public static void initLeaderboard(int x, int y) {
+    public static void initLeaderboard() {
+        LeaderboardMenu.addLeaderboardMenu(SpleefMode.MULTI.getBattleMode());
         LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(SpleefMode.MULTI.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItem()
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lMultispleef")
                 .setDescription("View the top players of Multispleef!")
                 .setDisplayItem(Material.SHEARS, 238)
@@ -43,7 +44,7 @@ public class MultiSpleefArena {
         
         LeaderboardMenu.getItem()
                 .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
+                .addMenuItem(menuItem);
     }
     
 }

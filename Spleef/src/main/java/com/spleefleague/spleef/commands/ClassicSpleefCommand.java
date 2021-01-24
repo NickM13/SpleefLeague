@@ -2,6 +2,7 @@ package com.spleefleague.spleef.commands;
 
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.command.error.CoreError;
@@ -29,8 +30,8 @@ public class ClassicSpleefCommand extends CoreCommand {
     public void classicChallenge(CorePlayer sender,
                                  @LiteralArg("challenge") String l,
                                  @OptionArg(listName = "arenas") String arenaName,
-                                 CorePlayer target) {
-        error(sender, CoreError.SETUP);
+                                 @CorePlayerArg(allowSelf = false, allowCrossServer = true) CorePlayer target) {
+        Spleef.getInstance().challengePlayer(sender, target, SpleefMode.CLASSIC.getBattleMode(), arenaName);
     }
 
     @CommandAnnotation

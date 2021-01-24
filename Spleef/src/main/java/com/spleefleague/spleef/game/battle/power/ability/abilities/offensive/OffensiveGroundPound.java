@@ -22,7 +22,7 @@ public class OffensiveGroundPound extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveGroundPound.class)
-                .setCustomModelData(8)
+                .setCustomModelData(4)
                 .setName("Ground Pound")
                 .setDescription("Slam the ground in front of you, rapidly decaying blocks in front of you over %X0.5% seconds.")
                 .setUsage(10);

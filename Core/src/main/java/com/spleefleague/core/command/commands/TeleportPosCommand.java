@@ -32,6 +32,17 @@ public class TeleportPosCommand extends CoreCommand {
         sender.teleport(tpVector);
     }
     */
+
+    @CommandAnnotation
+    public void tpposPlayer(CorePlayer sender,
+                            @HelperArg(value="<x>") TpCoord x,
+                            @HelperArg(value="<y>") TpCoord y,
+                            @HelperArg(value="<z>") TpCoord z,
+                            @Nullable @HelperArg(value="[pitch]") Double pitch,
+                            @Nullable @HelperArg(value="[yaw]") Double yaw) {
+        sender.teleport(x, y, z, pitch, yaw);
+    }
+
     @CommandAnnotation
     public void tpposPlayer(CommandSender sender,
             CorePlayer cp,
@@ -42,6 +53,7 @@ public class TeleportPosCommand extends CoreCommand {
             @Nullable @HelperArg(value="[yaw]") Double yaw) {
         cp.teleport(x, y, z, pitch, yaw);
     }
+
     @CommandAnnotation
     public void tpposPlayers(CommandSender sender,
             List<CorePlayer> cps,
