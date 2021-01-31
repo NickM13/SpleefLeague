@@ -72,11 +72,11 @@ public class PersonalScoreboard {
     
     public static void updatePlayerRank(CorePlayer cp) {
         Team team;
-        if ((team = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard().getEntryTeam(cp.getName())) != null) {
-            team.removeEntry(cp.getName());
+        if ((team = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard().getEntryTeam(cp.getNickname())) != null) {
+            team.removeEntry(cp.getNickname());
         }
         for (PersonalScoreboard ps : scoreboards.values()) {
-            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getName());
+            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getNickname());
         }
     }
     

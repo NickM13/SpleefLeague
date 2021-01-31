@@ -19,7 +19,7 @@ public class CompanionsMenu {
                 .setDescription("Companions!  Wooo!")
                 .setDisplayItem(Material.BONE, 1)
                 .setSelectedItem(Material.BONE, 2)
-                .createLinkedContainer("Companions Menu");
+                .createLinkedContainer("Companions");
     }
     
     /**

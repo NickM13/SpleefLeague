@@ -13,7 +13,7 @@ public class HeldItemHotbar {
     
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(8, "helditem")
-                .setName(cp -> cp.getCollectibles().getHeldItem().getName())
+                .setName(cp -> cp.getCollectibles().getHeldItem().getDisplayName())
                 .setDescription(cp -> cp.getCollectibles().getHeldItem().getDescription())
                 .setDisplayItem(cp -> cp.getCollectibles().getHeldItem().getDisplayItem())
                 .setAction(cp -> { cp.getCollectibles().getHeldItem().onRightClick(cp); })

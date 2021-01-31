@@ -18,11 +18,16 @@ public class PortalPair {
         private final Location tpLoc;
         private final Vector visualLoc;
         private final BlockPosition blockPos;
+        private final BlockPosition relativePos;
         private final BlockFace blockFace;
 
         public Portal(World world, BlockPosition blockPos, BlockFace blockFace) {
             this.blockPos = blockPos;
             this.blockFace = blockFace;
+            this.relativePos = new BlockPosition(
+                    blockPos.getX() + blockFace.getModX(),
+                    blockPos.getY() + blockFace.getModY(),
+                    blockPos.getZ() + blockFace.getModZ());
             tpLoc = blockPos.toLocation(world).add(0.5, 0.5, 0.5).add(blockFace.getDirection());
             visualLoc = blockPos.toVector().add(new Vector(0.5, 0.5, 0.5)).add(blockFace.getDirection().multiply(0.55));
         }
@@ -37,6 +42,10 @@ public class PortalPair {
 
         public BlockPosition getBlockPos() {
             return blockPos;
+        }
+
+        public BlockPosition getRelativePos() {
+            return relativePos;
         }
 
         public BlockFace getBlockFace() {
@@ -187,6 +196,16 @@ public class PortalPair {
         if (last) portal1 = portal;
         else portal2 = portal;
         last = !last;
+    }
+
+    public void popPortal1() {
+        portal1 = null;
+        last = true;
+    }
+
+    public void popPortal2() {
+        portal2 = null;
+        last = false;
     }
 
     public boolean isLinked() {

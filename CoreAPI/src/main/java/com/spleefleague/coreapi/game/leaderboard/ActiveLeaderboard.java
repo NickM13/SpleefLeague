@@ -1,7 +1,6 @@
 package com.spleefleague.coreapi.game.leaderboard;
 
-import com.spleefleague.coreapi.player.RatedPlayer;
-import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
+import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 
 import java.util.*;
 

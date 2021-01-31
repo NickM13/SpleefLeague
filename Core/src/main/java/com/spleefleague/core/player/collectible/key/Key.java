@@ -6,14 +6,9 @@
 
 package com.spleefleague.core.player.collectible.key;
 
-import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.Core;
-
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
-import com.spleefleague.core.vendor.Vendorables;
-import org.bson.Document;
 import org.bukkit.Material;
 
 /**
@@ -22,7 +17,7 @@ import org.bukkit.Material;
 public class Key extends Holdable {
     
     public static void init() {
-        Vendorable.registerVendorableType(Key.class);
+        Vendorable.registerParentType(Key.class);
     }
     
     public static void close() {
@@ -35,7 +30,7 @@ public class Key extends Holdable {
      * Constructor for DB loading
      */
     public Key() {
-        super(true);
+        super();
     }
     
     /**
@@ -45,7 +40,7 @@ public class Key extends Holdable {
      * @param name Display Name
      */
     public Key(String identifier, String name) {
-        super(true);
+        super();
         this.identifier = identifier;
         this.name = name;
         this.material = DEFAULT_KEY_MAT;

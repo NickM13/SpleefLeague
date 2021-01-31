@@ -1,13 +1,9 @@
 package com.spleefleague.core.player.collectible.hat;
 
-import com.mongodb.client.MongoCollection;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.vendor.Vendorable;
-import com.spleefleague.core.vendor.Vendorables;
-import org.bson.Document;
 import org.bukkit.Material;
 
 /**
@@ -20,13 +16,13 @@ public class Hat extends Collectible {
      * Load hats from the SpleefLeague:Hats collection
      */
     public static void init() {
-        Vendorable.registerVendorableType(Hat.class);
+        Vendorable.registerParentType(Hat.class);
     
         InventoryMenuAPI.createItemHotbar(39, "Hat")
-                .setName(cp -> cp.getCollectibles().getActive(Hat.class).getName())
-                .setDisplayItem(cp -> cp.getCollectibles().getActive(Hat.class).getDisplayItem())
+                .setName(cp -> cp.getCollectibles().getActiveName(Hat.class))
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Hat.class))
                 .setDescription(cp -> cp.getCollectibles().getActive(Hat.class).getDescription())
-                .setAvailability(cp -> !cp.isInBattle() && cp.getCollectibles().hasActive(Hat.class));
+                .setAvailability(cp -> !cp.isBattler() && cp.getCollectibles().hasActive(Hat.class) && cp.getCollectibles().isEnabled(Hat.class));
     }
 
     public static void close() {

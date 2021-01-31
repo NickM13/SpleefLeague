@@ -21,20 +21,11 @@ import java.util.UUID;
  * @since 4/18/2020
  */
 public class InventoryMenuUtils {
-    
-    private static final ItemStack LOCKED_ICON = createCustomItem(Material.DIAMOND_AXE, 12);
-    
-    /**
-     * Returns the locked icon used in locked menu items
-     *
-     * @return Item Stack
-     */
-    public static ItemStack getLockedIcon() {
-        return LOCKED_ICON;
-    }
-    
+
     public enum MenuIcon {
-        LOCKED(createCustomItem(Material.DIAMOND_AXE, 12)),
+        LOCKED(createCustomItem(Material.STICK, 1)),
+        ENABLED(createCustomItem(Material.GREEN_DYE, 1)),
+        DISABLED(createCustomItem(Material.RED_DYE, 1)),
         PREVIOUS_GRAY(createCustomItem(Material.GRAY_DYE, 1)),
         NEXT_GRAY(createCustomItem(Material.GRAY_DYE, 2)),
         PREVIOUS(createCustomItem(Material.LIME_DYE, 1)),
@@ -70,7 +61,7 @@ public class InventoryMenuUtils {
     public static InventoryMenuItem createLockedMenuItem(String displayName) {
         return InventoryMenuAPI.createItemDynamic()
                 .setName(displayName)
-                .setDisplayItem(LOCKED_ICON)
+                .setDisplayItem(MenuIcon.LOCKED.getIconItem())
                 .setCloseOnAction(false);
     }
     

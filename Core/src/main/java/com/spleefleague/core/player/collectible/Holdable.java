@@ -1,6 +1,7 @@
 package com.spleefleague.core.player.collectible;
 
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.coreapi.database.annotation.DBField;
 
 /**
  * @author NickM13
@@ -8,18 +9,10 @@ import com.spleefleague.core.player.CorePlayer;
  */
 public abstract class Holdable extends Collectible {
     
-    // Show all unlocked in the Holdables menu or just the current active Holdable item
-    protected final boolean showAll;
-    
-    public Holdable(boolean showAll) {
+    public Holdable() {
         super();
-        this.showAll = showAll;
     }
-    
-    public boolean isShowAll() {
-        return showAll;
-    }
-    
+
     /**
      * Called when a player clicks on this collectible on
      * their collections menu
@@ -41,7 +34,7 @@ public abstract class Holdable extends Collectible {
     public void onDisable(CorePlayer cp) {
     
     }
-    
+
     public abstract void onRightClick(CorePlayer cp);
     
 }

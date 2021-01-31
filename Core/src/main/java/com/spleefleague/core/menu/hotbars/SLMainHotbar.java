@@ -20,9 +20,9 @@ public class SLMainHotbar {
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(0, "mainMenu")
                 .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "SpleefLeague Menu")
-                .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.COMPASS, 1))
+                .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.NETHER_STAR, 1))
                 .setAvailability(CorePlayer::isMenuAvailable)
-                .createLinkedContainer("SpleefLeague Menu");
+                .createLinkedContainer("SpleefLeague");
     }
     
     /**

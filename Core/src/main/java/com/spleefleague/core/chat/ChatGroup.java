@@ -326,16 +326,14 @@ public class ChatGroup {
      */
     public void sendMessage(String msg) {
         for (CorePlayer cp : players) {
-            Chat.sendMessageToPlayer(cp, Chat.DEFAULT + chatTag.toPlainText() + msg);
+            Chat.sendMessageToPlayer(cp, chatTag.toPlainText() + Chat.DEFAULT + msg);
         }
     }
 
-    public void sendMessage(BaseComponent... text) {
+    public void sendMessage(TextComponent text) {
+        TextComponent message = new TextComponent(chatTag);
+        message.addExtra(text);
         for (CorePlayer cp : players) {
-            BaseComponent message = new TextComponent(chatTag);
-            for (BaseComponent base : text) {
-                message.addExtra(base);
-            }
             Chat.sendMessageToPlayer(cp, message);
         }
     }

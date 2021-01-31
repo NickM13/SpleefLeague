@@ -10,6 +10,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.hat.Hat;
+import com.spleefleague.coreapi.chat.ChatColor;
 import org.bukkit.Material;
 
 /**
@@ -26,7 +27,35 @@ public class OreMenu {
                 .setDescription("View the ores you have collected")
                 .createLinkedContainer("Ores");
 
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedChest(), true);
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(ChatColor.GOLD + "Coins")
+                .setDisplayItem(Material.GOLD_NUGGET)
+                .setDescription(cp -> "You Have: " + cp.getPurse().getCoins().getAmount())
+                .setCloseOnAction(false));
+
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(ChatColor.GREEN + "Common Ores")
+                .setDisplayItem(Material.COAL_ORE)
+                .setDescription(cp -> "You Have: " + cp.getPurse().getCommonOre().getAmount())
+                .setCloseOnAction(false));
+
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(ChatColor.AQUA + "Rare Ores")
+                .setDisplayItem(Material.IRON_ORE)
+                .setDescription(cp -> "You Have: " + cp.getPurse().getRareOre().getAmount())
+                .setCloseOnAction(false));
+
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(ChatColor.DARK_PURPLE + "Epic Ores")
+                .setDisplayItem(Material.GOLD_ORE)
+                .setDescription(cp -> "You Have: " + cp.getPurse().getEpicOre().getAmount())
+                .setCloseOnAction(false));
+
+        menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(ChatColor.YELLOW + "Legendary Ores")
+                .setDisplayItem(Material.DIAMOND_ORE)
+                .setDescription(cp -> "You Have: " + cp.getPurse().getLegendaryOre().getAmount())
+                .setCloseOnAction(false));
     }
     
     /**

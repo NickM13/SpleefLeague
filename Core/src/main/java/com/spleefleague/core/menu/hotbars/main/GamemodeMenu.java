@@ -17,8 +17,8 @@ public class GamemodeMenu {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Gamemodes")
                 .setDescription("Check these out!")
-                .setDisplayItem(Material.COMPASS, 2)
-                .setSelectedItem(Material.COMPASS, 3)
+                .setDisplayItem(Material.NETHER_STAR, 2)
+                .setSelectedItem(Material.NETHER_STAR, 3)
                 .createLinkedContainer("Gamemodes");
     }
     

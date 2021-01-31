@@ -3,20 +3,19 @@ package com.spleefleague.core.vendor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
-import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
-import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -33,9 +32,50 @@ import java.util.UUID;
  * @since 4/18/2020
  */
 public abstract class Vendorable extends DBEntity implements Cloneable {
-    
-    private static final Map<String, Class<? extends Vendorable>> REGISTERED_TYPES = new HashMap<>();
-    
+
+    public enum Rarity {
+
+        COMMON(ChatColor.WHITE),
+        RARE(ChatColor.BLUE),
+        EPIC(ChatColor.DARK_PURPLE),
+        LEGENDARY(ChatColor.GOLD),
+        MYTHIC(ChatColor.LIGHT_PURPLE);
+
+        ChatColor color;
+
+        Rarity(ChatColor color) {
+            this.color = color;
+        }
+
+        public ChatColor getColor() {
+            return color;
+        }
+
+    }
+
+    public enum UnlockType {
+
+        DEFAULT(true),
+        HIDDEN(false),
+        EVENT(false),
+        SHOP(true),
+        EXPLORE(true);
+
+        boolean showLocked;
+
+        UnlockType(boolean showLocked) {
+            this.showLocked = showLocked;
+        }
+
+        public boolean shouldShowLocked() {
+            return showLocked;
+        }
+
+    }
+
+    private static final Map<String, Class<? extends Vendorable>> REGISTERED_PARENT_TYPES = new HashMap<>();
+    private static final Map<String, Class<? extends Vendorable>> REGISTERED_EXACT_TYPES = new HashMap<>();
+
     /**
      * Registers a vendorable type class, any vendorables created will
      * use the key assigned with each class based on which one they
@@ -47,8 +87,12 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * 
      * @param clazz Class of ? extends Vendorable
      */
-    protected static void registerVendorableType(Class<? extends Vendorable> clazz) {
-        REGISTERED_TYPES.put(clazz.getSimpleName(), clazz);
+    protected static void registerParentType(Class<? extends Vendorable> clazz) {
+        REGISTERED_PARENT_TYPES.put(clazz.getSimpleName(), clazz);
+    }
+
+    protected static void registerExactType(Class<? extends Vendorable> clazz) {
+        REGISTERED_EXACT_TYPES.put(clazz.getSimpleName(), clazz);
     }
     
     /**
@@ -59,8 +103,8 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * @param clazz Class of Vendorable
      * @return Vendorable Type Name
      */
-    public static String getTypeName(Class<? extends Vendorable> clazz) {
-        for (Map.Entry<String, Class<? extends Vendorable>> type : REGISTERED_TYPES.entrySet()) {
+    public static String getParentTypeName(Class<? extends Vendorable> clazz) {
+        for (Map.Entry<String, Class<? extends Vendorable>> type : REGISTERED_PARENT_TYPES.entrySet()) {
             if (type.getValue().isAssignableFrom(clazz)) {
                 return type.getKey();
             }
@@ -68,24 +112,50 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         return "Invalid";
     }
     
-    public static Set<String> getTypeNames() {
-        return REGISTERED_TYPES.keySet();
+    public static Set<String> getParentTypeNames() {
+        return REGISTERED_PARENT_TYPES.keySet();
     }
-    
+
+    public static String getExactTypeName(Class<? extends Vendorable> clazz) {
+        for (Map.Entry<String, Class<? extends Vendorable>> type : REGISTERED_EXACT_TYPES.entrySet()) {
+            if (type.getValue().isAssignableFrom(clazz)) {
+                return type.getKey();
+            }
+        }
+        return getParentTypeName(clazz);
+    }
+
     /**
      * Get the Vendorable class that this type is instantiated from
      *
      * @param type Type
      * @return Class of ? extends Vendorable
      */
-    public static Class<? extends Vendorable> getClassFromType(String type) {
-        return REGISTERED_TYPES.get(type);
+    public static Class<? extends Vendorable> getClassFromParentType(String type) {
+        return REGISTERED_PARENT_TYPES.get(type);
+    }
+
+    /**
+     * Get the Vendorable class that this type is instantiated from
+     *
+     * @param type Type
+     * @return Class of ? extends Vendorable
+     */
+    public static Class<? extends Vendorable> getClassFromExactType(String type) {
+        if (REGISTERED_EXACT_TYPES.containsKey(type)) {
+            return REGISTERED_EXACT_TYPES.get(type);
+        } else {
+            return REGISTERED_PARENT_TYPES.get(type);
+        }
     }
     
     public static final String typeNbt = "ventype";
     public static final String identifierNbt = "vendintifier";
     
     @DBField protected String type;
+    @DBField protected String parentType;
+    @DBField protected UnlockType unlockType = UnlockType.HIDDEN;
+    @DBField protected Rarity rarity = Rarity.COMMON;
     @DBField protected String name = "";
     @DBField protected String description = "";
     @DBField protected Material material;
@@ -100,7 +170,8 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * Constructor for Vendorable items
      */
     public Vendorable() {
-        this.type = getTypeName(getClass());
+        this.type = getExactTypeName(getClass());
+        this.parentType = getParentTypeName(getClass());
         this.coinCost = 0;
         vendorMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setAction(this::attemptPurchase);
@@ -109,6 +180,24 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     @Override
     public void afterLoad() {
         Vendorables.register(this);
+
+        if (rarity == null) {
+            for (net.md_5.bungee.api.ChatColor chatColor : CoreUtils.getChatColors(name)) {
+                for (Rarity rarity : Rarity.values()) {
+                    if (chatColor.equals(rarity.getColor().asBungee())) {
+                        setRarity(rarity);
+                        break;
+                    }
+                }
+                if (rarity != null) break;
+            }
+            name = ChatColor.stripColor(name);
+            if (rarity == null) {
+                rarity = Rarity.COMMON;
+            }
+            saveChanges();
+        }
+
         updateDisplayItem();
     }
     
@@ -120,6 +209,10 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      */
     public final String getType() {
         return type;
+    }
+
+    public final String getParentType() {
+        return parentType;
     }
     
     /**
@@ -151,7 +244,11 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final String getName() {
         return name;
     }
-    
+
+    public final String getDisplayName() {
+        return rarity.color + "" + ChatColor.BOLD + name;
+    }
+
     /**
      * Sets the display name of this vendorable's item
      *
@@ -193,7 +290,25 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         return getDescription() + "\n\n"
                 + ChatColor.AQUA + "Cost: " + ChatColor.GOLD + getCoinCost();
     }
-    
+
+    public void setRarity(Rarity rarity) {
+        this.rarity = rarity;
+        saveChanges();
+    }
+
+    public Rarity getRarity() {
+        return rarity;
+    }
+
+    public void setUnlockType(UnlockType type) {
+        this.unlockType = type;
+        saveChanges();
+    }
+
+    public UnlockType getUnlockType() {
+        return unlockType;
+    }
+
     /**
      * Gets the display material for this item
      *
@@ -243,6 +358,10 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         saveChanges();
     }
 
+    public boolean isDefault(CorePlayer cp) {
+        return cp.getRank().hasPermission(Rank.DEVELOPER);
+    }
+
     public abstract void saveChanges();
 
     public abstract void unsave();
@@ -254,7 +373,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public void updateDisplayItem() {
         displayItem = createItem();
         vendorMenuItem
-                .setName(name)
+                .setName(rarity.color + "" + ChatColor.BOLD + name)
                 .setDisplayItem(displayItem)
                 .setDescription(getDescriptionVendor());
     }
@@ -312,7 +431,9 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      *
      * @return Display ItemStack
      */
-    public final ItemStack getDisplayItem() { return displayItem; }
+    public final ItemStack getDisplayItem() {
+        return displayItem;
+    }
     
     protected final ItemStack createItem() {
         ItemStack itemStack = new ItemStack(material);
@@ -324,7 +445,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
             itemMeta.setCustomModelData(customModelData);
             itemMeta.setUnbreakable(true);
             itemMeta.addItemFlags(ItemFlag.values());
-            itemMeta.setDisplayName(name);
+            itemMeta.setDisplayName(rarity.color + "" + ChatColor.BOLD + name);
             itemMeta.setLore(ChatUtils.wrapDescription(getDescription()));
             itemMeta.getPersistentDataContainer().set(
                     new NamespacedKey(Core.getInstance(), identifierNbt),

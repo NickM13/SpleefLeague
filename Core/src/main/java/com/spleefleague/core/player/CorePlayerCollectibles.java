@@ -1,17 +1,21 @@
 package com.spleefleague.core.player;
 
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuContainerChest;
+import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.annotation.DBLoad;
+import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bson.Document;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -21,14 +25,19 @@ import java.util.*;
  */
 public class CorePlayerCollectibles extends DBVariable<Document> {
     
-    private static class CollectibleInfo extends DBEntity {
+    public static class CollectibleInfo extends DBEntity {
         
         @DBField Long collectDate;
+        @DBField String selectedSkin = null;
+        @DBField String name = null;
+        Map<String, Long> ownedSkins = new HashMap<>();
     
         /**
          * For creating an empty object to load info from document
          */
-        public CollectibleInfo() {}
+        public CollectibleInfo() {
+
+        }
     
         /**
          * For newly unlocked collectibles
@@ -38,18 +47,66 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         public CollectibleInfo(Long collectDate) {
             this.collectDate = collectDate;
         }
+
+        public void setSelectedSkin(String skin) {
+            this.selectedSkin = skin;
+        }
+
+        public String getSelectedSkin() {
+            return selectedSkin;
+        }
+
+        public boolean addSkin(String skin, Long collectDate) {
+            if (ownedSkins.containsKey(skin)) return false;
+            ownedSkins.put(skin, collectDate);
+            return true;
+        }
+
+        public boolean removeSkin(String skin) {
+            return ownedSkins.remove(skin) != null;
+        }
+
+        public Map<String, Long> getOwnedSkins() {
+            return ownedSkins;
+        }
+
+        @DBLoad(fieldName = "ownedSkins")
+        private void loadOwnedSkins(Document doc) {
+            for (Map.Entry<String, Object> entry : doc.entrySet()) {
+                ownedSkins.put(entry.getKey(), (Long) entry.getValue());
+            }
+        }
+
+        @DBSave(fieldName = "ownedSkins")
+        private Document saveOwnedSkins() {
+            Document doc = new Document();
+            for (Map.Entry<String, Long> entry : ownedSkins.entrySet()) {
+                doc.put(entry.getKey(), entry.getValue());
+            }
+            return doc;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
         
     }
     
     private CorePlayer owner;
     private final SortedMap<String, Map<String, CollectibleInfo>> collectibles;
     private final SortedMap<String, String> activeCollectibles;
+    private final SortedMap<String, Boolean> enabledMap;
     private final Set<String> collectedLeaves;
     private Holdable heldItem;
     
     public CorePlayerCollectibles() {
         this.collectibles = new TreeMap<>();
         this.activeCollectibles = new TreeMap<>();
+        this.enabledMap = new TreeMap<>();
         this.collectedLeaves = new HashSet<>();
         this.owner = null;
         this.heldItem = null;
@@ -109,15 +166,21 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
             fullCollectionDoc.append(collectibleType.getKey(), collectionFullDoc);
         }
         fullDoc.append("collection", fullCollectionDoc);
-        
+
         Document activeDoc = new Document();
         for (Map.Entry<String, String> active : activeCollectibles.entrySet()) {
             activeDoc.append(active.getKey(), active.getValue());
         }
         fullDoc.append("active", activeDoc);
+
+        Document enabledDoc = new Document();
+        for (Map.Entry<String, Boolean> enabled : enabledMap.entrySet()) {
+            enabledDoc.append(enabled.getKey(), enabled.getValue());
+        }
+        fullDoc.append("enabled", enabledDoc);
         
         if (heldItem != null) {
-            Document heldDoc = new Document("type", heldItem.getType()).append("identifier", heldItem.getIdentifier());
+            Document heldDoc = new Document("type", heldItem.getParentType()).append("identifier", heldItem.getIdentifier());
             fullDoc.append("held", heldDoc);
         }
 
@@ -134,22 +197,34 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     @Override
     public void load(Document collectiblesDoc) {
         Document fullCollectionDoc = collectiblesDoc.get("collection", Document.class);
-        collectibles.clear();
-        for (Map.Entry<String, Object> typePair : fullCollectionDoc.entrySet()) {
-            String type = typePair.getKey();
-            Document collection = (Document) typePair.getValue();
-            collectibles.put(type, new TreeMap<>());
-            for (Map.Entry<String, Object> collectionPair : collection.entrySet()) {
-                CollectibleInfo collectibleInfo = new CollectibleInfo();
-                collectibleInfo.load((Document) collectionPair.getValue());
-                collectibles.get(type).put(collectionPair.getKey(), collectibleInfo);
+        if (fullCollectionDoc != null) {
+            collectibles.clear();
+            for (Map.Entry<String, Object> typePair : fullCollectionDoc.entrySet()) {
+                String type = typePair.getKey();
+                Document collection = (Document) typePair.getValue();
+                collectibles.put(type, new TreeMap<>());
+                for (Map.Entry<String, Object> collectionPair : collection.entrySet()) {
+                    CollectibleInfo collectibleInfo = new CollectibleInfo();
+                    collectibleInfo.load((Document) collectionPair.getValue());
+                    collectibles.get(type).put(collectionPair.getKey(), collectibleInfo);
+                }
             }
         }
-        
+
         Document activeDoc = collectiblesDoc.get("active", Document.class);
-        activeCollectibles.clear();
-        for (Map.Entry<String, Object> activePair : activeDoc.entrySet()) {
-            activeCollectibles.put(activePair.getKey(), (String) activePair.getValue());
+        if (activeDoc != null) {
+            activeCollectibles.clear();
+            for (Map.Entry<String, Object> activePair : activeDoc.entrySet()) {
+                activeCollectibles.put(activePair.getKey(), (String) activePair.getValue());
+            }
+        }
+
+        Document enabledDoc = collectiblesDoc.get("enabled", Document.class);
+        if (enabledDoc != null) {
+            enabledMap.clear();
+            for (Map.Entry<String, Object> enabledPair : enabledDoc.entrySet()) {
+                enabledMap.put(enabledPair.getKey(), (Boolean) enabledPair.getValue());
+            }
         }
         
         Document heldDoc = collectiblesDoc.get("held", Document.class);
@@ -164,32 +239,64 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     
     public boolean add(Collectible collectible) {
         if (collectible != null) {
-            if (!collectibles.containsKey(collectible.getType())) {
-                collectibles.put(collectible.getType(), new HashMap<>());
+            if (!collectibles.containsKey(collectible.getParentType())) {
+                collectibles.put(collectible.getParentType(), new HashMap<>());
             }
-            collectibles.get(collectible.getType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+            collectibles.get(collectible.getParentType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
             return true;
         }
         return false;
     }
+
+    public boolean removeSkin(Collectible collectible, String skin) {
+        if (collectible != null) {
+            if (collectibles.containsKey(collectible.getParentType())) {
+                if (collectibles.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
+                    return (collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()).removeSkin(skin));
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param collectible Collectible
+     * @param skin Skin ID
+     * @return 1 for no collectible, 2 for already have, 3 for null
+     */
+    public int addSkin(Collectible collectible, String skin) {
+        if (collectible != null) {
+            if (!collectibles.containsKey(collectible.getParentType()) ||
+                    !collectibles.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
+                if (collectible.isDefault(owner)) {
+                    add(collectible);
+                } else {
+                    return 1;
+                }
+            }
+            return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()).addSkin(skin, System.currentTimeMillis()) ? 0 : 2;
+        }
+        return 3;
+    }
     
     public boolean contains(Collectible collectible) {
-        if (collectibles.containsKey(collectible.getType())) {
-            return collectibles.get(collectible.getType()).get(collectible.getIdentifier()) != null;
+        if (collectibles.containsKey(collectible.getParentType())) {
+            return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()) != null;
         }
         return false;
     }
     
     public CollectibleInfo getInfo(Collectible collectible) {
-        if (contains(collectible)) {
-            return collectibles.get(collectible.getType()).get(collectible.getIdentifier());
+        if (!contains(collectible)) {
+            add(collectible);
         }
-        return null;
+        return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier());
     }
     
     public boolean remove(Collectible collectible) {
-        if (collectible != null && collectibles.containsKey(collectible.getType())) {
-            collectibles.get(collectible.getType()).remove(collectible.getIdentifier());
+        if (collectible != null && collectibles.containsKey(collectible.getParentType())) {
+            collectibles.get(collectible.getParentType()).remove(collectible.getIdentifier());
             deactivate(collectible);
             return true;
         }
@@ -204,8 +311,8 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * @return Nullable Collectible
      */
     public <T extends Collectible> T getActive(Class<T> clazz) {
-        if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz))) return null;
-        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getTypeName(clazz)));
+        if (!activeCollectibles.containsKey(Vendorable.getParentTypeName(clazz))) return Vendorables.get(clazz, "default");
+        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getParentTypeName(clazz)));
     }
 
     /**
@@ -216,12 +323,12 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * @return Nullable Collectible
      */
     public <T extends Collectible> T getActive(Class<T> clazz, String affix) {
-        if (!activeCollectibles.containsKey(Vendorable.getTypeName(clazz) + affix)) return null;
-        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getTypeName(clazz) + affix));
+        if (!activeCollectibles.containsKey(Vendorable.getParentTypeName(clazz) + affix)) return Vendorables.get(clazz, "default");
+        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getParentTypeName(clazz) + affix));
     }
     
     public boolean hasActive(Class<? extends Collectible> clazz) {
-        String typeName = Vendorable.getTypeName(clazz);
+        String typeName = Vendorable.getParentTypeName(clazz);
         String activeName = activeCollectibles.get(typeName);
         if (activeName != null) {
             if (Vendorables.get(clazz, activeName) == null) {
@@ -233,82 +340,42 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         return false;
     }
 
-    /**
-     * Returns the current active collectibles item of a type, or default if there is none or the active collectible
-     * is no longer available
-     *
-     * @param <T> ? extends Collectible
-     * @param clazz Collectible Class
-     * @param defaultCollectible Default Collectible
-     * @return NonNull Collectible
-     */
-    public <T extends Collectible> T getActiveOrDefault(Class<T> clazz, T defaultCollectible) {
-        T collectible = getActive(clazz);
-        if (collectible == null) return defaultCollectible;
-        return collectible;
+    public void toggleEnabled(Class<? extends Collectible> clazz) {
+        setEnabled(clazz, !isEnabled(clazz));
     }
 
-    /**
-     * Returns the current active collectibles item of a type, or default if there is none or the active collectible
-     * is no longer available
-     *
-     * @param <T> ? extends Collectible
-     * @param clazz Collectible Class
-     * @param defaultCollectible Default Collectible
-     * @return NonNull Collectible
-     */
-    public <T extends Collectible> T getActiveOrDefault(Class<T> clazz, String affix, T defaultCollectible) {
-        T collectible = getActive(clazz, affix);
-        if (collectible == null) return defaultCollectible;
-        return collectible;
+    public <T extends Collectible> ItemStack getActiveIcon(Class<T> clazz) {
+        T collectible = getActive(clazz);
+        return collectible.getDisplayItem(getInfo(collectible).selectedSkin);
     }
-    
-    /**
-     * Gets a list of all holdable items
-     *
-     * @return List of Holdables
-     */
-    @SuppressWarnings("unchecked")
-    public List<Holdable> getAllHoldables() {
-        List<Holdable> holdableList = new ArrayList<>();
-        
-        for (Map.Entry<String, Map<String, CollectibleInfo>> collectibleEntry : collectibles.entrySet()) {
-            Class<? extends Vendorable> collectibleClass = Vendorable.getClassFromType(collectibleEntry.getKey());
-            if (!collectibleEntry.getValue().isEmpty() && collectibleClass != null && Holdable.class.isAssignableFrom(collectibleClass)) {
-                // TODO: Probably safer way to do this than finding the first and checking for showAll
-                Holdable firstHoldable = (Holdable) Vendorables.get(collectibleEntry.getKey(), collectibleEntry.getValue().keySet().iterator().next());
-                Holdable holdCollectible;
-                if (firstHoldable != null) {
-                    if (firstHoldable.isShowAll()) {
-                        for (Map.Entry<String, CollectibleInfo> holdableEntry : collectibleEntry.getValue().entrySet()) {
-                            holdCollectible = (Holdable) Vendorables.get(collectibleEntry.getKey(), holdableEntry.getKey());
-                            if (holdCollectible != null) {
-                                holdableList.add(holdCollectible);
-                            }
-                        }
-                    } else {
-                        holdCollectible = (Holdable) getActive((Class<? extends Holdable>) collectibleClass);
-                        if (holdCollectible != null) {
-                            holdableList.add(holdCollectible);
-                        }
-                    }
-                }
-            }
+
+    public <T extends Collectible> String getActiveName(Class<T> clazz) {
+        T collectible = getActive(clazz);
+        CollectibleInfo info = getInfo(collectible);
+        if (info.getSelectedSkin() != null) {
+            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+        } else {
+            return collectible.getDisplayName();
         }
-        for (Map.Entry<String, String> activeEntry : activeCollectibles.entrySet()) {
-            Vendorable vendorable = Vendorables.get(activeEntry.getKey(), activeEntry.getValue());
-            if (vendorable instanceof Holdable) {
-                holdableList.add((Holdable) vendorable);
-            }
+    }
+
+    public <T extends Collectible> boolean isEnabled(Class<T> clazz) {
+        String typeName = Vendorable.getParentTypeName(clazz);
+        if (!enabledMap.containsKey(typeName)) {
+            enabledMap.put(typeName, true);
         }
-        
-        return holdableList;
+        return enabledMap.get(typeName);
+    }
+
+    public <T extends Collectible> void setEnabled(Class<T> clazz, boolean state) {
+        enabledMap.put(Vendorable.getParentTypeName(clazz), state);
+        owner.refreshHotbar();
     }
     
     public <T extends Collectible> List<T> getAll(Class<T> clazz) {
         List<T> collectibleList = new ArrayList<>();
     
-        Map<String, CollectibleInfo> collectibleMap = this.collectibles.get(Vendorable.getTypeName(clazz));
+        Map<String, CollectibleInfo> collectibleMap = this.collectibles.get(Vendorable.getParentTypeName(clazz));
         if (collectibleMap != null) {
             for (Map.Entry<String, CollectibleInfo> entry : collectibleMap.entrySet()) {
                 T collectible = Vendorables.get(clazz, entry.getKey());
@@ -360,7 +427,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         Collectible current = getActive(collectible.getClass());
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
-        activeCollectibles.put(collectible.getType(), collectible.getIdentifier());
+        activeCollectibles.put(collectible.getParentType(), collectible.getIdentifier());
         owner.refreshHotbar();
     }
 
@@ -373,12 +440,17 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         Collectible current = getActive(collectible.getClass(), affix);
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
-        activeCollectibles.put(collectible.getType() + affix, collectible.getIdentifier());
+        activeCollectibles.put(collectible.getParentType() + affix, collectible.getIdentifier());
+        owner.refreshHotbar();
+    }
+
+    public void setSkin(Collectible collectible, String skin) {
+        owner.getCollectibles().getInfo(collectible).setSelectedSkin(skin);
         owner.refreshHotbar();
     }
 
     public void removeActiveItem(Class<? extends Collectible> clazz) {
-        String type = Vendorable.getTypeName(clazz);
+        String type = Vendorable.getParentTypeName(clazz);
         if (activeCollectibles.containsKey(type)) {
             Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
             if (collectible != null) {
@@ -390,7 +462,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
 
     public void removeActiveItem(Class<? extends Collectible> clazz, String affix) {
-        String type = Vendorable.getTypeName(clazz) + affix;
+        String type = Vendorable.getParentTypeName(clazz) + affix;
         if (activeCollectibles.containsKey(type)) {
             Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
             if (collectible != null) {
@@ -407,49 +479,163 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * @param collectible Collectible
      */
     protected void deactivate(Collectible collectible) {
-        if (activeCollectibles.containsKey(collectible.getType())
-                && activeCollectibles.get(collectible.getType()).equalsIgnoreCase(collectible.getIdentifier())) {
+        if (activeCollectibles.containsKey(collectible.getParentType())
+                && activeCollectibles.get(collectible.getParentType()).equalsIgnoreCase(collectible.getIdentifier())) {
             collectible.onDisable(owner);
-            activeCollectibles.remove(collectible.getType());
+            activeCollectibles.remove(collectible.getParentType());
         }
     }
-    
+
+    public static InventoryMenuItem createActiveMenuItem(Class<? extends Collectible> clazz) {
+        return InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> cp.getCollectibles().getActiveName(clazz))
+                .setDescription(cp -> cp.getCollectibles().getActive(clazz).getDescription())
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(clazz))
+                .setVisibility(cp -> cp.getCollectibles().hasActive(clazz))
+                .setCloseOnAction(false);
+    }
+
+    public static InventoryMenuItemToggle createToggleMenuItem(Class<? extends Collectible> clazz) {
+        return InventoryMenuAPI.createItemToggle()
+                .setVisibility(cp -> cp.getCollectibles().hasActive(clazz))
+                .setAction(cp -> cp.getCollectibles().toggleEnabled(clazz))
+                .setEnabledFun(cp -> cp.getCollectibles().isEnabled(clazz));
+    }
+
+    private static final String COLLECTIBLE_SKIN = "collskin";
+    private static final String COLLECTIBLE_SEARCH = "collsearch";
+
     /**
-     * Creates an Inventory Menu Container with all available collectibles of a type, including
-     * an item at the start that allows for disabling the cosmetic if possible
+     * Creates an Inventory Menu Container with all available collectibles of a type
      *
      * @param clazz Class
-     * @param container Menu Container
-     * @param canHaveNone Disable Item Shown
      */
-    public static void createCollectibleContainer(Class<? extends Collectible> clazz, InventoryMenuContainerChest container, boolean canHaveNone) {
-        container.setOpenAction((container2, cp1) -> {
-                container2.clearUnsorted();
-                if (canHaveNone) {
+    public static InventoryMenuItem createCollectibleContainer(Class<? extends Collectible> clazz, InventoryMenuItem menuItem) {
+        if (!menuItem.hasLinkedContainer())
+            menuItem.createLinkedContainer(clazz.getSimpleName());
+        InventoryMenuContainerChest container = menuItem.getLinkedChest();
+
+        InventoryMenuItem activeMenuItem = container.addStaticItem(createActiveMenuItem(clazz), 6, 2);
+
+        InventoryMenuItem skinMenuItem = container.addStaticItem(
+                createSkinMenu(clazz).setAction(cp -> cp.getMenu().setMenuTag(COLLECTIBLE_SKIN, cp.getCollectibles().getActive(clazz).getIdentifier())),
+                3, 0);
+
+        InventoryMenuItem searchMenuItem = container.addStaticItem(createSearchMenu(clazz), 2, 0);
+
+        container.setOpenAction((container2, cp) -> {
+            container2.clearUnsorted();
+            if (!cp.getMenu().hasMenuTag(COLLECTIBLE_SEARCH)) {
+                int index = -1;
+                int i = 0;
+                Collectible active = cp.getCollectibles().getActive(clazz);
+                for (Collectible collectible : Vendorables.getAllSorted(clazz, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
+                    if (index == -1 && collectible.equals(active)) {
+                        index = i;
+                    }
                     container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName("None")
-                            .setDescription("")
-                            .setDisplayItem(Material.BAKED_POTATO)
-                            .setAction(cp -> cp.getCollectibles().removeActiveItem(clazz))
+                            .setName(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayName() : "Locked")
+                            .setDisplayItem(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
+                            .setDescription(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDescription() : "")
+                            .setAction(cp2 -> {
+                                if (collectible.isUnlocked(cp2)) {
+                                    if (collectible.hasSkins()) {
+                                        cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
+                                        cp2.getMenu().setInventoryMenuItem(skinMenuItem);
+                                    } else {
+                                        cp2.getCollectibles().setActiveItem(collectible);
+                                    }
+                                }
+                            })
                             .setCloseOnAction(false));
+                    i++;
                 }
-            
-                for (Collectible collectible : cp1.getCollectibles().getAll(clazz)) {
+                cp.getMenu().setPage(index / container.getPageItemTotal());
+            } else {
+                String search = cp.getMenu().getMenuTag(COLLECTIBLE_SEARCH, String.class);
+                for (Collectible collectible : Vendorables.getAllSorted(clazz, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
+                    if (!collectible.getName().toLowerCase().contains(search.toLowerCase())) continue;
                     container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(collectible.getName())
-                            .setDescription(collectible.getDescription())
+                            .setName(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayName() : "Locked")
+                            .setDisplayItem(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
+                            .setDescription(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDescription() : "")
+                            .setAction(cp2 -> {
+                                if (collectible.isUnlocked(cp2)) {
+                                    if (collectible.hasSkins()) {
+                                        cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
+                                        cp2.getMenu().setInventoryMenuItem(skinMenuItem);
+                                    } else {
+                                        cp2.getCollectibles().setActiveItem(collectible);
+                                    }
+                                }
+                            })
+                            .setCloseOnAction(false));
+                    cp.getMenu().removeMenuTag(COLLECTIBLE_SEARCH);
+                }
+            }
+        });
+
+        return menuItem;
+    }
+
+    public static InventoryMenuItem createSearchMenu(Class<? extends Collectible> clazz) {
+        return InventoryMenuAPI.createItemSearch()
+                .setName("Search for " + clazz.getSimpleName())
+                .setSearchTag(COLLECTIBLE_SEARCH)
+                .setFailText("No " + clazz.getSimpleName() + "s found!")
+                .build();
+    }
+
+    public static InventoryMenuItem createSkinMenu(Class<? extends Collectible> clazz) {
+        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
+                .setName("Skins")
+                .setDescription(cp -> "Change the skin of your " + cp.getCollectibles().getActive(clazz).getDisplayName())
+                .setDisplayItem(Material.LAVA_BUCKET, 1)
+                .setVisibility(cp -> cp.getCollectibles().hasActive(clazz) && cp.getCollectibles().getActive(clazz).hasSkins())
+                .createLinkedContainer("Skins");
+
+        menuItem.getLinkedChest().addStaticItem(createActiveMenuItem(clazz), 6, 2);
+
+        menuItem.getLinkedChest()
+                .setOpenAction((container, cp) -> {
+                    container.clearUnsorted();
+                    Collectible collectible = Vendorables.get(clazz, cp.getMenu().getMenuTag(COLLECTIBLE_SKIN, String.class));
+                    if (collectible == null) return;
+                    container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                            .setName(collectible.getDisplayName())
                             .setDisplayItem(collectible.getDisplayItem())
-                            .setAction(cp2 -> cp2.getCollectibles().setActiveItem(collectible))
+                            .setDescription(collectible.getDescription())
+                            .setAction(cp2 -> {
+                                cp2.getCollectibles().setActiveItem(collectible);
+                                cp2.getCollectibles().setSkin(collectible, null);
+                            })
                             .setCloseOnAction(false));
-                }
-            });
-    
-        container.addStaticItem(InventoryMenuAPI.createItemDynamic()
-                .setName("Selected Collectible")
-                .setDescription(cp -> cp.getCollectibles().getActive(clazz).getDescription())
-                .setDisplayItem(cp -> cp.getCollectibles().getActive(clazz).getDisplayItem())
-                .setVisibility(cp -> cp.getCollectibles().hasActive(clazz)),
-                4, 4);
+                    for (String id : collectible.getSkinIds()) {
+                        Set<String> skins = cp.getCollectibles().getInfo(collectible).getOwnedSkins().keySet();
+                        InventoryMenuItem skinItem;
+                        if (skins.contains(id)) {
+                            CollectibleSkin skin = collectible.getSkin(id);
+                            skinItem = InventoryMenuAPI.createItemStatic()
+                                    .setName(skin.getDisplayName())
+                                    .setDisplayItem(collectible.getMaterial(), skin.getCmd())
+                                    .setDescription(collectible.getDescription())
+                                    .setAction(cp2 -> {
+                                        cp2.getCollectibles().setActiveItem(collectible);
+                                        cp2.getCollectibles().setSkin(collectible, id);
+                                    })
+                                    .setCloseOnAction(false);
+                        } else {
+                            skinItem = InventoryMenuAPI.createItemStatic()
+                                    .setName("Locked")
+                                    .setDisplayItem(InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
+                                    .setDescription("")
+                                    .setCloseOnAction(false);
+                        }
+                        container.addMenuItem(skinItem);
+                    }
+                });
+
+        return menuItem;
     }
 
     public boolean addLeaf(String leafName) {

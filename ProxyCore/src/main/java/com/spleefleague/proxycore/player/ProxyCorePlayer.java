@@ -1,24 +1,46 @@
 package com.spleefleague.proxycore.player;
 
-import com.spleefleague.coreapi.player.RatedPlayer;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.player.PlayerRatings;
+import com.spleefleague.coreapi.player.PlayerStatistics;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * @author NickM13
  * @since 6/6/2020
  */
-public class ProxyCorePlayer extends RatedPlayer {
+public class ProxyCorePlayer extends DBPlayer {
 
     private ServerInfo currentServer = null;
     private ProxyParty party = null;
-    private ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
     private boolean battling = false;
     private QueueContainer battleContainer = null;
-    private PacketQueueJoin lastQueueRequest = null;
+    private PacketSpigotQueueJoin lastQueueRequest = null;
+
+    @DBField private String nickname = null;
+    @DBField private UUID disguise = null;
+
+    @DBField private PermRank permRank;
+    @DBField private List<TempRank> tempRanks;
+
+    @DBField private Boolean vanished;
+
+    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
+
+    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
+    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private long lastOnline = -1;
+
+    private final ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
+    @DBField private final ProxyPlayerStatistics statistics = new ProxyPlayerStatistics();
 
     public ProxyCorePlayer() {
 
@@ -27,13 +49,14 @@ public class ProxyCorePlayer extends RatedPlayer {
     @Override
     public void init() {
         proxyRatings.setOwner(this);
-        super.init();
+        statistics.setOwner(this);
     }
 
     @Override
     public void initOffline() {
-        proxyRatings.setOwner(this);
         super.initOffline();
+        proxyRatings.setOwner(this);
+        statistics.setOwner(this);
     }
 
     @Override
@@ -41,9 +64,13 @@ public class ProxyCorePlayer extends RatedPlayer {
 
     }
 
+    public PlayerStatistics getStatistics() {
+        return statistics;
+    }
+
     public void transfer(ServerInfo server) {
         getPlayer().connect(server);
-        this.currentServer = server;
+        currentServer = server;
     }
 
     public void setCurrentServer(ServerInfo currentServer) {
@@ -92,11 +119,11 @@ public class ProxyCorePlayer extends RatedPlayer {
         return proxyRatings;
     }
 
-    public void setLastQueueRequest(PacketQueueJoin packet) {
+    public void setLastQueueRequest(PacketSpigotQueueJoin packet) {
         lastQueueRequest = packet;
     }
 
-    public PacketQueueJoin getLastQueueRequest() {
+    public PacketSpigotQueueJoin getLastQueueRequest() {
         return lastQueueRequest;
     }
 

@@ -30,7 +30,7 @@ public class MobilityJetpack extends AbilityMobility {
     private static final double UP_CAP = 0.35;
     private static final double DOWN_POWER = 0.2;
     private static final double DOWN_CAP = 0.25;
-    private static final double HEIGHT_CAP = 4.5D;
+    private static final double HEIGHT_CAP = 5.5D;
 
     private static final double MAX_FLY_TIME = MAX_FUEL / (CONSUME_FLY * 20);
 
@@ -113,7 +113,7 @@ public class MobilityJetpack extends AbilityMobility {
                     fuel -= 5;
                     getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 1.5f);
                 } else {
-                    getPlayer().setVelocity(getPlayer().getVelocity().setY(Math.max(-DOWN_CAP, getPlayer().getVelocity().getY())));
+                    getPlayer().setVelocity(getPlayer().getVelocity().setY(Math.max(-DOWN_CAP, getPlayer().getVelocity().getY()) + 0.2D));
                 }
             }
         }

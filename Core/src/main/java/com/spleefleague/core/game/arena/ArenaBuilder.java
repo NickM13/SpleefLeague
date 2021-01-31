@@ -27,8 +27,7 @@ public class ArenaBuilder {
                         .setAction((cp3, str) -> {
                             Arena arena = Arenas.createArena(str, str);
                             Arenas.addArenaMode(arena.getName(), BattleMode.get(modeName));
-                        })
-                        .setParentContainer((InventoryMenuContainerChest) cp2.getMenu().getInventoryMenuContainer())))
+                        })))
                 .setCloseOnAction(false);
     }
     
@@ -72,8 +71,7 @@ public class ArenaBuilder {
                         .setSuccessFunc(str -> Arenas.get(str) == null)
                         .setAction((cp3, str) -> {
                             Arenas.renameArena(arena.getName(), str);
-                        })
-                        .setParentContainer((InventoryMenuContainerChest) cp2.getMenu().getInventoryMenuContainer())))
+                        })))
                 .setCloseOnAction(false));
     
         menuItem.getLinkedChest()

@@ -6,6 +6,7 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Location;
@@ -31,8 +32,8 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
 
     public static class BouncingProjectile extends FakeEntitySnowball {
 
-        public BouncingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public BouncingProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -43,12 +44,12 @@ public class OffensiveBouncingBomb extends AbilityOffensive {
         @Override
         protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
             if (super.onBlockHit(craftEntity, blockRaycastResult)) {
-                gameWorld.spawnParticles(Particle.REDSTONE,
+                projectileWorld.spawnParticles(Particle.REDSTONE,
                         blockRaycastResult.getIntersection().getX(),
                         blockRaycastResult.getIntersection().getY(),
                         blockRaycastResult.getIntersection().getZ(),
                         40, 1, 1, 1, 0D, Type.OFFENSIVE.getDustMedium());
-                gameWorld.playSound(blockRaycastResult.getIntersection().toLocation(gameWorld.getWorld()), Sound.ENTITY_LLAMA_SPIT, 1, 1.5f);
+                projectileWorld.playSound(blockRaycastResult.getIntersection().toLocation(projectileWorld.getWorld()), Sound.ENTITY_LLAMA_SPIT, 1, 1.5f);
                 return true;
             }
             return false;

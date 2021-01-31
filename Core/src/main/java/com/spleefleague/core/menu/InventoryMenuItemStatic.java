@@ -1,5 +1,6 @@
 package com.spleefleague.core.menu;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
@@ -9,7 +10,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -39,7 +39,7 @@ public class InventoryMenuItemStatic extends InventoryMenuItem {
     }
 
     @Override
-    public String toString() {
+    public String toString(CorePlayer cp) {
         return name;
     }
 
@@ -67,6 +67,12 @@ public class InventoryMenuItemStatic extends InventoryMenuItem {
         }
         this.description = description.toString();
         itemChanges = true;
+        return this;
+    }
+
+    @Override
+    public InventoryMenuItemStatic setDescriptionBuffer(int buffer) {
+        this.descriptionBuffer = buffer;
         return this;
     }
 
@@ -129,8 +135,11 @@ public class InventoryMenuItemStatic extends InventoryMenuItem {
 
     private void updateDisplayItem() {
         List<String> wrappedDescription;
-        if (!description.isEmpty()) wrappedDescription = Lists.newArrayList();
-        wrappedDescription = ChatUtils.wrapDescription("\n" + Chat.colorize(description));
+        if (!description.isEmpty()) {
+            wrappedDescription = ChatUtils.wrapDescription(Strings.repeat("\n", descriptionBuffer) + Chat.colorize(description));
+        } else {
+            wrappedDescription = Lists.newArrayList();
+        }
         bakedItem = displayItem.clone();
         ItemMeta meta = bakedItem.getItemMeta();
         if (meta != null) {

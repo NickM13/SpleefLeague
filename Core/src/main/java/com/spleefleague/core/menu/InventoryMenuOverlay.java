@@ -66,8 +66,13 @@ public class InventoryMenuOverlay {
     public void openOverlay(Inventory inventory, CorePlayer cp, InventoryMenuContainerChest currentScreen) {
         ItemStack[] contents = inventory.getContents();
         for (Map.Entry<Integer, InventoryMenuItem> entry : sortedItems.entrySet()) {
-            if (entry.getValue().isVisible(cp)) {
-                contents[entry.getKey()] = entry.getValue().createItem(cp, entry.getValue().getLinkedChest() == currentScreen);
+            InventoryMenuItem menuItem = entry.getValue();
+            if (menuItem.isVisible(cp)) {
+                if (menuItem.getLinkedChest() != null && menuItem.getLinkedChest().equals(currentScreen)) {
+                    contents[entry.getKey()] = menuItem.createItem(cp, true);
+                } else {
+                    contents[entry.getKey()] = menuItem.createItem(cp, false);
+                }
             }
         }
         if (background != -1) {

@@ -11,7 +11,6 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
@@ -19,10 +18,11 @@ import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
 import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
-import com.spleefleague.core.menu.hotbars.main.credits.Credits;
+import com.spleefleague.core.menu.hotbars.main.socialmedia.Credits;
 import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
@@ -30,7 +30,7 @@ import com.spleefleague.core.player.CorePlayerOptions;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.party.CorePartyManager;
 import com.spleefleague.core.player.rank.Ranks;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -42,19 +42,15 @@ import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.utils.packet.PacketSpigot;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketServerList;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
-import net.md_5.bungee.api.chat.BaseComponent;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -62,6 +58,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
@@ -86,6 +83,8 @@ public class Core extends CorePlugin<CorePlayer> {
     private Set<String> lobbyServers = new HashSet<>();
     private Set<String> minigameServers = new HashSet<>();
     private Set<String> servers = new HashSet<>();
+
+    private CorePartyManager partyManager;
 
     /**
      * Called when the plugin is enabling
@@ -115,10 +114,12 @@ public class Core extends CorePlugin<CorePlayer> {
         GlobalZones.init();
         PersonalScoreboard.init();
         Settings.init();
+        InventoryMenuSkullManager.init();
 
         // Initialize manager
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
         commandManager = new CommandManager();
+        partyManager = new CorePartyManager();
 
         // Initialize listeners
         initListeners();
@@ -169,13 +170,17 @@ public class Core extends CorePlugin<CorePlayer> {
         return instance;
     }
 
+    public CorePartyManager getPartyManager() {
+        return partyManager;
+    }
+
     @Override
     public void refreshPlayers(Set<UUID> players) {
         super.refreshPlayers(players);
         leaderboards.refresh(players);
     }
 
-    public void updateServerList(PacketServerList packet) {
+    public void updateServerList(PacketBungeeRefreshServerList packet) {
         servers.clear();
         lobbyServers.clear();
         minigameServers.clear();
@@ -286,6 +291,21 @@ public class Core extends CorePlugin<CorePlayer> {
         SLMainOverlay.init();
     }
 
+    @Override
+    public void reloadCollectibles() {
+        Collectible.init();
+    }
+
+    @Override
+    public void reloadSettings() {
+        super.reloadSettings();
+    }
+
+    @Override
+    public void reloadArenas() {
+        super.reloadArenas();
+    }
+
     /**
      * Hide/show players based on in-game state and
      * vanished state
@@ -330,7 +350,8 @@ public class Core extends CorePlugin<CorePlayer> {
         if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
         PersonalScoreboard.onPlayerJoin(cp);
-        TextComponent text = cp.getChatName();
+        TextComponent text = new TextComponent();
+        text.addExtra(cp.getChatName());
         text.addExtra(" has logged in");
         for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
             if (cp.equals(cp2)) continue;
@@ -346,7 +367,8 @@ public class Core extends CorePlugin<CorePlayer> {
         PersonalScoreboard.onPlayerQuit(uuid);
 
         if (cp.isVanished()) return;
-        TextComponent text = cp.getChatName();
+        TextComponent text = new TextComponent();
+        text.addExtra(cp.getChatName());
         text.addExtra(" has logged out");
 
         for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
@@ -420,7 +442,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param p Player
      * @param packet Packet Container
      */
-    public static void sendPacket(@NotNull Player p, PacketContainer packet) {
+    public static void sendPacket(@Nonnull Player p, PacketContainer packet) {
         if (packet == null) return;
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
@@ -438,20 +460,34 @@ public class Core extends CorePlugin<CorePlayer> {
      * @param packet Packet Container
      */
     public static void sendPacket(CorePlayer cp, PacketContainer packet) {
-        if (packet == null) return;
-        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-            try {
-                if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
-            } catch (InvocationTargetException e) {
-                CoreLogger.logError(e);
-            }
-        }, 1L);
+        sendPacket(cp, packet, 1L);
     }
 
-    public static void sendPacketSilently(@NotNull Player p, PacketContainer packet) {
+    public static void sendPacket(CorePlayer cp, PacketContainer packet, long delay) {
+        if (packet == null) return;
+        if (delay > 0) {
+            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                try {
+                    if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
+                } catch (InvocationTargetException e) {
+                    CoreLogger.logError(e);
+                }
+            }, delay);
+        } else {
+            Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
+                try {
+                    if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
+                } catch (InvocationTargetException e) {
+                    CoreLogger.logError(e);
+                }
+            });
+        }
+    }
+
+    public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet) {
         sendPacketSilently(p, packet, 1L);
     }
-    public static void sendPacketSilently(@NotNull Player p, PacketContainer packet, long delay) {
+    public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet, long delay) {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
                 protocolManager.sendServerPacket(p, packet, null, false);
@@ -504,23 +540,6 @@ public class Core extends CorePlugin<CorePlayer> {
         boolean unqueued = false;
         for (PlayerQueue pq : queueManager.getQueues()) {
             unqueued = unqueued || pq.unqueuePlayer(cp);
-        }
-        return unqueued;
-    }
-
-    /**
-     * Unqueue a party from all Queues
-     * (Really just removes the lead player from the queues)
-     *
-     * @param party Party
-     * @return If player was unqueued
-     */
-    public boolean unqueuePartyGlobally(Party party) {
-        boolean unqueued = false;
-        for (PlayerQueue pq : queueManager.getQueues()) {
-            if (pq.isTeamQueue()) {
-                unqueued = unqueued || pq.unqueuePlayer(party.getOwner());
-            }
         }
         return unqueued;
     }

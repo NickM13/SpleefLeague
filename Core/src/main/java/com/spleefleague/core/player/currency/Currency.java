@@ -41,7 +41,7 @@ public abstract class Currency extends DBVariable<Document> {
     public String addAmount(int amt) {
         if (amt == 0) return "";
         amount += amt;
-        return Chat.DEFAULT + " You have earned " + ChatColor.GREEN + amount + " " + getName() + (amt != 1 ? "s" : "");
+        return getChatColor() + " +" + amt + " " + getName() + (amt != 1 ? "s" : "") + Chat.DEFAULT + " | " + getChatColor() + amount + Chat.DEFAULT + " Total";
     }
 
     public void setAmount(int amt) {

@@ -17,14 +17,9 @@ import java.util.Map;
 public class PlayerRatings extends DBVariable<Document> {
 
     protected final Map<String, Ratings> modeRatingsMap = new HashMap<>();
-    protected RatedPlayer owner = null;
 
     public PlayerRatings() {
 
-    }
-
-    public void setOwner(RatedPlayer owner) {
-        this.owner = owner;
     }
 
     @Override
@@ -117,7 +112,7 @@ public class PlayerRatings extends DBVariable<Document> {
         } else {
             addLoss(mode, season);
         }
-        return modeRatingsMap.get(mode).get(season).addElo(owner, change);
+        return modeRatingsMap.get(mode).get(season).addElo(change);
     }
 
     public void addWin(String mode, int season) {

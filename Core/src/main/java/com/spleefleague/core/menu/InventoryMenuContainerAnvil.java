@@ -16,8 +16,10 @@ import java.util.function.Function;
  * @since 4/29/2020
  */
 public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
-    
-    protected String title;
+
+    protected static final ItemStack SEARCH_ICON = InventoryMenuUtils.createCustomItem(Material.PAPER, 1);
+
+    protected Function<CorePlayer, String> titleFunc;
     protected Function<String, Boolean> successFunc;
     protected BiConsumer<CorePlayer, String> action;
     protected InventoryMenuContainerChest parentContainer;
@@ -26,9 +28,39 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
     public InventoryMenuContainerAnvil() {
         this.parentContainer = null;
     }
+
+    public InventoryMenuContainerAnvil(InventoryMenuContainerAnvil container) {
+        super(container);
+
+        this.titleFunc = container.getTitle();
+        this.successFunc = container.getSuccessFunc();
+        this.action = container.getAction();
+        this.failText = container.getFailText();
+    }
+
+    public Function<CorePlayer, String> getTitle() {
+        return titleFunc;
+    }
+
+    public Function<String, Boolean> getSuccessFunc() {
+        return successFunc;
+    }
+
+    public BiConsumer<CorePlayer, String> getAction() {
+        return action;
+    }
+
+    public String getFailText() {
+        return failText;
+    }
     
     public InventoryMenuContainerAnvil setTitle(String title) {
-        this.title = title;
+        this.titleFunc = cp -> title;
+        return this;
+    }
+
+    public InventoryMenuContainerAnvil setTitle(Function<CorePlayer, String> titleFunc) {
+        this.titleFunc = titleFunc;
         return this;
     }
     
@@ -46,21 +78,18 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
         this.failText = text;
         return this;
     }
-    
-    public InventoryMenuContainerAnvil setParentContainer(InventoryMenuContainerChest parentContainer) {
-        this.parentContainer = parentContainer;
-        return this;
-    }
-    
+
     @Override
     public Inventory open(CorePlayer cp) {
+        parentContainer = (InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer();
         cp.getMenu().addInvSwap();
         new AnvilGUI.Builder()
                 .onClose(player -> {
                     CorePlayer cp2 = Core.getInstance().getPlayers().get(player);
                     Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                        cp2.getMenu().setInventoryMenuChest(parentContainer, false);
-                    }, 1L);
+                        cp2.getMenu().removeInvSwap();
+                        cp2.getMenu().setInventoryMenuChest(parentContainer, true);
+                    }, 2L);
                 })
                 .onComplete((player, str) -> {
                     CorePlayer cp2 = Core.getInstance().getPlayers().get(player);
@@ -72,11 +101,15 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
                     }
                 })
                 .text("Enter name here")
-                .itemLeft(new ItemStack(Material.PAPER))
-                .title(title)
+                .itemLeft(SEARCH_ICON)
+                .title(titleFunc.apply(cp))
                 .plugin(Core.getInstance())
                 .open(cp.getPlayer());
         return null;
     }
-    
+
+    public InventoryMenuContainerAnvil clone() {
+        return new InventoryMenuContainerAnvil(this);
+    }
+
 }

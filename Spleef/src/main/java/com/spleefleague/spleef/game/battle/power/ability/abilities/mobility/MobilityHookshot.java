@@ -11,6 +11,7 @@ import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
@@ -44,8 +45,8 @@ public class MobilityHookshot extends AbilityMobility {
         private EntityRaycastResult hookedEntity = null;
         private int hookLife = 0;
 
-        public HookshotProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public HookshotProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         public Entity getHookedEntity() {
@@ -114,7 +115,7 @@ public class MobilityHookshot extends AbilityMobility {
                 killEntity();
             }
             if (isAlive()) {
-                if (hookedBlock != null && gameWorld.getFakeBlocks().getOrDefault(hookedBlock.getBlockPos(), new FakeBlock(Material.AIR.createBlockData())).getBlockData().getMaterial().isAir()) {
+                if (hookedBlock != null && projectileWorld.isReallySolid(hookedBlock.getBlockPos())) {
                     killEntity();
                     return;
                 }
@@ -124,7 +125,7 @@ public class MobilityHookshot extends AbilityMobility {
                 Vector vec = cpShooter.getPlayer().getEyeLocation().toVector();
                 Vector dif = craftEntity.getLocation().toVector().subtract(cpShooter.getPlayer().getEyeLocation().toVector());
                 for (double i = 1; i < dif.length(); i += 0.5) {
-                    GameUtils.spawnParticles(gameWorld, dif.clone().normalize().multiply(i + Math.random() / 4).add(vec), Type.MOBILITY.getDustSmall(), 1, 0);
+                    GameUtils.spawnParticles(projectileWorld, dif.clone().normalize().multiply(i + Math.random() / 4).add(vec), Type.MOBILITY.getDustSmall(), 1, 0);
                 }
             }
         }
@@ -142,7 +143,7 @@ public class MobilityHookshot extends AbilityMobility {
         projectileStats.size = 0.5;
         projectileStats.noClip = true;
         projectileStats.bounces = 1;
-        projectileStats.customModelDatas = Lists.newArrayList(12);
+        projectileStats.customModelDatas = Lists.newArrayList(29);
     }
 
     private HookshotProjectile hookshot = null;

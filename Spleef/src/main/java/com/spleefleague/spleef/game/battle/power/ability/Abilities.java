@@ -47,7 +47,7 @@ public class Abilities {
         addAbilityStats(OffensiveLivingBomb.init(), false);
         addAbilityStats(OffensiveMeltingBurst.init(), false);
         addAbilityStats(OffensivePunch.init(), false);
-        addAbilityStats(OffensiveGroundPound.init(), false);
+        //addAbilityStats(OffensiveGroundPound.init(), false);
         addAbilityStats(MobilityRollerSpades.init(), false);
         addAbilityStats(OffensiveStarfall.init(), false);
         addAbilityStats(OffensiveYoink.init(), false);
@@ -82,11 +82,11 @@ public class Abilities {
 
         applyHotbarItemStats(Ability.Type.OFFENSIVE, PowerTrainingBattle.class, "Drop Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.OFFENSIVE.getSlot(), "pstOffensiveItem")
-                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.MOBILITY).getLinkedChest()));
+                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.OFFENSIVE).getLinkedChest()));
 
         applyHotbarItemStats(Ability.Type.UTILITY, PowerTrainingBattle.class, "Swap Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.UTILITY.getSlot(), "pstUtilityItem")
-                .setLinkedContainer(createAbilityMenuItem(Ability.Type.MOBILITY).getLinkedChest()));
+                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.UTILITY).getLinkedChest()));
     }
 
     private static void applyHotbarItemStats(Ability.Type type, Class<? extends Battle<?>> battleClass, String keybind, boolean swappable, InventoryMenuItemHotbar hotbarItem) {

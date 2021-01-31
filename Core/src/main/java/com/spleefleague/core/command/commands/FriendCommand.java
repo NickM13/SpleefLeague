@@ -2,10 +2,8 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.CorePlayerArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.annotation.OptionArg;
+import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.menu.hotbars.main.FriendsMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 import net.md_5.bungee.api.chat.*;
@@ -24,28 +22,32 @@ public class FriendCommand extends CoreCommand {
     @CommandAnnotation
     public void friendAdd(CorePlayer sender,
                           @LiteralArg("add") String l,
-                          @CorePlayerArg(allowSelf = false, allowCrossServer = true) CorePlayer target) {
-        sender.getFriends().sendFriendRequest(target);
+                          @CorePlayerArg(allowSelf = false, allowCrossServer = true, allowOffline = true) CorePlayer target) {
+        if (!target.isOnline()) {
+            error(sender, "Cannot add offline players as friends!");
+        } else {
+            sender.getFriends().sendFriendRequest(target);
+        }
     }
 
     @CommandAnnotation
     public void friendList(CorePlayer sender,
                            @LiteralArg("list") String l) {
-        for (UUID uuid : sender.getFriends().getAll()) {
-            CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
-            if (cp.isOnline()) {
-                success(sender, cp.getDisplayName() + " - " + "Online");
-            } else {
-                success(sender, cp.getDisplayName() + " - " + "Offline");
-            }
-        }
+        sender.getMenu().setInventoryMenuItem(FriendsMenu.getItem());
     }
 
     @CommandAnnotation
     public void friendRemove(CorePlayer sender,
                              @LiteralArg("remove") String l,
                              @OptionArg(listName = "friendList") String name) {
-        sender.getFriends().removeFriend(Core.getInstance().getPlayers().getOffline(Bukkit.getOfflinePlayer(name).getUniqueId()));
+        sender.getFriends().removeFriend(Core.getInstance().getPlayers().getOffline(name));
+    }
+
+    @CommandAnnotation(hidden = true)
+    public void friendDecline(CorePlayer sender,
+                             @LiteralArg("decline") String l,
+                             String username) {
+        sender.getFriends().declineFriend(Core.getInstance().getPlayers().getOffline(username));
     }
 
     @CommandAnnotation
@@ -68,7 +70,6 @@ public class FriendCommand extends CoreCommand {
             }
         }
         sender.sendMessage(component);
-
     }
 
 }

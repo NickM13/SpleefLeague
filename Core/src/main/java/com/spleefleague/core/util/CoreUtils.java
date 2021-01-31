@@ -10,16 +10,14 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -103,8 +101,43 @@ public class CoreUtils {
         return stringBuilder.toString();
     }
 
+    private static class ComparatorByName implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+
+    }
+
+    private static ComparatorByName nameComparator = new ComparatorByName();
+
+    public static List<String> sortCollectionByName(Collection<String> col) {
+        List<String> list = new ArrayList<>(col);
+        list.sort(nameComparator);
+        return list;
+    }
+
     public static void knockbackEntity(Entity entity, Vector direction, double power) {
         entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
+    }
+
+    public static List<ChatColor> getChatColors(String str) {
+        List<ChatColor> colors = new ArrayList<>();
+        for (int i = 0; i < str.length() - 1; i++) {
+            char c = str.charAt(i);
+            if (c == 167) {
+                c = str.charAt(i + 1);
+                if (c >= 'A' && c <= 'Z') {
+                    c += 32;
+                }
+                ChatColor color = ChatColor.getByChar(c);
+                if (color != null) {
+                    colors.add(color);
+                }
+            }
+        }
+        return colors;
     }
     
 }

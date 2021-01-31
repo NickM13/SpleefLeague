@@ -1,6 +1,6 @@
 package com.spleefleague.core.listener.bungee;
 
-import com.spleefleague.coreapi.utils.packet.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import org.bukkit.entity.Player;
 
 public abstract class BungeeListener <P extends PacketBungee> {

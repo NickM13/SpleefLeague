@@ -12,12 +12,10 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.queue.PlayerQueue;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,10 +41,7 @@ public class BattleManagerDynamic extends BattleManager {
         if (arena == null) return;
         Battle<?> battle;
         for (CorePlayer cp : players) {
-            Party party = cp.getParty();
-            if (party != null) {
-                party.leave(cp);
-            }
+            Core.getInstance().getPartyManager().leave(cp);
             if (!cp.canJoinBattle()) {
                 Core.getInstance().unqueuePlayerGlobally(cp);
                 return;

@@ -28,7 +28,11 @@ public class Day extends DBVariable<Integer> {
         int day = (int) (millis / 1000 / 60 / 60 / 24);
         return day;
     }
-    
+
+    public static TimeZone getTimeZone() {
+        return timeZone;
+    }
+
     /**
      *
      * @return

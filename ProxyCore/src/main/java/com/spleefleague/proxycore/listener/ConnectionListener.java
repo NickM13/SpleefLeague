@@ -1,12 +1,11 @@
 package com.spleefleague.proxycore.listener;
 
-import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketConnection;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshAll;
+import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshAll;
+import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
-import com.spleefleague.proxycore.game.queue.QueueManager;
-import net.md_5.bungee.api.chat.TextComponent;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
@@ -25,12 +24,18 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionListener implements Listener {
 
     @EventHandler
+    public void onPreLogin(net.md_5.bungee.api.event.LoginEvent event) {
+        System.out.println("Checking for bans goes here! " + event.getConnection().getUniqueId());
+        ProxyCore.getInstance().getInfractions();
+    }
+
+    @EventHandler
     public void onPostLogin(PostLoginEvent event) {
-        PacketConnection packetConnection = new PacketConnection(PacketConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId());
+        PacketBungeeConnection packetConnection = new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId());
         ProxyCore.getInstance().sendPacket(packetConnection);
 
         ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
-            ProxyCore.getInstance().sendPacket(event.getPlayer().getUniqueId(), new PacketConnection(PacketConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
+            ProxyCore.getInstance().sendPacket(event.getPlayer().getUniqueId(), new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
         }, 1000, TimeUnit.MILLISECONDS);
 
         ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
@@ -38,18 +43,21 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        ProxyCore.getInstance().sendPacket(new PacketConnection(PacketConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
+        ProxyCore.getInstance().sendPacket(new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
 
         ProxyCore.getInstance().getPlayers().onPlayerQuit(event.getPlayer());
+
+        ProxyCore.getInstance().getPartyManager().onDisconnect(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void onServerSwitch(ServerSwitchEvent event) {
-        ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId()).setCurrentServer(event.getPlayer().getServer().getInfo());
+        ProxyCorePlayer pcp  = ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
+        pcp.setCurrentServer(event.getPlayer().getServer().getInfo());
 
         if (event.getPlayer().getServer().getInfo().getPlayers().size() == 1) {
             List<QueueContainerInfo> queueInfoList = new ArrayList<>();
-            for (Map.Entry<String, QueueContainer> entry : QueueManager.getContainerMap().entrySet()) {
+            for (Map.Entry<String, QueueContainer> entry : ProxyCore.getInstance().getQueueManager().getContainerMap().entrySet()) {
                 queueInfoList.add(new QueueContainerInfo(entry.getKey(),
                         entry.getValue().getQueueSize(),
                         entry.getValue().getPlaying().size(),
@@ -58,8 +66,10 @@ public class ConnectionListener implements Listener {
 
             ProxyCore.getInstance().sendPacket(
                     event.getPlayer().getServer().getInfo(),
-                    new PacketRefreshAll(ProxyCore.getInstance().getPlayers().getAll(), queueInfoList));
+                    new PacketBungeeRefreshAll(ProxyCore.getInstance().getPlayers().getAll(), queueInfoList));
         }
+
+        ProxyCore.getInstance().getPartyManager().onServerSwap(pcp);
     }
 
 }

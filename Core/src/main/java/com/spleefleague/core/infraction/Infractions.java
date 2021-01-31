@@ -124,10 +124,12 @@ public class Infractions {
                 .setReason(reason);
         Infraction.create(infraction);
 
-        Player player = (Player) target;
-        if (player.getLocation().getWorld() != null) {
-            player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-            player.kickPlayer("Banned: " + reason + "!");
+        if (target.isOnline()) {
+            Player player = (Player) target;
+            if (player.getLocation().getWorld() != null) {
+                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
+                player.kickPlayer("Banned: " + reason + "!");
+            }
         }
         Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Banned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }

@@ -1,10 +1,12 @@
 package com.spleefleague.spleef.game.battle.power.ability.abilities.offensive;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import net.minecraft.server.v1_15_R1.MovingObjectPosition;
@@ -20,7 +22,7 @@ public class OffensiveYoink extends AbilityOffensive {
 
     public static AbilityStats init() {
         return init(OffensiveYoink.class)
-                .setCustomModelData(11)
+                .setCustomModelData(29)
                 .setName("Yoink")
                 .setDescription("Fire a hook forward, if the projectile collides with another player they are quickly pulled to the casters locations.")
                 .setUsage(10);
@@ -31,8 +33,8 @@ public class OffensiveYoink extends AbilityOffensive {
 
     public static class YoinkProjectile extends FakeEntitySnowball {
 
-        public YoinkProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public YoinkProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -64,7 +66,8 @@ public class OffensiveYoink extends AbilityOffensive {
         projectileStats.fireRange = 5D;
         projectileStats.collidable = true;
         projectileStats.noClip = true;
-        projectileStats.size = 0.5D;
+        projectileStats.size = 1.5D;
+        projectileStats.customModelDatas = Lists.newArrayList(31);
     }
 
     /**

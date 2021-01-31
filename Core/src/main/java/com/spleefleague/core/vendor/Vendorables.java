@@ -7,6 +7,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -48,11 +49,15 @@ public class Vendorables {
         }
         return "";
     }
+
+    public static void clear() {
+        VENDORABLE_MAP.clear();
+    }
     
     public static void register(Vendorable vendorable) {
-        if (!VENDORABLE_MAP.containsKey(vendorable.getType()))
-            VENDORABLE_MAP.put(vendorable.getType(), new TreeMap<>());
-        VENDORABLE_MAP.get(vendorable.getType()).put(vendorable.getIdentifier(), vendorable);
+        if (!VENDORABLE_MAP.containsKey(vendorable.getParentType()))
+            VENDORABLE_MAP.put(vendorable.getParentType(), new TreeMap<>());
+        VENDORABLE_MAP.get(vendorable.getParentType()).put(vendorable.getIdentifier(), vendorable);
     }
     
     public static void unregister(String type, String identifier) {
@@ -60,7 +65,7 @@ public class Vendorables {
     }
 
     public static void unregister(Class<? extends Vendorable> clazz, String identifier) {
-        unregister(Vendorable.getTypeName(clazz), identifier);
+        unregister(Vendorable.getParentTypeName(clazz), identifier);
     }
 
     public enum SortType {
@@ -85,12 +90,22 @@ public class Vendorables {
         return vendorables;
     }
 
+    public static <T extends Vendorable> SortedSet<T> getDyedVariants(Class<T> clazz, int parentCmd) {
+        SortedSet<T> vendorables = new TreeSet<>(Comparator.comparingInt(Vendorable::getCustomModelData));
+
+        vendorables.addAll(getAll(clazz).values().stream()
+                .filter(p -> p.getCustomModelData() >= parentCmd && p.getCustomModelData() < parentCmd + 100)
+                .collect(Collectors.toSet()));
+
+        return vendorables;
+    }
+
     public static Map<String, Vendorable> getAll(String type) {
         return VENDORABLE_MAP.get(type);
     }
     
     public static <T extends Vendorable> Map<String, T> getAll(Class<T> clazz) {
-        return (Map<String, T>) VENDORABLE_MAP.getOrDefault(Vendorable.getTypeName(clazz), new HashMap<>());
+        return (Map<String, T>) VENDORABLE_MAP.getOrDefault(Vendorable.getParentTypeName(clazz), new HashMap<>());
     }
     
     public static Vendorable get(ItemStack itemStack) {
@@ -111,7 +126,7 @@ public class Vendorables {
 
     @SuppressWarnings("unchecked")
     public static <T extends Vendorable> T get(Class<T> clazz, String identifier) {
-        String typeName = Vendorable.getTypeName(clazz);
+        String typeName = Vendorable.getParentTypeName(clazz);
         if (VENDORABLE_MAP.containsKey(typeName)) {
             return (T) VENDORABLE_MAP.get(typeName).get(identifier);
         }
@@ -120,7 +135,7 @@ public class Vendorables {
 
     @SuppressWarnings("unchecked")
     public static <T extends Vendorable> T get(Class<T> clazz, ItemStack item) {
-        String typeName = Vendorable.getTypeName(clazz);
+        String typeName = Vendorable.getParentTypeName(clazz);
         if (VENDORABLE_MAP.containsKey(typeName)) {
             return (T) VENDORABLE_MAP.get(typeName).get(Vendorables.getIdentifierNbt(item));
         }
@@ -143,7 +158,7 @@ public class Vendorables {
     public static <T extends Vendorable> T pop(Class<T> clazz, String identifier) {
         T vendorable = get(clazz, identifier);
         if (vendorable != null) {
-            unregister(vendorable.getType(), vendorable.getIdentifier());
+            unregister(vendorable.getParentType(), vendorable.getIdentifier());
         }
         return vendorable;
     }

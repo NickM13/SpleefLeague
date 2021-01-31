@@ -204,8 +204,7 @@ public class Warp extends DBEntity {
         return false;
     }
 
-    @DBField(serializer=LocationConverter.class)
-    public Location location;
+    public CoreLocation location;
     protected String warpName;
     protected String folderName = null;
     
@@ -215,7 +214,7 @@ public class Warp extends DBEntity {
 
     public Warp(String identifier, Location location) {
         this.identifier = identifier;
-        this.location = location;
+        this.location = new CoreLocation(location);
         initFolder();
     }
     
@@ -251,7 +250,7 @@ public class Warp extends DBEntity {
     }
 
     public Location getLocation() {
-        return location;
+        return location.toLocation();
     }
     public boolean isAvailable(CorePlayer cp) {
         Rank rank = Ranks.getRank(folderName);

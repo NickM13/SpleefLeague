@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.game.manager;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
@@ -15,9 +14,9 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -40,10 +39,7 @@ public class BattleManagerSolo extends BattleManager {
         }
         Battle<?> battle;
         for (CorePlayer cp : players) {
-            Party party = cp.getParty();
-            if (party != null) {
-                party.leave(cp);
-            }
+            Core.getInstance().getPartyManager().leave(cp);
             if (!cp.canJoinBattle()) {
                 CoreLogger.logError("Player " + cp.getDisplayName() + " is already in a battle!", null);
                 Core.getInstance().unqueuePlayerGlobally(cp);
@@ -64,16 +60,6 @@ public class BattleManagerSolo extends BattleManager {
                 }
 
                 players.get(0).getPlayer().sendPluginMessage(Core.getInstance(), "battle:start", output.toByteArray());
-                /*
-                for (CorePlayer cp : players) {
-                    Core.getInstance().unqueuePlayerGlobally(cp);
-                }
-                battle = battleClass
-                        .getDeclaredConstructor(List.class, Arena.class)
-                        .newInstance(players, arena);
-                battle.startBattle();
-                battles.add(battle);
-                 */
             }
         } catch (Exception e) {
             e.printStackTrace();

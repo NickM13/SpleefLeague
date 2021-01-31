@@ -46,6 +46,7 @@ public class GlobalZone extends DBEntity {
 
     @DBField private String name;
     @DBField private String description = "";
+    @DBField private Integer priority = 0;
 
     @DBField private Point drainPos = new Point();
     @DBField private String monumentPrefix = "";
@@ -161,6 +162,14 @@ public class GlobalZone extends DBEntity {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     public boolean addBorder(Dimension border) {

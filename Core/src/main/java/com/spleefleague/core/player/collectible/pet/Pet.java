@@ -27,7 +27,7 @@ public class Pet extends Collectible {
     private static final Map<UUID, CorePlayer> petPlayerMap = new HashMap<>();
     
     public static void init() {
-        Vendorable.registerVendorableType(Pet.class);
+        Vendorable.registerParentType(Pet.class);
     }
     
     public static void close() {

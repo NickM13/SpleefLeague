@@ -6,6 +6,7 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import org.bukkit.Location;
@@ -31,8 +32,8 @@ public class MobilityEnderPearl extends AbilityMobility {
 
     public static class EnderPearlProjectile extends FakeEntitySnowball {
 
-        public EnderPearlProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public EnderPearlProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -43,8 +44,8 @@ public class MobilityEnderPearl extends AbilityMobility {
         @Override
         protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
             cpShooter.teleport(blockRaycastResult.getRelative().toLocation(cpShooter.getPlayer().getWorld()).add(0.5, 0.5, 0.5));
-            gameWorld.playSound(blockRaycastResult.getIntersection().toLocation(gameWorld.getWorld()), Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1.5f);
-            gameWorld.spawnParticles(Particle.REDSTONE,
+            projectileWorld.playSound(blockRaycastResult.getIntersection().toLocation(projectileWorld.getWorld()), Sound.ENTITY_ENDERMAN_TELEPORT, 1, 1.5f);
+            projectileWorld.spawnParticles(Particle.REDSTONE,
                     blockRaycastResult.getIntersection().getX(),
                     blockRaycastResult.getIntersection().getY(),
                     blockRaycastResult.getIntersection().getZ(),

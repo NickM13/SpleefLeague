@@ -10,17 +10,14 @@ import com.spleefleague.core.player.CorePlayer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.regex.Pattern;
 
-import com.spleefleague.core.request.ConsoleRequest;
-import com.spleefleague.core.request.PlayerRequest;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketChatBungee;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketChatSpigot;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketTellSpigot;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChat;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChat;
+import net.md_5.bungee.api.chat.*;
 import org.bukkit.Sound;
 
 /**
@@ -56,6 +53,12 @@ public class Chat {
             TICKET_ISSUE = ChatColor.GREEN + "",
             SCOREBOARD_DEFAULT = ChatColor.WHITE + "";
 
+    private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
+
+    public static Pattern getUrlPattern() {
+        return URL_PATTERN;
+    }
+
     public static ChatColor getColor(String color) {
         return chatColors.get(color);
     }
@@ -80,6 +83,7 @@ public class Chat {
         Stack<ChatColor> colorStack = new Stack<>();
         for (i = 0; i < msg.length() - 1; i++) {
             if (msg.charAt(i) == '&' || msg.charAt(i) == '§') {
+                if (i >= msg.length() - 2) continue;
                 switch (msg.charAt(i+1)) {
                     case 'b': newmsg.append(colorStack.push(ChatColor.AQUA)); break;
                     case '0': newmsg.append(colorStack.push(ChatColor.BLACK)); break;
@@ -155,23 +159,29 @@ public class Chat {
         if (cp.isMuted() == 2) {
             cp.sendMessage(cc.formatMessage(cp, message, url));
         } else {
-            Core.getInstance().sendPacket(new PacketChatSpigot(cp.getUniqueId(), cc.getChannel().name(), message, url));
+            Core.getInstance().sendPacket(new PacketSpigotChat(cp.getUniqueId(), cc.getChannel().name(), message, url));
         }
     }
 
     public static void sendMessage(ChatChannel channel, TextComponent text) {
-        Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), text.toLegacyText(), false));
+        Core.getInstance().sendPacket(new PacketSpigotChat(null, channel.getChannel().name(), text.toLegacyText(), false));
     }
 
     public static void sendMessage(ChatChannel channel, TextComponent text, Set<UUID> blacklist) {
-        Core.getInstance().sendPacket(new PacketChatSpigot(null, channel.getChannel().name(), text.toLegacyText(), blacklist, false));
+        Core.getInstance().sendPacket(new PacketSpigotChat(null, channel.getChannel().name(), text.toLegacyText(), blacklist, false));
     }
 
     public static void sendMessageHere(ChatChannel channel, TextComponent text) {
-        sendMessage(new PacketChatBungee(null, channel.getChannel().name(), text.toLegacyText(), false));
+        sendMessage(new PacketBungeeChat(null, channel.getChannel().name(), text.toLegacyText(), false));
     }
 
-    public static void sendMessage(PacketChatBungee packet) {
+    /**
+     * When a chat packet is received, process it
+     * PacketChatBungee::url is only used when sender is not null
+     *
+     * @param packet
+     */
+    public static void sendMessage(PacketBungeeChat packet) {
         UUID uuid = packet.sender;
         CorePlayer sender = uuid != null ? Core.getInstance().getPlayers().get(uuid) : null;
         ChatChannel chatChannel = ChatChannel.getChannel(ChatChannel.Channel.valueOf(packet.channel));
@@ -220,44 +230,34 @@ public class Chat {
         cp.sendMessage(Chat.DEFAULT + message);
     }
 
-    public static void sendMessageToPlayer(CorePlayer cp, BaseComponent... messages) {
+    public static void sendMessageToPlayer(CorePlayer cp, TextComponent text) {
         if (cp != null && cp.getPlayer() != null) {
-            for (BaseComponent message : messages) {
-                message.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-            }
-            cp.sendMessage(messages);
-        }
-    }
-
-    public static void sendMessageToPlayerSuccess(CorePlayer cp, BaseComponent... messages) {
-        if (cp != null && cp.getPlayer() != null) {
-            BaseComponent[] recolored = new BaseComponent[messages.length];
-            for (int i = 0; i < messages.length; i++) {
-                recolored[i] = new TextComponent(Chat.SUCCESS);
-                recolored[i].addExtra(messages[i]);
-            }
+            TextComponent recolored = new TextComponent(text);
+            recolored.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             cp.sendMessage(recolored);
         }
     }
 
-    public static void sendMessageToPlayerError(CorePlayer cp, BaseComponent... messages) {
+    public static void sendMessageToPlayerSuccess(CorePlayer cp, TextComponent text) {
         if (cp != null && cp.getPlayer() != null) {
-            BaseComponent[] recolored = new BaseComponent[messages.length];
-            for (int i = 0; i < messages.length; i++) {
-                recolored[i] = new TextComponent(Chat.ERROR);
-                recolored[i].addExtra(messages[i]);
-            }
+            TextComponent recolored = new TextComponent(text);
+            recolored.setColor(net.md_5.bungee.api.ChatColor.GREEN);
             cp.sendMessage(recolored);
         }
     }
 
-    public static void sendMessageToPlayerInfo(CorePlayer cp, BaseComponent... messages) {
+    public static void sendMessageToPlayerError(CorePlayer cp, TextComponent text) {
         if (cp != null && cp.getPlayer() != null) {
-            BaseComponent[] recolored = new BaseComponent[messages.length];
-            for (int i = 0; i < messages.length; i++) {
-                recolored[i] = new TextComponent(Chat.INFO);
-                recolored[i].addExtra(messages[i]);
-            }
+            TextComponent recolored = new TextComponent(text);
+            recolored.setColor(net.md_5.bungee.api.ChatColor.RED);
+            cp.sendMessage(recolored);
+        }
+    }
+
+    public static void sendMessageToPlayerInfo(CorePlayer cp, TextComponent text) {
+        if (cp != null && cp.getPlayer() != null) {
+            TextComponent recolored = new TextComponent(text);
+            recolored.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
             cp.sendMessage(recolored);
         }
     }
@@ -276,6 +276,23 @@ public class Chat {
 
     public static void sendRequest(CorePlayer receiver, String requestType, BiConsumer<CorePlayer, String> action, BaseComponent... messages) {
         RequestManager.sendConsoleRequest(Core.getInstance().getChatPrefix(), receiver, requestType, action, messages);
+    }
+
+    public static void sendConfirmationButtons(CorePlayer receiver, String acceptCmd, String declineCmd) {
+        TextComponent text = new TextComponent();
+
+        TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Accept" + Chat.TAG_BRACE + "]");
+        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to accept").create()));
+        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, acceptCmd));
+        TextComponent decline = new TextComponent(Chat.TAG_BRACE + "[" + Chat.ERROR + "Decline" + Chat.TAG_BRACE + "]");
+        decline.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to decline").create()));
+        decline.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, declineCmd));
+
+        text.addExtra(accept);
+        text.addExtra(" ");
+        text.addExtra(decline);
+
+        Core.getInstance().sendMessage(receiver, text);
     }
 
     /**

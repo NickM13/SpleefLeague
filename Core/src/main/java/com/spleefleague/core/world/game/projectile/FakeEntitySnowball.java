@@ -36,9 +36,9 @@ import java.util.Random;
  * @author NickM13
  * @since 5/19/2020
  */
-public class FakeEntitySnowball extends EntitySnowball {
+public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
 
-    protected final GameWorld gameWorld;
+    protected final ProjectileWorld<? extends ProjectileWorldPlayer> projectileWorld;
     protected final ProjectileStats projectileStats;
     protected Point lastLoc;
     protected int bounces;
@@ -51,16 +51,16 @@ public class FakeEntitySnowball extends EntitySnowball {
     private double charge;
     private int breakAfter;
 
-    public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-        this(gameWorld, shooter, location, projectileStats, 1.);
+    public FakeEntitySnowball(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+        this(projectileWorld, shooter, location, projectileStats, 1.);
     }
 
-    public FakeEntitySnowball(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-        super(EntityTypes.SNOWBALL, ((CraftWorld) gameWorld.getWorld()).getHandle());
+    public FakeEntitySnowball(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+        super(EntityTypes.SNOWBALL, ((CraftWorld) projectileWorld.getWorld()).getHandle());
         this.cpShooter = shooter;
         this.charge = charge;
 
-        this.gameWorld = gameWorld;
+        this.projectileWorld = projectileWorld;
         this.projectileStats = projectileStats;
         this.size = new Vector(this.projectileStats.size, this.projectileStats.size, this.projectileStats.size);
 
@@ -110,14 +110,15 @@ public class FakeEntitySnowball extends EntitySnowball {
         return cpShooter;
     }
 
-    public ProjectileStats getStats() {
-        return projectileStats;
+    @Override
+    public void reducedStats(FakeEntity fakeEntity) {
+        this.lifeTicks = fakeEntity.getRemainingLife();
+        this.bounces = fakeEntity.getRemainingBounces();
+        this.breakAfter = fakeEntity.getRemainingBreakAfter();
     }
 
-    public void reducedStats(FakeEntitySnowball entity) {
-        this.lifeTicks = entity.getRemainingLife();
-        this.bounces = entity.getRemainingBounces();
-        this.breakAfter = entity.getRemainingBreakAfter();
+    public ProjectileStats getStats() {
+        return projectileStats;
     }
 
     public int getRemainingLife() {
@@ -156,19 +157,19 @@ public class FakeEntitySnowball extends EntitySnowball {
             Vector pos = new Vector(getPositionVector().getX(), getPositionVector().getY(), getPositionVector().getZ());
             Vector direction = pos.subtract(lastLoc.toVector());
             if (stuck != null) {
-                FakeBlock fb = gameWorld.getFakeBlocks().get(stuck);
+                FakeBlock fb = projectileWorld.getFakeBlocks().get(stuck);
                 if ((fb == null || fb.getBlockData().getMaterial().isAir()) &&
-                        gameWorld.getWorld().getBlockAt(stuck.getX(), stuck.getY(), stuck.getZ()).getType().isAir()) {
+                        projectileWorld.getWorld().getBlockAt(stuck.getX(), stuck.getY(), stuck.getZ()).getType().isAir()) {
                     setStuck(null);
                 }
             }
             if (projectileStats.collidable) {
                 List<Entity> entities = new ArrayList<>();
-                for (GameWorldPlayer gwp : gameWorld.getPlayerMap().values()) {
-                    if (gwp.getCorePlayer().getBattleState() == BattleState.BATTLER &&
-                            (!gwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10) &&
-                            gwp.hit()) {
-                        entities.add(gwp.getPlayer());
+                for (ProjectileWorldPlayer pwp : projectileWorld.getPlayerMap().values()) {
+                    if (pwp.getCorePlayer().getBattleState() == BattleState.BATTLER &&
+                            (!pwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10) &&
+                            pwp.hit()) {
+                        entities.add(pwp.getPlayer());
                     }
                 }
                 if (stuck == null) {
@@ -181,7 +182,7 @@ public class FakeEntitySnowball extends EntitySnowball {
             }
         }
         craftEntity.setVelocity(craftEntity.getVelocity().multiply(projectileStats.drag));
-        Map<BlockPosition, FakeBlock> fakeBlocks = gameWorld.getFakeBlocks();
+        Map<BlockPosition, FakeBlock> fakeBlocks = projectileWorld.getFakeBlocks();
         for (RaycastResult result : results) {
             if (result instanceof BlockRaycastResult) {
                 BlockRaycastResult blockResult = (BlockRaycastResult) result;
@@ -189,14 +190,14 @@ public class FakeEntitySnowball extends EntitySnowball {
                 Material mat;
                 if (!blockResult.getBlockPos().equals(lastBlock)) {
                     blockChange(craftEntity, blockResult);
-                    if (checkPortals(craftEntity, blockResult)) {
+                    if (projectileWorld.checkProjectileBlock(this, craftEntity, blockResult)) {
                         break;
                     }
                 }
                 if (fb != null) {
                     mat = fb.getBlockData().getMaterial();
                 } else {
-                    mat = gameWorld.getWorld().getBlockAt(
+                    mat = projectileWorld.getWorld().getBlockAt(
                             blockResult.getBlockPos().getX(),
                             blockResult.getBlockPos().getY(),
                             blockResult.getBlockPos().getZ()).getType();
@@ -231,21 +232,6 @@ public class FakeEntitySnowball extends EntitySnowball {
 
     }
 
-    public boolean checkPortals(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
-        for (PortalPair pair : gameWorld.getPlayerPortals().values()) {
-            if (pair.isLinked()) {
-                if (pair.getPortal1().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal1().getBlockFace().equals(blockRaycastResult.getFace())) {
-                    gameWorld.portalize(this, pair.getPortal2().getTpLoc(), pair.getNewVelocityTo2(craftEntity));
-                    return true;
-                } else if (pair.getPortal2().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal2().getBlockFace().equals(blockRaycastResult.getFace())) {
-                    gameWorld.portalize(this, pair.getPortal1().getTpLoc(), pair.getNewVelocityTo1(craftEntity));
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     protected boolean blockBounce(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
         if (projectileStats.bounciness > 0) {
             switch (blockRaycastResult.getAxis()) {
@@ -254,7 +240,7 @@ public class FakeEntitySnowball extends EntitySnowball {
                             getMot().getX() * -projectileStats.bounciness,
                             getMot().getY() * projectileStats.bounciness,
                             getMot().getZ() * projectileStats.bounciness));
-                    craftEntity.teleport(new Location(gameWorld.getWorld(),
+                    craftEntity.teleport(new Location(projectileWorld.getWorld(),
                             blockRaycastResult.getIntersection().getX() + (craftEntity.getVelocity().getX() < 0 ? -0.01 : 0.01),
                             blockRaycastResult.getIntersection().getY(),
                             blockRaycastResult.getIntersection().getZ()));
@@ -266,12 +252,12 @@ public class FakeEntitySnowball extends EntitySnowball {
                             getMot().getZ() * projectileStats.bounciness));
                     if (craftEntity.getVelocity().getY() >= 0 && craftEntity.getVelocity().getY() < 0.03 && craftEntity.getVelocity().setY(0).length() < 0.005) {
                         setStuck(blockRaycastResult.getBlockPos());
-                        craftEntity.teleport(new Location(gameWorld.getWorld(),
+                        craftEntity.teleport(new Location(projectileWorld.getWorld(),
                                 blockRaycastResult.getIntersection().getX(),
                                 blockRaycastResult.getIntersection().getY(),
                                 blockRaycastResult.getIntersection().getZ()));
                     } else {
-                        craftEntity.teleport(new Location(gameWorld.getWorld(),
+                        craftEntity.teleport(new Location(projectileWorld.getWorld(),
                                 blockRaycastResult.getIntersection().getX(),
                                 blockRaycastResult.getIntersection().getY() + (getMot().getY() < 0 ? -0.01 : 0.01),
                                 blockRaycastResult.getIntersection().getZ()));
@@ -282,13 +268,13 @@ public class FakeEntitySnowball extends EntitySnowball {
                             getMot().getX() * projectileStats.bounciness,
                             getMot().getY() * projectileStats.bounciness,
                             getMot().getZ() * -projectileStats.bounciness));
-                    craftEntity.teleport(new Location(gameWorld.getWorld(),
+                    craftEntity.teleport(new Location(projectileWorld.getWorld(),
                             blockRaycastResult.getIntersection().getX(),
                             blockRaycastResult.getIntersection().getY(),
                             blockRaycastResult.getIntersection().getZ() + (craftEntity.getVelocity().getZ() < 0 ? -0.01 : 0.01)));
                     break;
                 default:
-                    craftEntity.teleport(new Location(gameWorld.getWorld(),
+                    craftEntity.teleport(new Location(projectileWorld.getWorld(),
                             blockRaycastResult.getIntersection().getX(),
                             blockRaycastResult.getIntersection().getY(),
                             blockRaycastResult.getIntersection().getZ()));
@@ -300,7 +286,7 @@ public class FakeEntitySnowball extends EntitySnowball {
             craftEntity.setVelocity(craftEntity.getVelocity().multiply(-projectileStats.bounciness));
             if (projectileStats.bounciness < 0.0001 ||
                     projectileStats.bounciness > -0.0001) {
-                craftEntity.teleport(new Location(gameWorld.getWorld(),
+                craftEntity.teleport(new Location(projectileWorld.getWorld(),
                         blockRaycastResult.getIntersection().getX(),
                         blockRaycastResult.getIntersection().getY(),
                         blockRaycastResult.getIntersection().getZ()));
@@ -319,23 +305,7 @@ public class FakeEntitySnowball extends EntitySnowball {
      */
     protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
         if (breakAfter <= 0) {
-            switch (projectileStats.breakStyle) {
-                case DEFAULT:
-                    cpShooter.getStatistics().get("splegg").add("blocksBroken", gameWorld.breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                    break;
-                case CORROSIVE:
-                    cpShooter.getStatistics().get("splegg").add("blocksCorroded", gameWorld.corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                    break;
-                case FIRE:
-                    cpShooter.getStatistics().get("splegg").add("blocksBurnt", gameWorld.burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                    break;
-                case ICE:
-                    cpShooter.getStatistics().get("splegg").add("blocksIced", gameWorld.iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                    break;
-                case REGENERATE:
-                    cpShooter.getStatistics().get("splegg").add("blocksEndered", gameWorld.breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
-                    break;
-            }
+            projectileWorld.onProjectileBlockHit(cpShooter, blockRaycastResult, projectileStats);
         } else {
             breakAfter--;
         }
@@ -350,7 +320,7 @@ public class FakeEntitySnowball extends EntitySnowball {
     }
 
     protected void entityBounce(Entity craftEntity, EntityRaycastResult entityRaycastResult) {
-        craftEntity.teleport(new Location(gameWorld.getWorld(),
+        craftEntity.teleport(new Location(projectileWorld.getWorld(),
                 entityRaycastResult.getIntersection().getX(),
                 entityRaycastResult.getIntersection().getY(),
                 entityRaycastResult.getIntersection().getZ()));
@@ -394,16 +364,10 @@ public class FakeEntitySnowball extends EntitySnowball {
             return super.aC();
         }
     }
-    /*
+
     @Override
-    public boolean aF() {
-        if (projectileStats.noClip) {
-            this.inWater = false;
-            return false;
-        } else {
-            return super.aF();
-        }
+    public net.minecraft.server.v1_15_R1.Entity getEntity() {
+        return super.getBukkitEntity().getHandle();
     }
-     */
 
 }

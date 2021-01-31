@@ -12,8 +12,9 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,17 +42,19 @@ public class BattleManagerTeam extends BattleManager {
         List<CorePlayer> playersFull = new ArrayList<>();
         int size = -1;
         for (CorePlayer cp : players) {
-            Party party = cp.getParty();
+            CoreParty party = cp.getParty();
             if (party == null) return;
             if (size == -1) {
-                size = party.getPlayers().size();
-            } else if (size != party.getPlayers().size()) {
+                size = party.getPlayerSet().size();
+            } else if (size != party.getPlayerSet().size()) {
                 return;
             }
-            for (CorePlayer cp2 : party.getPlayers()) {
+            for (CorePlayer cp2 : party.getPlayerSet()) {
                 playersFull.add(cp2);
                 if (!cp2.canJoinBattle()) {
-                    party.getChatGroup().sendMessage(cp2.getDisplayName() + " is already in a battle!");
+                    TextComponent text = new TextComponent(cp2.getChatName());
+                    text.addExtra(" is already in a battle!");
+                    party.sendMessage(text);
                     Core.getInstance().unqueuePlayerGlobally(cp);
                     Core.getInstance().unqueuePlayerGlobally(cp2);
                     return;

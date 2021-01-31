@@ -3,6 +3,7 @@ package com.spleefleague.core.world.global;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeWorld;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.core.world.global.lock.GlobalLock;
 import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
 import org.bukkit.World;
@@ -15,7 +16,7 @@ import org.bukkit.World;
  * @author NickM13
  * @since 4/21/2020
  */
-public class GlobalWorld extends FakeWorld<GlobalWorldPlayer> {
+public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
 
     public static void init() {
         GlobalVehicle.init();

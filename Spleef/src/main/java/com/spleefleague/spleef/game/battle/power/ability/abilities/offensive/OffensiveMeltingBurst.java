@@ -7,6 +7,7 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
 import org.bukkit.Location;
@@ -33,8 +34,8 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
 
     public static class MeltingProjectile extends FakeEntitySnowball {
 
-        public MeltingProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public MeltingProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
@@ -50,8 +51,8 @@ public class OffensiveMeltingBurst extends AbilityOffensive {
                     craftEntity.getLocation().getBlockX(),
                     craftEntity.getLocation().getBlockY(),
                     craftEntity.getLocation().getBlockZ());
-            gameWorld.breakBlocks(pos, BURST_RADIUS, 1);
-            gameWorld.spawnParticles(Particle.REDSTONE,
+            projectileWorld.breakBlocks(pos, BURST_RADIUS, 1);
+            projectileWorld.spawnParticles(Particle.REDSTONE,
                     pos.getX() - 1,
                     pos.getY() - 1,
                     pos.getZ() - 1,

@@ -23,7 +23,6 @@ public class TeleportPosCommand extends CoreCommand {
     
     public TeleportPosCommand() {
         super("tppos", Rank.MODERATOR, Rank.BUILDER);
-        setUsage("/tppos <player> <x> <y> <z>");
     }
     
     /*
@@ -35,33 +34,33 @@ public class TeleportPosCommand extends CoreCommand {
 
     @CommandAnnotation
     public void tpposPlayer(CorePlayer sender,
-                            @HelperArg(value="<x>") TpCoord x,
-                            @HelperArg(value="<y>") TpCoord y,
-                            @HelperArg(value="<z>") TpCoord z,
-                            @Nullable @HelperArg(value="[pitch]") Double pitch,
-                            @Nullable @HelperArg(value="[yaw]") Double yaw) {
+                            @HelperArg("x") TpCoord x,
+                            @HelperArg("y") TpCoord y,
+                            @HelperArg("z") TpCoord z,
+                            @Nullable @HelperArg(value="pitch") Double pitch,
+                            @Nullable @HelperArg(value="yaw") Double yaw) {
         sender.teleport(x, y, z, pitch, yaw);
     }
 
     @CommandAnnotation
     public void tpposPlayer(CommandSender sender,
             CorePlayer cp,
-            @HelperArg(value="<x>") TpCoord x,
-            @HelperArg(value="<y>") TpCoord y,
-            @HelperArg(value="<z>") TpCoord z,
-            @Nullable @HelperArg(value="[pitch]") Double pitch,
-            @Nullable @HelperArg(value="[yaw]") Double yaw) {
+            @HelperArg(value="x") TpCoord x,
+            @HelperArg(value="y") TpCoord y,
+            @HelperArg(value="z") TpCoord z,
+            @Nullable @HelperArg(value="pitch") Double pitch,
+            @Nullable @HelperArg(value="yaw") Double yaw) {
         cp.teleport(x, y, z, pitch, yaw);
     }
 
     @CommandAnnotation
     public void tpposPlayers(CommandSender sender,
             List<CorePlayer> cps,
-            @HelperArg(value="<x>") TpCoord x,
-            @HelperArg(value="<y>") TpCoord y,
-            @HelperArg(value="<z>") TpCoord z,
-            @Nullable @HelperArg(value="[pitch]") Double pitch,
-            @Nullable @HelperArg(value="[yaw]") Double yaw) {
+            @HelperArg(value="x") TpCoord x,
+            @HelperArg(value="y") TpCoord y,
+            @HelperArg(value="z") TpCoord z,
+            @Nullable @HelperArg(value="pitch") Double pitch,
+            @Nullable @HelperArg(value="yaw") Double yaw) {
         for (CorePlayer cp : cps) {
             cp.teleport(x, y, z, pitch, yaw);
         }

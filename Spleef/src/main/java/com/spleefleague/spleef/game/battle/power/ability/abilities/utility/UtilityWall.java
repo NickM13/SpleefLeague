@@ -50,14 +50,14 @@ public class UtilityWall extends AbilityUtility {
             if ((blocks.containsKey(result.getBlockPos()) && !blocks.get(result.getBlockPos()).getBlockData().getMaterial().isAir()) ||
                     !world.getBlockAt(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).getType().isAir()) {
                 Set<BlockPosition> changedBlocks = gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
-                        structure.getFakeBlocks(), ((int) (getPlayer().getLocation().getYaw() + 45 / 4 + 90) / 45) * 45),
+                        structure.getFakeBlocks(), Math.round(getPlayer().getLocation().getYaw() / 45) * 45),
                         result.getBlockPos()));
                 return true;
             }
             Random rand = new Random();
             if (!results.hasNext()) {
                 for (BlockPosition pos : gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
-                        structure.getFakeBlocks(), ((int) (getPlayer().getLocation().getYaw() + 45 / 2 + 90) / 45) * 45),
+                        structure.getFakeBlocks(), Math.round(getPlayer().getLocation().getYaw() / 45) * 45),
                         result.getBlockPos()))) {
                     gameWorld.setBlockDelayed(pos, Material.AIR.createBlockData(), rand.nextInt() % 20 + 30);
                 }

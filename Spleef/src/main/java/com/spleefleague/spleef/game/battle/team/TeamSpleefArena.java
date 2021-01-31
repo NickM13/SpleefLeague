@@ -7,19 +7,14 @@
 package com.spleefleague.spleef.game.battle.team;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13

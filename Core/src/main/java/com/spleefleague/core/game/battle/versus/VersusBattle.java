@@ -1,10 +1,6 @@
 package com.spleefleague.core.game.battle.versus;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
@@ -29,13 +25,10 @@ import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndRated;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -88,13 +81,14 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void sendStartMessage() {
-        getPlugin().sendMessage(new TextComponent(
-                new TextComponent("Starting "),
-                new TextComponent(getMode().getDisplayName()),
-                new TextComponent(" match on "),
-                new TextComponent(Chat.GAMEMAP + arena.getName()),
-                new TextComponent(" between "),
-                CoreUtils.mergePlayerNames(battlers.keySet())));
+        TextComponent text = new TextComponent();
+        text.addExtra("Starting ");
+        text.addExtra(getMode().getDisplayName());
+        text.addExtra(" match on ");
+        text.addExtra(Chat.GAMEMAP + arena.getName());
+        text.addExtra(" between ");
+        text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
+        getPlugin().sendMessage(text);
     }
     
     @Override
@@ -176,7 +170,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     }
 
     protected void onScorePoint(BP winner) {
-        chatGroup.sendMessage(winner.getCorePlayer().getChatName(), new TextComponent(" has scored a point!"));
+        TextComponent text = winner.getCorePlayer().getChatName();
+        text.addExtra(" has scored a point!");
+        chatGroup.sendMessage(text);
         updatePhysicalScoreboard();
     }
     
@@ -225,13 +221,15 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             int toChange = bp.equals(winner) ? eloChange : -eloChange;
             boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
-            bp.getCorePlayer().sendMessage(ChatColor.GRAY + " You have " + (toChange >= 0 ? "gained " : "lost ")
-                    + ChatColor.GREEN + eloChange
-                    + ChatColor.GRAY + " Rating Points ("
-                    + ChatColor.RED + initialElo
-                    + ChatColor.GRAY + "->"
-                    + ChatColor.GREEN + (initialElo + toChange)
-                    + ChatColor.GRAY + ")");
+            TextComponent text = new TextComponent();
+            text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));
+            text.addExtra(ChatColor.GREEN + "" + eloChange);
+            text.addExtra(" Rating Points (");
+            text.addExtra(ChatColor.RED + "" + initialElo);
+            text.addExtra("->");
+            text.addExtra(ChatColor.GREEN + "" + (initialElo + toChange));
+            text.addExtra(")");
+            bp.getCorePlayer().sendMessage(text);
         }
         return eloChange;
     }
@@ -249,10 +247,11 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             Core.getInstance().sendPacket(new PacketBattleEndUnrated(
                     getMode().getName(),
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
-            getPlugin().sendMessageBlacklisted(new TextComponent(
-                    new TextComponent("Battle between "),
-                    CoreUtils.mergePlayerNames(battlers.keySet()),
-                    new TextComponent(" was peacefully concluded.")),
+            TextComponent text = new TextComponent();
+            text.addExtra("Battle between ");
+            text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
+            text.addExtra(" was peacefully concluded.");
+            getPlugin().sendMessageBlacklisted(text,
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
         } else {
             BP loser = null;
@@ -267,17 +266,18 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                         getMode().getName(),
                         battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 loser = winner;
-                getPlugin().sendMessageBlacklisted(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                        + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                        + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
-                        + Chat.PLAYER_NAME + loser.getPlayer().getName()
-                        + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                        + Chat.DEFAULT + " in "
-                        + Chat.GAMEMODE + getMode().getDisplayName() + " "
-                        + Chat.DEFAULT + "("
-                        + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                        + Chat.DEFAULT + ")",
-                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
+                TextComponent text = new TextComponent();
+                text.addExtra(winner.getCorePlayer().getChatName());
+                text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
+                text.addExtra(loser.getCorePlayer().getChatName());
+                text.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                text.addExtra("(");
+                text.addExtra(Chat.SCORE + winner.getRoundWins());
+                text.addExtra("-");
+                text.addExtra(Chat.SCORE + loser.getRoundWins());
+                text.addExtra(")");
+                getPlugin().sendMessageBlacklisted(text, battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
             } else {
                 for (BattlePlayer bp : battlers.values()) {
                     bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
@@ -296,16 +296,18 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                                 bp.getCorePlayer().getUniqueId(),
                                 bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()))
                         ).collect(Collectors.toList())));
-                getPlugin().sendMessageBlacklisted(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                        + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                        + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " "
-                        + Chat.PLAYER_NAME + loser.getPlayer().getName()
-                        + loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                        + Chat.DEFAULT + " in "
-                        + Chat.GAMEMODE + getMode().getDisplayName() + " "
-                        + Chat.DEFAULT + "("
-                        + Chat.SCORE + winner.getRoundWins() + Chat.DEFAULT + "-" + Chat.SCORE + loser.getRoundWins()
-                        + Chat.DEFAULT + ")",
+                TextComponent text = new TextComponent();
+                text.addExtra(winner.getCorePlayer().getChatName());
+                text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
+                text.addExtra(loser.getCorePlayer().getChatName());
+                text.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                text.addExtra("(");
+                text.addExtra(Chat.SCORE + winner.getRoundWins());
+                text.addExtra("-");
+                text.addExtra(Chat.SCORE + loser.getRoundWins());
+                text.addExtra(")");
+                getPlugin().sendMessageBlacklisted(text,
                         battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
             }
         }

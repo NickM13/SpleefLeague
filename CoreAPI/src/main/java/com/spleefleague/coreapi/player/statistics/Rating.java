@@ -4,7 +4,6 @@ import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
-import com.spleefleague.coreapi.player.RatedPlayer;
 
 /**
  * @author NickM13
@@ -106,17 +105,9 @@ public class Rating extends DBEntity {
         return increase;
     }
 
-    public boolean addElo(RatedPlayer owner, int value) {
-        //Core.getInstance().sendMessage(owner, "You " + (value > 0 ? "gained" : "lost") + " " + Math.abs(value) + " points");
+    public boolean addElo(int value) {
         elo += value;
         boolean divisionChange = updateDivision(value > 0);
-        /*
-        if (updateDivision(value > 0)) {
-            if (owner != null) {
-                Core.getInstance().sendMessage(owner, "You've been " + (value > 0 ? "promoted" : "demoted") + " to " + division.getDisplayName() + "!");
-            }
-        }
-        */
         if (value > 0) {
             wins++;
         } else {
@@ -162,14 +153,11 @@ public class Rating extends DBEntity {
      * @param cp Core Player
      * @return Decayed
      */
-    public boolean checkDecay(RatedPlayer cp) {
+    public boolean checkDecay() {
         if (division.getDecay() > 0
                 && isDecaying()
                 && System.currentTimeMillis() - lastDecay > 1000 * 60 * 60 * 24) {
             elo -= division.getDecay();
-            if (updateDivision(false)) {
-                //Core.getInstance().sendMessage(cp.getDisplayName() + " has decayed to " + division.getDisplayName() + "!");
-            }
             lastDecay = System.currentTimeMillis();
             return true;
         }

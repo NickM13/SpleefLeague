@@ -3,11 +3,14 @@ package com.spleefleague.core.menu;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.player.CorePlayer;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import net.minecraft.server.v1_15_R1.NBTTagList;
 import net.minecraft.server.v1_15_R1.NBTTagString;
+import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -42,20 +45,47 @@ public class InventoryMenuSkullManager {
     private static final Map<UUID, Texture> uuidTextureMap;
     private static final Set<UUID> loadingSkulls;
 
+    private static MongoCollection<Document> skullCollection;
+
+    public static void init() {
+        skullCollection = Core.getInstance().getPluginDB().getCollection("Skulls");
+    }
+
     static {
         uuidTextureMap = new HashMap<>();
         loadingSkulls = new HashSet<>();
     }
 
-    public static Texture getTexture(UUID uuid) {
-        try {
-            InputStreamReader reader = new InputStreamReader(new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString() + "?unsigned=false").openStream());
-            JsonObject textureProperty = new JsonParser().parse(reader).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject();
-            return new Texture(textureProperty.get("value").getAsString(), textureProperty.get("signature").getAsString());
-        } catch (IOException exception) {
-            CoreLogger.logError(exception);
+    private static void loadTexture(UUID uuid) {
+        Document baseDoc = new Document("identifier", uuid.toString());
+        Document doc = skullCollection.find(baseDoc).first();
+        Texture texture = null;
+        if (doc != null) {
+            texture = new Texture(doc.getString("value"), doc.getString("signature"));
+        } else {
+            try {
+                InputStreamReader reader = new InputStreamReader(new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString() + "?unsigned=false").openStream());
+                JsonObject textureProperty = new JsonParser().parse(reader).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject();
+
+                String value = textureProperty.get("value").getAsString();
+                String signature = textureProperty.get("signature").getAsString();
+                texture = new Texture(value, signature);
+
+                baseDoc.append("value", value).append("signature", signature);
+                skullCollection.insertOne(baseDoc);
+            } catch (IOException exception) {
+                CoreLogger.logError(exception);
+                return;
+            }
         }
-        return null;
+        uuidTextureMap.put(uuid, texture);
+    }
+
+    public static Texture getTexture(UUID uuid) {
+        if (!uuidTextureMap.containsKey(uuid)) {
+            loadTexture(uuid);
+        }
+        return uuidTextureMap.get(uuid);
     }
 
     public static ItemStack getDefaultSkull() {
@@ -65,9 +95,7 @@ public class InventoryMenuSkullManager {
     private static void loadSkull(UUID uuid) {
         loadingSkulls.add(uuid);
         Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
-            Texture texture = getTexture(uuid);
-            if (texture != null)
-                uuidTextureMap.put(uuid, texture);
+            loadTexture(uuid);
             loadingSkulls.remove(uuid);
         });
     }
@@ -99,10 +127,21 @@ public class InventoryMenuSkullManager {
     }
 
     public static ItemStack getPlayerSkullForced(UUID uuid) {
+        CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
+        if (cp != null && cp.getDisguise() != null) {
+            uuid = cp.getDisguise();
+        }
         return getPlayerSkull(uuid, getTexture(uuid));
     }
 
     public static ItemStack getPlayerSkull(UUID uuid) {
+        return getPlayerSkullForced(uuid);
+
+        /*
+        CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
+        if (cp != null && cp.getDisguise() != null) {
+            uuid = cp.getDisguise();
+        }
         Texture texture = uuidTextureMap.get(uuid);
         if (texture == null) {
             loadSkull(uuid);
@@ -110,6 +149,7 @@ public class InventoryMenuSkullManager {
         }
 
         return getPlayerSkull(uuid, texture);
+         */
     }
 
 }

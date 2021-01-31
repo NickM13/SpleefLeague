@@ -128,7 +128,7 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
     @Override
     protected void sendEndMessage(MultiSpleggPlayer msp) {
         chatGroup.sendTitle(msp.getCorePlayer().getDisplayName() + ChatColor.GRAY + " won the game",
-                ChatColor.GRAY + "Using " + ChatColor.RED + msp.getGun1().getName() + ChatColor.GRAY + " and " + ChatColor.BLUE + msp.getGun2().getName(), 20, 160, 20);
+                ChatColor.GRAY + "Using " + ChatColor.RED + msp.getGun1().getDisplayName() + ChatColor.GRAY + " and " + ChatColor.BLUE + msp.getGun2().getName(), 20, 160, 20);
     }
 
     @Override

@@ -8,8 +8,8 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.hotbars.main.profile.FriendsMenu;
-import com.spleefleague.core.menu.hotbars.main.profile.PurseMenu;
+import com.spleefleague.core.menu.hotbars.main.profile.PartyMenu;
+import com.spleefleague.core.menu.hotbars.main.profile.StatisticsMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -32,11 +32,11 @@ public class ProfileMenu {
                     .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Profile")
                     .setDisplayItem(Material.ARMOR_STAND, 1)
                     .setSelectedItem(Material.ARMOR_STAND, 2)
-                    .setDescription("View statistics on your player character")
+                    .setDescription("View your SpleefLeague profile")
                     .createLinkedContainer("Profile");
 
-            menuItem.getLinkedChest().addMenuItem(FriendsMenu.getItem(), 1, 1);
-            menuItem.getLinkedChest().addMenuItem(PurseMenu.getItem(), 4, 2);
+            menuItem.getLinkedChest().addStaticItem(PartyMenu.getItem(), 3, 4);
+            menuItem.getLinkedChest().addStaticItem(StatisticsMenu.getItem(), 2, 4);
         }
         return menuItem;
     }

@@ -11,6 +11,7 @@ import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
+import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -72,7 +73,7 @@ public class UtilityIcePillar extends AbilityUtility {
                 gameWorld.addBlockDelayed(entry.getKey().add(blockPos), Material.AIR.createBlockData(), ((5 - entry.getKey().getY()) * 2) + (int) (DURATION * 20));
             }
             gameWorld.playSound(getPlayer().getLocation(), Sound.ENTITY_TURTLE_DEATH_BABY, 1.f, 0.7f);
-            getPlayer().setVelocity(getPlayer().getVelocity().setY(1.15));
+            AbilityUtils.startFling(getUser(), new Vector(0, 1, 0), 0.5);
             return true;
         }
         return false;

@@ -49,10 +49,10 @@ public class Infraction {
     
     public enum Type {
         WARNING("Warning", ChatColor.YELLOW),
+        UNBAN("Unban", ChatColor.GREEN),
         KICK("Kick", ChatColor.GOLD),
         TEMPBAN("Tempban", ChatColor.RED),
         BAN("Ban", ChatColor.DARK_RED),
-        UNBAN("Unban", ChatColor.GREEN),
         MUTE_PUBLIC("PubMute", ChatColor.GRAY),
         MUTE_SECRET("SecMute", ChatColor.BLACK);
 

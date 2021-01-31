@@ -114,7 +114,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         super.startRound();
         for (PowerSpleefPlayer psp : battlers.values()) {
             psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
-            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("Country_Roads.nbs"), 0.2f);
+            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("Guilles_Theme.nbs"), 0.2f);
         }
     }
 
@@ -219,7 +219,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         for (Map.Entry<BlockPosition, FakeBlock> baseBlock : gameWorld.getBaseBlocks().entrySet()) {
             if (!gameWorld.getFakeBlocks().containsKey(baseBlock.getKey()) ||
                     gameWorld.getFakeBlocks().get(baseBlock.getKey()).getBlockData().getMaterial() != baseBlock.getValue().getBlockData().getMaterial()) {
-                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue().getBlockData(), (int) (Math.random() * 60));
+                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue().getBlockData(), (int) (Math.random() * 40));
             }
         }
     }

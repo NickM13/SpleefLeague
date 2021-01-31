@@ -2,6 +2,7 @@ package com.spleefleague.coreapi.utils.packet;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
+import com.spleefleague.coreapi.utils.packet.shared.PacketVariable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.*;
 import com.comphenix.protocol.PacketType;
@@ -23,8 +24,10 @@ import com.spleefleague.core.Core;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import com.spleefleague.core.world.game.projectile.FakeEntity;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -36,6 +39,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Snow;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -44,7 +48,7 @@ import org.bukkit.util.Vector;
 /**
  * @author NickM13
  */
-public class GameWorld extends FakeWorld<GameWorldPlayer> {
+public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
 
     /**
      * Blocks that are added after a delay
@@ -93,37 +97,13 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
 
     }
 
-    protected static class FutureShot {
-
-        ProjectileStats stats;
-        Vector offset;
-        double charge;
-        int remaining;
-        int nextTicks;
-
-        FutureShot(ProjectileStats stats, Vector offset, double charge) {
-            this.stats = stats;
-            this.offset = offset;
-            this.charge = charge;
-            remaining = stats.repeat - 1;
-            nextTicks = stats.repeatDelay;
-        }
-
-    }
-
     protected final Set<Material> breakTools;
     protected final Set<Material> breakables;
     protected final Set<Material> unbreakables;
     protected boolean editable;
 
-    protected final BukkitTask projectileCollideTask;
-    protected Map<UUID, GameProjectile> projectiles;
-
     protected BukkitTask futureBlockTask;
     protected final Map<BlockPosition, SortedSet<FutureBlock>> futureBlocks;
-
-    protected BukkitTask futureShotsTask;
-    protected final Map<UUID, Set<FutureShot>> futureShots;
 
     protected BukkitTask burningTask;
     protected class BurningBlock {
@@ -167,15 +147,9 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         unbreakables = Sets.newHashSet(Material.CYAN_CONCRETE, Material.WHITE_STAINED_GLASS);
         editable = false;
         futureBlocks = new HashMap<>();
-        futureShots = new HashMap<>();
         burningBlocks = new HashMap<>();
         baseBlocks = new HashMap<>();
         baseBreakTimes = new HashMap<>();
-        projectiles = new HashMap<>();
-
-        projectileCollideTask = Bukkit.getScheduler()
-                .runTaskTimer(Core.getInstance(),
-                        this::updateProjectiles, 0L, 1L);
 
         showSpectators = true;
 
@@ -195,55 +169,14 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 .runTaskTimer(Core.getInstance(),
                         this::updateFutureBlocks, 0L, 2L);
 
-        futureShotsTask = Bukkit.getScheduler()
-                .runTaskTimer(Core.getInstance(),
-                        this::updateFutureShots, 0L, 1L);
-
         burningTask = Bukkit.getScheduler()
                 .runTaskTimerAsynchronously(Core.getInstance(),
                         this::updateBurningBlocks, 0L, 5L);
-
-        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer packet = event.getPacket();
-                Entity entity = packet.getEntityModifier(event).read(0);
-                if (projectiles.containsKey(entity.getUniqueId()) &&
-                        !getPlayerMap().containsKey(event.getPlayer().getUniqueId())) {
-                    event.setCancelled(true);
-                }
-            }
-        });
-
-                /*
-        Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.ENTITY_DESTROY) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer packet = event.getPacket();
-                int[] entityIds = packet.getIntegerArrays().read(0);
-                List<Integer> uncancelled = new ArrayList<>();
-                for (int id : entityIds) {
-                    net.minecraft.server.v1_15_R1.Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(id);
-                    if (entity instanceof EntityPlayer) {
-
-                    } else {
-                        uncancelled.add(id);
-                    }
-                }
-                int[] newIdArray = new int[uncancelled.size()];
-                for (int i = 0; i < uncancelled.size(); i++) {
-                    newIdArray[i] = uncancelled.get(i);
-                }
-                packet.getIntegerArrays().write(0, newIdArray);
-            }
-        });
-                */
     }
 
     @Override
     public void destroy() {
         super.destroy();
-        projectileCollideTask.cancel();
         futureBlockTask.cancel();
         playerBlastTask.cancel();
         clearProjectiles();
@@ -568,10 +501,6 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         return true;
     }
 
-    protected void updateProjectiles() {
-        projectiles.entrySet().removeIf(uuidGameProjectileEntry -> !uuidGameProjectileEntry.getValue().getEntity().isAlive());
-    }
-
     protected void updatePlayerBlasts() {
         Iterator<PlayerBlast> pbit = playerBlasts.iterator();
         while (pbit.hasNext()) {
@@ -585,6 +514,8 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     }
 
     private static List<Color> colors = Lists.newArrayList(Color.BLUE, Color.AQUA, Color.RED, Color.YELLOW);
+
+    private int portalPhysicCheck = 0;
 
     protected void updatePlayerPortals() {
         int i = 0;
@@ -630,6 +561,19 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
             }
             i++;
         }
+        portalPhysicCheck++;
+        if (portalPhysicCheck > 5) {
+            for (PortalPair portal : playerPortals.values()) {
+                PortalPair.Portal portal1 = portal.getPortal1();
+                PortalPair.Portal portal2 = portal.getPortal2();
+                if (portal1 != null && (!isBlockSolid(portal1.getBlockPos()) || isBlockSolid(portal1.getRelativePos()))) {
+                    portal.popPortal1();
+                }
+                if (portal2 != null && (!isBlockSolid(portal2.getBlockPos()) || isBlockSolid(portal2.getRelativePos()))) {
+                    portal.popPortal2();
+                }
+            }
+        }
     }
 
     protected void updateFutureBlocks() {
@@ -640,7 +584,6 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                 futureBlock.delay -= 2;
                 if (futureBlock.delay <= 0) {
                     setBlock(futureList.getKey(), futureBlock.fakeBlock.getBlockData());
-                    updateBlock(futureList.getKey());
                     fbit.remove();
                 } else if (futureBlock.delay < 7) {
                     Material futureMat = futureBlock.fakeBlock.getBlockData().getMaterial();
@@ -648,7 +591,6 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                         Snow snow = (Snow) Material.SNOW.createBlockData();
                         snow.setLayers((int) (8 - futureBlock.delay));
                         setBlock(futureList.getKey(), snow);
-                        updateBlock(futureList.getKey());
                     } else {
                         if (fakeBlocks.containsKey(futureList.getKey())) {
                             Material fakeMat = fakeBlocks.get(futureList.getKey()).getBlockData().getMaterial();
@@ -656,40 +598,12 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
                                 Snow snow = (Snow) Material.SNOW.createBlockData();
                                 snow.setLayers((int) (futureBlock.delay));
                                 setBlock(futureList.getKey(), snow);
-                                updateBlock(futureList.getKey());
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    protected void updateFutureShots() {
-        Iterator<Map.Entry<UUID, Set<FutureShot>>> it = futureShots.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<UUID, Set<FutureShot>> futureShots = it.next();
-            Iterator<FutureShot> fsit = futureShots.getValue().iterator();
-            while (fsit.hasNext()) {
-                FutureShot futureShot = fsit.next();
-                if (--futureShot.nextTicks <= 0) {
-                    futureShot.nextTicks = futureShot.stats.repeatDelay;
-                    futureShot.remaining--;
-                    CorePlayer shooter = playerMap.get(futureShots.getKey()).getCorePlayer();
-                    shoot(shooter, shooter.getLocation().add(futureShot.offset), futureShot.stats, futureShot.charge);
-                    if (futureShot.remaining <= 0) {
-                        fsit.remove();
-                    }
-                }
-            }
-            if (futureShots.getValue().isEmpty()) {
-                it.remove();
-            }
-        }
-    }
-
-    public void stopFutureShots(CorePlayer shooter) {
-        futureShots.remove(shooter.getUniqueId());
     }
 
     private void attemptBurn(BlockPosition pos, int fuel) {
@@ -760,10 +674,7 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     }
 
     public void clearProjectiles() {
-        for (GameProjectile gp : projectiles.values()) {
-            gp.getEntity().killEntity();
-        }
-        projectiles.clear();
+        super.clearProjectiles();
         for (BukkitTask task : gameTasks) {
             task.cancel();
         }
@@ -772,109 +683,19 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
         futureShots.clear();
     }
 
-    public void portalize(FakeEntitySnowball entity, Location location, Vector velocity) {
+    public void portalize(FakeEntity entity, Location location, Vector velocity) {
         try {
-            FakeEntitySnowball newEntity = (FakeEntitySnowball) entity.getStats().entityClass
+            FakeEntity newEntity = (FakeEntitySnowball) entity.getStats().entityClass
                     .getDeclaredConstructor(GameWorld.class, CorePlayer.class, Location.class, ProjectileStats.class, Double.class)
                     .newInstance(this, entity.getCpShooter(), location, entity.getStats(), 1D);
-            projectiles.put(newEntity.getUniqueID(), new GameProjectile(newEntity, entity.getStats()));
-            newEntity.setMot(velocity.getX(), velocity.getY(), velocity.getZ());
+            projectiles.put(newEntity.getEntity().getUniqueID(), new GameProjectile(newEntity.getEntity(), entity.getStats()));
+            newEntity.getEntity().setMot(velocity.getX(), velocity.getY(), velocity.getZ());
             newEntity.reducedStats(entity);
-            ((CraftWorld) getWorld()).getHandle().addEntity(newEntity);
-            entity.killEntity();
+            ((CraftWorld) getWorld()).getHandle().addEntity(newEntity.getEntity());
+            entity.getEntity().killEntity();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException exception) {
             CoreLogger.logError(exception);
         }
-    }
-
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
-        return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone()
-                .add(shooter.getPlayer().getLocation().getDirection()
-                        .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
-                        .multiply(0.15).add(new Vector(0, -0.15, 0))),
-                projectileStats,
-                charge);
-    }
-
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, Location location, ProjectileStats projectileStats, double charge) {
-        if (projectileStats.repeat > 1) {
-            if (!futureShots.containsKey(shooter.getUniqueId())) {
-                futureShots.put(shooter.getUniqueId(), new HashSet<>());
-            }
-            futureShots.get(shooter.getUniqueId()).add(new FutureShot(projectileStats, location.clone().toVector().subtract(shooter.getLocation().clone().toVector()), charge));
-        }
-        return shoot(shooter, location, projectileStats, charge);
-    }
-
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
-        return shootProjectile(shooter, shooter.getPlayer().getEyeLocation().clone()
-                .add(shooter.getPlayer().getLocation().getDirection()
-                        .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
-                        .multiply(0.15).add(new Vector(0, -0.15, 0))), projectileStats);
-    }
-
-    private net.minecraft.server.v1_15_R1.Entity shoot(List<net.minecraft.server.v1_15_R1.Entity> entities,
-                                                       CorePlayer shooter,
-                                                       Location location,
-                                                       ProjectileStats projectileStats,
-                                                       double charge)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        net.minecraft.server.v1_15_R1.Entity entity = projectileStats.entityClass
-                .getDeclaredConstructor(GameWorld.class, CorePlayer.class, Location.class, ProjectileStats.class, Double.class)
-                .newInstance(this, shooter, location, projectileStats, charge);
-        projectiles.put(entity.getUniqueID(), new GameProjectile(entity, projectileStats));
-        ((CraftWorld) getWorld()).getHandle().addEntity(entity);
-        entities.add(entity);
-        return entity;
-    }
-
-    private List<net.minecraft.server.v1_15_R1.Entity> shoot(CorePlayer shooter,
-                                                             Location location,
-                                                             ProjectileStats projectileStats,
-                                                             double charge) {
-        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
-        try {
-            for (GameWorldPlayer gwp : playerMap.values()) {
-                gwp.getPlayer().playSound(location, projectileStats.soundEffect, projectileStats.soundVolume.floatValue(), projectileStats.soundPitch.floatValue());
-            }
-            switch (projectileStats.shape) {
-                case PLUS:
-                    shoot(entities, shooter, location.clone(),
-                            projectileStats, charge);
-                    for (int i = 1; i <= projectileStats.count; i++) {
-                        shoot(entities, shooter, location.clone().add(
-                                location.clone().getDirection().crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize().multiply(i * (float) projectileStats.hSpread / 100 / projectileStats.count)),
-                                projectileStats, charge);
-                        shoot(entities, shooter, location.clone().add(
-                                location.clone().getDirection().crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize().multiply(-i * (float) projectileStats.hSpread / 100 / projectileStats.count)),
-                                projectileStats, charge);
-                    }
-                    shooter.getStatistics().get("splegg").add("eggsFired", (int) (projectileStats.count * charge * 2 + 1));
-                    break;
-                default:
-                    for (int i = 0; i < projectileStats.count * charge; i++) {
-                        shoot(entities, shooter, location, projectileStats, charge);
-                    }
-                    shooter.getStatistics().get("splegg").add("eggsFired", (int) (projectileStats.count * charge));
-                    break;
-            }
-            if (charge >= 0.2 && Math.abs(projectileStats.fireKnockback) > 0.001) {
-                shooter.getPlayer().setVelocity(shooter.getPlayer().getLocation().getDirection().multiply(-projectileStats.fireKnockback * charge));
-            }
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException exception) {
-            CoreLogger.logError(exception);
-        }
-        return entities;
-    }
-
-    public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, Location location, ProjectileStats projectileStats) {
-        if (projectileStats.repeat > 1) {
-            if (!futureShots.containsKey(shooter.getUniqueId())) {
-                futureShots.put(shooter.getUniqueId(), new HashSet<>());
-            }
-            futureShots.get(shooter.getUniqueId()).add(new FutureShot(projectileStats, location.clone().toVector().subtract(shooter.getLocation().clone().toVector()), 1));
-        }
-        return shoot(shooter, location, projectileStats, 1);
     }
 
     public Map<UUID, PortalPair> getPlayerPortals() {
@@ -1072,6 +893,42 @@ public class GameWorld extends FakeWorld<GameWorldPlayer> {
     public void sendPacket(PacketContainer packet) {
         for (GameWorldPlayer gwp : playerMap.values()) {
             Core.sendPacket(gwp.getPlayer(), packet);
+        }
+    }
+
+    @Override
+    public boolean checkProjectileBlock(FakeEntity fakeEntity, CraftEntity craftEntity, BlockRaycastResult blockRaycastResult) {
+        for (PortalPair pair : getPlayerPortals().values()) {
+            if (pair.isLinked()) {
+                if (pair.getPortal1().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal1().getBlockFace().equals(blockRaycastResult.getFace())) {
+                    portalize(fakeEntity, pair.getPortal2().getTpLoc(), pair.getNewVelocityTo2(craftEntity));
+                    return true;
+                } else if (pair.getPortal2().getBlockPos().equals(blockRaycastResult.getBlockPos()) && pair.getPortal2().getBlockFace().equals(blockRaycastResult.getFace())) {
+                    portalize(fakeEntity, pair.getPortal1().getTpLoc(), pair.getNewVelocityTo1(craftEntity));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void onProjectileBlockHit(CorePlayer shooter, BlockRaycastResult blockRaycastResult, ProjectileStats projectileStats) {
+        switch (projectileStats.breakStyle) {
+            case DEFAULT:
+                shooter.getStatistics().get("splegg").add("blocksBroken", breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case CORROSIVE:
+                shooter.getStatistics().get("splegg").add("blocksCorroded", corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case FIRE:
+                shooter.getStatistics().get("splegg").add("blocksBurnt", burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case ICE:
+                shooter.getStatistics().get("splegg").add("blocksIced", iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
+            case REGENERATE:
+                shooter.getStatistics().get("splegg").add("blocksEndered", breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                break;
         }
     }
 

@@ -48,12 +48,24 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     protected List<InventoryMenuControl> controlItems;
     protected Set<Integer> deadSpaces;
     protected InventoryMenuContainer parentContainer = null;
-    
-    protected int rowFirst;
-    protected int rowLast;
-    protected int colFirst;
-    protected int colLast;
-    protected int pageItemTotal;
+
+    protected UUID uuid;
+
+    public class PageBoundary {
+        int rowFirst, rowLast, colFirst, colLast;
+        int pageItemTotal;
+
+        public PageBoundary(int rowFirst, int rowLast, int colFirst, int colLast, int pageItemTotal) {
+            this.rowFirst = rowFirst;
+            this.rowLast = rowLast;
+            this.colFirst = colFirst;
+            this.colLast = colLast;
+            this.pageItemTotal = pageItemTotal;
+        }
+
+    }
+
+    protected PageBoundary pageBoundary;
 
     protected int forcedPageCount = -1;
     protected int forcedPageStart = 0;
@@ -61,15 +73,60 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     protected int itemBuffer = 1;
     
     public InventoryMenuContainerChest() {
-        openAction = null;
-        refreshAction = null;
-        titleFun = null;
-        unsortedItems = new ArrayList<>();
-        sortedItems = new TreeMap<>();
-        controlItems = new ArrayList<>();
-        deadSpaces = new HashSet<>();
+        this.openAction = null;
+        this.refreshAction = null;
+        this.titleFun = null;
+        this.unsortedItems = new ArrayList<>();
+        this.sortedItems = new TreeMap<>();
+        this.controlItems = new ArrayList<>();
+        this.deadSpaces = new HashSet<>();
+        this.uuid = UUID.randomUUID();
         
         setPageBoundaries(1, 5, 0, 5);
+    }
+
+    public InventoryMenuContainerChest(InventoryMenuContainerChest container) {
+        super(container);
+        this.openAction = container.getOpenAction();
+        this.refreshAction = container.getRefreshAction();
+        this.titleFun = container.getTitleFun();
+        this.unsortedItems = new ArrayList<>(container.getUnsortedItems());
+        this.sortedItems = new TreeMap<>(container.getSortedItems());
+        this.controlItems = new ArrayList<>(container.getControlItems());
+        this.deadSpaces = new HashSet<>(container.getDeadSpaces());
+        this.itemBuffer = container.getItemBuffer();
+        this.parentContainer = container.getParent();
+        this.uuid = container.getUuid();
+
+        setPageBoundaries(container.getPageBoundary());
+    }
+
+    public BiConsumer<InventoryMenuContainerChest, CorePlayer> getOpenAction() {
+        return openAction;
+    }
+
+    public BiConsumer<InventoryMenuContainerChest, CorePlayer> getRefreshAction() {
+        return refreshAction;
+    }
+
+    public Function<CorePlayer, String> getTitleFun() {
+        return titleFun;
+    }
+
+    public List<InventoryMenuItem> getUnsortedItems() {
+        return unsortedItems;
+    }
+
+    public SortedMap<Integer, InventoryMenuItem> getSortedItems() {
+        return sortedItems;
+    }
+
+    public List<InventoryMenuControl> getControlItems() {
+        return controlItems;
+    }
+
+    public Set<Integer> getDeadSpaces() {
+        return deadSpaces;
     }
     
     /**
@@ -82,16 +139,21 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
      * @return Self
      */
     public InventoryMenuContainerChest setPageBoundaries(int rowStart, int rowWidth, int colStart, int colWidth) {
-        rowFirst = rowStart;
-        rowLast = rowStart + rowWidth - 1;
-        colFirst = colStart;
-        colLast = colStart + colWidth - 1;
-        pageItemTotal = rowWidth * colWidth;
+        this.pageBoundary = new PageBoundary(rowStart, rowStart + rowWidth - 1, colStart, colStart + colWidth - 1, rowWidth * colWidth);
         return this;
+    }
+
+    public InventoryMenuContainerChest setPageBoundaries(PageBoundary pageBoundary) {
+        this.pageBoundary = new PageBoundary(pageBoundary.rowFirst, pageBoundary.rowLast, pageBoundary.colFirst, pageBoundary.colLast, pageBoundary.pageItemTotal);
+        return this;
+    }
+
+    public PageBoundary getPageBoundary() {
+        return pageBoundary;
     }
     
     public int getPageItemTotal() {
-        return pageItemTotal;
+        return pageBoundary.pageItemTotal;
     }
     
     /**
@@ -114,7 +176,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         this.itemBuffer = buffer;
         return this;
     }
-    
+
+    public int getItemBuffer() {
+        return itemBuffer;
+    }
+
+    public void clear() {
+        sortedItems.clear();
+        unsortedItems.clear();
+    }
+
     public void clearSorted () {
         sortedItems.clear();
     }
@@ -147,7 +218,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         return menuItem;
     }
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int x, int y) {
-        addMenuItem(menuItem, (x) + (y * (colLast - colFirst + 1)));
+        addMenuItem(menuItem, (x) + (y * (pageBoundary.colLast - pageBoundary.colFirst + 1)));
         menuItem.setParent(this);
         return menuItem;
     }
@@ -168,12 +239,12 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     }
 
     public InventoryMenuContainerChest addDeadSpace(int x, int y) {
-        deadSpaces.add(x + y * (colLast - colFirst + 1));
+        deadSpaces.add(x + y * (pageBoundary.colLast - pageBoundary.colFirst + 1));
         return this;
     }
     
     public void removeMenuItem(int page, int slot) {
-        sortedItems.remove((page * pageItemTotal) + slot);
+        sortedItems.remove((page * pageBoundary.pageItemTotal) + slot);
     }
     
     public Inventory refreshInventory(CorePlayer cp) {
@@ -188,16 +259,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         }
         String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
 
-        int toSkip = pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
+        int toSkip = pageBoundary.pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
     
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
                 int slotNum = item.getKey() - toSkip;
-                if (slotNum < pageItemTotal && slotNum >= 0) {
+                if (slotNum < pageBoundary.pageItemTotal && slotNum >= 0) {
                     ItemStack itemStack = item.getValue().createItem(cp);
-                    int leftSpacing = colFirst;
-                    int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
-                    int topSpacing = rowFirst * 9;
+                    int leftSpacing = pageBoundary.colFirst;
+                    int rightSpacing = (slotNum / (pageBoundary.colLast - pageBoundary.colFirst + 1)) * (9 - (pageBoundary.colLast - pageBoundary.colFirst + 1));
+                    int topSpacing = pageBoundary.rowFirst * 9;
                     contents[leftSpacing + rightSpacing + slotNum + topSpacing] = itemStack;
                 }
             }
@@ -208,16 +279,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             if (!item.isVisible(cp)) continue;
             while ((sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
-                    deadSpaces.contains(i % pageItemTotal)) {
+                    deadSpaces.contains(i % pageBoundary.pageItemTotal)) {
                 i += itemBuffer;
             }
-            if (i >= toSkip + pageItemTotal) break;
+            if (i >= toSkip + pageBoundary.pageItemTotal) break;
             if (i >= toSkip) {
                 ItemStack itemStack = item.createItem(cp);
                 int slotNum = (i - toSkip);
-                int leftSpacing = colFirst;
-                int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
-                int topSpacing = rowFirst * 9;
+                int leftSpacing = pageBoundary.colFirst;
+                int rightSpacing = (slotNum / (pageBoundary.colLast - pageBoundary.colFirst + 1)) * (9 - (pageBoundary.colLast - pageBoundary.colFirst + 1));
+                int topSpacing = pageBoundary.rowFirst * 9;
                 contents[leftSpacing + rightSpacing + slotNum + topSpacing] = itemStack;
             }
             i += itemBuffer;
@@ -262,7 +333,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
-                pageCount = Math.max(pageCount, item.getKey() / pageItemTotal + 1);
+                pageCount = Math.max(pageCount, item.getKey() / pageBoundary.pageItemTotal + 1);
             }
         }
         
@@ -273,7 +344,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                     && sortedItems.get(i).isVisible(cp)) {
                 i += itemBuffer;
             }
-            pageCount = Math.max(pageCount, i / pageItemTotal + 1);
+            pageCount = Math.max(pageCount, i / pageBoundary.pageItemTotal + 1);
             i += itemBuffer;
         }
         
@@ -281,15 +352,15 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     }
     
     public InventoryMenuItem getMenuItem(CorePlayer cp, int slot) {
-        int toSkip = pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
+        int toSkip = pageBoundary.pageItemTotal * cp.getMenu().getPage();
 
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             int slotNum = (item.getKey() - toSkip);
-            if (slotNum < 0 || slotNum >= pageItemTotal) continue;
+            if (slotNum < 0 || slotNum >= pageBoundary.pageItemTotal) continue;
             if (item.getValue().isVisible(cp)) {
-                int leftSpacing = colFirst;
-                int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
-                int topSpacing = rowFirst * 9;
+                int leftSpacing = pageBoundary.colFirst;
+                int rightSpacing = (slotNum / (pageBoundary.colLast - pageBoundary.colFirst + 1)) * (9 - (pageBoundary.colLast - pageBoundary.colFirst + 1));
+                int topSpacing = pageBoundary.rowFirst * 9;
                 if (leftSpacing + rightSpacing + slotNum + topSpacing == slot) {
                     return item.getValue();
                 }
@@ -298,20 +369,22 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
 
         int i = 0;
         for (InventoryMenuItem item : unsortedItems) {
-            if (!item.isVisible(cp)) continue;
+            if (!item.isVisible(cp) || i - toSkip < 0) {
+                i += itemBuffer;
+                continue;
+            }
             while ((sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
                     (sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
-                    deadSpaces.contains(i % pageItemTotal) ||
-                    i - toSkip < 0) {
+                    deadSpaces.contains(i % pageBoundary.pageItemTotal)) {
                 i += itemBuffer;
             }
             if (i >= toSkip) {
                 int slotNum = (i - toSkip);
-                int leftSpacing = colFirst;
-                int rightSpacing = (slotNum / (colLast - colFirst + 1)) * (9 - (colLast - colFirst + 1));
-                int topSpacing = rowFirst * 9;
+                int leftSpacing = pageBoundary.colFirst;
+                int rightSpacing = (slotNum / (pageBoundary.colLast - pageBoundary.colFirst + 1)) * (9 - (pageBoundary.colLast - pageBoundary.colFirst + 1));
+                int topSpacing = pageBoundary.rowFirst * 9;
                 int selected = leftSpacing + rightSpacing + slotNum + topSpacing;
                 if (selected == slot) {
                     return item;
@@ -358,5 +431,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
         }
     }
-    
+
+    public InventoryMenuContainerChest clone() {
+        return new InventoryMenuContainerChest(this);
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public boolean equals(InventoryMenuContainerChest container) {
+        return container != null && uuid.equals(container.getUuid());
+    }
 }

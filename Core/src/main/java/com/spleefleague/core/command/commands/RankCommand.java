@@ -22,8 +22,8 @@ public class RankCommand extends CoreCommand {
     @CommandAnnotation
     public void rankCreate(CorePlayer sender,
                            @LiteralArg("create") String l,
-                           @HelperArg("<identifier>") String identifier,
-                           @HelperArg("<ladder>") @NumberArg(minValue = -1000, maxValue = 1000) Integer ladder,
+                           @HelperArg("identifier") String identifier,
+                           @HelperArg("ladder") @NumberArg(minValue = -1000, maxValue = 1000) Integer ladder,
                            @EnumArg ChatColor chatColor) {
         if (Ranks.createRank(identifier, ladder, org.bukkit.ChatColor.valueOf(chatColor.name()))) {
             success(sender, "Rank " + identifier + " created.");
@@ -49,9 +49,20 @@ public class RankCommand extends CoreCommand {
                                @LiteralArg("edit") String l1,
                                @OptionArg(listName = "ranks") String rank,
                                @LiteralArg("ladder") String l2,
-                               @HelperArg("<ladder>") @NumberArg(minValue = -10000, maxValue = 10000) Integer ladder) {
+                               @HelperArg("ladder") @NumberArg(minValue = -10000, maxValue = 10000) Integer ladder) {
         if (Ranks.setRankLadder(rank, ladder)) {
             success(sender, "Rank ladder value set to " + ladder);
+        }
+    }
+
+    @CommandAnnotation
+    public void rankEditMaxFriends(CorePlayer sender,
+                               @LiteralArg("edit") String l1,
+                               @OptionArg(listName = "ranks") String rank,
+                               @LiteralArg("maxfriends") String l2,
+                               @HelperArg("maxfriends") @NumberArg(minValue = -1, maxValue = 10000) Integer maxFriends) {
+        if (Ranks.setRankMaxFriends(rank, maxFriends)) {
+            success(sender, "Rank ladder value set to " + maxFriends);
         }
     }
 

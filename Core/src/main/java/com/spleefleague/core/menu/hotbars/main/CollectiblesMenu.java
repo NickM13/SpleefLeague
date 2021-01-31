@@ -2,10 +2,7 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.hotbars.main.collectible.FragmentMenu;
-import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
-import com.spleefleague.core.menu.hotbars.main.collectible.OreMenu;
-import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
+import com.spleefleague.core.menu.hotbars.main.collectible.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -26,7 +23,7 @@ public class CollectiblesMenu {
                 .createLinkedContainer("Collectibles Menu");
     
         menuItem.getLinkedChest()
-                .addStaticItem(PetMenu.getItem(), 5, 2);
+                .addStaticItem(GearMenu.getItem(), 5, 2);
 
         menuItem.getLinkedChest()
                 .addStaticItem(HatMenu.getItem(), 4, 2);

@@ -38,14 +38,14 @@ public class OffensiveIntoTheShadows extends AbilityOffensive {
         getPlayer().addPotionEffect(PotionEffectType.INVISIBILITY.createEffect((int) (DURATION * 20), 0));
         getPlayer().addPotionEffect(PotionEffectType.GLOWING.createEffect((int) (DURATION * 20), 0));
         getUser().getBattle().getBattlers().forEach(bp -> {
-            if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
+            if (!bp.getCorePlayer().equals(getUser().getCorePlayer()))
                 bp.getCorePlayer().getPlayer().hidePlayer(Spleef.getInstance(), getPlayer());
         });
         getPlayer().getInventory().setItem(149, new ItemStack(INDICATOR));
         getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
             getPlayer().getInventory().setItem(149, null);
             getUser().getBattle().getBattlers().forEach(bp -> {
-                if (bp.getCorePlayer().equals(getUser().getCorePlayer()))
+                if (!bp.getCorePlayer().equals(getUser().getCorePlayer()))
                     bp.getCorePlayer().getPlayer().showPlayer(Spleef.getInstance(), getPlayer());
             });
         }, (int) (DURATION * 20) + 5));

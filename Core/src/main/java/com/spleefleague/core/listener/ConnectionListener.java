@@ -18,6 +18,7 @@ import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.party.CorePartyManager;
 import com.spleefleague.core.player.rank.Rank;
 
 import java.time.Instant;
@@ -81,8 +82,9 @@ public class ConnectionListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         event.setJoinMessage("");
-        cp.gotoSpawn();
+        //cp.gotoSpawn();
         Core.getInstance().applyVisibilities(cp);
+        Core.getInstance().getPartyManager().onConnect(cp);
     }
     
     @EventHandler(priority = EventPriority.LOW)
@@ -90,26 +92,26 @@ public class ConnectionListener implements Listener {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
         event.setQuitMessage("");
         GlobalZones.onPlayerLeave(cp);
+        Core.getInstance().getPartyManager().onDisconnect(cp);
     }
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
         if (event == null) {
-            CoreLogger.logWarning(null, new NullPointerException("PlayerResourcePackStatusEvent null"));
+            CoreLogger.logError(null, new NullPointerException("PlayerResourcePackStatusEvent null"));
             return;
         }
-        /*
-        switch (event.getStatus()) {
-            case DECLINED:
-                Core.getInstance().sendMessage(event.getPlayer(), "It's suggested that you use the resource pack " +
-                        "provided by this server!");
-                break;
-            case FAILED_DOWNLOAD:
-                Core.getInstance().sendMessage(event.getPlayer(), "Issue loading server resource pack, try logging " +
-                        "out and back in!");
-                break;
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
+        if (cp == null || !cp.getRank().hasPermission(Rank.MODERATOR)) {
+            switch (event.getStatus()) {
+                case DECLINED:
+                    event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");
+                    break;
+                case FAILED_DOWNLOAD:
+                    event.getPlayer().kickPlayer("There was an issue while downloading the resource pack, try logging out and back in");
+                    break;
+            }
         }
-        */
     }
     
 }

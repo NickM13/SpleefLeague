@@ -7,6 +7,7 @@
 package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
+import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.hat.Hat;
@@ -20,13 +21,11 @@ public class HatMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItemDynamic()
+        menuItem = CorePlayerCollectibles.createCollectibleContainer(Hat.class,
+                InventoryMenuAPI.createItemDynamic()
                 .setName("Hats")
-                .setDisplayItem(Material.LEATHER_HELMET)
-                .setDescription("Pick a hat, any hat!")
-                .createLinkedContainer("Hats");
-
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedChest(), true);
+                .setDisplayItem(Material.IRON_HELMET, 1)
+                .setDescription("Pick a hat, any hat!"));
     }
     
     /**

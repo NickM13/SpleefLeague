@@ -249,7 +249,7 @@ public class Arenas {
         if (mode.isForceRandom()) {
             menuItem.setAction(cp -> plugin.queuePlayer(mode, cp));
         } else {
-            menuItem.createLinkedContainer(ChatColor.stripColor(mode.getDisplayName()) + " Menu");
+            menuItem.createLinkedContainer(ChatColor.stripColor(mode.getDisplayName()));
             menuItem.getLinkedChest().setOpenAction((container, cp2) -> Arenas.fillMenu(plugin, container, mode));
             menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
                     .setDisplayItem(mode.getDisplayItem()), 6, 1)

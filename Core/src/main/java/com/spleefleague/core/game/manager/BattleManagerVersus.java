@@ -58,13 +58,6 @@ public class BattleManagerVersus extends BattleManager {
                 }
 
                 players.get(0).getPlayer().sendPluginMessage(Core.getInstance(), "battle:start", output.toByteArray());
-                /*
-                battle = battleClass
-                        .getDeclaredConstructor(List.class, Arena.class)
-                        .newInstance(players, arena);
-                battle.startBattle();
-                battles.add(battle);
-                 */
             }
         } catch (Exception exception) {
             CoreLogger.logError(exception);

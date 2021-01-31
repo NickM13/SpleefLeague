@@ -26,7 +26,7 @@ com.spleefleague.core.menu.hotbars
 com.spleefleague.core.menu.hotbars.main
 com.spleefleague.core.menu.hotbars.main.collectible
 com.spleefleague.core.menu.hotbars.main.credits
-com.spleefleague.core.menu.hotbars.main.moderator
+com.spleefleague.core.menu.hotbars.main.options.moderator
 com.spleefleague.core.player
 com.spleefleague.core.player.collectible
 com.spleefleague.core.player.collectible.armor

@@ -39,14 +39,16 @@ public class SLMainOverlay {
         // Profile
         overlay.addItem(ProfileMenu.getItem(), 7, 4);
 
+        overlay.addItem(FriendsMenu.getItem(), 7, 5);
+
         // Server Credits
-        overlay.addItem(CreditsMenu.getItem(), 8, 4);
+        overlay.addItem(SocialMediaMenu.getItem(), 8, 4);
 
         // Donor Related
-        overlay.addItem(DonorMenu.getItem(), 7, 5);
+        //overlay.addItem(DonorMenu.getItem(), 7, 5);
 
         // Moderator Tools
-        overlay.addItem(StaffToolsMenu.getItem(), 8, 5);
+        //overlay.addItem(StaffToolsMenu.getItem(), 8, 5);
 
         overlay.addItem(InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.RED + "" + ChatColor.BOLD + "Return")

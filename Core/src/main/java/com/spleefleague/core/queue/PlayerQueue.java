@@ -9,7 +9,7 @@ package com.spleefleague.core.queue;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.player.party.Party;
+import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.ArrayList;
@@ -173,8 +173,8 @@ public class PlayerQueue {
         while (pit.hasNext()) {
             qp = pit.next();
             CorePlayer cp1 = Core.getInstance().getPlayers().get(qp.cp);
-            Party party = cp1.getParty();
-            if (teamQueue && (party == null || party.getPlayers().size() != partySize)) {
+            CoreParty party = cp1.getParty();
+            if (teamQueue && (party == null || party.getPlayerSet().size() != partySize)) {
                 continue;
             }
             if (arenaName.toString().equals("") || qp.arena == null) {
@@ -211,8 +211,8 @@ public class PlayerQueue {
             queuePlayers.add(qp);
             StringBuilder arenaName = new StringBuilder(qp.arena == null ? "" : qp.arena.getName());
             CorePlayer cp1 = qp.cp;
-            Party party = cp1.getParty();
-            if (teamQueue && party != null && party.getPlayers().size() == teamSize) {
+            CoreParty party = cp1.getParty();
+            if (teamQueue && party != null && party.getPlayerSet().size() == teamSize) {
                 if (matchAfter(teamSize, arenaName, pit.nextIndex(), count-1, queuePlayers)) {
                     queuePlayers.forEach(qp2 -> cps.add(qp2.cp));
                     lastParam = arenaName.toString();

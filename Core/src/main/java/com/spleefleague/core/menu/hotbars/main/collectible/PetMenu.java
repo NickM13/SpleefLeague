@@ -2,7 +2,9 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
@@ -17,25 +19,11 @@ public class PetMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName("Pets")
-                .setDescription("Collection of Pets!")
-                .setDisplayItem(Material.FOX_SPAWN_EGG)
-                .createLinkedContainer("Pets Menu");
-        
-        menuItem.getLinkedChest()
-                .setOpenAction((container, cp) -> {
-                    container.clearUnsorted();
-                    for (Vendorable vendorable : Vendorables.getAll(Pet.class).values()) {
-                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                                .setName(vendorable.getName())
-                                .setDisplayItem(vendorable.getDisplayItem())
-                                .setDescription(vendorable.getDescription())
-                                .setAction(cp2 -> {
-                                    cp2.getCollectibles().setActiveItem((Collectible) vendorable);
-                                }));
-                    }
-                });
+        menuItem = CorePlayerCollectibles.createCollectibleContainer(Pet.class,
+                InventoryMenuAPI.createItemDynamic()
+                        .setName("Pets")
+                        .setDisplayItem(Material.BONE, 1)
+                        .setDescription("Collection of Pets!"));
     }
     
     /**

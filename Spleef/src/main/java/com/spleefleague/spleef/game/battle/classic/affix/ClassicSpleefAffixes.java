@@ -4,7 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.hotbars.main.StaffToolsMenu;
+import com.spleefleague.core.menu.hotbars.main.options.StaffToolsMenu;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefBattle;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefPlayer;
 import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixArtillery;

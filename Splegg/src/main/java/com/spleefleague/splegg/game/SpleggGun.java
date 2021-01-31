@@ -43,7 +43,7 @@ public class SpleggGun extends Holdable {
     private static final ItemStack RANDOM_GUN = InventoryMenuUtils.createCustomItem(Material.IRON_INGOT, 1);
     
     public static void init() {
-        Vendorable.registerVendorableType(SpleggGun.class);
+        Vendorable.registerParentType(SpleggGun.class);
         
         spleggGunCol = Splegg.getInstance().getPluginDB().getCollection("SpleggGuns");
         int count = 0;
@@ -58,7 +58,7 @@ public class SpleggGun extends Holdable {
         }
 
         InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemS1")
-                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getName() : "")
+                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayName() : "")
                 .setDescription(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDescription() : "")
                 .setDisplayItem(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
@@ -66,7 +66,7 @@ public class SpleggGun extends Holdable {
                         && cp.getBattle() instanceof ClassicSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemS2")
-                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getName() : "")
+                .setName(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayName() : "")
                 .setDescription(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDescription() : "")
                 .setDisplayItem(cp -> cp.isInBattle() ? ((ClassicSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
@@ -74,7 +74,7 @@ public class SpleggGun extends Holdable {
                         && cp.getBattle() instanceof ClassicSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(0, "spleggGunHotbarItemM1")
-                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getName() : "")
+                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayName() : "")
                 .setDescription(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDescription() : "")
                 .setDisplayItem(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun1().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
@@ -82,7 +82,7 @@ public class SpleggGun extends Holdable {
                         && cp.getBattle() instanceof MultiSpleggBattle);
 
         InventoryMenuAPI.createItemHotbar(1, "spleggGunHotbarItemM2")
-                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getName() : "")
+                .setName(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayName() : "")
                 .setDescription(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDescription() : "")
                 .setDisplayItem(cp -> cp.isInBattle() ? ((MultiSpleggBattle) cp.getBattle()).getBattler(cp).getGun2().getDisplayItem() : new ItemStack(Material.RED_CONCRETE))
                 .setAvailability(cp -> cp.isInBattle()
@@ -140,7 +140,7 @@ public class SpleggGun extends Holdable {
                 .setName(cp -> {
                     SpleggGun active = cp.getCollectibles().getActive(SpleggGun.class, affix);
                     if (active != null) {
-                        return active.getName() + " &6&i(Click to Change)";
+                        return active.getDisplayName() + " &6&i(Click to Change)";
                     } else {
                         return "Random Splegg Gun &6&i(Click to Change)";
                     }
@@ -177,13 +177,13 @@ public class SpleggGun extends Holdable {
 
         for (SpleggGun spleggGun : Vendorables.getAll(SpleggGun.class).values()) {
             InventoryMenuItem smi = InventoryMenuAPI.createItemDynamic()
-                    .setName(cp -> spleggGun.isAvailable(cp) ? spleggGun.getName() : "Locked")
-                    .setDisplayItem(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayItem() : InventoryMenuUtils.getLockedIcon())
+                    .setName(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayName() : "Locked")
+                    .setDisplayItem(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
                     .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")
                     .setAction(cp -> {
                         if (spleggGun.isAvailable(cp)) {
-                            if (cp.getCollectibles().getActiveOrDefault(SpleggGun.class, secondary, SpleggGun.getDefault()).equals(spleggGun)) {
-                                cp.getCollectibles().setActiveItem(cp.getCollectibles().getActiveOrDefault(SpleggGun.class, affix, SpleggGun.getDefault()), secondary);
+                            if (cp.getCollectibles().getActive(SpleggGun.class, secondary).equals(spleggGun)) {
+                                cp.getCollectibles().setActiveItem(cp.getCollectibles().getActive(SpleggGun.class, affix), secondary);
                             }
                             cp.getCollectibles().setActiveItem(spleggGun, affix);
                         }
@@ -199,11 +199,11 @@ public class SpleggGun extends Holdable {
     private ProjectileStats projectileStats;
     
     public SpleggGun() {
-        super(false);
+        super();
     }
 
     public SpleggGun(String identifier, String displayName) {
-        super(false);
+        super();
         this.material = Material.DIAMOND_SHOVEL;
         this.identifier = identifier;
         this.name = displayName;

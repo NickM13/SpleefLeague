@@ -87,7 +87,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
                 .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
                 .setDisplayItem(Material.EGG, 1)
-                .createLinkedContainer("Splegg Menu");
+                .createLinkedContainer("Splegg");
 
         InventoryMenuContainerChest container = spleggMenuItem.getLinkedChest();
 

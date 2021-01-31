@@ -26,7 +26,7 @@ public class MobilityEnderRift extends AbilityMobility {
     }
 
     private static final double REVERSE_TIME = 5D;
-    private static final int REVERSE_SPEED = 15;
+    private static final int REVERSE_SPEED = 10;
 
     private List<Location> riftLocs = new ArrayList<>();
     private boolean rifting = false;

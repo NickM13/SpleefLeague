@@ -8,7 +8,9 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerCollectibles;
+import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
 import org.bukkit.Material;
 
@@ -20,13 +22,12 @@ public class GearMenu {
     private static InventoryMenuItem menuItem = null;
     
     public static void init() {
-        menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName("Hats")
-                .setDisplayItem(Material.LEATHER_HELMET)
-                .setDescription("Pick a hat, any hat!")
-                .createLinkedContainer("Hats");
-
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedChest(), true);
+        menuItem = CorePlayerCollectibles.createCollectibleContainer(Gear.class,
+                InventoryMenuAPI.createItemDynamic()
+                        .setName("Adventure Gear")
+                        .setDisplayItem(Material.STRING, 1)
+                        .setDescription("Pick some gear to adventure with!")
+                        .createLinkedContainer("Adventure Gear"));
     }
     
     /**

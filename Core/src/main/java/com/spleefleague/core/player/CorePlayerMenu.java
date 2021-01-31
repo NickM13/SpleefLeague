@@ -35,6 +35,10 @@ public class CorePlayerMenu {
         invSwap++;
     }
 
+    public void removeInvSwap() {
+        invSwap--;
+    }
+
     private int invSwap = 0;
     /**
      * Set player's current InventoryMenuContainer
@@ -44,19 +48,21 @@ public class CorePlayerMenu {
      */
     public void setInventoryMenuChest(InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
         if (inventoryMenuChest != null) {
-            invSwap++;
+            invSwap = Math.max(invSwap + 1, 1);
             menuTags.put("page", 0);
             ItemStack item = owner.getPlayer().getItemOnCursor();
             owner.getPlayer().setItemOnCursor(null);
-            this.inventoryMenuContainer = inventoryMenuChest;
-            if (initialize) openInventory(inventoryMenuChest);
-            else refreshInventory(inventoryMenuChest);
+            this.inventoryMenuContainer = inventoryMenuChest.clone();
+            if (initialize) openInventory((InventoryMenuContainerChest) this.inventoryMenuContainer);
+            else refreshInventory((InventoryMenuContainerChest) this.inventoryMenuContainer);
             owner.getPlayer().setItemOnCursor(item);
-        } else if (invSwap <= 0) {
-            this.inventoryMenuContainer = null;
-            this.menuTags.clear();
         } else {
             invSwap--;
+            if (invSwap <= 0) {
+                invSwap = 0;
+                this.inventoryMenuContainer = null;
+                this.menuTags.clear();
+            }
         }
     }
 
@@ -76,6 +82,7 @@ public class CorePlayerMenu {
         owner.getPlayer().closeInventory();
         inventoryMenuContainer = null;
         overlaySelect = -1;
+        menuTags.clear();
     }
 
     public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {
@@ -83,8 +90,9 @@ public class CorePlayerMenu {
         ItemStack item = owner.getPlayer().getItemOnCursor();
         owner.getPlayer().getInventory().addItem(item);
         owner.getPlayer().setItemOnCursor(null);
-        inventoryMenuAnvil.open(owner);
-        this.inventoryMenuContainer = inventoryMenuAnvil;
+        InventoryMenuContainerAnvil clone = inventoryMenuAnvil.clone();
+        clone.open(owner);
+        this.inventoryMenuContainer = clone;
     }
 
     public void setInventoryMenuContainer(InventoryMenuContainer inventoryMenuContainer) {
@@ -124,15 +132,14 @@ public class CorePlayerMenu {
             if (inventoryMenuItem.hasLinkedContainer()) {
                 ItemStack item = owner.getPlayer().getItemOnCursor();
                 owner.getPlayer().setItemOnCursor(null);
-                inventoryMenuContainer = inventoryMenuItem.getLinkedChest();
-                openInventory(inventoryMenuItem.getLinkedChest());
+                inventoryMenuContainer = inventoryMenuItem.getLinkedChest().clone();
+                openInventory((InventoryMenuContainerChest) this.inventoryMenuContainer);
                 owner.getPlayer().setItemOnCursor(item);
             } else {
                 closeInventory();
             }
         } else {
             closeInventory();
-            menuTags.clear();
         }
     }
 
@@ -170,6 +177,10 @@ public class CorePlayerMenu {
             return clazz.cast(menuTags.get(name));
         }
         return null;
+    }
+
+    public void removeMenuTag(String name) {
+        menuTags.remove(name);
     }
 
     public <T> void setMenuTag(String name, T obj) {

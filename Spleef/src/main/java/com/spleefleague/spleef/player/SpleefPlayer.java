@@ -8,6 +8,7 @@ package com.spleefleague.spleef.player;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
@@ -56,6 +57,22 @@ public class SpleefPlayer extends DBPlayer {
             case OFFENSIVE:
                 activeOffensive = powerName;
                 break;
+        }
+        CorePlayer cp = Core.getInstance().getPlayers().get(getUniqueId());
+        Battle<?> battle = cp.getBattle();
+        if (battle instanceof PowerTrainingBattle) {
+            switch (type) {
+                case UTILITY:
+                    ((PowerTrainingBattle) battle).getBattler(cp).chooseUtility();
+                    break;
+                case MOBILITY:
+                    ((PowerTrainingBattle) battle).getBattler(cp).chooseMobililty();
+                    break;
+                case OFFENSIVE:
+                    ((PowerTrainingBattle) battle).getBattler(cp).chooseOffensive();
+                    break;
+            }
+            cp.refreshHotbar();
         }
     }
 

@@ -38,7 +38,7 @@ public class HoldableCommand extends CollectibleCommand {
                                       @LiteralArg("holding") String l,
                                       List<CorePlayer> targets,
                                       @OptionArg(listName = "collectibles") String identifier,
-                                      @HelperArg("[playerCount=1]") @NumberArg(minValue = 1) @Nullable Integer playerCount) {
+                                      @HelperArg("playerCount") @NumberArg(minValue = 1, defaultValue = 1) @Nullable Integer playerCount) {
         Holdable holdable = Vendorables.get(holdableClazz, identifier);
         if (holdable == null) {
             sender.sendMessage("Holdable not valid " + identifier);

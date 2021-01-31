@@ -1,19 +1,15 @@
 package com.spleefleague.proxycore.game.queue;
 
 import com.spleefleague.coreapi.queue.SubQuery;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshQueue;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshQueue;
 import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.game.arena.ArenaManager;
-import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.utils.CoreUtils;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author NickM13
@@ -21,10 +17,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class QueueManager {
 
-    private static final Map<String, QueueContainer> queueContainerMap = new HashMap<>();
-    //private static ScheduledTask queueTask;
+    private final Map<String, QueueContainer> queueContainerMap = new HashMap<>();
+    //private ScheduledTask queueTask;
 
-    public static void init() {
+    public void init() {
         addQueueContainer("spleef:classic", "Classic Spleef", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("spleef:power", "Power Spleef", 2, 2, QueueContainer.TeamStyle.VERSUS, false);
         addQueueContainer("spleef:power_training", "Power Training", 1, 1, QueueContainer.TeamStyle.SOLO, false);
@@ -49,19 +45,19 @@ public class QueueManager {
         */
     }
 
-    public static void addQueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, QueueContainer.TeamStyle teamStyle, boolean joinOngoing) {
+    public void addQueueContainer(String identifier, String displayName, int reqTeams, int maxTeams, QueueContainer.TeamStyle teamStyle, boolean joinOngoing) {
         queueContainerMap.put(identifier, new QueueContainer(identifier, displayName, reqTeams, maxTeams, teamStyle, joinOngoing));
     }
 
-    public static Map<String, QueueContainer> getContainerMap() {
+    public Map<String, QueueContainer> getContainerMap() {
         return queueContainerMap;
     }
 
-    public static void close() {
+    public void close() {
         //queueTask.cancel();
     }
 
-    public static boolean forceStart(String mode, String query, List<QueuePlayer> players) {
+    public boolean forceStart(String mode, String query, List<QueuePlayer> players) {
         if (!queueContainerMap.containsKey(mode)) {
             return false;
         }
@@ -69,11 +65,11 @@ public class QueueManager {
         return true;
     }
 
-    public static void joinSolo(UUID uuid, String mode, String query) {
+    public void joinSolo(UUID uuid, String mode, String query) {
         queueContainerMap.get(mode).join(ProxyCore.getInstance().getPlayers().get(uuid), query);
     }
 
-    private static String formatQuery(String query) {
+    private String formatQuery(String query) {
         StringBuilder stringBuilder = new StringBuilder();
         for (SubQuery subQuery : SubQuery.splitQuery(query)) {
             if (!subQuery.hasStar) {
@@ -83,7 +79,7 @@ public class QueueManager {
         return stringBuilder.toString();
     }
 
-    private static String formatArenaQuery(String mode, String query) {
+    private String formatArenaQuery(String mode, String query) {
         for (SubQuery subQuery : SubQuery.splitQuery(query)) {
             if (subQuery.type.equalsIgnoreCase("arena")) {
                 if (subQuery.hasStar) {
@@ -98,7 +94,7 @@ public class QueueManager {
                         stringBuilder.append("...");
                         break;
                     }
-                    stringBuilder.append(ArenaManager.getArena(mode, subQuery.values.get(i)).getName());
+                    stringBuilder.append(ProxyCore.getInstance().getArenaManager().getArena(mode, subQuery.values.get(i)).getName());
                 }
                 return stringBuilder.toString() + ChatColor.GRAY;
             }
@@ -106,7 +102,7 @@ public class QueueManager {
         return "";
     }
 
-    public static void joinQueue(UUID uuid, String mode, String query) {
+    public void joinQueue(UUID uuid, String mode, String query) {
         QueueContainer queueContainer = queueContainerMap.get(mode);
         if (queueContainer == null) {
             System.out.println("Queue doesn't exist");
@@ -116,18 +112,13 @@ public class QueueManager {
             joinSolo(uuid, mode, query);
             return;
         }
-        String formatted = formatQuery(query);
-        if (formatted.length() > 0) {
-            ArenaManager.getArena(mode, formatted);
-
-        }
         String arenaAffix = formatArenaQuery(mode, query);
         switch (queueContainer.join(ProxyCore.getInstance().getPlayers().get(uuid), query)) {
             case -1:
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have left the queue for " +
                                 queueContainer.getDisplayName());
-                ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
+                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 0:
@@ -135,7 +126,7 @@ public class QueueManager {
                         "You have joined the queue for " +
                                 queueContainer.getDisplayName() +
                                 arenaAffix);
-                ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
+                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 1:
@@ -147,13 +138,13 @@ public class QueueManager {
         }
     }
 
-    public static boolean leaveQueue(UUID uuid, String mode, boolean sendPacketUpdate) {
+    public boolean leaveQueue(UUID uuid, String mode, boolean sendPacketUpdate) {
         QueueContainer queueContainer = queueContainerMap.get(mode);
         if (queueContainer != null && queueContainerMap.get(mode).leave(ProxyCore.getInstance().getPlayers().get(uuid)) != null) {
             // You have successfully left the queue for (mode)
             //ProxyCore.sendMessage(ProxyCore.getInstance().getPlayers().get(uuid), "You have left the queue for " + mode);
             if (sendPacketUpdate) {
-                ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(
+                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
             }
             return true;
@@ -161,7 +152,7 @@ public class QueueManager {
         return false;
     }
 
-    public static boolean leaveAllQueues(UUID uuid, boolean sendPacketUpdate) {
+    public boolean leaveAllQueues(UUID uuid, boolean sendPacketUpdate) {
         boolean hasLeft = false;
         for (String mode : queueContainerMap.keySet()) {
             hasLeft |= leaveQueue(uuid, mode, sendPacketUpdate);

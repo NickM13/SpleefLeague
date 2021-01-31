@@ -11,6 +11,8 @@ import com.spleefleague.core.player.rank.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 
+import javax.annotation.Nullable;
+
 public class DisguiseCommand extends CoreCommand {
 
     public DisguiseCommand() {
@@ -18,20 +20,11 @@ public class DisguiseCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void disguise(CorePlayer sender, String username) {
-        GameProfile playerProfile = ((CraftPlayer) sender.getPlayer()).getHandle().getProfile();
-
-        playerProfile.getProperties().clear();
-
-        InventoryMenuSkullManager.Texture texture = InventoryMenuSkullManager.getTexture(Bukkit.getOfflinePlayer(username).getUniqueId());
-
-        playerProfile.getProperties().put("textures", new Property("textures",
-                texture.value,
-                texture.signature));
-
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
-            cp2.getPlayer().hidePlayer(Core.getInstance(), sender.getPlayer());
-            cp2.getPlayer().showPlayer(Core.getInstance(), sender.getPlayer());
+    public void disguise(CorePlayer sender, @Nullable String username) {
+        if (username == null) {
+            sender.setDisguise(null);
+        } else {
+            sender.setDisguise(Bukkit.getOfflinePlayer(username).getUniqueId());
         }
     }
 

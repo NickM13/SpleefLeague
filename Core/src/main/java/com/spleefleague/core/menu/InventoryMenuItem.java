@@ -30,6 +30,7 @@ public abstract class InventoryMenuItem {
     protected Consumer<CorePlayer> action;
     protected InventoryMenuContainer linkedContainer;
     protected InventoryMenuContainerChest parentContainer;
+    protected int descriptionBuffer = 1;
     
     public InventoryMenuItem() {
         minRank = Rank.DEFAULT;
@@ -41,6 +42,11 @@ public abstract class InventoryMenuItem {
     }
 
     public abstract InventoryMenuItem setName(String name);
+
+    public InventoryMenuItem setDescriptionBuffer(int buffer) {
+        descriptionBuffer = buffer;
+        return this;
+    }
 
     public abstract InventoryMenuItem setDescription(String description);
     public abstract InventoryMenuItem setDescription(List<String> lore);
@@ -114,5 +120,11 @@ public abstract class InventoryMenuItem {
     public void callAction(CorePlayer cp) {
         if (action != null && isAvailable(cp)) action.accept(cp);
     }
-    
+
+    public InventoryMenuItem build() {
+        return this;
+    }
+
+    public abstract String toString(CorePlayer cp);
+
 }

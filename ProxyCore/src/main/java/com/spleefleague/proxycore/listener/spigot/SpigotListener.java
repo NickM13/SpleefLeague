@@ -1,7 +1,6 @@
 package com.spleefleague.proxycore.listener.spigot;
 
-import com.spleefleague.coreapi.utils.packet.Packet;
-import com.spleefleague.coreapi.utils.packet.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import net.md_5.bungee.api.connection.Connection;
 
 /**

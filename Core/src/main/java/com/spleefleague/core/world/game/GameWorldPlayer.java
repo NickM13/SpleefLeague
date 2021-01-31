@@ -2,12 +2,13 @@ package com.spleefleague.core.world.game;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeWorldPlayer;
+import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
 
 /**
  * @author NickM13
  * @since 4/16/2020
  */
-public class GameWorldPlayer extends FakeWorldPlayer {
+public class GameWorldPlayer extends ProjectileWorldPlayer {
 
     private long lastHit = 0;
 

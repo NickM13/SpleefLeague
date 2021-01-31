@@ -2,6 +2,7 @@ package com.spleefleague.core.game.request;
 
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -68,7 +69,11 @@ public abstract class BattleRequest {
     protected abstract boolean attemptStartRequest(CorePlayer cp, int total, @Nullable String requestValue);
     
     protected void startRequestMessage(CorePlayer cp) {
-        battle.getChatGroup().sendMessage("Request to " + getChatName() + " was started by " + cp.getDisplayName());
+        TextComponent text = new TextComponent("Request to ");
+        text.addExtra(getChatName());
+        text.addExtra(" was started by ");
+        text.addExtra(cp.getChatName());
+        battle.getChatGroup().sendMessage(text);
     }
     
     /**

@@ -1,5 +1,6 @@
 package com.spleefleague.core.listener;
 
+import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.world.build.BuildWorld;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,7 +25,7 @@ public class BuildListener implements Listener {
     
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (BuildWorld.isBuilder(event.getPlayer())) {
+        if (BuildWorld.isBuilder(event.getPlayer()) || InventoryMenuAPI.isHotbarItem(event.getItemInHand())) {
             event.setCancelled(true);
         }
     }

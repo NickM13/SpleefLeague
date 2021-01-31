@@ -72,7 +72,8 @@ public enum SpleefMode {
                 .setDisplayItem(Material.WOODEN_SHOVEL, 1)
                 .setDescription("Hone your skills in this solo sandbox version of Power Spleef! Change your powers in game, control field regeneration and learn new combos to best your foes.")
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)
-                .setBattleClass(PowerTrainingBattle.class);
+                .setBattleClass(PowerTrainingBattle.class)
+                .setForceRandom(true);
 
         BattleMode.createArenaMode(TEAM.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Team Spleef")

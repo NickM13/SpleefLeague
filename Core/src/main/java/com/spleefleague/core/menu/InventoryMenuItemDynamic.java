@@ -1,5 +1,6 @@
 package com.spleefleague.core.menu;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -78,6 +80,12 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
     }
 
     @Override
+    public InventoryMenuItemDynamic setDescriptionBuffer(int buffer) {
+        this.descriptionBuffer = buffer;
+        return this;
+    }
+
+    @Override
     public InventoryMenuItemDynamic setDisplayItem(Material material) {
         this.displayItemFun = (cp) -> new ItemStack(material);
         return this;
@@ -108,6 +116,7 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
         this.closeOnAction = closeOnAction;
         return this;
     }
+
     @Override
     public InventoryMenuItemDynamic setAction(Consumer<CorePlayer> action) {
         this.action = action;
@@ -135,7 +144,7 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
 
     protected List<String> getWrappedDescription(CorePlayer cp) {
         if (descriptionFun != null) {
-            return ChatUtils.wrapDescription("\n" + Chat.colorize(descriptionFun.apply(cp)));
+            return ChatUtils.wrapDescription(Strings.repeat("\n", descriptionBuffer) + Chat.colorize(descriptionFun.apply(cp)));
         } else {
             return Lists.newArrayList();
         }

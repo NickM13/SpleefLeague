@@ -10,12 +10,11 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.chat.ChatEmoticons;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
 
-import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -29,7 +28,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 public class ChatListener implements Listener {
     
     private static final Pattern CAPS_PATTERN = Pattern.compile(".*[A-Z]{4}.*");
-    private static final Pattern URL_PATTERN = Pattern.compile("^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$");
+    //private static final Pattern URL_PATTERN = Pattern.compile("^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$");
     private static final String GOGOGADGET = "go go gadget, ";
     
     @EventHandler
@@ -44,18 +43,29 @@ public class ChatListener implements Listener {
 
         String formattedMessage = e.getMessage();
         boolean url = false;
-        if (URL_PATTERN.matcher(ChatColor.stripColor(e.getMessage().replace(" ", ""))).matches()) {
+        Matcher urlMatcher = Chat.getUrlPattern().matcher(formattedMessage);
+        String message = e.getMessage();
+        for (int i = 0; i < message.length(); i++) {
+            int pos = e.getMessage().indexOf(32, i);
+            if (pos == -1) {
+                pos = message.length();
+            }
+            if (urlMatcher.region(i, pos).find()) {
+                url = true;
+                break;
+            }
+        }
+        if (url) {
             if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
                 e.setCancelled(true);
-                Core.getInstance().sendMessage(cp, "Please ask for permission to send a url");
+                Core.getInstance().sendMessage(cp, "Please ask for permission to send a link");
                 Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 CoreLogger.logInfo(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
                 return;
             }
-            url = true;
         } else {
             if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
-                    !cp.getRank().hasPermission(Rank.MODERATOR)) {
+                    !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
                 formattedMessage = e.getMessage().toLowerCase().trim();
                 formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
                 if (!formattedMessage.endsWith(".")

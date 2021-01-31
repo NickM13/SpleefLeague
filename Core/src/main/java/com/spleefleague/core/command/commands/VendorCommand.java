@@ -87,7 +87,7 @@ public class VendorCommand extends CoreCommand {
         InventoryMenuContainerChest menu = InventoryMenuAPI.createContainer()
                 .setTitle("Vendor Items!");
         
-        for (String type : Vendorable.getTypeNames()) {
+        for (String type : Vendorable.getParentTypeNames()) {
             InventoryMenuItem typeItem = InventoryMenuAPI.createItemDynamic()
                     .setName(type)
                     .setDisplayItem(Material.CHEST)
@@ -99,7 +99,7 @@ public class VendorCommand extends CoreCommand {
                 for (Vendorable item : vendorableMap.values()) {
                     typeMenu.addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setDisplayItem(item.getDisplayItem())
-                            .setName(item.getName())
+                            .setName(item.getDisplayName())
                             .setDescription(item.getDescriptionVendor())
                             .setAction(cp -> cp.getPlayer().getInventory().addItem(item.getDisplayItem()))
                             .setCloseOnAction(false));

@@ -1,7 +1,27 @@
 package com.spleefleague.coreapi.utils.packet;
 
-import com.spleefleague.coreapi.utils.packet.bungee.*;
-import com.spleefleague.coreapi.utils.packet.spigot.*;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleSpectate;
+import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
+import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleChallenge;
+import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChat;
+import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChatTell;
+import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
+import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
+import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.*;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.*;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChat;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
+import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
+import com.spleefleague.coreapi.utils.packet.spigot.party.PacketSpigotParty;
+import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerRating;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueRequeue;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave;
+import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerDirect;
+import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerHub;
 
 /**
  * @author NickM13
@@ -13,17 +33,19 @@ public class PacketType {
      * Packets created on the Bungee server and sent to the Spigot server
      */
     public enum Bungee {
-        BATTLE_SPECTATE(PacketBattleSpectateBungee.class),
-        BATTLE_START(PacketBattleStart.class),
-        CHALLENGE(PacketChallengeBungee.class),
-        CHAT(PacketChatBungee.class),
-        CONNECTION(PacketConnection.class),
-        FRIEND(PacketFriendBungee.class),
-        REFRESH_ALL(PacketRefreshAll.class),
-        REFRESH_QUEUE(PacketRefreshQueue.class),
-        REFRESH_SCORE(PacketRefreshScore.class),
-        SERVER_LIST(PacketServerList.class),
-        TELL(PacketTellBungee.class);
+        BATTLE_SPECTATE(PacketBungeeBattleSpectate.class),
+        BATTLE_START(PacketBungeeBattleStart.class),
+        CHALLENGE(PacketBungeeBattleChallenge.class),
+        CHAT(PacketBungeeChat.class),
+        CONNECTION(PacketBungeeConnection.class),
+        FRIEND(PacketBungeeFriend.class),
+        PARTY(PacketBungeeParty.class),
+        REFRESH_ALL(PacketBungeeRefreshAll.class),
+        REFRESH_QUEUE(PacketBungeeRefreshQueue.class),
+        REFRESH_PARTY(PacketBungeeRefreshParty.class),
+        REFRESH_SCORE(PacketBungeeRefreshScore.class),
+        SERVER_LIST(PacketBungeeRefreshServerList.class),
+        TELL(PacketBungeeChatTell.class);
 
         private final Class<? extends PacketBungee> clazz;
 
@@ -40,23 +62,21 @@ public class PacketType {
      * Packets created on the Spigot server and sent to the Bungee server
      */
     public enum Spigot {
-        SET_RATING(PacketSetRating.class),
-        BATTLE_END_RATED(PacketBattleEndRated.class),
-        BATTLE_END_UNRATED(PacketBattleEndUnrated.class),
-        BATTLE_SPECTATE(PacketBattleSpectateSpigot.class),
-        CHALLENGE(PacketChallengeSpigot.class),
-        CHAT(PacketChatSpigot.class),
-        FORCE_START(PacketForceStart.class),
-        FRIEND(PacketFriendSpigot.class),
-        HUB(PacketHub.class),
-        PARTY_CREATE(PacketPartyCreate.class),
-        PARTY_JOIN(PacketPartyJoin.class),
-        PARTY_LEAVE(PacketPartyLeave.class),
-        QUEUE_JOIN(PacketQueueJoin.class),
-        QUEUE_LEAVE(PacketQueueLeave.class),
-        SERVER_CONNECT(PacketServerConnect.class),
-        REQUEUE(PacketRequeue.class),
-        TELL(PacketTellSpigot.class);
+        SET_RATING(PacketSpigotPlayerRating.class),
+        BATTLE_END_RATED(PacketSpigotBattleEndRated.class),
+        BATTLE_END_UNRATED(PacketSpigotBattleEndUnrated.class),
+        BATTLE_SPECTATE(PacketSpigotBattleSpectate.class),
+        CHALLENGE(PacketSpigotBattleChallenge.class),
+        CHAT(PacketSpigotChat.class),
+        FORCE_START(PacketSpigotBattleForceStart.class),
+        FRIEND(PacketSpigotFriend.class),
+        HUB(PacketSpigotServerHub.class),
+        PARTY(PacketSpigotParty.class),
+        QUEUE_JOIN(PacketSpigotQueueJoin.class),
+        QUEUE_LEAVE(PacketSpigotQueueLeave.class),
+        SERVER_CONNECT(PacketSpigotServerDirect.class),
+        REQUEUE(PacketSpigotQueueRequeue.class),
+        TELL(PacketSpigotChatTell.class);
 
         private final Class<? extends PacketSpigot> clazz;
 

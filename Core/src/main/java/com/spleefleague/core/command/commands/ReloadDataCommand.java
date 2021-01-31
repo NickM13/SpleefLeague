@@ -15,6 +15,7 @@ import com.spleefleague.core.menu.hotbars.main.CollectiblesMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.settings.Settings;
 
 /**
@@ -48,7 +49,10 @@ public class ReloadDataCommand extends CoreCommand {
     @CommandAnnotation
     public void reloaddataCollectibles(CorePlayer sender,
                                  @LiteralArg("collectibles") String l) {
-        Collectible.init();
+        Collectible.clear();
+        for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
+            plugin.reloadCollectibles();
+        }
         success(sender, "Reloaded collectibles from database");
     }
 

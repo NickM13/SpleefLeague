@@ -7,16 +7,20 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.utils.packet.Packet;
-import com.spleefleague.coreapi.utils.packet.PacketBungee;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketServerList;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
-import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
+import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import com.spleefleague.proxycore.game.queue.QueueManager;
+import com.spleefleague.proxycore.infraction.ProxyInfractionManager;
 import com.spleefleague.proxycore.listener.BattleListener;
 import com.spleefleague.proxycore.listener.ConnectionListener;
 import com.spleefleague.proxycore.listener.SpigotPluginListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.player.ProxyPartyManager;
 import com.spleefleague.proxycore.player.ProxyPlayerManager;
+import com.spleefleague.proxycore.player.friends.ProxyFriendsManager;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -29,7 +33,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -51,6 +54,13 @@ public class ProxyCore extends Plugin {
     private MongoDatabase database;
 
     private final ProxyPlayerManager playerManager = new ProxyPlayerManager();
+    private final ProxyPartyManager partyManager = new ProxyPartyManager();
+
+    private final LeaderboardManager leaderboardManager = new LeaderboardManager();
+    private final ProxyInfractionManager infractionManager = new ProxyInfractionManager();
+    private final ArenaManager arenaManager = new ArenaManager();
+    private final QueueManager queueManager = new QueueManager();
+    private final ProxyFriendsManager friendManager = new ProxyFriendsManager();
 
     @Override
     public void onLoad() {
@@ -68,9 +78,11 @@ public class ProxyCore extends Plugin {
         getProxy().getPluginManager().registerListener(this, new SpigotPluginListener());
 
         playerManager.init();
-        Leaderboards.init();
-        QueueManager.init();
-        ArenaManager.init();
+        leaderboardManager.init();
+        infractionManager.init();
+        arenaManager.init();
+        queueManager.init();
+        friendManager.init();
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
@@ -104,8 +116,7 @@ public class ProxyCore extends Plugin {
             for (String name : toFindMinigame) {
                 minigameServers.remove(name);
             }
-            System.out.println(lobbyServers);
-            sendPacket(new PacketServerList(Lists.newArrayList(lobbyServers.keySet()), Lists.newArrayList(minigameServers.keySet())));
+            sendPacket(new PacketBungeeRefreshServerList(Lists.newArrayList(lobbyServers.keySet()), Lists.newArrayList(minigameServers.keySet())));
             // TODO: Probably increase this value on release?
         }, 0, 10, TimeUnit.SECONDS);
     }
@@ -113,9 +124,32 @@ public class ProxyCore extends Plugin {
     @Override
     public void onDisable() {
         playerManager.close();
-        Leaderboards.close();
-        QueueManager.close();
+        leaderboardManager.close();
+        arenaManager.close();
+        queueManager.close();
+        friendManager.close();
+        infractionManager.close();
         serverPingTask.cancel();
+    }
+
+    public ProxyInfractionManager getInfractions() {
+        return infractionManager;
+    }
+
+    public LeaderboardManager getLeaderboards() {
+        return leaderboardManager;
+    }
+
+    public QueueManager getQueueManager() {
+        return queueManager;
+    }
+
+    public ArenaManager getArenaManager() {
+        return arenaManager;
+    }
+
+    public ProxyFriendsManager getFriendManager() {
+        return friendManager;
     }
 
     public List<ServerInfo> getLobbyServers() {
@@ -175,6 +209,10 @@ public class ProxyCore extends Plugin {
         return playerManager;
     }
 
+    public ProxyPartyManager getPartyManager() {
+        return partyManager;
+    }
+
     public void sendMessage(String text) {
         playerManager.getAll().forEach(pcp -> {
             if (pcp.getPlayer() != null) {
@@ -197,18 +235,28 @@ public class ProxyCore extends Plugin {
 
     public void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
         TextComponent textComp = new TextComponent(getChatTag());
+        text.setColor(ChatColor.GRAY);
         textComp.addExtra(text);
         pcp.getPlayer().sendMessage(textComp);
     }
 
-    public void sendError(ProxyCorePlayer pcp, String text) {
+    public void sendMessageError(ProxyCorePlayer pcp, TextComponent text) {
         TextComponent text2 = new TextComponent(Chat.ERROR);
+        text.setColor(ChatColor.RED);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
     }
 
-    public void sendError(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessageSuccess(ProxyCorePlayer pcp, TextComponent text) {
         TextComponent text2 = new TextComponent(Chat.ERROR);
+        text.setColor(ChatColor.GREEN);
+        text2.addExtra(text);
+        pcp.getPlayer().sendMessage(text2);
+    }
+
+    public void sendMessageInfo(ProxyCorePlayer pcp, TextComponent text) {
+        TextComponent text2 = new TextComponent(Chat.ERROR);
+        text.setColor(ChatColor.YELLOW);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
     }
@@ -250,7 +298,21 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendPacket(UUID target, PacketBungee packet) {
-        sendPacket(getPlayers().get(target).getCurrentServer(), packet);
+        ProxyCorePlayer pcp = getPlayers().get(target);
+        if (pcp != null && pcp.getCurrentServer() != null) {
+            sendPacket(pcp.getCurrentServer(), packet);
+        }
+    }
+
+    public void sendPacket(PacketBungee packet, UUID... uuids) {
+        Set<String> used = new HashSet<>();
+        for (UUID uuid : uuids) {
+            ProxyCorePlayer pcp = getPlayers().get(uuid);
+            if (pcp != null && pcp.getCurrentServer() != null && !used.contains(pcp.getCurrentServer().getName())) {
+                sendPacket(pcp.getCurrentServer(), packet);
+                used.add(pcp.getCurrentServer().getName());
+            }
+        }
     }
 
 }

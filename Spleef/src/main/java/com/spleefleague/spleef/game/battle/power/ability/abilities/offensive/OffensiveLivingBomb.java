@@ -38,6 +38,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
         projectileStats.hSpread = 180;
         projectileStats.vSpread = 30;
         projectileStats.collidable = false;
+        projectileStats.bounces = 1;
         //projectileStats.hitKnockback = 1D;
         projectileStats.customModelDatas = Lists.newArrayList(1);
     }

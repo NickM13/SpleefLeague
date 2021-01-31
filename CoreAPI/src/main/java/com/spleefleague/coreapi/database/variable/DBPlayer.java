@@ -27,6 +27,7 @@ public abstract class DBPlayer extends DBEntity {
     protected String username;
     protected List<Document> brokenProfiles;
     protected long presaved = -1;
+    protected long lastOfflineLoad = -1;
     
     // Current battle state the player is in (None, Battler, Spectator, or Ref)
 
@@ -93,7 +94,13 @@ public abstract class DBPlayer extends DBEntity {
      */
     public abstract void init();
     
-    public abstract void initOffline();
+    public void initOffline() {
+        lastOfflineLoad = System.currentTimeMillis();
+    }
+
+    public long getLastOfflineLoad() {
+        return lastOfflineLoad;
+    }
 
     /**
      * Called when player goes offline

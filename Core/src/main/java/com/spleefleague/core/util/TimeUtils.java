@@ -23,9 +23,8 @@ public class TimeUtils {
     public static String gcdTimeToString(long age) {
         String timeStr = "";
         long now = System.currentTimeMillis();
-        boolean future = now < age;
-        long seconds = (now - age) / (future ? -1000L : 1000L);
-        
+        long seconds = Math.abs(now - age) / 1000L;
+
         // Find biggest unit of time rounded down
         long time = 1;
         for (int i = 0; i < times.length; i++) {
@@ -43,7 +42,7 @@ public class TimeUtils {
     // Time to string
     public static String timeToString(long age) {
         StringBuilder timeStr = new StringBuilder();
-        long seconds = age / 1000L;
+        long seconds = Math.abs(age / 1000L);
         
         long time = 1;
         for (int i = 0; i < times.length; i++) {

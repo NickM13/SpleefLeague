@@ -3,7 +3,14 @@ package com.spleefleague.core.listener;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.core.listener.bungee.BungeeListener;
-import com.spleefleague.core.listener.bungee.listener.*;
+import com.spleefleague.core.listener.bungee.battle.BungeeListenerBattleSpectate;
+import com.spleefleague.core.listener.bungee.battle.BungeeListenerBattleStart;
+import com.spleefleague.core.listener.bungee.battle.BungeeListenerBattleChallenge;
+import com.spleefleague.core.listener.bungee.chat.BungeeListenerChat;
+import com.spleefleague.core.listener.bungee.chat.BungeeListenerChatTell;
+import com.spleefleague.core.listener.bungee.connection.BungeeListenerConnection;
+import com.spleefleague.core.listener.bungee.friend.BungeeListenerFriend;
+import com.spleefleague.core.listener.bungee.refresh.*;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
@@ -19,17 +26,19 @@ public class BungeePluginListener implements PluginMessageListener {
     private Map<PacketType.Bungee, BungeeListener<?>> registeredListeners = new HashMap();
 
     public BungeePluginListener() {
-        registeredListeners.put(PacketType.Bungee.BATTLE_SPECTATE, new BattleSpectateBungeeListener());
-        registeredListeners.put(PacketType.Bungee.BATTLE_START, new BattleStartBungeeListener());
-        registeredListeners.put(PacketType.Bungee.CHALLENGE, new ChallengeBungeeListener());
-        registeredListeners.put(PacketType.Bungee.CHAT, new ChatBungeeListener());
-        registeredListeners.put(PacketType.Bungee.CONNECTION, new ConnectionBungeeListener());
-        registeredListeners.put(PacketType.Bungee.FRIEND, new FriendBungeeListener());
-        registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new RefreshAllBungeeListener());
-        registeredListeners.put(PacketType.Bungee.REFRESH_QUEUE, new RefreshQueueBungeeListener());
-        registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new RefreshScoreBungeeListener());
-        registeredListeners.put(PacketType.Bungee.TELL, new TellBungeeListener());
-        registeredListeners.put(PacketType.Bungee.SERVER_LIST, new ServerListBungeeListener());
+        registeredListeners.put(PacketType.Bungee.BATTLE_SPECTATE, new BungeeListenerBattleSpectate());
+        registeredListeners.put(PacketType.Bungee.BATTLE_START, new BungeeListenerBattleStart());
+        registeredListeners.put(PacketType.Bungee.CHALLENGE, new BungeeListenerBattleChallenge());
+        registeredListeners.put(PacketType.Bungee.CHAT, new BungeeListenerChat());
+        registeredListeners.put(PacketType.Bungee.CONNECTION, new BungeeListenerConnection());
+        registeredListeners.put(PacketType.Bungee.FRIEND, new BungeeListenerFriend());
+        registeredListeners.put(PacketType.Bungee.PARTY, new com.spleefleague.core.listener.bungee.party.BungeeListenerParty());
+        registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new BungeeListenerRefreshAll());
+        registeredListeners.put(PacketType.Bungee.REFRESH_QUEUE, new BungeeListenerRefreshQueue());
+        registeredListeners.put(PacketType.Bungee.REFRESH_PARTY, new BungeeListenerParty());
+        registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new BungeeListenerRefreshScore());
+        registeredListeners.put(PacketType.Bungee.TELL, new BungeeListenerChatTell());
+        registeredListeners.put(PacketType.Bungee.SERVER_LIST, new BungeeListenerRefreshServerList());
     }
 
     @Override

@@ -489,6 +489,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         return fakeBlocks.containsKey(pos) && !fakeBlocks.get(pos).getBlockData().getMaterial().equals(Material.AIR);
     }
 
+    public final boolean isReallySolid(BlockPosition pos) {
+        return isBlockSolid(pos) || getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getBlockData().getMaterial().isAir();
+    }
+
     /**
      * Sets a fake block status in the world with the option to
      * instantly update and display or not
@@ -570,6 +574,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 setBlock(entry.getKey(), entry.getValue().getBlockData());
             }
         }
+
     }
 
     /**
@@ -588,6 +593,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 setBlock(pos, toBlock);
             }
         }
+
         return prevBlocks;
     }
 
@@ -606,6 +612,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 setBlock(block.getKey(), block.getValue().getBlockData());
             }
         }
+
         return prevBlocks;
     }
 
@@ -633,6 +640,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             }
         }
+
         return broken;
     }
 
@@ -662,6 +670,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             }
         }
+
         return broken;
     }
 
@@ -674,6 +683,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             }
         }
+
         return broken;
     }
 
@@ -787,14 +797,17 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     }
     */
 
+    private boolean pushing = false;
+
     public void pushChanges() {
-        chunkChanges.forEach(((chunkCoord, blockChanges) -> {
-            PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(chunkCoord, blockChanges);
+        for (Map.Entry<ChunkCoord, Map<Short, FakeBlock>> entry : chunkChanges.entrySet()) {
+            if (entry.getValue().isEmpty()) continue;
+            PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), entry.getValue());
             for (FWP fwp : playerMap.values()) {
-                Core.sendPacket(fwp.getCorePlayer(), multiBlockChangePacket);
+                Core.sendPacket(fwp.getCorePlayer(), multiBlockChangePacket, 0L);
             }
-        }));
-        chunkChanges.clear();
+            entry.getValue().clear();
+        }
     }
 
 }

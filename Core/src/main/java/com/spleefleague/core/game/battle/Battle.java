@@ -239,7 +239,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             }
             List<CorePlayer> toBattlefy = new ArrayList<>();
             if (battleMode.getTeamStyle().equals(BattleMode.TeamStyle.TEAM)) {
-                toBattlefy.addAll(cp.getParty().getPlayers());
+                toBattlefy.addAll(cp.getParty().getPlayerSet());
             } else {
                 toBattlefy.add(cp);
             }

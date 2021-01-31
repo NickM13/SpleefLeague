@@ -12,6 +12,10 @@ public abstract class InventoryMenuContainer {
     public InventoryMenuContainer() {
     
     }
+
+    public InventoryMenuContainer(InventoryMenuContainer container) {
+
+    }
     
     public abstract Inventory open(CorePlayer cp);
 

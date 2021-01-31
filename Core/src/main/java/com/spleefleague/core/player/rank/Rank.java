@@ -38,9 +38,12 @@ public class Rank extends DBEntity {
     @DBField private Integer ladder = 0;
     @DBField private Boolean hasOp = false;
     @DBField private ChatColor color = ChatColor.YELLOW;
+    @DBField private Integer maxFriends = 25;
     
     private final Set<String> permissions = new HashSet<>();
     private final Set<String> exclusivePermissions = new HashSet<>();
+
+    private String priority = "000";
     
     public Rank() {
         
@@ -58,13 +61,22 @@ public class Rank extends DBEntity {
         setDisplayName(displayName);
     }
 
+    public void setPriority(int priority) {
+        if (priority < 0 || priority > 100) return;
+        this.priority = String.format("%03d", priority);
+    }
+
     public String getIdentifierShort() {
-        return identifier.substring(0, Math.min(identifier.length(), 16));
+        return priority + identifier.substring(0, Math.min(identifier.length(), 13));
     }
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         this.formattedName = Chat.colorize(this.displayName);
+    }
+    public String getChatTag() {
+        if (formattedName.isEmpty()) return "";
+        return Chat.TAG_BRACE + "[" + Chat.RANK + formattedName + Chat.TAG_BRACE + "] ";
     }
     public String getDisplayName() {
         return formattedName;
@@ -78,6 +90,13 @@ public class Rank extends DBEntity {
     }
     public int getLadder() {
         return ladder;
+    }
+
+    public void setMaxFriends(int maxFriends) {
+        this.maxFriends = maxFriends;
+    }
+    public int getMaxFriends() {
+        return  maxFriends;
     }
 
     public void setHasOp(boolean hasOp) {
@@ -147,5 +166,13 @@ public class Rank extends DBEntity {
     public Set<String> getAllPermissions() {
         return Ranks.getAllPermissions(this);
     }
-    
+
+    @Override
+    public String toString() {
+        return "Rank{" +
+                "displayName='" + displayName + '\'' +
+                ", ladder=" + ladder +
+                '}';
+    }
+
 }

@@ -128,6 +128,18 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         close();
     }
     protected abstract void close();
+
+    public void reloadCollectibles() {
+
+    }
+
+    public void reloadSettings() {
+
+    }
+
+    public void reloadArenas() {
+
+    }
     
     /**
      * Add a battle manager to the registry
@@ -174,7 +186,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             queuePlayer(mode, cp);
             return;
         }
-        System.out.println(arena.getIdentifierNoTag());
         Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
     }
     
@@ -381,17 +392,15 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessage(CorePlayer cp, String msg) {
-        TextComponent textComponent = getChatPrefix();
-        textComponent.addExtra(msg);
-        Chat.sendMessageToPlayer(cp, textComponent);
+        TextComponent message = getChatPrefix();
+        message.addExtra(msg);
+        Chat.sendMessageToPlayer(cp, message);
     }
 
-    public final void sendMessage(CorePlayer cp, BaseComponent... messages) {
-        TextComponent textComponent = getChatPrefix();
-        for (BaseComponent msg : messages) {
-            textComponent.addExtra(msg);
-        }
-        Chat.sendMessageToPlayer(cp, textComponent);
+    public final void sendMessage(CorePlayer cp, TextComponent text) {
+        TextComponent message = new TextComponent(getChatPrefix());
+        message.addExtra(text);
+        Chat.sendMessageToPlayer(cp, message);
     }
     
     /**

@@ -1,15 +1,14 @@
 package com.spleefleague.proxycore.player;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.coreapi.chat.ChatColor;
+import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.proxycore.ProxyCore;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.bson.Document;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author NickM13
@@ -17,15 +16,40 @@ import java.util.UUID;
  */
 public class ProxyPlayerManager {
 
-    private final Map<UUID, ProxyCorePlayer> players = new HashMap<>();
+    private final Map<UUID, ProxyCorePlayer> onlinePlayers = new HashMap<>();
+    private final Map<UUID, ProxyCorePlayer> offlinePlayers = new HashMap<>();
+
     private MongoCollection<Document> playerCol;
+
+    private ScheduledTask autosaveTask, offlineAutosaveTask;
 
     public void init() {
         playerCol = ProxyCore.getInstance().getDatabase().getCollection("Players");
+        autosaveTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            for (ProxyCorePlayer pcp : onlinePlayers.values()) {
+                save(pcp);
+            }
+        }, 5L, 5L, TimeUnit.SECONDS);
+        offlineAutosaveTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            Iterator<Map.Entry<UUID, ProxyCorePlayer>> it = offlinePlayers.entrySet().iterator();
+            while (it.hasNext()) {
+                ProxyCorePlayer pcp = it.next().getValue();
+                it.remove();
+                save(pcp);
+            }
+        }, 10L, 10L, TimeUnit.SECONDS);
     }
 
     public void close() {
-        players.clear();
+        autosaveTask.cancel();
+        offlineAutosaveTask.cancel();
+        for (ProxyCorePlayer pcp : onlinePlayers.values()) {
+            save(pcp);
+        }
+        for (ProxyCorePlayer pcp : offlinePlayers.values()) {
+            save(pcp);
+        }
+        onlinePlayers.clear();
     }
 
     public void onPlayerJoin(ProxiedPlayer pp) {
@@ -42,7 +66,7 @@ public class ProxyPlayerManager {
             pcp.newPlayer(pp.getUniqueId(), pp.getName());
         }
         pcp.init();
-        players.put(pp.getUniqueId(), pcp);
+        onlinePlayers.put(pp.getUniqueId(), pcp);
     }
 
     /**
@@ -52,26 +76,27 @@ public class ProxyPlayerManager {
      * @param pcp
      */
     public void save(ProxyCorePlayer pcp) {
-
+        Document query = new Document("identifier", pcp.getUniqueId().toString());
+        playerCol.replaceOne(query, pcp.toDocument(), new ReplaceOptions().upsert(true));
     }
 
     public void onPlayerQuit(ProxiedPlayer pp) {
         ProxyCore.getInstance().getPlayers().get(pp.getUniqueId()).setBattleContainer(null);
         //ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
-        players.remove(pp.getUniqueId());
+        onlinePlayers.remove(pp.getUniqueId());
     }
 
     public Collection<ProxyCorePlayer> getAll() {
-        return players.values();
+        return onlinePlayers.values();
     }
 
     public ProxyCorePlayer get(UUID uuid) {
-        return players.get(uuid);
+        return onlinePlayers.get(uuid);
     }
 
     public ProxyCorePlayer getOffline(UUID uuid) {
-        if (players.containsKey(uuid)) {
-            return players.get(uuid);
+        if (onlinePlayers.containsKey(uuid)) {
+            return onlinePlayers.get(uuid);
         } else {
             Document doc = playerCol.find(new Document("identifier", uuid.toString())).first();
             ProxyCorePlayer pcp = new ProxyCorePlayer();

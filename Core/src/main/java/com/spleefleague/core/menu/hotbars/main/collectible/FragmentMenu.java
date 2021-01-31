@@ -9,6 +9,7 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayerCollectibles;
+import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
 import org.bukkit.Material;
 
@@ -25,8 +26,6 @@ public class FragmentMenu {
                 .setDisplayItem(Material.HONEYCOMB, 1)
                 .setDescription("View the fragments you have collected")
                 .createLinkedContainer("Fragments");
-
-        CorePlayerCollectibles.createCollectibleContainer(Hat.class, menuItem.getLinkedChest(), true);
     }
     
     /**

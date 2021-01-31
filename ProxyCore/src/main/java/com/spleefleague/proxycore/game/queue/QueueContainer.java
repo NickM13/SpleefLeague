@@ -3,10 +3,10 @@ package com.spleefleague.proxycore.game.queue;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.queue.SubQuery;
-import com.spleefleague.coreapi.utils.packet.QueueContainerInfo;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketBattleStart;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketRefreshQueue;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
+import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
+import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshQueue;
+import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyParty;
@@ -167,7 +167,7 @@ public class QueueContainer {
             QueuePlayer qp = pit.next();
             ProxyCorePlayer pcp1 = qp.pcp;
             ProxyParty party = pcp1.getParty();
-            if (teamSize > 1 && (party == null || party.getPlayers().size() != teamSize)) {
+            if (teamSize > 1 && (party == null || party.getPlayerSet().size() != teamSize)) {
                 continue;
             }
             String newQuery = matchQueries(mainQuery.toString(), qp.query);
@@ -198,7 +198,7 @@ public class QueueContainer {
             ProxyCorePlayer pcp1 = qp.pcp;
             if (pcp1 == null) continue;
             ProxyParty party = pcp1.getParty();
-            if (teamSize <= 1 || (party != null && party.getPlayers().size() == teamSize)) {
+            if (teamSize <= 1 || (party != null && party.getPlayerSet().size() == teamSize)) {
                 if (matchAfter(teamSize, mainQuery, pit.nextIndex(), count-1, queuePlayers)) {
                     queuePlayers.query = mainQuery.toString();
                     return queuePlayers;
@@ -263,15 +263,15 @@ public class QueueContainer {
             playerUuids.add(qp.pcp.getUniqueId());
         }
         for (QueuePlayer qp : players) {
-            QueueManager.leaveAllQueues(qp.pcp.getUniqueId(), false);
+            ProxyCore.getInstance().getQueueManager().leaveAllQueues(qp.pcp.getUniqueId(), false);
             qp.pcp.setBattleContainer(this);
             qp.pcp.setBattling(true);
             playing.add(qp.pcp.getUniqueId());
             qp.pcp.getPlayer().connect(minigameServer);
-            qp.pcp.setLastQueueRequest(new PacketQueueJoin(qp.pcp.getUniqueId(), identifier, qp.query));
+            qp.pcp.setLastQueueRequest(new PacketSpigotQueueJoin(qp.pcp.getUniqueId(), identifier, qp.query));
         }
-        ProxyCore.getInstance().sendPacket(minigameServer, new PacketBattleStart(identifier, query, playerUuids));
-        ProxyCore.getInstance().sendPacket(new PacketRefreshQueue(new QueueContainerInfo(identifier, queuedPlayers.size(), playing.size(), spectating.size())));
+        ProxyCore.getInstance().sendPacket(minigameServer, new PacketBungeeBattleStart(identifier, query, playerUuids));
+        ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(identifier, queuedPlayers.size(), playing.size(), spectating.size())));
         return true;
     }
 

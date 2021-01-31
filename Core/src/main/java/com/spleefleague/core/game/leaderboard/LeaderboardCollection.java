@@ -87,7 +87,7 @@ public class LeaderboardCollection {
                         CorePlayer cp2 = Core.getInstance().getPlayers().getOffline(players.get(i));
                         if (cp2 != null) {
                             container.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                                    .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + cp2.getName() + " " + cp2.getRatings().getDisplayElo(name, season))
+                                    .setName(cp2.getMenuName() + " " + cp2.getRatings().getDisplayElo(name, season))
                                     .setDescription(ChatColor.GRAY + "Rank: " + cp2.getRatings().getDisplayDivision(name, season) + ChatColor.YELLOW + " (#" + (i + container.getPageItemTotal() * page + 1) + ")\n"
                                             + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp2.getRatings().getWins(name, season) + "\n"
                                             + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp2.getRatings().getLosses(name, season) + "\n"
@@ -112,7 +112,6 @@ public class LeaderboardCollection {
                             int place = leaderboards.get(activeLeaderboard.getSeason()).getPlayerRank(Bukkit.getOfflinePlayer(str).getUniqueId());
                             cp.getMenu().setPage(place / menuContainer.getPageItemTotal());
                         })
-                        .setParentContainer(menuContainer)
                         .setFailText("Player not rated!")))
                 .setCloseOnAction(false);
 

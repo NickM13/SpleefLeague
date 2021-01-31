@@ -3,7 +3,8 @@ package com.spleefleague.proxycore.player;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.statistics.Ratings;
-import com.spleefleague.proxycore.game.leaderboard.Leaderboards;
+import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import org.bson.Document;
 
 import java.util.HashMap;
@@ -100,15 +101,15 @@ public class ProxyPlayerRatings extends PlayerRatings {
         if (!modeRatingsMap.containsKey(mode)) {
             modeRatingsMap.put(mode, new Ratings(mode));
         }
-        modeRatingsMap.get(mode).get(season).addElo(owner, amt);
-        Leaderboards.get(mode).getActive().setPlayerScore(owner.getUniqueId(),
+        modeRatingsMap.get(mode).get(season).addElo(amt);
+        ProxyCore.getInstance().getLeaderboards().get(mode).getActive().setPlayerScore(owner.getUniqueId(),
                 modeRatingsMap.get(mode).get(season).getElo());
     }
 
     public boolean checkDecay(String mode, int season) {
         Ratings ratings = modeRatingsMap.get(mode);
         if (ratings != null && ratings.isRanked(season)) {
-            return ratings.get(season).checkDecay(owner);
+            return ratings.get(season).checkDecay();
         }
         return false;
     }

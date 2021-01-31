@@ -3,6 +3,7 @@ package com.spleefleague.core.player.scoreboard;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.spleefleague.core.Core;
@@ -37,11 +38,9 @@ public class PersonalTablist {
     }
 
     public void removePlayer(UUID uuid) {
-        if (targetList.remove(uuid) != null) {
-            changed = true;
-            Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
-            //updatePlayerList();
-        }
+        changed = true;
+        Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
+        //updatePlayerList();
     }
 
     public void clear() {
@@ -59,13 +58,17 @@ public class PersonalTablist {
                         ChatColor.GRAY + "==================="));
         packetContainer.getChatComponents().write(1, WrappedChatComponent.fromText(
                         ChatColor.GRAY + "===================" + "\n" +
-                        ChatColor.GRAY + "Discord: " + ChatColor.BLUE + Settings.getDiscord().getUrl()));
+                        ChatColor.BLUE + Settings.getDiscord().getUrl()));
                                 //+ "\n" + ChatColor.GRAY + "Twitch: " + ChatColor.DARK_PURPLE + "twitch.tv/wired26"));
         Core.sendPacketSilently(owner.getPlayer(), packetContainer, 1L);
     }
 
     public void updatePlayerList() {
         if (!changed) return;
+
+        updateHeaderFooter();
+        if (true) return;
+
         clear();
         try {
             PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
@@ -75,7 +78,7 @@ public class PersonalTablist {
             for (CorePlayer cp : targetList.values()) {
                 currentList.add(cp.getUniqueId());
                 playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
-                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 0, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
+                        .newInstance(nmsPacket, new GameProfile(cp.getDisguise(), cp.getNickname()), 0, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
             }
             PacketContainer playerInfoPacket = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
 

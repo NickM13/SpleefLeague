@@ -63,6 +63,14 @@ public class InventoryMenuAPI {
         return new InventoryMenuItemStatic();
     }
 
+    public static InventoryMenuItemToggle createItemToggle() {
+        return new InventoryMenuItemToggle();
+    }
+
+    public static InventoryMenuItemSearch createItemSearch() {
+        return new InventoryMenuItemSearch();
+    }
+
     /**
      * Creates an InventoryMenuContainerAnvil
      *

@@ -38,7 +38,7 @@ public class OffensivePunch extends AbilityOffensive {
         projectileStats.count = 20;
         projectileStats.hSpread = 90;
         projectileStats.vSpread = 60;
-        projectileStats.customModelDatas = Lists.newArrayList(1);
+        projectileStats.customModelDatas = Lists.newArrayList(30);
     }
 
     private double punchTime = -1;

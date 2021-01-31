@@ -18,11 +18,15 @@ import java.util.Set;
  */
 public class UtilityArena extends AbilityUtility {
 
+    private static final long BUILD_TIME = 6L;
+    private static final long REMAIN_TIME = 5L;
+    private static final long DECAY_TIME = 5L;
+
     public static AbilityStats init() {
         return init(UtilityArena.class)
                 .setCustomModelData(2)
                 .setName("Arena")
-                .setDescription("A wall of snow quickly surrounds the caster, rapidly decaying after %X5% seconds.")
+                .setDescription("A wall of snow quickly surrounds the caster, rapidly decaying after %REMAIN_TIME% seconds.")
                 .setUsage(15);
     }
 
@@ -38,8 +42,8 @@ public class UtilityArena extends AbilityUtility {
         Set<BlockPosition> blockPositions = FakeUtils.createCylinderShell(5, 4);
         Map<BlockPosition, FakeBlock> blocks = new HashMap<>();
         for (BlockPosition pos : blockPositions) {
-            getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), Material.SNOW_BLOCK.createBlockData(), (pos.getY() + 1) * 8L);
-            getUser().getBattle().getGameWorld().addBlockDelayed(pos.add(blockPos), Material.AIR.createBlockData(), 100L - pos.getY() * 5L);
+            getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), Material.SNOW_BLOCK.createBlockData(), (pos.getY() + 1) * BUILD_TIME);
+            getUser().getBattle().getGameWorld().addBlockDelayed(pos.add(blockPos), Material.AIR.createBlockData(), REMAIN_TIME * 20L - pos.getY() * DECAY_TIME);
         }
         getUser().getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,
                 getPlayer().getLocation().getX(),

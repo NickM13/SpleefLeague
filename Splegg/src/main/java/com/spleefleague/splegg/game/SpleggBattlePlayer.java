@@ -29,13 +29,13 @@ public class SpleggBattlePlayer extends BattlePlayer {
         this.knockoutStreak = 0;
         if (gun1 == null) {
             this.spleggGun1 = SpleggGun.getRandom(gun2);
-            Splegg.getInstance().sendMessage(cp, "Random Main Splegg Gun selected: " + spleggGun1.getName());
+            Splegg.getInstance().sendMessage(cp, "Random Main Splegg Gun selected: " + spleggGun1.getDisplayName());
         } else {
             this.spleggGun1 = gun1;
         }
         if (gun2 == null || gun2.equals(this.spleggGun1)) {
             this.spleggGun2 = SpleggGun.getRandom(this.spleggGun1);
-            Splegg.getInstance().sendMessage(cp, "Random Secondary Splegg Gun selected: " + spleggGun2.getName());
+            Splegg.getInstance().sendMessage(cp, "Random Secondary Splegg Gun selected: " + spleggGun2.getDisplayName());
         } else {
             this.spleggGun2 = gun2;
         }

@@ -10,6 +10,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.Rank;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -25,13 +26,18 @@ public class TeleportCommand extends CoreCommand {
     @CommandAnnotation
     public void tp(CorePlayer sender, CorePlayer cp) {
         sender.teleport(cp.getLocation());
-        success(sender, "Teleported to " + cp.getDisplayName());
+        TextComponent text = new TextComponent("Teleported to ");
+        text.addExtra(cp.getChatName());
+        success(sender, text);
     }
 
     @CommandAnnotation
     public void tp(CommandSender sender, CorePlayer cp1, CorePlayer cp2) {
         cp1.teleport(cp2.getLocation());
         success(sender, "Teleported " + cp1.getDisplayName() + " to " + cp2.getDisplayName());
-        success(cp1, "Teleported to " + cp2.getDisplayName());
+        TextComponent text = new TextComponent("Teleported to ");
+        text.addExtra(cp2.getChatName());
+        success(cp1, text);
     }
+
 }

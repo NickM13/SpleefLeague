@@ -144,6 +144,19 @@ public class ZoneCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void zoneSetPriority(CorePlayer sender,
+                                @LiteralArg("set") String l1,
+                                @LiteralArg("priority") String l2,
+                                @OptionArg(listName = "zoneNames") String zoneName,
+                                Integer priority) {
+        GlobalZone zone = GlobalZones.getZone(zoneName);
+        if (zone != null) {
+            success(sender, zone.getIdentifier() + " priority changed from " + zone.getPriority() + " to " + priority);
+            zone.setPriority(priority);
+        }
+    }
+
+    @CommandAnnotation
     public void zoneScanner(CorePlayer sender,
                              @LiteralArg("scanner") String l1) {
         if (GlobalZones.toggleScanner(sender)) {

@@ -14,14 +14,18 @@ import java.util.TreeMap;
  */
 public class ArenaManager {
 
-    private static final Map<String, SortedMap<String, Arena>> modeArenaMap = new HashMap<>();
-    private static final SortedMap<String, Arena> arenaMap = new TreeMap<>();
+    private final Map<String, SortedMap<String, Arena>> modeArenaMap = new HashMap<>();
+    private final SortedMap<String, Arena> arenaMap = new TreeMap<>();
 
-    public static void init() {
+    public void init() {
         loadArenas();
     }
 
-    public static void loadArenas() {
+    public void close() {
+
+    }
+
+    public void loadArenas() {
         for (Document doc : ProxyCore.getInstance().getDatabase().getCollection("Arenas").find()) {
             Arena arena = new Arena();
             arena.load(doc);
@@ -35,15 +39,15 @@ public class ArenaManager {
         }
     }
 
-    public static int getArenaCount(String mode) {
+    public int getArenaCount(String mode) {
         return modeArenaMap.get(mode).size();
     }
 
-    public static Arena getArena(String mode, String arenaName) {
+    public Arena getArena(String mode, String arenaName) {
         return modeArenaMap.get(mode).get(arenaName);
     }
 
-    public static void refreshArena() {
+    public void refreshArena() {
 
     }
 

@@ -7,6 +7,7 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
 import org.bukkit.Location;
@@ -29,13 +30,13 @@ public class MobilityPortalGun extends AbilityMobility {
 
     public static class PortalProjectile extends FakeEntitySnowball {
 
-        public PortalProjectile(GameWorld gameWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
-            super(gameWorld, shooter, location, projectileStats, charge);
+        public PortalProjectile(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+            super(projectileWorld, shooter, location, projectileStats, charge);
         }
 
         @Override
         protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
-            gameWorld.createPortal(cpShooter, blockRaycastResult.getBlockPos(), blockRaycastResult.getFace());
+            ((GameWorld) projectileWorld).createPortal(cpShooter, blockRaycastResult.getBlockPos(), blockRaycastResult.getFace());
             killEntity();
             return true;
         }

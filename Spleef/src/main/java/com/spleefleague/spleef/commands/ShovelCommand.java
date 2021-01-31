@@ -10,6 +10,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.HoldableCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
+import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;

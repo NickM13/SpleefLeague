@@ -2,15 +2,17 @@ package com.spleefleague.core.command;
 
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.annotation.OptionArg;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.vendor.Vendor;
+import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.command.CommandSender;
+
+import java.lang.reflect.Field;
 
 /**
  * @author NickM13
@@ -26,18 +28,24 @@ public class CollectibleCommand extends CoreCommand {
         this.name = name;
         this.collectibleClass = collectibleClazz;
         setOptions("collectibles", cp -> Vendorables.getAll(collectibleClazz).keySet());
+        setOptions("skins", pi -> Vendorables.get(collectibleClazz, pi.getReverse().get(0)).getSkinIds());
     }
 
     @CommandAnnotation
-    public void collectible(CorePlayer sender) {
-        sender.sendMessage(ChatUtils.centerChat("[ Collectible Commands ]"));
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " create <identifier>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " set name <displayName>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " set description <desc>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " set type <type>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " set cost <coins>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " add <player> <customModelData>");
-        sender.sendMessage(Chat.DEFAULT + "/" + name + " remove <player> <customModelData>");
+    public void collectibleInfo(CorePlayer sender,
+                                @LiteralArg("info") String l) {
+        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        if (collectible != null) {
+            for (Field field : collectible.getFields()) {
+                try {
+                    success(sender, field.getName() + ": " + field.get(collectible));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            error(sender, "That's not a registered collectible!");
+        }
     }
 
     @CommandAnnotation
@@ -56,8 +64,8 @@ public class CollectibleCommand extends CoreCommand {
     @CommandAnnotation
     public void collectibleCreate(CorePlayer sender,
                                   @LiteralArg("create") String l,
-                                  @HelperArg("<identifier>") String identifier,
-                                  @HelperArg("<displayName>") String displayName) {
+                                  @HelperArg("identifier") String identifier,
+                                  @HelperArg("displayName") String displayName) {
         identifier = identifier.toLowerCase();
         displayName = Chat.colorize(displayName);
         if (Vendorables.contains(collectibleClass, identifier)) {
@@ -67,6 +75,7 @@ public class CollectibleCommand extends CoreCommand {
             if (collectible != null) {
                 sender.setHeldItem(collectible.getDisplayItem());
                 success(sender, "Created collectible (" + identifier + ": " + displayName + Chat.DEFAULT + ")");
+                sender.getCollectibles().add(collectible);
             } else {
                 error(sender, "Could not create item!");
             }
@@ -89,7 +98,7 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleClone(CorePlayer sender,
                                  @LiteralArg("clone") String l,
                                  @OptionArg(listName = "collectibles") String identifier,
-                                 @HelperArg("<cloneTo>") String cloneTo) {
+                                 @HelperArg("cloneTo") String cloneTo) {
         cloneTo = cloneTo.toLowerCase();
         Collectible collectible = Collectible.clone(collectibleClass, identifier, cloneTo);
         if (collectible != null) {
@@ -104,7 +113,7 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetName(CorePlayer sender,
                                    @LiteralArg("set") String e,
                                    @LiteralArg("name") String l,
-                                   @HelperArg("<displayName>") String displayName) {
+                                   @HelperArg("displayName") String displayName) {
         Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
         if (collectible != null) {
             String prevName = collectible.getName();
@@ -120,7 +129,7 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetDescription(CorePlayer sender,
                                           @LiteralArg("set") String e,
                                           @LiteralArg("description") String l,
-                                          @HelperArg("<description>") String description) {
+                                          @HelperArg("description") String description) {
         Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
         if (collectible != null) {
             collectible.setDescription(description);
@@ -136,7 +145,7 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetModel(CorePlayer sender,
                                     @LiteralArg("set") String e,
                                     @LiteralArg("model") String l,
-                                    @HelperArg("<customModelData>") Integer customModelData) {
+                                    @HelperArg("customModelData") Integer customModelData) {
         Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
         if (collectible != null) {
             Integer prevModel = collectible.getCustomModelData();
@@ -152,12 +161,42 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetCoin(CorePlayer sender,
                                    @LiteralArg("set") String l1,
                                    @LiteralArg("cost") String l,
-                                   @HelperArg("<coins>") Integer coins) {
+                                   @HelperArg("coins") Integer coins) {
         Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
         if (collectible != null) {
             collectible.setCoinCost(coins);
             sender.setHeldItem(collectible.getDisplayItem());
             success(sender, "Coin cost set to " + coins);
+        } else {
+            error(sender, "That's not a registered collectible!");
+        }
+    }
+
+    @CommandAnnotation
+    public void collectibleSetRarity(CorePlayer sender,
+                                     @LiteralArg("set") String l1,
+                                     @LiteralArg("rarity") String l,
+                                     @EnumArg Vendorable.Rarity rarity) {
+        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        if (collectible != null) {
+            collectible.setRarity(rarity);
+            sender.setHeldItem(collectible.getDisplayItem());
+            success(sender, "Rarity set to " + rarity);
+        } else {
+            error(sender, "That's not a registered collectible!");
+        }
+    }
+
+    @CommandAnnotation
+    public void collectibleSetUnlock(CorePlayer sender,
+                                     @LiteralArg("set") String l1,
+                                     @LiteralArg("unlock") String l,
+                                     @EnumArg Vendorable.UnlockType type) {
+        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        if (collectible != null) {
+            collectible.setUnlockType(type);
+            sender.setHeldItem(collectible.getDisplayItem());
+            success(sender, "Unlock type set to " + type);
         } else {
             error(sender, "That's not a registered collectible!");
         }
@@ -177,7 +216,7 @@ public class CollectibleCommand extends CoreCommand {
                                CorePlayer target,
                                @OptionArg(listName = "collectibles") String identifier) {
         if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
-            sender.sendMessage("Added collectible " + identifier + " to " + target.getChatNamePossessive() + " collection");
+            sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
         } else {
             sender.sendMessage(target.getChatName() + " already had " + identifier);
         }
@@ -201,6 +240,135 @@ public class CollectibleCommand extends CoreCommand {
         } else {
             error(sender, target.getChatName() + " didn't have " + identifier);
         }
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinCreate(CorePlayer sender,
+                                      @LiteralArg("skin") String l1,
+                                      @LiteralArg("create") String l2,
+                                      @OptionArg(listName = "collectibles") String parent,
+                                      @HelperArg("identifier") String identifier,
+                                      @NumberArg @HelperArg("cmd") Integer cmd,
+                                      @HelperArg("displayName") String name) {
+        Collectible collectible = Vendorables.get(collectibleClass, parent);
+        if (collectible == null) {
+            error(sender, "Collectible not found");
+            return;
+        }
+        if (collectible.createSkin(identifier, cmd, name)) {
+            sender.getCollectibles().addSkin(collectible, identifier);
+            success(sender, "Skin created " + parent + ":" + identifier + " with cmd=" + cmd + " and name " + name);
+        } else {
+            error(sender, "Skin already exists!");
+        }
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinDestroy(CorePlayer sender,
+                                      @LiteralArg("skin") String l1,
+                                      @LiteralArg("destroy") String l2,
+                                      @OptionArg(listName = "collectibles") String parent,
+                                      @OptionArg(listName = "skins") String identifier) {
+        Collectible collectible = Vendorables.get(collectibleClass, parent);
+        if (collectible == null) {
+            error(sender, "Collectible not found");
+            return;
+        }
+        collectible.destroySkin(identifier);
+        success(sender, "Skin destroyed " + parent + ":" + identifier);
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinAdd(CommandSender sender,
+                                   @LiteralArg("skin") String l1,
+                                   @LiteralArg("add") String l2,
+                                   CorePlayer target,
+                                   @OptionArg(listName = "collectibles") String parent,
+                                   @OptionArg(listName = "skins") String identifier) {
+        switch (target.getCollectibles().addSkin(Vendorables.get(collectibleClass, parent), identifier)) {
+            case 0:
+                success(sender, "Added collectible skin " + parent + ":" + identifier + " to " + target.getDisplayNamePossessive() + " collection");
+                break;
+            case 1:
+                sender.sendMessage("They don't have the parent of that skin!");
+                break;
+            case 2:
+                sender.sendMessage("They already have that!");
+                break;
+            case 3:
+                sender.sendMessage("Null collectible");
+                break;
+        }
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinRemove(CommandSender sender,
+                                   @LiteralArg("skin") String l1,
+                                   @LiteralArg("remove") String l2,
+                                   CorePlayer target,
+                                   @OptionArg(listName = "collectibles") String parent,
+                                   @OptionArg(listName = "skins") String identifier) {
+        if (target.getCollectibles().removeSkin(Vendorables.get(collectibleClass, parent), identifier)) {
+            success(sender, "Removed collectible " + parent + ":" + identifier + " from " + target.getDisplayNamePossessive() + " collection");
+        } else {
+            error(sender, "They don't have that skin!");
+        }
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinSetName(CorePlayer sender,
+                                       @LiteralArg("skin") String l1,
+                                       @LiteralArg("set") String l2,
+                                       @LiteralArg("name") String l3,
+                                       @OptionArg(listName = "collectibles") String parent,
+                                       @OptionArg(listName = "skins") String identifier,
+                                       @HelperArg("name") String name) {
+        Collectible collectible = Vendorables.get(collectibleClass, parent);
+        if (collectible == null) {
+            error(sender, "Collectible not found");
+            return;
+        }
+        CollectibleSkin skin = collectible.getSkin(identifier);
+        if (skin == null) {
+            error(sender, "Skin not found");
+            return;
+        }
+        skin.setDisplayName(name);
+        success(sender, "Skin name set to " + name);
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinSetCmd(CorePlayer sender,
+                                       @LiteralArg("skin") String l1,
+                                       @LiteralArg("set") String l2,
+                                       @LiteralArg("model") String l3,
+                                       @OptionArg(listName = "collectibles") String parent,
+                                       @OptionArg(listName = "skins") String identifier,
+                                       @NumberArg @HelperArg("cmd") Integer cmd) {
+        Collectible collectible = Vendorables.get(collectibleClass, parent);
+        if (collectible == null) {
+            error(sender, "Collectible not found");
+            return;
+        }
+        CollectibleSkin skin = collectible.getSkin(identifier);
+        if (skin == null) {
+            error(sender, "Skin not found");
+            return;
+        }
+        skin.setCmd(cmd);
+        success(sender, "Skin cmd set to " + cmd);
+    }
+
+    @CommandAnnotation
+    public void collectibleAddall(CorePlayer sender,
+                                  @LiteralArg("admin") String l1) {
+        for (Collectible col : Vendorables.getAll(collectibleClass).values()) {
+            sender.getCollectibles().add(col);
+            for (String skin : col.getSkinIds()) {
+                sender.getCollectibles().addSkin(col, skin);
+            }
+        }
+        success(sender, "All collectibles have been added to your collection");
     }
 
 }

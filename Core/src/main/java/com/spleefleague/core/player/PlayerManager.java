@@ -28,6 +28,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Manager for custom DBPlayer objects based on Player UUIDs
@@ -45,21 +46,24 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     private final Map<UUID, P> onlinePlayerList;
     // Players on any server
     private final Map<UUID, P> onlinePlayerListAll;
+    // Offline players to prevent loading offline players more than once
+    private final Map<UUID, P> offlinePlayerList;
     private SortedSet<P> playerListSorted;
     private final Class<P> playerClass;
     private final MongoCollection<Document> playerCol;
     private final JavaPlugin plugin;
-    
+
     public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
         this.herePlayerList = new HashMap<>();
         this.herePlayerListAll = new HashMap<>();
         this.onlinePlayerList = new HashMap<>();
         this.onlinePlayerListAll = new HashMap<>();
+        this.offlinePlayerList = new HashMap<>();
         this.plugin = plugin;
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.playerClass = playerClass;
         this.playerCol = collection;
-        playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
+        this.playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
     }
 
     public void setSortingComparible(Comparator<P> comparator) {
@@ -78,7 +82,6 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     public void initOnline() {
         onlinePlayerListAll.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
-            //p.kickPlayer("Sorry, reloads have to kick now :(");
             load(p.getUniqueId(), p.getName());
         }
         playerListSorted.clear();
@@ -156,13 +159,16 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     public P getOffline(UUID uniqueId) {
         try {
-            P p = get(uniqueId);
-            if (p != null) return p;
+            P p;
+            if ((p = get(uniqueId)) != null) return p;
+            p = offlinePlayerList.get(uniqueId);
+            if (p != null/* && p.getLastOfflineLoad() > System.currentTimeMillis() - 1000*/) return p;
             p = playerClass.getDeclaredConstructor().newInstance();
             Document doc = playerCol.find(new Document("identifier", uniqueId.toString())).first();
             if (doc != null) {
                 p.load(doc);
                 p.initOffline();
+                offlinePlayerList.put(uniqueId, p);
                 return p;
             }
         } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
@@ -180,9 +186,13 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      */
     @Deprecated
     public P getOffline(String username) {
-        P p = get(username);
-        if (p != null) return p;
+        Player p = Bukkit.getPlayer(username);
+        if (p != null) return getOffline(p.getUniqueId());
         return getOffline(Bukkit.getOfflinePlayer(username).getUniqueId());
+    }
+
+    public boolean isOnline(UUID uuid) {
+        return onlinePlayerList.containsKey(uuid);
     }
 
     /**
@@ -259,6 +269,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @return DBPlayer
      */
     private P load(UUID uuid, String username) {
+        offlinePlayerList.remove(uuid);
         if (herePlayerListAll.containsKey(uuid)) {
             P p = herePlayerListAll.get(uuid);
             if (!onlinePlayerListAll.containsKey(uuid)) {
@@ -287,7 +298,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
                 p.newPlayer(uuid, username);
             }
             p.setOnline(DBPlayer.OnlineState.OTHER);
-            onlinePlayerListAll.put(p.getUniqueId(), p);
+            onlinePlayerListAll.put(uuid, p);
 
             if (plugin == Core.getInstance()) {
                 CorePlayer cp = (CorePlayer) p;

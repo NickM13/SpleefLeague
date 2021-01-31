@@ -26,8 +26,11 @@ public class Position extends DBVariable<List<?>> {
      * For database usage, requires list of 5 numbers
     */
 
-    public double x, y, z;
-    long yaw, pitch;
+    public double x;
+    public double y;
+    public double z;
+    public long yaw;
+    public long pitch;
     
     public Position() { }
     

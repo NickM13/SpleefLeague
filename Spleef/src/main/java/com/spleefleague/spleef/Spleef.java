@@ -114,7 +114,7 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
                         "\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!" +
                         "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
-                .createLinkedContainer("Spleef Menu");
+                .createLinkedContainer("Spleef");
 
         InventoryMenuContainerChest mainContainer = spleefMenuItem.getLinkedChest();
 

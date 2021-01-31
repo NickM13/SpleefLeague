@@ -44,17 +44,18 @@ public class DebugCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void debug(CorePlayer sender,
-                           @EnumArg InventoryType type,
-                           @HelperArg("<title>") String title) {
-        Inventory inventory = Bukkit.createInventory(null, type, Chat.colorize(title));
+    public void debugChest(CorePlayer sender,
+                       @LiteralArg("chest") String l,
+                       @HelperArg("<title>") String title) {
+        Inventory inventory = Bukkit.createInventory(null, 9*6, Chat.colorize(title));
         sender.getPlayer().openInventory(inventory);
     }
-
-    /*
     
     @CommandAnnotation
-    public void debug(CorePlayer sender, @HelperArg("<pitch>") Double pitch, @Nullable @OptionArg(listName = "sounds", force=false) String startsWith) {
+    public void debugSound(CorePlayer sender,
+                      @LiteralArg("sound") String l,
+                      @HelperArg("<pitch>") Double pitch,
+                      @Nullable @OptionArg(listName = "sounds", force=false) String startsWith) {
         TextComponent message = new TextComponent("");
         TextComponent soundStr;
 
@@ -84,13 +85,11 @@ public class DebugCommand extends CoreCommand {
     }
 
     @CommandAnnotation(hidden = true)
-    public void debug(CorePlayer sender,
+    public void debugPlay(CorePlayer sender,
                       @LiteralArg("play") String l,
                       Double pitch,
                       String name) {
         Bukkit.getOnlinePlayers().forEach(p -> p.playSound(sender.getPlayer().getLocation(), Sound.valueOf(name), 1, pitch.floatValue()));
     }
-
-    */
 
 }

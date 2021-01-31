@@ -14,15 +14,9 @@ import java.util.Map;
 public class PlayerStatistics extends DBVariable<Document> {
 
     protected final Map<String, Statistics> statistics;
-    protected RatedPlayer owner;
 
     public PlayerStatistics() {
         this.statistics = new HashMap<>();
-        this.owner = null;
-    }
-
-    public void setOwner(RatedPlayer owner) {
-        this.owner = owner;
     }
 
     @Override

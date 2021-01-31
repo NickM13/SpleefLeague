@@ -8,10 +8,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -29,6 +26,15 @@ public class Ranks {
     public static Rank getRank(String name) {
         if (name == null || !ranks.containsKey(name.toUpperCase())) return null;
         return ranks.get(name.toUpperCase());
+    }
+
+    public static List<Rank> getRanks(String[] rankNames) {
+        List<Rank> ranks = new ArrayList<>();
+        for (String str : rankNames) {
+            Rank r = getRank(str);
+            if (r != null) ranks.add(r);
+        }
+        return ranks;
     }
 
     public static Set<String> getRankNames() {
@@ -52,6 +58,12 @@ public class Ranks {
         }
 
         reloadRanks();
+
+        List<Rank> sortedRanks = new ArrayList<>(ranks.values());
+        sortedRanks.sort(Comparator.comparingInt(Rank::getLadder).reversed());
+        for (int i = 0; i < sortedRanks.size(); i++) {
+            sortedRanks.get(i).setPriority(i);
+        }
 
         Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         Set<Team> teams = mainScoreboard.getTeams();
@@ -110,6 +122,15 @@ public class Ranks {
         return false;
     }
 
+    public static boolean setRankMaxFriends(String identifier, int maxFriends) {
+        if (ranks.containsKey(identifier)) {
+            ranks.get(identifier).setMaxFriends(maxFriends);
+            saveRank(ranks.get(identifier));
+            return true;
+        }
+        return false;
+    }
+
     public static boolean setRankColor(String identifier, ChatColor color) {
         if (ranks.containsKey(identifier)) {
             ranks.get(identifier).setColor(color);
@@ -137,7 +158,7 @@ public class Ranks {
             Team team = scoreboard.registerNewTeam(rank.getIdentifierShort());
             team.setColor(rank.getColor());
             if (rank.getDisplayNameUnformatted().length() > 0)
-                team.setPrefix("[" + rank.getDisplayNameUnformatted() + "] ");
+                team.setPrefix(rank.getChatTag());
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             team.setAllowFriendlyFire(true);
         }

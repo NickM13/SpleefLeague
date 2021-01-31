@@ -6,10 +6,16 @@
 
 package com.spleefleague.core.menu.hotbars.main;
 
-import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuItem;
+import com.spleefleague.core.menu.*;
+import com.spleefleague.core.menu.hotbars.main.collectible.GearMenu;
+import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
+import com.spleefleague.core.player.CorePlayerCollectibles;
+import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.Holdable;
+import com.spleefleague.core.player.collectible.gear.Gear;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.vendor.Vendorable;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -29,36 +35,16 @@ public class HeldItemMenu {
                 .setDescription("Change your held item")
                 .setAvailability(cp -> cp.getRank().hasPermission(Rank.DONOR_1))
                 .createLinkedContainer("Held Item");
-    
-        menuItem.getLinkedChest()
-                .setOpenAction((container, cp1) -> {
-                    container.clearUnsorted();
-                    
-                    menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName("None")
-                            .setDescription("")
-                            .setDisplayItem(Material.BAKED_POTATO)
-                            .setAction(cp -> cp.getCollectibles().setHeldItem(null))
-                            .setCloseOnAction(false));
-                    
-                    for (Holdable holdable : cp1.getCollectibles().getAllHoldables()) {
-                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                                .setName(holdable.getName())
-                                .setDescription(holdable.getDescription())
-                                .setDisplayItem(holdable.getDisplayItem())
-                                .setAction(cp2 -> cp2.getCollectibles().setHeldItem(holdable))
-                                .setCloseOnAction(false));
-                    }
-                });
-    
-        menuItem.getLinkedChest()
-                .addStaticItem(InventoryMenuAPI.createItemDynamic()
-                        .setName("Held Item")
-                        .setDescription(cp -> cp.getCollectibles().hasHeldItem()
-                                ? cp.getCollectibles().getHeldItem().getDescription() : "")
-                        .setDisplayItem(cp -> cp.getCollectibles().hasHeldItem()
-                                ? cp.getCollectibles().getHeldItem().getDisplayItem() : new ItemStack(Material.BAKED_POTATO)),
-                        4, 4);
+
+        InventoryMenuContainerChest container = menuItem.getLinkedChest();
+
+        container.addStaticItem(GearMenu.getItem(), 5, 2);
+        container.addStaticItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 5, 3);
+        container.addStaticItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 5, 4);
+
+        container.addStaticItem(HatMenu.getItem(), 3, 2);
+        container.addStaticItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 3, 3);
+        container.addStaticItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 3, 4);
     }
     
     /**

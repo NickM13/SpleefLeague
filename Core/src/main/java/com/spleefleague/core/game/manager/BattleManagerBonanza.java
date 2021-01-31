@@ -12,7 +12,6 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.Party;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.ArrayList;
