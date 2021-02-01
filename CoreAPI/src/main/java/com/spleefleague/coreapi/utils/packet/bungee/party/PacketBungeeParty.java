@@ -31,8 +31,8 @@ public class PacketBungeeParty extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.PARTY.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.PARTY;
     }
 
 }

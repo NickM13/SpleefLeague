@@ -6,6 +6,9 @@ package com.spleefleague.coreapi.player.friends;
 public enum FriendsAction {
 
     ADD,
-    REMOVE
+    REMOVE,
+    DECLINE,
+    INCOMING,
+    OUTGOING
 
 }

@@ -212,7 +212,11 @@ public class DBEntity {
                         } else if (DBVariable.class.isAssignableFrom(f.getType())) {
                             for (Method method : f.getType().getMethods()) {
                                 if (method.getName().equalsIgnoreCase("load")) {
-                                    obj = f.getType().getDeclaredConstructor().newInstance();
+                                    if (f.get(this) == null) {
+                                        obj = f.getType().getDeclaredConstructor().newInstance();
+                                    } else {
+                                        obj = f.get(this);
+                                    }
                                     method.invoke(obj, doc.get(fieldName, method.getParameters()[0].getType()));
                                     break;
                                 }
@@ -220,7 +224,11 @@ public class DBEntity {
                         } else if (f.getType().equals(UUID.class)) {
                             obj = UUID.fromString(doc.get(fieldName, String.class));
                         } else if (DBEntity.class.isAssignableFrom(f.getType())) {
-                            obj = f.getType().getDeclaredConstructor().newInstance();
+                            if (f.get(this) == null) {
+                                obj = f.getType().getDeclaredConstructor().newInstance();
+                            } else {
+                                obj = f.get(this);
+                            }
                             ((DBEntity) obj).load(doc.get(fieldName, Document.class));
                         } else if (Set.class.isAssignableFrom(f.getType())) {
                             obj = new HashSet<>();

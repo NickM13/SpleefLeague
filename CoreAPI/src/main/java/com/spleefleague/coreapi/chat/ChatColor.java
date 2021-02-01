@@ -86,4 +86,5 @@ public enum ChatColor {
         }
 
     }
+
 }

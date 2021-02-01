@@ -22,8 +22,9 @@ public class PacketBungeeRefreshQueue extends PacketBungee {
         this.queueInfo = new QueueContainerInfo(mode, queued, playing, spectating);
     }
 
-    public int getTag() {
-        return PacketType.Bungee.REFRESH_QUEUE.ordinal();
+    @Override
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.REFRESH_QUEUE;
     }
 
 }

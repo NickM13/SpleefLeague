@@ -26,8 +26,8 @@ public class PacketSpigotServerHub extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.HUB.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.SERVER_HUB;
     }
 
 }

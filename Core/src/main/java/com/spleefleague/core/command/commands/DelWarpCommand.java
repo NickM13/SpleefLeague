@@ -11,7 +11,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
 
 /**
@@ -20,7 +20,7 @@ import com.spleefleague.core.util.variable.Warp;
 public class DelWarpCommand extends CoreCommand {
 
     public DelWarpCommand() {
-        super("delwarp", Rank.MODERATOR, Rank.BUILDER);
+        super("delwarp", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/delwarp <warp>");
         setDescription("Delete a warp");
         setOptions("warpList", Warp::getWarpNames);

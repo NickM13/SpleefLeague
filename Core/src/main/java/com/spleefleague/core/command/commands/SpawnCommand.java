@@ -11,7 +11,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class SpawnCommand extends CoreCommand {
 
     public SpawnCommand() {
-        super("spawn", Rank.DEFAULT);
+        super("spawn", CoreRank.DEFAULT);
         setDescription("Teleport to spawn");
     }
     

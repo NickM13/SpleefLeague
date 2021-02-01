@@ -25,8 +25,8 @@ public class PacketSpigotFriend extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.FRIEND.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.FRIEND;
     }
 
 }

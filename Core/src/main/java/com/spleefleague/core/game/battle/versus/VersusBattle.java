@@ -21,9 +21,10 @@ import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
-import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndRated;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
+import com.spleefleague.coreapi.utils.packet.shared.NumAction;
+import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndRated;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndUnrated;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
@@ -114,7 +115,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void saveBattlerStats(BP bp) {
-        Core.getInstance().getPlayers().save(bp.getCorePlayer());
+        //Core.getInstance().getPlayers().save(bp.getCorePlayer());
     }
     
     /**
@@ -244,7 +245,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     public void endBattle(BP winner) {
         if (winner == null) {
-            Core.getInstance().sendPacket(new PacketBattleEndUnrated(
+            Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
                     getMode().getName(),
                     battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
             TextComponent text = new TextComponent();
@@ -262,7 +263,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
             }
             if (loser == null) {
-                Core.getInstance().sendPacket(new PacketBattleEndUnrated(
+                Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
                         getMode().getName(),
                         battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 loser = winner;
@@ -289,10 +290,11 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
                 applyRewards(winner);
                 applyEloChange(winner);
-                Core.getInstance().sendPacket(new PacketBattleEndRated(
+                Core.getInstance().sendPacket(new PacketSpigotBattleEndRated(
                         getMode().getName(),
                         getMode().getSeason(),
                         battlers.values().stream().map(bp -> new RatedPlayerInfo(
+                                NumAction.SET,
                                 bp.getCorePlayer().getUniqueId(),
                                 bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()))
                         ).collect(Collectors.toList())));

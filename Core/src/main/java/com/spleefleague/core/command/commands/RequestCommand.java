@@ -13,7 +13,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.request.RequestManager;
 
 import javax.annotation.Nullable;
@@ -27,7 +27,7 @@ import java.util.UUID;
 public class RequestCommand extends CoreCommand {
 
     public RequestCommand() {
-        super("request", Rank.DEFAULT);
+        super("request", CoreRank.DEFAULT);
         setUsage("Sends requests while in battle");
         setOptions("requests", RequestCommand::getAvailableRequests);
     }

@@ -32,10 +32,10 @@ public class ConnectionListener implements Listener {
     @EventHandler
     public void onPostLogin(PostLoginEvent event) {
         PacketBungeeConnection packetConnection = new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.CONNECT, event.getPlayer().getUniqueId());
-        ProxyCore.getInstance().sendPacket(packetConnection);
+        ProxyCore.getInstance().getPacketManager().sendPacket(packetConnection);
 
         ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
-            ProxyCore.getInstance().sendPacket(event.getPlayer().getUniqueId(), new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
+            ProxyCore.getInstance().getPacketManager().sendPacket(event.getPlayer().getUniqueId(), new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
         }, 1000, TimeUnit.MILLISECONDS);
 
         ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
@@ -43,7 +43,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        ProxyCore.getInstance().sendPacket(new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
 
         ProxyCore.getInstance().getPlayers().onPlayerQuit(event.getPlayer());
 
@@ -64,7 +64,7 @@ public class ConnectionListener implements Listener {
                         entry.getValue().getSpectating().size()));
             }
 
-            ProxyCore.getInstance().sendPacket(
+            ProxyCore.getInstance().getPacketManager().sendPacket(
                     event.getPlayer().getServer().getInfo(),
                     new PacketBungeeRefreshAll(ProxyCore.getInstance().getPlayers().getAll(), queueInfoList));
         }

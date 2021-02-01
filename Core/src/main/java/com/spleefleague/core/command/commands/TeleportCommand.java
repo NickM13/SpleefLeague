@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.CommandSender;
 
@@ -19,7 +19,7 @@ import org.bukkit.command.CommandSender;
 public class TeleportCommand extends CoreCommand {
     
     public TeleportCommand() {
-        super("tp", Rank.MODERATOR, Rank.BUILDER);
+        super("tp", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/tp <player> [player2]");
     }
     

@@ -6,13 +6,12 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -20,7 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class TellCommand extends CoreCommand {
     
     public TellCommand() {
-        super("tell", Rank.DEFAULT);
+        super("tell", CoreRank.DEFAULT);
         addAlias("msg");
         addAlias("whisper");
     }

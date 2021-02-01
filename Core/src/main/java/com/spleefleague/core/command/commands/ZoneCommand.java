@@ -1,13 +1,12 @@
 package com.spleefleague.core.command.commands;
 
-import com.mongodb.lang.Nullable;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
@@ -36,7 +35,7 @@ public class ZoneCommand extends CoreCommand {
     private final Map<UUID, Position> posTwoMap = new HashMap<>();
 
     public ZoneCommand() {
-        super("zone", Rank.DEVELOPER);
+        super("zone", CoreRank.DEVELOPER);
         setOptions("zoneNames", pi -> GlobalZones.getAll().keySet());
         setOptions("leafNames", pi -> {
             System.out.println(pi.getArgs().get(pi.getArgs().size() - 1));

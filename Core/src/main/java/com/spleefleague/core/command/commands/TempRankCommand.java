@@ -6,14 +6,15 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -22,10 +23,10 @@ import org.bukkit.command.CommandSender;
 public class TempRankCommand extends CoreCommand {
     
     public TempRankCommand() {
-        super("temprank", Rank.DEVELOPER);
+        super("temprank", CoreRank.DEVELOPER);
         setUsage("/temprank <set/clear> <player> [rank] [hours]");
         setDescription("Give a temporary rank to a player");
-        setOptions("rankList", (cp) -> Ranks.getRankNames());
+        setOptions("rankList", (cp) -> Core.getInstance().getRankManager().getRankNames());
     }
     
     @CommandAnnotation

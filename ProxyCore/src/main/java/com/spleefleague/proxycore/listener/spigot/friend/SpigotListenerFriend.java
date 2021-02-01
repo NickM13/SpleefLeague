@@ -1,6 +1,5 @@
 package com.spleefleague.proxycore.listener.spigot.friend;
 
-import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
@@ -15,16 +14,17 @@ public class SpigotListenerFriend extends SpigotListener<PacketSpigotFriend> {
 
     @Override
     protected void receive(Connection sender, PacketSpigotFriend packet) {
-        ProxyCorePlayer pcpSender = ProxyCore.getInstance().getPlayers().get(packet.sender);
-        ProxyCorePlayer pcpReceiver = null;
-        if (packet.receiver != null)
-            pcpReceiver = ProxyCore.getInstance().getPlayers().get(packet.receiver);
+        ProxyCorePlayer pcpSender = ProxyCore.getInstance().getPlayers().getOffline(packet.sender);
+        ProxyCorePlayer pcpReceiver = ProxyCore.getInstance().getPlayers().getOffline(packet.receiver);
         switch (packet.type) {
             case ADD:
-                ProxyCore.getInstance().getFriendManager().onPlayerAdd(pcpSender, pcpReceiver);
+                pcpSender.getFriends().onFriendRequest(pcpReceiver);
                 break;
             case REMOVE:
-
+                pcpSender.getFriends().onFriendRemove(pcpReceiver);
+                break;
+            case DECLINE:
+                pcpSender.getFriends().onFriendDecline(pcpReceiver);
                 break;
         }
         //ProxyCore.getInstance().sendPacket(packet.receiver, new PacketBungeeFriend(packet.type, packet.sender, packet.receiver));

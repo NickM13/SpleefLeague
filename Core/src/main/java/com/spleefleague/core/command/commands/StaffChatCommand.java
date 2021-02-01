@@ -11,7 +11,7 @@ import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * Legacy command
@@ -21,7 +21,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class StaffChatCommand extends CoreCommand {
     
     public StaffChatCommand() {
-        super("staffchat", Rank.MODERATOR);
+        super("staffchat", CoreRank.MODERATOR);
         addAlias("sc");
         setUsage("/staffchat <message>");
     }

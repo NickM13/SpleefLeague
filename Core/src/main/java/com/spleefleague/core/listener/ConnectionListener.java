@@ -6,29 +6,18 @@
 
 package com.spleefleague.core.listener;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.party.CorePartyManager;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import org.bson.Document;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -102,7 +91,7 @@ public class ConnectionListener implements Listener {
             return;
         }
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
-        if (cp == null || !cp.getRank().hasPermission(Rank.MODERATOR)) {
+        if (cp == null || !cp.getRank().hasPermission(CoreRank.MODERATOR)) {
             switch (event.getStatus()) {
                 case DECLINED:
                     event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");

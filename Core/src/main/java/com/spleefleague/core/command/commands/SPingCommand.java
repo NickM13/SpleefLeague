@@ -13,7 +13,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.Comparator;
 import java.util.List;
@@ -25,7 +25,7 @@ import net.md_5.bungee.api.ChatColor;
 public class SPingCommand extends CoreCommand {
     
     public SPingCommand() {
-        super("sping", Rank.DEFAULT);
+        super("sping", CoreRank.DEFAULT);
         setDescription("Get all player pings");
     }
     

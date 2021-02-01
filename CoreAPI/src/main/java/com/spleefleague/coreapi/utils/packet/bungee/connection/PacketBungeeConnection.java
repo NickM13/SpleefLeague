@@ -26,8 +26,8 @@ public class PacketBungeeConnection extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.CONNECTION.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.CONNECTION;
     }
 
 }

@@ -5,20 +5,18 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketHub;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerHub;
 
 public class HubCommand extends CoreCommand {
 
     public HubCommand() {
-        super("hub", Rank.DEFAULT);
+        super("hub", CoreRank.DEFAULT);
     }
 
     @CommandAnnotation
     public void hub(CorePlayer sender) {
-        Core.getInstance().sendPacket(new PacketHub(Lists.newArrayList(sender)));
+        Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(sender)));
     }
 
 }

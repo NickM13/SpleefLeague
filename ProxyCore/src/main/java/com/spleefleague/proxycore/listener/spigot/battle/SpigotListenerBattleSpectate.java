@@ -24,7 +24,7 @@ public class SpigotListenerBattleSpectate extends SpigotListener<PacketSpigotBat
         if (target.getBattleContainer() != null) {
             spectator.transfer(target.getCurrentServer());
             ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
-                ProxyCore.getInstance().sendPacket(target.getCurrentServer(), new PacketBungeeBattleSpectate(packet));
+                ProxyCore.getInstance().getPacketManager().sendPacket(target.getCurrentServer(), new PacketBungeeBattleSpectate(packet));
             }, 500, TimeUnit.MILLISECONDS);
             target.getBattleContainer().addSpectator(spectator.getUniqueId());
             spectator.setBattleContainer(target.getBattleContainer());

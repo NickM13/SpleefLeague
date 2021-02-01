@@ -11,7 +11,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +22,7 @@ import java.util.Set;
 public class CancelAllCommand extends CoreCommand {
     
     public CancelAllCommand() {
-        super("cancelall", Rank.SENIOR_MODERATOR);
+        super("cancelall", CoreRank.SENIOR_MODERATOR);
         setUsage("/cancelall");
         setDescription("Cancel all ongoing matches");
     }

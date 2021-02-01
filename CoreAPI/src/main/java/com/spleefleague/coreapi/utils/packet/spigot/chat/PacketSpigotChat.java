@@ -34,8 +34,8 @@ public class PacketSpigotChat extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.CHAT.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.CHAT;
     }
 
 }

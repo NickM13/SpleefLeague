@@ -11,16 +11,14 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.io.converter.LocationConverter;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.spleefleague.core.player.rank.Ranks;
-import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -253,9 +251,9 @@ public class Warp extends DBEntity {
         return location.toLocation();
     }
     public boolean isAvailable(CorePlayer cp) {
-        Rank rank = Ranks.getRank(folderName);
+        CoreRank rank = Core.getInstance().getRankManager().getRank(folderName);
         if (rank == null) {
-            return cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER));
+            return cp.getRank().hasPermission(CoreRank.MODERATOR, Lists.newArrayList(CoreRank.BUILDER));
         } else {
             return cp.getRank().hasPermission(rank);
         }

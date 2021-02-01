@@ -6,12 +6,11 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -21,7 +20,7 @@ import org.bukkit.command.CommandSender;
 public class KickCommand extends CoreCommand {
     
     public KickCommand() {
-        super("kick", Rank.MODERATOR);
+        super("kick", CoreRank.MODERATOR);
         setUsage("/kick <player> [reason]");
         setDescription("Kick a player from the server");
     }

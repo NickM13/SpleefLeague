@@ -5,14 +5,13 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -31,7 +30,7 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
 
     public InventoryMenuItemDynamic() {
         super();
-        minRank = Rank.DEFAULT;
+        minRank = CoreRank.DEFAULT;
         visibilityFun = null;
         availableFun = null;
 

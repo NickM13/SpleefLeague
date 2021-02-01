@@ -10,7 +10,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
 import java.util.List;
 import org.bukkit.command.CommandSender;
@@ -21,7 +21,7 @@ import org.bukkit.command.CommandSender;
 public class WarpOtherCommand extends CoreCommand {
     
     public WarpOtherCommand() {
-        super("warpother", Rank.MODERATOR, Rank.BUILDER);
+        super("warpother", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/warpother <player> <warp>");
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");

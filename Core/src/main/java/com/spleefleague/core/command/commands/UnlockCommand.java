@@ -4,7 +4,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.world.global.lock.GlobalLock;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.block.Block;
@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 public class UnlockCommand extends CoreCommand {
 
     public UnlockCommand() {
-        super("unlock", Rank.DEVELOPER, Rank.BUILDER);
+        super("unlock", CoreRank.DEVELOPER, CoreRank.BUILDER);
     }
 
     @CommandAnnotation

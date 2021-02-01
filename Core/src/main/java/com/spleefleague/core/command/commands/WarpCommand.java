@@ -8,10 +8,9 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
 import org.bukkit.Bukkit;
 import com.spleefleague.core.command.annotation.OptionArg;
@@ -22,7 +21,7 @@ import com.spleefleague.core.command.annotation.OptionArg;
 public class WarpCommand extends CoreCommand {
 
     public WarpCommand() {
-        super("warp", Rank.MODERATOR, Rank.BUILDER);
+        super("warp", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/warp [name]");
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");

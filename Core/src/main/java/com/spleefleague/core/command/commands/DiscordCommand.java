@@ -11,7 +11,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.settings.Settings;
 import com.spleefleague.coreapi.chat.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -24,7 +24,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class DiscordCommand extends CoreCommand {
 
     public DiscordCommand() {
-        super("discord", Rank.DEFAULT);
+        super("discord", CoreRank.DEFAULT);
         setUsage("/discord");
     }
 

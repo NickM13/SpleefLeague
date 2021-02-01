@@ -6,25 +6,21 @@
 
 package com.spleefleague.core.menu;
 
-import com.google.common.collect.Lists;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
+
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
+
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * @author NickM13
  */
 public abstract class InventoryMenuItem {
 
-    protected Rank minRank;
+    protected CoreRank minRank;
 
     protected boolean closeOnAction;
     protected Consumer<CorePlayer> action;
@@ -33,7 +29,7 @@ public abstract class InventoryMenuItem {
     protected int descriptionBuffer = 1;
     
     public InventoryMenuItem() {
-        minRank = Rank.DEFAULT;
+        minRank = CoreRank.DEFAULT;
 
         closeOnAction = true;
         action = null;
@@ -100,11 +96,11 @@ public abstract class InventoryMenuItem {
 
     public abstract boolean isAvailable(CorePlayer cp);
     
-    public InventoryMenuItem setMinRank(Rank minRank) {
+    public InventoryMenuItem setMinRank(CoreRank minRank) {
         this.minRank = minRank;
         return this;
     }
-    public Rank getMinRank() {
+    public CoreRank getMinRank() {
         return minRank;
     }
 

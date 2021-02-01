@@ -14,7 +14,7 @@ public class SpigotListenerChatTell extends SpigotListener<PacketSpigotChatTell>
 
     @Override
     protected void receive(Connection sender, PacketSpigotChatTell packet) {
-        ProxyCore.getInstance().sendPacket(ProxyCore.getInstance().getPlayers().get(packet.target).getCurrentServer(), new PacketBungeeChatTell(packet));
+        ProxyCore.getInstance().getPacketManager().sendPacket(ProxyCore.getInstance().getPlayers().get(packet.target).getCurrentServer(), new PacketBungeeChatTell(packet));
     }
 
 }

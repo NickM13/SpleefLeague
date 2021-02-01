@@ -8,7 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.HoldableCommand;
 import com.spleefleague.core.player.collectible.key.Key;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -16,7 +16,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class KeyCommand extends HoldableCommand {
 
     public KeyCommand() {
-        super(Key.class, "key", Rank.DEVELOPER);
+        super(Key.class, "key", CoreRank.DEVELOPER);
     }
 
 }

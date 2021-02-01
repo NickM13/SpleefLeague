@@ -23,8 +23,8 @@ public class PacketBungeeBattleSpectate extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.BATTLE_SPECTATE.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.BATTLE_SPECTATE;
     }
 
 }

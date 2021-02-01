@@ -16,10 +16,11 @@ import com.spleefleague.proxycore.infraction.ProxyInfractionManager;
 import com.spleefleague.proxycore.listener.BattleListener;
 import com.spleefleague.proxycore.listener.ConnectionListener;
 import com.spleefleague.proxycore.listener.SpigotPluginListener;
+import com.spleefleague.proxycore.packet.PacketManager;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.player.ProxyPartyManager;
+import com.spleefleague.proxycore.party.ProxyPartyManager;
 import com.spleefleague.proxycore.player.ProxyPlayerManager;
-import com.spleefleague.proxycore.player.friends.ProxyFriendsManager;
+import com.spleefleague.proxycore.player.ranks.ProxyRankManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -60,7 +61,8 @@ public class ProxyCore extends Plugin {
     private final ProxyInfractionManager infractionManager = new ProxyInfractionManager();
     private final ArenaManager arenaManager = new ArenaManager();
     private final QueueManager queueManager = new QueueManager();
-    private final ProxyFriendsManager friendManager = new ProxyFriendsManager();
+    private final ProxyRankManager rankManager = new ProxyRankManager();
+    private final PacketManager packetManager = new PacketManager();
 
     @Override
     public void onLoad() {
@@ -82,18 +84,20 @@ public class ProxyCore extends Plugin {
         infractionManager.init();
         arenaManager.init();
         queueManager.init();
-        friendManager.init();
+        rankManager.init();
+        packetManager.init();
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
             Set<String> toFindMinigame = Sets.newHashSet(minigameServers.keySet());
-            
+
             for (ServerInfo server : getProxy().getServersCopy().values()) {
                 String name = server.getName();
                 if (name.toLowerCase().startsWith("lobby")) {
                     server.ping((serverPing, throwable) -> {
                         if (serverPing != null) {
                             lobbyServers.put(name, server);
+                            onServerConnect(server);
                         } else {
                             lobbyServers.remove(name);
                         }
@@ -103,6 +107,7 @@ public class ProxyCore extends Plugin {
                     server.ping((serverPing, throwable) -> {
                         if (serverPing != null) {
                             minigameServers.put(name, server);
+                            onServerConnect(server);
                         } else {
                             minigameServers.remove(name);
                         }
@@ -112,13 +117,23 @@ public class ProxyCore extends Plugin {
             }
             for (String name : toFindLobby) {
                 lobbyServers.remove(name);
+                onServerDisconnect(name);
             }
             for (String name : toFindMinigame) {
                 minigameServers.remove(name);
+                onServerDisconnect(name);
             }
-            sendPacket(new PacketBungeeRefreshServerList(Lists.newArrayList(lobbyServers.keySet()), Lists.newArrayList(minigameServers.keySet())));
+            packetManager.sendPacket(new PacketBungeeRefreshServerList(Lists.newArrayList(lobbyServers.keySet()), Lists.newArrayList(minigameServers.keySet())));
             // TODO: Probably increase this value on release?
         }, 0, 10, TimeUnit.SECONDS);
+    }
+
+    public void onServerConnect(ServerInfo serverInfo) {
+        packetManager.connect(serverInfo);
+    }
+
+    public void onServerDisconnect(String name) {
+        packetManager.disconnect(name);
     }
 
     @Override
@@ -127,8 +142,10 @@ public class ProxyCore extends Plugin {
         leaderboardManager.close();
         arenaManager.close();
         queueManager.close();
-        friendManager.close();
+        rankManager.close();
         infractionManager.close();
+        packetManager.close();
+
         serverPingTask.cancel();
     }
 
@@ -148,8 +165,8 @@ public class ProxyCore extends Plugin {
         return arenaManager;
     }
 
-    public ProxyFriendsManager getFriendManager() {
-        return friendManager;
+    public ProxyRankManager getRankManager() {
+        return rankManager;
     }
 
     public List<ServerInfo> getLobbyServers() {
@@ -230,10 +247,12 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendMessage(ProxyCorePlayer pcp, String text) {
+        if (pcp.getPlayer() == null) return;
         pcp.getPlayer().sendMessage(new TextComponent(getChatTag() + text));
     }
 
     public void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
+        if (pcp.getPlayer() == null) return;
         TextComponent textComp = new TextComponent(getChatTag());
         text.setColor(ChatColor.GRAY);
         textComp.addExtra(text);
@@ -241,13 +260,16 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendMessageError(ProxyCorePlayer pcp, TextComponent text) {
+        if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text.setColor(ChatColor.RED);
         text2.addExtra(text);
+        text2.addExtra("!");
         pcp.getPlayer().sendMessage(text2);
     }
 
     public void sendMessageSuccess(ProxyCorePlayer pcp, TextComponent text) {
+        if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text.setColor(ChatColor.GREEN);
         text2.addExtra(text);
@@ -255,64 +277,15 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendMessageInfo(ProxyCorePlayer pcp, TextComponent text) {
+        if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text.setColor(ChatColor.YELLOW);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
     }
 
-    /**
-     * Send a packet to all servers with 1 or more players
-     *
-     * @param output
-     */
-    public void sendPacket(Packet output) {
-        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServersCopy().entrySet()) {
-            if (!server.getValue().getPlayers().isEmpty()) {
-                server.getValue().sendData("slcore:bungee", output.toByteArray());
-            }
-        }
-    }
-
-    /**
-     * Send a packet to all servers with 1 or more players
-     *
-     * @param output
-     */
-    public void sendPacketExclude(ServerInfo exclude, Packet output) {
-        for (Map.Entry<String, ServerInfo> server : ProxyCore.getInstance().getProxy().getServersCopy().entrySet()) {
-            if (!server.getValue().getPlayers().isEmpty() && !exclude.equals(server.getValue())) {
-                server.getValue().sendData("slcore:bungee", output.toByteArray());
-            }
-        }
-    }
-
-    /**
-     * Send a packet to a specific server
-     *
-     * @param server
-     * @param packet
-     */
-    public void sendPacket(@Nonnull ServerInfo server, @Nonnull PacketBungee packet) {
-        server.sendData("slcore:bungee", packet.toByteArray());
-    }
-
-    public void sendPacket(UUID target, PacketBungee packet) {
-        ProxyCorePlayer pcp = getPlayers().get(target);
-        if (pcp != null && pcp.getCurrentServer() != null) {
-            sendPacket(pcp.getCurrentServer(), packet);
-        }
-    }
-
-    public void sendPacket(PacketBungee packet, UUID... uuids) {
-        Set<String> used = new HashSet<>();
-        for (UUID uuid : uuids) {
-            ProxyCorePlayer pcp = getPlayers().get(uuid);
-            if (pcp != null && pcp.getCurrentServer() != null && !used.contains(pcp.getCurrentServer().getName())) {
-                sendPacket(pcp.getCurrentServer(), packet);
-                used.add(pcp.getCurrentServer().getName());
-            }
-        }
+    public PacketManager getPacketManager() {
+        return packetManager;
     }
 
 }

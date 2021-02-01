@@ -10,7 +10,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -18,7 +18,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class PlayToCommand extends CoreCommand {
     
     public PlayToCommand() {
-        super("playto", Rank.DEFAULT);
+        super("playto", CoreRank.DEFAULT);
     }
     
     @CommandAnnotation

@@ -12,11 +12,11 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.md_5.bungee.api.ChatColor;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,7 +56,7 @@ public class ChatListener implements Listener {
             }
         }
         if (url) {
-            if (!cp.canSendUrl() && !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
+            if (!cp.canSendUrl() && !cp.getRank().hasPermission(CoreRank.MODERATOR, Lists.newArrayList(CoreRank.BUILDER))) {
                 e.setCancelled(true);
                 Core.getInstance().sendMessage(cp, "Please ask for permission to send a link");
                 Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
@@ -65,7 +65,7 @@ public class ChatListener implements Listener {
             }
         } else {
             if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
-                    !cp.getRank().hasPermission(Rank.MODERATOR, Lists.newArrayList(Rank.BUILDER))) {
+                    !cp.getRank().hasPermission(CoreRank.MODERATOR, Lists.newArrayList(CoreRank.BUILDER))) {
                 formattedMessage = e.getMessage().toLowerCase().trim();
                 formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
                 if (!formattedMessage.endsWith(".")

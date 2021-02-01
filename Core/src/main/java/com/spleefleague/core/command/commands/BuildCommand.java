@@ -1,28 +1,18 @@
 package com.spleefleague.core.command.commands;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
-import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.build.BuildWorldPlayer;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +23,7 @@ import java.util.Set;
 public class BuildCommand extends CoreCommand {
     
     public BuildCommand() {
-        super("build", Rank.DEVELOPER);
+        super("build", CoreRank.DEVELOPER);
         setDescription("For building structures used in fake worlds");
         setOptions("structures", cp -> BuildStructures.getNames());
         setOptions("materials", (cp) -> getMaterialNames());

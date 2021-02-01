@@ -17,7 +17,7 @@ public class SpigotListenerBattleChallenge extends SpigotListener<PacketSpigotBa
     protected void receive(Connection sender, PacketSpigotBattleChallenge packet) {
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.receiver);
         if (pcp != null) {
-            ProxyCore.getInstance().sendPacket(pcp.getCurrentServer(), new PacketBungeeBattleChallenge(packet));
+            ProxyCore.getInstance().getPacketManager().sendPacket(pcp.getCurrentServer(), new PacketBungeeBattleChallenge(packet));
         }
     }
 

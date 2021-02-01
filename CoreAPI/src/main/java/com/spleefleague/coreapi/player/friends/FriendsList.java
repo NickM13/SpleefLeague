@@ -27,8 +27,8 @@ public abstract class FriendsList extends DBEntity {
 
     protected final Map<UUID, FriendInfo> friends = new HashMap<>();
 
-    @DBField protected final Set<UUID> pending = new HashSet<>();
-    @DBField protected final Set<UUID> requesting = new HashSet<>();
+    @DBField protected final Set<UUID> outgoing = new HashSet<>();
+    @DBField protected final Set<UUID> incoming = new HashSet<>();
 
     @DBField protected boolean blockingRequests = false;
     @DBField protected boolean blockingLogins = false;
@@ -66,12 +66,12 @@ public abstract class FriendsList extends DBEntity {
         return friends.containsKey(uuid);
     }
 
-    public Set<UUID> getRequesting() {
-        return requesting;
+    public Set<UUID> getIncoming() {
+        return incoming;
     }
 
-    public Set<UUID> getPending() {
-        return pending;
+    public Set<UUID> getOutgoing() {
+        return outgoing;
     }
 
     @DBLoad(fieldName = "friends")

@@ -24,8 +24,8 @@ public class PacketSpigotQueueJoin extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.QUEUE_JOIN.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.QUEUE_JOIN;
     }
 
 }

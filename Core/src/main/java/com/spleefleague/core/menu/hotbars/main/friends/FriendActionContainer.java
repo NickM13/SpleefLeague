@@ -3,9 +3,7 @@ package com.spleefleague.core.menu.hotbars.main.friends;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import org.bukkit.Material;
 
 import java.util.UUID;
 
@@ -33,7 +31,7 @@ public class FriendActionContainer {
                         .setAction(cp -> {
                             CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                             if (friend != null) {
-                                cp.getFriends().removeFriend(friend);
+                                cp.getFriends().sendFriendRemove(friend);
                             }
                         }),
                 3, 4);

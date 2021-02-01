@@ -8,7 +8,7 @@ package com.spleefleague.core.player.scoreboard;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -124,7 +124,7 @@ public class PersonalScoreboard {
         
         this.showRanks = showRanks;
         if (showRanks) {
-            Ranks.initScoreboard(scoreboard);
+            Core.getInstance().getRankManager().initScoreboard(scoreboard);
         }
     }
 

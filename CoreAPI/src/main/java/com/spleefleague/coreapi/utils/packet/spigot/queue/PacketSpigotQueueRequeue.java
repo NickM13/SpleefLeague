@@ -20,8 +20,8 @@ public class PacketSpigotQueueRequeue extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.REQUEUE.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.QUEUE_REQUEUE;
     }
 
 }

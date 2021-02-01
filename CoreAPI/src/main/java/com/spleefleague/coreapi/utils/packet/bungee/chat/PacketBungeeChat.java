@@ -43,8 +43,8 @@ public class PacketBungeeChat extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.CHAT.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.CHAT;
     }
 
 }

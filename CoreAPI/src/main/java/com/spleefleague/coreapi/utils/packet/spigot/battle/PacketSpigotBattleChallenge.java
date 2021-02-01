@@ -26,8 +26,8 @@ public class PacketSpigotBattleChallenge extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.CHALLENGE.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.BATTLE_CHALLENGE;
     }
 
 }

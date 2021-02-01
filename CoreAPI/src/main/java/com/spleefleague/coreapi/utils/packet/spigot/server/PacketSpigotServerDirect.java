@@ -22,8 +22,8 @@ public class PacketSpigotServerDirect extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.SERVER_CONNECT.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.SERVER_DIRECT;
     }
 
 }

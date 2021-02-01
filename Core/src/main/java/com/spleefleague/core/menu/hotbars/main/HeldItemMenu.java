@@ -10,15 +10,11 @@ import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.main.collectible.GearMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
 import com.spleefleague.core.player.CorePlayerCollectibles;
-import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -33,7 +29,7 @@ public class HeldItemMenu {
                 .setDisplayItem(Material.DIAMOND_CHESTPLATE, 1)
                 .setSelectedItem(Material.DIAMOND_CHESTPLATE, 2)
                 .setDescription("Change your held item")
-                .setAvailability(cp -> cp.getRank().hasPermission(Rank.DONOR_1))
+                .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.DONOR_1))
                 .createLinkedContainer("Held Item");
 
         InventoryMenuContainerChest container = menuItem.getLinkedChest();

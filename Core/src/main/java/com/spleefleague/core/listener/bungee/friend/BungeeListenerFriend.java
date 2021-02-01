@@ -19,10 +19,10 @@ public class BungeeListenerFriend extends BungeeListener<PacketBungeeFriend> {
         }
         switch (packet.type) {
             case ADD:
-                cpReceiver.getFriends().receiveFriendRequest(cpSender);
+                //cpReceiver.getFriends().receiveFriendRequest(cpSender);
                 break;
             case REMOVE:
-                cpReceiver.getFriends().receiveFriendRemove(cpSender);
+                //cpReceiver.getFriends().receiveFriendRemove(cpSender);
                 break;
         }
     }

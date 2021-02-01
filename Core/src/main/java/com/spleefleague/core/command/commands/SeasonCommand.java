@@ -7,9 +7,8 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.Random;
 import java.util.Set;
@@ -21,7 +20,7 @@ import java.util.Set;
 public class SeasonCommand extends CoreCommand {
     
     public SeasonCommand() {
-        super("season", Rank.DEVELOPER);
+        super("season", CoreRank.DEVELOPER);
         setUsage("See Developer!");
         setDescription("Seasons Command for Resetting");
     }

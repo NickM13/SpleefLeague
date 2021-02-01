@@ -54,7 +54,6 @@ public class ProxyPlayerManager {
 
     public void onPlayerJoin(ProxiedPlayer pp) {
         load(pp);
-        //ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY +  " is now online.");
     }
 
     private void load(ProxiedPlayer pp) {
@@ -73,7 +72,7 @@ public class ProxyPlayerManager {
      * Player data should only be saved on the spigot servers where certain info such as collectibles are
      * properly managed by the Core plugin, ProxyCorePlayer is just a small shell of the CorePlayer
      *
-     * @param pcp
+     * @param pcp Proxy Core Player
      */
     public void save(ProxyCorePlayer pcp) {
         Document query = new Document("identifier", pcp.getUniqueId().toString());
@@ -81,9 +80,10 @@ public class ProxyPlayerManager {
     }
 
     public void onPlayerQuit(ProxiedPlayer pp) {
-        ProxyCore.getInstance().getPlayers().get(pp.getUniqueId()).setBattleContainer(null);
-        //ProxyCore.getInstance().sendMessage(ChatColor.YELLOW + pp.getDisplayName() + ChatColor.GRAY + " is now offline.");
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(pp.getUniqueId());
+        pcp.setBattleContainer(null);
         onlinePlayers.remove(pp.getUniqueId());
+        save(pcp);
     }
 
     public Collection<ProxyCorePlayer> getAll() {
@@ -95,7 +95,9 @@ public class ProxyPlayerManager {
     }
 
     public ProxyCorePlayer getOffline(UUID uuid) {
-        if (onlinePlayers.containsKey(uuid)) {
+        if (offlinePlayers.containsKey(uuid)) {
+            return offlinePlayers.get(uuid);
+        } else if (onlinePlayers.containsKey(uuid)) {
             return onlinePlayers.get(uuid);
         } else {
             Document doc = playerCol.find(new Document("identifier", uuid.toString())).first();

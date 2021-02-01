@@ -330,6 +330,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      *
      * @param player Player
      */
+    /*
     public void save(P player) {
         try {
             playerCol.replaceOne(new Document("identifier", player.getUniqueId().toString()), player.toDocument(), new ReplaceOptions().upsert(true));
@@ -347,6 +348,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
             p.setPresaved();
         }
     }
+    */
 
     /**
      * Remove a DBPlayer from the player list
@@ -358,9 +360,11 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
         P p = herePlayerListAll.remove(player.getUniqueId());
         herePlayerList.remove(player.getUniqueId());
         if (p != null) {
+            /*
             if (!p.isPresaved()) {
                 save(p);
             }
+            */
             p.close();
             p.setOnline(DBPlayer.OnlineState.OTHER);
         } else {
@@ -458,9 +462,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * Save all DBPlayer
      */
     public void close() {
-        for (P p : herePlayerListAll.values()) {
-            save(p);
-        }
+
     }
 
     public void onBungeeConnect(OfflinePlayer op) {

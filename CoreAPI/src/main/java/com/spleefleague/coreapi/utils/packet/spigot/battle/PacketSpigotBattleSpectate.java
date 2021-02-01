@@ -23,8 +23,8 @@ public class PacketSpigotBattleSpectate extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.BATTLE_SPECTATE.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.BATTLE_SPECTATE;
     }
 
 }

@@ -29,20 +29,20 @@ public class FriendsPendingMenu {
         menuItem.getLinkedChest()
                 .setOpenAction((container, cp) -> {
                     container.clear();
-                    for (UUID uuid : cp.getFriends().getPending()) {
+                    for (UUID uuid : cp.getFriends().getIncoming()) {
                         CorePlayer friend = Core.getInstance().getPlayers().getOffline(uuid);
 
                         container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("Accept")
                                 .setDisplayItem(InventoryMenuUtils.MenuIcon.ENABLED.getIconItem())
-                                .setAction(cp2 -> cp2.getFriends().addFriend(friend)));
+                                .setAction(cp2 -> cp2.getFriends().sendFriendRequest(friend)));
                         container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setDisplayItem(InventoryMenuSkullManager.getPlayerSkull(uuid))
                                 .setName(friend.getName()));
                         container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("Decline")
                                 .setDisplayItem(InventoryMenuUtils.MenuIcon.DISABLED.getIconItem())
-                                .setAction(cp2 -> cp2.getFriends().addFriend(friend)));
+                                .setAction(cp2 -> cp2.getFriends().sendFriendDecline(friend)));
                     }
                 })
                 .setPageBoundaries(1, 5, 1, 3);

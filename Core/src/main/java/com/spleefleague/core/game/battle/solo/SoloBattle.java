@@ -1,24 +1,16 @@
 package com.spleefleague.core.game.battle.solo;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
-import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleEndUnrated;
-import org.bukkit.Bukkit;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndUnrated;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -153,7 +145,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void endBattle(BP winner) {
-        Core.getInstance().sendPacket(new PacketBattleEndUnrated(getMode().getName(), Lists.newArrayList(battler.getCorePlayer().getUniqueId())));
+        Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(getMode().getName(), Lists.newArrayList(battler.getCorePlayer().getUniqueId())));
         destroy();
     }
     

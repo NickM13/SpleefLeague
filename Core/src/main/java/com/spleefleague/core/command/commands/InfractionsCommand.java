@@ -14,7 +14,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import org.bukkit.OfflinePlayer;
 public class InfractionsCommand extends CoreCommand {
     
     public InfractionsCommand() {
-        super("infractions", Rank.MODERATOR);
+        super("infractions", CoreRank.MODERATOR);
         setUsage("/infractions <player> [page]");
         setDescription("View infractions of a player");
     }

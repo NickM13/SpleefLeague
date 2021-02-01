@@ -6,14 +6,12 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.infraction.Infraction;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 import javax.annotation.Nullable;
 import org.bukkit.OfflinePlayer;
@@ -25,7 +23,7 @@ import org.bukkit.command.CommandSender;
 public class MuteCommand extends CoreCommand {
     
     public MuteCommand() {
-        super("mute", Rank.MODERATOR);
+        super("mute", CoreRank.MODERATOR);
     }
     
     @CommandAnnotation

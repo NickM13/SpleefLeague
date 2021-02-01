@@ -10,7 +10,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.options.moderator.ArenaMenu;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -37,7 +37,7 @@ public class StaffToolsMenu {
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Staff Tools")
                     .setDisplayItem(Material.REDSTONE, 1)
                     .setDescription("A variety of tools useful for the maintenance and quality of SpleefLeague.")
-                    .setAvailability(cp -> cp.getRank().hasPermission(Rank.MODERATOR))
+                    .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.MODERATOR))
                     .createLinkedContainer("Staff Tools");
             
             menuItem.getLinkedChest()

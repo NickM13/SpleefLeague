@@ -1,12 +1,12 @@
 package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.party.PartyManager;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketParty;
+import com.spleefleague.coreapi.utils.packet.spigot.party.PacketSpigotParty;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.List;
@@ -148,7 +148,7 @@ public class CorePartyManager extends PartyManager<CoreParty> {
     public boolean leave(CorePlayer sender) {
         if (sender.getParty() != null) {
             sender.getParty().removePlayer(sender.getUniqueId());
-            Core.getInstance().sendPacket(new PacketParty(PacketParty.PartyType.LEAVE, sender.getUniqueId()));
+            Core.getInstance().sendPacket(new PacketSpigotParty(PartyAction.LEAVE, sender.getUniqueId()));
             return true;
         }
         return false;

@@ -17,7 +17,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -25,7 +25,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class VanishCommand extends CoreCommand {
     
     public VanishCommand() {
-        super("vanish", Rank.DEVELOPER);
+        super("vanish", CoreRank.DEVELOPER);
     }
     
     @CommandAnnotation

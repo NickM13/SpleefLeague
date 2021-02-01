@@ -1,13 +1,11 @@
 package com.spleefleague.core.command;
 
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.CollectibleSkin;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.vendor.Vendor;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.command.CommandSender;
@@ -23,7 +21,7 @@ public class CollectibleCommand extends CoreCommand {
     private final Class<? extends Collectible> collectibleClass;
     private final String name;
 
-    protected CollectibleCommand(Class<? extends Collectible> collectibleClazz, String name, Rank requiredRank, Rank... additionalRanks) {
+    protected CollectibleCommand(Class<? extends Collectible> collectibleClazz, String name, CoreRank requiredRank, CoreRank... additionalRanks) {
         super(name, requiredRank, additionalRanks);
         this.name = name;
         this.collectibleClass = collectibleClazz;

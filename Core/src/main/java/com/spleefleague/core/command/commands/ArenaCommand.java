@@ -9,7 +9,7 @@ import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
@@ -33,7 +33,7 @@ public class ArenaCommand extends CoreCommand {
     private final Map<UUID, Position> posTwoMap = new HashMap<>();
 
     public ArenaCommand() {
-        super("arena", Rank.DEVELOPER);
+        super("arena", CoreRank.DEVELOPER);
         setOptions("battleModes", pi -> BattleMode.getAllNames());
         setOptions("arenas", pi -> Arenas.getAll().keySet());
         setOptions("structures", pi -> BuildStructures.getNames());

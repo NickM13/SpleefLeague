@@ -32,8 +32,8 @@ public class PacketSpigotParty extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.PARTY.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.PARTY;
     }
 
 }

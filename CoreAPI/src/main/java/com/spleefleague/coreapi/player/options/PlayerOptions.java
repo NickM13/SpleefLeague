@@ -1,12 +1,13 @@
 package com.spleefleague.coreapi.player.options;
 
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bson.Document;
 
 /**
  * @author NickM13
  */
-public class PlayerOptions {
+public class PlayerOptions extends DBEntity {
 
     @DBField protected Document optionMap = new Document();
 
@@ -15,6 +16,9 @@ public class PlayerOptions {
     }
 
     public Boolean getBoolean(String option) {
+        if (!optionMap.containsKey(option)) {
+            optionMap.put(option, true);
+        }
         return optionMap.get(option, Boolean.class);
     }
 

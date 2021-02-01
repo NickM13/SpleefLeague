@@ -6,21 +6,14 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.google.common.collect.Sets;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
-import com.spleefleague.core.command.annotation.OptionArg;
-import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
-
-import java.util.Random;
-import java.util.TreeSet;
 
 /**
  * @author NickM13
@@ -28,7 +21,7 @@ import java.util.TreeSet;
 public class SpectateCommand extends CoreCommand {
     
     public SpectateCommand() {
-        super("spectate", Rank.DEFAULT);
+        super("spectate", CoreRank.DEFAULT);
         setUsage("/spectate <player>");
         setDescription("Spectate a player's match");
     }

@@ -23,8 +23,8 @@ public class PacketSpigotPlayerRating extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.SET_RATING.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.PLAYER_RATING;
     }
 
 }

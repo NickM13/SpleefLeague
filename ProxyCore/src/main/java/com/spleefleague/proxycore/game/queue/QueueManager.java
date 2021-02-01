@@ -118,7 +118,7 @@ public class QueueManager {
                 ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
                         "You have left the queue for " +
                                 queueContainer.getDisplayName());
-                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
+                ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 0:
@@ -126,7 +126,7 @@ public class QueueManager {
                         "You have joined the queue for " +
                                 queueContainer.getDisplayName() +
                                 arenaAffix);
-                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
+                ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
                 break;
             case 1:
@@ -144,7 +144,7 @@ public class QueueManager {
             // You have successfully left the queue for (mode)
             //ProxyCore.sendMessage(ProxyCore.getInstance().getPlayers().get(uuid), "You have left the queue for " + mode);
             if (sendPacketUpdate) {
-                ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(
+                ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(
                         mode, queueContainer.getQueueSize(), queueContainer.getPlaying().size(), queueContainer.getSpectating().size()));
             }
             return true;

@@ -12,12 +12,11 @@ import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.CoreUtils;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ import java.util.List;
 public class GameModeCommand extends CoreCommand {
 
     public GameModeCommand() {
-        super("gamemode", Rank.MODERATOR);
+        super("gamemode", CoreRank.MODERATOR);
         setOptions("gamemodes", cp -> CoreUtils.enumToStrSet(GameMode.class, true));
         addAlias("gm");
         setUsage("/gm <0-3> [player]");

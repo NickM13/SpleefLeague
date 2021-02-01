@@ -1,4 +1,4 @@
-package com.spleefleague.proxycore.player;
+package com.spleefleague.proxycore.party;
 
 import com.spleefleague.coreapi.party.Party;
 import com.spleefleague.coreapi.party.PartyAction;
@@ -6,6 +6,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshParty;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.config.ServerInfo;
 
 import java.util.*;
@@ -42,21 +43,21 @@ public class ProxyParty extends Party {
             ServerInfo serverInfo = pcp.getCurrentServer();
             if (!used.contains(serverInfo.getName())) {
                 used.add(serverInfo.getName());
-                ProxyCore.getInstance().sendPacket(serverInfo, packet);
+                ProxyCore.getInstance().getPacketManager().sendPacket(serverInfo, packet);
             }
         }
         for (ProxyCorePlayer pcp : additional) {
             ServerInfo serverInfo = pcp.getCurrentServer();
             if (!used.contains(serverInfo.getName())) {
                 used.add(serverInfo.getName());
-                ProxyCore.getInstance().sendPacket(serverInfo, packet);
+                ProxyCore.getInstance().getPacketManager().sendPacket(serverInfo, packet);
             }
         }
     }
 
     public void sendPartyRefresh(ServerInfo serverInfo) {
         PacketBungeeRefreshParty packet = new PacketBungeeRefreshParty(playerList);
-        ProxyCore.getInstance().sendPacket(serverInfo, packet);
+        ProxyCore.getInstance().getPacketManager().sendPacket(serverInfo, packet);
     }
 
     public Set<ProxyCorePlayer> getPlayerSet() {
@@ -70,7 +71,7 @@ public class ProxyParty extends Party {
             return true;
         } else if (!joinRequests.contains(sender)) {
             joinRequests.add(sender);
-            ProxyCore.getInstance().sendPacket(new PacketBungeeParty(PartyAction.JOIN, sender, target), sender, target);
+            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeParty(PartyAction.JOIN, sender, target), sender, target);
         }
         return false;
     }
@@ -82,7 +83,7 @@ public class ProxyParty extends Party {
             return true;
         } else if (!inviteRequests.contains(target)) {
             inviteRequests.add(target);
-            ProxyCore.getInstance().sendPacket(new PacketBungeeParty(PartyAction.INVITE, sender, target), sender, target);
+            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeParty(PartyAction.INVITE, sender, target), sender, target);
         }
         return false;
     }

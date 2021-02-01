@@ -9,7 +9,8 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
+
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ import java.util.List;
 public class TeleportHereCommand extends CoreCommand {
     
     public TeleportHereCommand() {
-        super("tphere", Rank.MODERATOR, Rank.BUILDER);
+        super("tphere", CoreRank.MODERATOR, CoreRank.BUILDER);
     }
     
     @CommandAnnotation

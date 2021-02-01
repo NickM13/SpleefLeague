@@ -52,8 +52,8 @@ public class ChatOptionsMenu {
                                 .setVisibility(chatChannel::isAvailable));
                 menuItem.getLinkedChest().addMenuItem(
                         InventoryMenuAPI.createItemToggle()
-                                .setAction(cp -> cp.getOptions().toggleDisabledChannel(channel.toString()))
-                                .setEnabledFun(cp -> !cp.getOptions().isChannelDisabled(channel.toString()))
+                                .setAction(cp -> cp.getOptions().toggle(channel.toString()))
+                                .setEnabledFun(cp -> !cp.getOptions().getBoolean(channel.toString()))
                                 .setVisibility(chatChannel::isAvailable));
             }
         }

@@ -12,10 +12,8 @@ import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
-import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Vendors;
 import com.spleefleague.core.world.global.lock.GlobalLock;
@@ -143,12 +141,12 @@ public class EnvironmentListener implements Listener {
                         break;
                     case "[min-rank]":
                         // TODO: Would be cool if FakeWorld was incorporated to set fake block walls
-                        if (!cp.getRank().hasPermission(Ranks.getRank(sign.getLine(1)))) {
+                        if (!cp.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;
                     case "[max-rank]":
-                        if (cp.getRank().hasPermission(Ranks.getRank(sign.getLine(1)))) {
+                        if (cp.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;

@@ -3,8 +3,7 @@ package com.spleefleague.core.command;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
-import com.spleefleague.core.player.collectible.key.Key;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.command.CommandSender;
 
@@ -19,7 +18,7 @@ public class HoldableCommand extends CollectibleCommand {
 
     private Class<? extends Holdable> holdableClazz;
 
-    protected HoldableCommand(Class<? extends Holdable> holdableClazz, String name, Rank requiredRank, Rank... additionalRanks) {
+    protected HoldableCommand(Class<? extends Holdable> holdableClazz, String name, CoreRank requiredRank, CoreRank... additionalRanks) {
         super(holdableClazz, name, requiredRank, additionalRanks);
         this.holdableClazz = holdableClazz;
     }

@@ -15,7 +15,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,7 +34,7 @@ import org.bukkit.OfflinePlayer;
 public class PlayerInfoCommand extends CoreCommand {
     
     public PlayerInfoCommand() {
-        super("playerinfo", Rank.DEFAULT);
+        super("playerinfo", CoreRank.DEFAULT);
         addAlias("pi");
         setUsage("/playerinfo [player]");
         setDescription("Get player's server statistics");

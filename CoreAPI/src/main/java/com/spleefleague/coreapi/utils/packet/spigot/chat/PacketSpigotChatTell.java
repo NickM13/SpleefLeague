@@ -24,8 +24,8 @@ public class PacketSpigotChatTell extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.TELL.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.CHAT_TELL;
     }
 
 }

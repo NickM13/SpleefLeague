@@ -3,7 +3,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 
@@ -14,7 +14,7 @@ import org.bukkit.entity.Arrow;
 public class SitCommand extends CoreCommand {
 
     public SitCommand() {
-        super("sit", Rank.BUILDER);
+        super("sit", CoreRank.BUILDER);
     }
 
     @CommandAnnotation

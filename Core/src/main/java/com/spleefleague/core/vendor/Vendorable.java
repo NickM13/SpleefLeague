@@ -6,7 +6,7 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -359,7 +359,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     }
 
     public boolean isDefault(CorePlayer cp) {
-        return cp.getRank().hasPermission(Rank.DEVELOPER);
+        return cp.getRank().hasPermission(CoreRank.DEVELOPER);
     }
 
     public abstract void saveChanges();

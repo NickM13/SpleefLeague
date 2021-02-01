@@ -1,10 +1,11 @@
-package com.spleefleague.proxycore.player;
+package com.spleefleague.proxycore.player.ratings;
 
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.statistics.Ratings;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import org.bson.Document;
 
 import java.util.HashMap;
@@ -17,14 +18,10 @@ import java.util.Map;
 public class ProxyPlayerRatings extends PlayerRatings {
 
     protected final Map<String, Ratings> modeRatingsMap;
-    protected ProxyCorePlayer owner;
+    protected final ProxyCorePlayer owner;
 
-    public ProxyPlayerRatings() {
+    public ProxyPlayerRatings(ProxyCorePlayer owner) {
         this.modeRatingsMap = new HashMap<>();
-        this.owner = null;
-    }
-
-    public void setOwner(ProxyCorePlayer owner) {
         this.owner = owner;
     }
 

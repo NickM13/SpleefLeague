@@ -7,7 +7,8 @@ import com.spleefleague.coreapi.game.leaderboard.ActiveLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.ArchivedLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import com.spleefleague.coreapi.player.PlayerRatings;
-import com.spleefleague.coreapi.utils.packet.RatedPlayerInfo;
+import com.spleefleague.coreapi.utils.packet.shared.NumAction;
+import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 import org.bson.Document;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -63,7 +64,7 @@ public class Leaderboards {
             for (CorePlayer cp : playerMap.values()) {
                 PlayerRatings ratings = cp.getRatings();
                 if (ratings.isRanked(name, season) && ratings.getGamesPlayed(name, season) > 0) {
-                    ratedPlayerInfos.add(new RatedPlayerInfo(cp.getUniqueId(), ratings.getElo(name, season)));
+                    ratedPlayerInfos.add(new RatedPlayerInfo(NumAction.SET, cp.getUniqueId(), ratings.getElo(name, season)));
                 }
             }
             leaderboard.getActive().refreshPlayers(ratedPlayerInfos);

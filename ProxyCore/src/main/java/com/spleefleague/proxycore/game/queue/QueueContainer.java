@@ -9,7 +9,7 @@ import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.player.ProxyParty;
+import com.spleefleague.proxycore.party.ProxyParty;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -270,8 +270,8 @@ public class QueueContainer {
             qp.pcp.getPlayer().connect(minigameServer);
             qp.pcp.setLastQueueRequest(new PacketSpigotQueueJoin(qp.pcp.getUniqueId(), identifier, qp.query));
         }
-        ProxyCore.getInstance().sendPacket(minigameServer, new PacketBungeeBattleStart(identifier, query, playerUuids));
-        ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(identifier, queuedPlayers.size(), playing.size(), spectating.size())));
+        ProxyCore.getInstance().getPacketManager().sendPacket(minigameServer, new PacketBungeeBattleStart(identifier, query, playerUuids));
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(identifier, queuedPlayers.size(), playing.size(), spectating.size())));
         return true;
     }
 

@@ -9,7 +9,7 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.music.NoteBlockPlayer;
 import com.spleefleague.core.music.NoteBlockSong;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -18,7 +18,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class MusicCommand extends CoreCommand {
 
     public MusicCommand() {
-        super("music", Rank.DEVELOPER);
+        super("music", CoreRank.DEVELOPER);
         setOptions("songNames", cp -> NoteBlockMusic.getSongs());
     }
 

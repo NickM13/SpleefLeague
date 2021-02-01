@@ -851,7 +851,6 @@ public abstract class Battle<BP extends BattlePlayer> {
     public void addSpectator(CorePlayer spectator, CorePlayer target) {
         if (addPlayer(spectator, BattleState.SPECTATOR)) {
             spectators.add(spectator);
-            spectator.savePregameState();
             spectator.getPlayer().setAllowFlight(true);
             spectator.getPlayer().setFlying(true);
             if (arena.getSpectatorSpawn() != null) {

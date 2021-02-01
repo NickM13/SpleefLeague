@@ -25,8 +25,8 @@ public class PacketSpigotBattleEndRated extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.BATTLE_END_RATED.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.BATTLE_END_RATED;
     }
 
 }

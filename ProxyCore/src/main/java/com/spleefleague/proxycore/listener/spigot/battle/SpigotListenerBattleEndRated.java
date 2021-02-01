@@ -19,7 +19,7 @@ public class SpigotListenerBattleEndRated extends SpigotListener<PacketSpigotBat
 
     @Override
     protected void receive(Connection sender, PacketSpigotBattleEndRated packet) {
-        ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshScore(packet.mode, packet.season, packet.players));
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshScore(packet.mode, packet.season, packet.players));
         for (RatedPlayerInfo rpi : packet.players) {
             ProxyCore.getInstance().getLeaderboards().get(packet.mode).getLeaderboards().get(packet.season).setPlayerScore(rpi.uuid, rpi.elo);
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(rpi.uuid);
@@ -28,7 +28,7 @@ public class SpigotListenerBattleEndRated extends SpigotListener<PacketSpigotBat
             }
         }
         QueueContainer container = ProxyCore.getInstance().getQueueManager().getContainerMap().get(packet.mode);
-        ProxyCore.getInstance().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(packet.mode,
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(packet.mode,
                 container.getQueueSize(), container.getPlaying().size(), container.getSpectating().size())));
     }
 

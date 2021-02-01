@@ -13,7 +13,7 @@ import com.spleefleague.core.chat.ticket.Ticket;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.OfflinePlayer;
 
 /**
@@ -22,7 +22,7 @@ import org.bukkit.OfflinePlayer;
 public class TicketCommand extends CoreCommand {
     
     public TicketCommand() {
-        super("ticket", Rank.DEFAULT);
+        super("ticket", CoreRank.DEFAULT);
         setUsage("/ticket <msg|player|close> [msg|player]");
     }
     

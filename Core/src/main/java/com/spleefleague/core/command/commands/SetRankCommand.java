@@ -13,8 +13,8 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 
@@ -24,12 +24,12 @@ import com.spleefleague.core.command.annotation.OptionArg;
 public class SetRankCommand extends CoreCommand {
     
     public SetRankCommand() {
-        super("setrank", Rank.DEVELOPER);
+        super("setrank", CoreRank.DEVELOPER);
         setUsage("/setrank [name] <rank>");
-        setOptions("rankList", (cp) -> Ranks.getRankNames());
+        setOptions("rankList", (cp) -> Core.getInstance().getRankManager().getRankNames());
     }
     
-    private boolean sr(CorePlayer sender, CorePlayer cp, Rank rank) {
+    private boolean sr(CorePlayer sender, CorePlayer cp, CoreRank rank) {
         if (cp == null) {
             error(sender, CoreError.PLAYER);
             return true;
@@ -46,7 +46,7 @@ public class SetRankCommand extends CoreCommand {
         return true;
     }
     
-    private boolean sr(CommandSender sender, @CorePlayerArg(allowOffline = true) CorePlayer cp, Rank rank) {
+    private boolean sr(CommandSender sender, @CorePlayerArg(allowOffline = true) CorePlayer cp, CoreRank rank) {
         if (cp == null) {
             error(sender, "Player does not exist");
             return true;
@@ -58,20 +58,22 @@ public class SetRankCommand extends CoreCommand {
         success(sender, cp.getDisplayName() + Chat.DEFAULT + "'s rank has been set to " + rank.getDisplayName());
         success(cp, Chat.DEFAULT + "Your rank has been set to " + rank.getDisplayName());
         cp.setRank(rank);
+        /*
         if (cp.getPlayer() == null) {
             Core.getInstance().getPlayers().save(cp);
         }
+         */
         return true;
     }
     
     @CommandAnnotation
     public void setrankPlayer(CorePlayer sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
-        sr(sender, cp, Ranks.getRank(rank));
+        sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
     
     @CommandAnnotation
     public void setrankConsole(CommandSender sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
-        sr(sender, cp, Ranks.getRank(rank));
+        sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
     
 }

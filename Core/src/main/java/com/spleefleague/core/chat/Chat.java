@@ -17,6 +17,7 @@ import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChat;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChat;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.Sound;
 
@@ -151,7 +152,7 @@ public class Chat {
             cc = ChatChannel.getDefaultChannel();
             cp.setChatChannel(cc);
         }
-        if (cp.getOptions().isChannelDisabled(cc.getName())) {
+        if (!cp.getOptions().getBoolean(cc.getName())) {
             Core.getInstance().sendMessage(cp, "You have " + cc.getName() + " muted!");
             Core.getInstance().sendMessage(cp, "To unmute, go to Menu->Options->Chat Channels");
             return;
@@ -196,7 +197,7 @@ public class Chat {
             for (CorePlayer cp : chatChannel.getPlayers(sender)) {
                 if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
                         chatChannel.isAvailable(cp) &&
-                        !cp.getOptions().isChannelDisabled(chatChannel.getName()) &&
+                        cp.getOptions().getBoolean(chatChannel.getName()) &&
                         !packet.blacklist.contains(cp.getUniqueId())) {
                     cp.sendMessage(message);
                 }
@@ -205,7 +206,7 @@ public class Chat {
             for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
                 if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
                         chatChannel.isAvailable(cp) &&
-                        !cp.getOptions().isChannelDisabled(chatChannel.getName()) &&
+                        cp.getOptions().getBoolean(chatChannel.getName()) &&
                         !packet.blacklist.contains(cp.getUniqueId())) {
                     cp.sendMessage(message);
                 }
@@ -215,7 +216,7 @@ public class Chat {
 
     public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
-            if (!cp.getOptions().isChannelDisabled(channel.getName())
+            if (cp.getOptions().getBoolean(channel.getName())
                     && channel.isAvailable(cp)) {
                 cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
             }
@@ -307,8 +308,7 @@ public class Chat {
         baseComponent.addExtra(target.getChatName());
         baseComponent.addExtra(new TextComponent(Chat.DEFAULT + "] " + Chat.WHISPER + msg));
         sender.sendMessage(baseComponent);
-        //sender.sendMessage(Chat.DEFAULT + "[me -> " + target.getDisplayName() + "] " + Chat.WHISPER + msg);
-        Core.getInstance().sendPacket(new PacketTellSpigot(sender.getUniqueId(), target.getUniqueId(), msg));
+        Core.getInstance().sendPacket(new PacketSpigotChatTell(sender.getUniqueId(), target.getUniqueId(), msg));
     }
 
     public static void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
@@ -316,7 +316,6 @@ public class Chat {
         baseComponent.addExtra(sender.getChatName());
         baseComponent.addExtra(new TextComponent(Chat.DEFAULT + " - > me] " + Chat.WHISPER + msg));
         target.sendMessage(baseComponent);
-        //target.sendMessage(Chat.DEFAULT + "[" + sender.getDisplayName() + " -> me] " + Chat.WHISPER + msg);
         target.setReply(sender.getPlayer());
         target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     }

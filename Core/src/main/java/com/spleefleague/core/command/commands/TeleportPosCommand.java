@@ -10,7 +10,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.TpCoord;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ import org.bukkit.command.CommandSender;
 public class TeleportPosCommand extends CoreCommand {
     
     public TeleportPosCommand() {
-        super("tppos", Rank.MODERATOR, Rank.BUILDER);
+        super("tppos", CoreRank.MODERATOR, CoreRank.BUILDER);
     }
     
     /*

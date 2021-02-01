@@ -5,9 +5,8 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.menu.hotbars.main.FriendsMenu;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import net.md_5.bungee.api.chat.*;
-import org.bukkit.Bukkit;
 
 import java.util.Iterator;
 import java.util.UUID;
@@ -15,8 +14,8 @@ import java.util.UUID;
 public class FriendCommand extends CoreCommand {
 
     public FriendCommand() {
-        super("friend", Rank.DEFAULT);
-        setOptions("friendList", pi -> pi.getCorePlayer().getFriends().getNames());
+        super("friend", CoreRank.DEFAULT);
+        setOptions("friendList", pi -> pi.getCorePlayer().getFriends().getAllNames());
     }
 
     @CommandAnnotation
@@ -31,34 +30,34 @@ public class FriendCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void friendList(CorePlayer sender,
-                           @LiteralArg("list") String l) {
-        sender.getMenu().setInventoryMenuItem(FriendsMenu.getItem());
-    }
-
-    @CommandAnnotation
     public void friendRemove(CorePlayer sender,
                              @LiteralArg("remove") String l,
                              @OptionArg(listName = "friendList") String name) {
-        sender.getFriends().removeFriend(Core.getInstance().getPlayers().getOffline(name));
+        sender.getFriends().sendFriendRemove(Core.getInstance().getPlayers().getOffline(name));
     }
 
     @CommandAnnotation(hidden = true)
     public void friendDecline(CorePlayer sender,
                              @LiteralArg("decline") String l,
                              String username) {
-        sender.getFriends().declineFriend(Core.getInstance().getPlayers().getOffline(username));
+        sender.getFriends().sendFriendDecline(Core.getInstance().getPlayers().getOffline(username));
+    }
+
+    @CommandAnnotation
+    public void friendList(CorePlayer sender,
+                           @LiteralArg("list") String l) {
+        sender.getMenu().setInventoryMenuItem(FriendsMenu.getItem());
     }
 
     @CommandAnnotation
     public void friendPending(CorePlayer sender,
                               @LiteralArg("requests") String l) {
-        if (sender.getFriends().getRequesting().isEmpty()) {
+        if (sender.getFriends().getIncoming().isEmpty()) {
             error(sender, "You have no pending friend requests!");
             return;
         }
         BaseComponent component = new TextComponent("Friend requests - ");
-        Iterator<UUID> it = sender.getFriends().getRequesting().iterator();
+        Iterator<UUID> it = sender.getFriends().getIncoming().iterator();
         while (it.hasNext()) {
             CorePlayer cp = Core.getInstance().getPlayers().getOffline(it.next());
             TextComponent extra = new TextComponent(cp.getDisplayName());

@@ -28,14 +28,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketBattleSpectateSpigot;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketChallengeSpigot;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketForceStart;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueJoin;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleChallenge;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleForceStart;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpectate;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
@@ -161,7 +158,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     }
 
     public final void forceStart(BattleMode mode, List<CorePlayer> corePlayers, Arena arena) {
-        Core.getInstance().sendPacket(new PacketForceStart(mode.getName(), "arena:" + arena.getIdentifierNoTag(), corePlayers));
+        Core.getInstance().sendPacket(new PacketSpigotBattleForceStart(mode.getName(), "arena:" + arena.getIdentifierNoTag(), corePlayers));
     }
 
     /**
@@ -171,7 +168,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param cp Core Player
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp) {
-        Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:*"));
+        Core.getInstance().sendPacket(new PacketSpigotQueueJoin(cp.getUniqueId(), mode.getName(), "arena:*"));
     }
     
     /**
@@ -186,7 +183,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             queuePlayer(mode, cp);
             return;
         }
-        Core.getInstance().sendPacket(new PacketQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
+        Core.getInstance().sendPacket(new PacketSpigotQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
     }
     
     /**
@@ -295,7 +292,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
                 }
                 break;
             case OTHER:
-                Core.getInstance().sendPacket(new PacketBattleSpectateSpigot(spectator, target));
+                Core.getInstance().sendPacket(new PacketSpigotBattleSpectate(spectator, target));
                 break;
         }
         return false;
@@ -339,7 +336,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
                 .append(" on ")
                 .append(Chat.GAMEMAP + arena.getName()).create());
         */
-        Core.getInstance().sendPacket(new PacketChallengeSpigot(
+        Core.getInstance().sendPacket(new PacketSpigotBattleChallenge(
                 sender.getUniqueId(),
                 target.getUniqueId(),
                 battleMode.getName(),

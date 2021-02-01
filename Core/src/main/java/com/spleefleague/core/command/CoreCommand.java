@@ -14,8 +14,8 @@ import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -23,11 +23,9 @@ import java.util.*;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-import com.spleefleague.core.player.rank.Ranks;
-import com.spleefleague.core.vendor.Vendorables;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -85,8 +83,8 @@ public class CoreCommand extends Command {
         boolean varParam;
         boolean hidden;
         boolean confirmation;
-        Rank minRank;
-        List<Rank> additionalRanks = new ArrayList<>();
+        CoreRank minRank;
+        List<CoreRank> additionalRanks = new ArrayList<>();
         String description;
 
         public MethodInfo(Method method, CommandAnnotation commandAnnotation) {
@@ -107,8 +105,8 @@ public class CoreCommand extends Command {
             varParam = parameters[parameters.length - 1].getType().equals(String.class);
 
             hidden = commandAnnotation.hidden();
-            minRank = Ranks.getRank(commandAnnotation.minRank());
-            additionalRanks.addAll(Ranks.getRanks(commandAnnotation.additionalRanks().split(",")));
+            minRank = Core.getInstance().getRankManager().getRank(commandAnnotation.minRank());
+            additionalRanks.addAll(Core.getInstance().getRankManager().getRanks(commandAnnotation.additionalRanks().split(",")));
             description = commandAnnotation.description();
             confirmation = commandAnnotation.confirmation();
         }
@@ -128,14 +126,14 @@ public class CoreCommand extends Command {
         return allPermissions;
     }
     
-    protected CoreCommand(String name, Rank requiredRank, Rank... additionalRanks) {
+    protected CoreCommand(String name, CoreRank requiredRank, CoreRank... additionalRanks) {
         super(name);
         this.optionsMap = new HashMap<>();
         String perm = "spleefleague." + name.toLowerCase();
         allPermissions.add(perm);
         this.setPermission(perm);
         requiredRank.addPermission(perm);
-        for (Rank ar : additionalRanks) {
+        for (CoreRank ar : additionalRanks) {
             ar.addExclusivePermission(perm);
         }
         container = "core";
@@ -178,7 +176,7 @@ public class CoreCommand extends Command {
         for (MethodInfo methodInfo : helpMethods) {
             boolean hasPerms = false;
             if (!sender.getRank().hasPermission(methodInfo.minRank)) {
-                for (Rank aRank : methodInfo.additionalRanks) {
+                for (CoreRank aRank : methodInfo.additionalRanks) {
                     if (sender.getRank().equals(aRank)) {
                         hasPerms = true;
                         break;
@@ -596,7 +594,7 @@ public class CoreCommand extends Command {
                     if (cp != null && methodInfo.cpSender) {
                         if (!cp.getRank().hasPermission(methodInfo.minRank)) {
                             boolean hasPerms = false;
-                            for (Rank aRank : methodInfo.additionalRanks) {
+                            for (CoreRank aRank : methodInfo.additionalRanks) {
                                 if (cp.getRank().equals(aRank)) {
                                     hasPerms = true;
                                     break;
@@ -919,7 +917,7 @@ public class CoreCommand extends Command {
                 if (cp != null && methodInfo.cpSender) {
                     if (!cp.getRank().hasPermission(methodInfo.minRank)) {
                         boolean hasPerms = false;
-                        for (Rank aRank : methodInfo.additionalRanks) {
+                        for (CoreRank aRank : methodInfo.additionalRanks) {
                             if (cp.getRank().equals(aRank)) {
                                 hasPerms = true;
                                 break;

@@ -5,7 +5,7 @@ import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendActionContainer;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendOptionsMenu;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.friends.CoreFriendsList;
+import com.spleefleague.core.player.friends.CorePlayerFriends;
 import com.spleefleague.core.util.TimeUtils;
 import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.coreapi.chat.Chat;
@@ -45,7 +45,7 @@ public class FriendsMenu {
                 .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                         .setTitle("Add Friend")
                         .setSuccessFunc(str -> Core.getInstance().getPlayers().get(str) != null)
-                        .setAction((cp2, str) -> cp2.getFriends().addFriend(Core.getInstance().getPlayers().get(str)))
+                        .setAction((cp2, str) -> cp2.getFriends().sendFriendRequest(Core.getInstance().getPlayers().get(str)))
                         .setFailText("Invalid Player!")))
                 .setCloseOnAction(false),
                 6, 2);
@@ -54,19 +54,17 @@ public class FriendsMenu {
 
         container.setOpenAction((container2, cp) -> {
             container2.clearUnsorted();
-            CoreFriendsList friends = cp.getFriends();
-            if (friends.getAll().isEmpty()) {
+            CorePlayerFriends friends = cp.getFriends();
+            if (friends.getAllNames().isEmpty()) {
                 container2.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("You have no friends yet! :(")
                                 .setDescription("")
-                                .setAction(cp2 -> {
-                                    friends.addFriend(Core.getInstance().getPlayers().getOffline("Blaezon"));
-                                }),
+                                .setAction(cp2 -> friends.sendFriendRemove(Core.getInstance().getPlayers().getOffline("MrWired"))),
                         2, 2);
             } else {
                 String search = cp.getMenu().getMenuTag(FRIEND_SEARCH, String.class);
-                List<CoreFriendsList.FriendInfo> friendInfoList = friends.getAllSorted(CoreFriendsList.FriendSortStyle.ALPHABETICAL);
-                for (CoreFriendsList.FriendInfo info : friendInfoList) {
+                List<CorePlayerFriends.FriendInfo> friendInfoList = friends.getAllSorted(CorePlayerFriends.FriendSortStyle.ALPHABETICAL);
+                for (CorePlayerFriends.FriendInfo info : friendInfoList) {
                     CorePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
                     if (search != null && !friend.getName().contains(search)) continue;
                     StringBuilder description = new StringBuilder();

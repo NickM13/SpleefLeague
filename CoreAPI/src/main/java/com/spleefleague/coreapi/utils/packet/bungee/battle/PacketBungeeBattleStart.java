@@ -30,8 +30,8 @@ public class PacketBungeeBattleStart extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.BATTLE_START.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.BATTLE_START;
     }
 
 }

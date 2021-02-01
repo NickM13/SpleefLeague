@@ -12,7 +12,8 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ChatChannelCommand extends CoreCommand {
     private final List<QuickChat> quickChats = new ArrayList<>();
     
     public ChatChannelCommand() {
-        super("chatchannels", Rank.DEFAULT);
+        super("chatchannels", CoreRank.DEFAULT);
         this.addAlias("cc");
         newQuickChat(ChatChannel.getChannel(Channel.GLOBAL), "global", "Global Chat");
         newQuickChat(ChatChannel.getChannel(Channel.PARTY), "party", "Party Chat");

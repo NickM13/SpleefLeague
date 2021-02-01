@@ -9,9 +9,8 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
 
 /**
@@ -20,7 +19,7 @@ import com.spleefleague.core.util.variable.Warp;
 public class SetWarpCommand extends CoreCommand {
 
     public SetWarpCommand() {
-        super("setwarp", Rank.MODERATOR, Rank.BUILDER);
+        super("setwarp", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/setwarp <name>");
         setDescription("Set a warp");
         setContainer("warp");

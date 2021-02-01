@@ -4,14 +4,14 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
 import org.bukkit.Bukkit;
 
 public class SafeReloadCommand extends CoreCommand {
 
     public SafeReloadCommand() {
-        super("safereload", Rank.DEVELOPER);
+        super("safereload", CoreRank.DEVELOPER);
     }
 
     @CommandAnnotation

@@ -29,8 +29,9 @@ public class PacketBungeeRefreshAll extends PacketBungee {
         this.queueInfoList = queueInfoList;
     }
 
-    public int getTag() {
-        return PacketType.Bungee.REFRESH_ALL.ordinal();
+    @Override
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.REFRESH_ALL;
     }
 
 }

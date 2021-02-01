@@ -11,7 +11,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class FlySpeedCommand extends CoreCommand {
     
     public FlySpeedCommand() {
-        super("fspeed", Rank.MODERATOR, Rank.BUILDER);
+        super("fspeed", CoreRank.MODERATOR, CoreRank.BUILDER);
         addAlias("flyspeed");
         setUsage("/fspeed [player] <-10 to 10>");
         setDescription("Set flying speed");

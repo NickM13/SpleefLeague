@@ -15,9 +15,9 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.coreapi.utils.packet.PacketBungee;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -288,12 +288,12 @@ public class ChatChannel {
         registerChatChannel(Channel.LOGIN, "Friends", ChatColor.GRAY, null, cp -> cp.getFriends().getOnline(), Chat.PLAYER_CHAT);
         registerChatChannel(Channel.PARTY, "Party", ChatColor.AQUA, cp -> cp.getParty() != null, cp -> cp.getParty().getLocalPlayers(), Chat.PLAYER_CHAT);
         registerChatChannel(Channel.LOCAL, "Local", ChatColor.GRAY, cp -> cp.getGlobalZone() != null, cp -> cp.getGlobalZone().getPlayers(), Chat.PLAYER_CHAT);
-        registerChatChannel(Channel.VIP, "VIP", ChatColor.DARK_PURPLE, cp -> cp.getRank().hasPermission(Ranks.getRank("VIP")), Chat.PLAYER_CHAT);
-        registerChatChannel(Channel.BUILD, "Build", ChatColor.GREEN, cp -> cp.getRank().hasPermission(Ranks.getRank("BUILDER")), Chat.PLAYER_CHAT);
-        registerChatChannel(Channel.STAFF, "Staff", ChatColor.LIGHT_PURPLE, cp -> cp.getRank().hasPermission(Ranks.getRank("MODERATOR")), Chat.PLAYER_CHAT);
-        registerChatChannel(Channel.ADMIN, "Admin", ChatColor.RED, cp -> cp.getRank().hasPermission(Ranks.getRank("DEVELOPER")), ChatColor.GREEN + "");
+        registerChatChannel(Channel.VIP, "VIP", ChatColor.DARK_PURPLE, cp -> cp.getRank().hasPermission(CoreRank.VIP), Chat.PLAYER_CHAT);
+        registerChatChannel(Channel.BUILD, "Build", ChatColor.GREEN, cp -> cp.getRank().hasPermission(CoreRank.BUILDER), Chat.PLAYER_CHAT);
+        registerChatChannel(Channel.STAFF, "Staff", ChatColor.LIGHT_PURPLE, cp -> cp.getRank().hasPermission(CoreRank.MODERATOR), Chat.PLAYER_CHAT);
+        registerChatChannel(Channel.ADMIN, "Admin", ChatColor.RED, cp -> cp.getRank().hasPermission(CoreRank.DEVELOPER), ChatColor.GREEN + "");
         registerChatChannel(Channel.GAMES, "Games", ChatColor.AQUA, null, Chat.DEFAULT);
-        registerChatChannel(Channel.TICKET, "Ticket", ChatColor.GOLD, cp -> cp.getRank().hasPermission(Ranks.getRank("MODERATOR")), Chat.PLAYER_CHAT);
+        registerChatChannel(Channel.TICKET, "Ticket", ChatColor.GOLD, cp -> cp.getRank().hasPermission(CoreRank.MODERATOR), Chat.PLAYER_CHAT);
         registerChatChannel(Channel.SPLEEF, "Spleef", ChatColor.GOLD, null, Chat.DEFAULT);
         registerChatChannel(Channel.SUPERJUMP, "SuperJump", ChatColor.GOLD, null, Chat.DEFAULT);
     }

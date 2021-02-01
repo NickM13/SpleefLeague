@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -17,7 +17,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class InvSeeCommand extends CoreCommand {
     
     public InvSeeCommand() {
-        super("invsee", Rank.MODERATOR);
+        super("invsee", CoreRank.MODERATOR);
         setUsage("/invsee <player>");
         setDescription("See the inventory of a player");
     }

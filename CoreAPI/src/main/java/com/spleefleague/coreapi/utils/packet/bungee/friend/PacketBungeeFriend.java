@@ -26,8 +26,8 @@ public class PacketBungeeFriend extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.FRIEND.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.FRIEND;
     }
 
 }

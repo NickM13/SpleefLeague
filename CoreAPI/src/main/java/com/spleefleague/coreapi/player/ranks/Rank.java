@@ -4,134 +4,105 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.core.player.rank;
+package com.spleefleague.coreapi.player.ranks;
 
-import com.spleefleague.core.chat.Chat;
-
-import java.util.*;
-
+import com.spleefleague.coreapi.chat.Chat;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
-import org.bukkit.ChatColor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author NickM13
  */
 public class Rank extends DBEntity {
 
-    // Some common ranks
-    public static Rank  DEFAULT,
-            DEVELOPER,
-            ADMIN,
-            MODERATOR,
-            SENIOR_MODERATOR,
-            BUILDER,
-            ORGANIZER,
-            VIP,
-            DONOR_1,
-            DONOR_2,
-            DONOR_3;
+    @DBField protected String displayName = "";
+    protected String chatTag = "";
 
-    @DBField private String displayName = "";
-    private String formattedName = "";
-    
-    @DBField private Integer ladder = 0;
-    @DBField private Boolean hasOp = false;
-    @DBField private ChatColor color = ChatColor.YELLOW;
-    @DBField private Integer maxFriends = 25;
-    
-    private final Set<String> permissions = new HashSet<>();
-    private final Set<String> exclusivePermissions = new HashSet<>();
+    @DBField protected Integer ladder = 0;
+    @DBField protected Boolean hasOp = false;
+    @DBField protected ChatColor color = ChatColor.YELLOW;
+    @DBField protected Integer maxFriends = 25;
 
-    private String priority = "000";
-    
+    protected final Set<String> permissions = new HashSet<>();
+    protected final Set<String> exclusivePermissions = new HashSet<>();
+    protected final Set<String> inheritedPermissions = new HashSet<>();
+    protected final Set<String> allPermissions = new HashSet<>();
+
+    protected final List<Rank> inheritingRanks = new ArrayList<>();
+
     public Rank() {
-        
-    }
 
-    public Rank(String identifier, int ladder, ChatColor chatColor) {
-        this.identifier = identifier;
-        this.ladder = ladder;
-        this.color = chatColor;
-        setDisplayName(identifier);
     }
 
     @Override
     public void afterLoad() {
-        setDisplayName(displayName);
+        if (displayName.isEmpty()) chatTag = "";
+        else chatTag = Chat.TAG_BRACE + "[" + Chat.RANK + displayName + Chat.TAG_BRACE + "] ";
     }
 
-    public void setPriority(int priority) {
-        if (priority < 0 || priority > 100) return;
-        this.priority = String.format("%03d", priority);
-    }
-
-    public String getIdentifierShort() {
-        return priority + identifier.substring(0, Math.min(identifier.length(), 13));
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-        this.formattedName = Chat.colorize(this.displayName);
-    }
     public String getChatTag() {
-        if (formattedName.isEmpty()) return "";
-        return Chat.TAG_BRACE + "[" + Chat.RANK + formattedName + Chat.TAG_BRACE + "] ";
+        return chatTag;
     }
     public String getDisplayName() {
-        return formattedName;
+        return displayName;
     }
     public String getDisplayNameUnformatted() {
-        return formattedName;
+        return displayName;
     }
 
-    public void setLadder(int ladder) {
-        this.ladder = ladder;
+    public void addInheritingRank(Rank rank) {
+        inheritingRanks.add(rank);
     }
+
     public int getLadder() {
         return ladder;
     }
 
-    public void setMaxFriends(int maxFriends) {
-        this.maxFriends = maxFriends;
-    }
     public int getMaxFriends() {
         return  maxFriends;
     }
 
-    public void setHasOp(boolean hasOp) {
-        this.hasOp = hasOp;
-    }
     public boolean getHasOp() {
         return hasOp;
     }
 
-    public void setColor(ChatColor color) {
-        this.color = color;
-    }
     public ChatColor getColor() {
         return color;
     }
-    
+
     public void addPermission(String perm) {
         permissions.add(perm);
-        exclusivePermissions.add(perm);
+        allPermissions.add(perm);
+        for (Rank rank : inheritingRanks) {
+            rank.addInheritedPermission(perm);
+        }
     }
     public void addExclusivePermission(String perm) {
         exclusivePermissions.add(perm);
+        allPermissions.add(perm);
     }
-    
+    public void addInheritedPermission(String perm) {
+        inheritedPermissions.add(perm);
+        allPermissions.add(perm);
+    }
+
     public Set<String> getPermissions() {
         return permissions;
     }
     public Set<String> getExclusivePermissions() {
         return exclusivePermissions;
     }
-    
+
 
     public boolean hasPermission(Rank rank) {
         return (this == rank ||
-                this.getLadder() >= rank.getLadder());
+                this.getLadder() > rank.getLadder());
     }
     public boolean hasPermission(Rank rank, List<Rank> additional) {
         if (hasPermission(rank)) {
@@ -154,17 +125,17 @@ public class Rank extends DBEntity {
         }
         return false;
     }
-    
+
     public boolean hasExclusivePermission(String permission) {
         return exclusivePermissions.contains(permission);
     }
 
     public boolean hasPermission(String permission) {
-        return Ranks.hasPermission(this, permission);
+        return allPermissions.contains(permission);
     }
 
     public Set<String> getAllPermissions() {
-        return Ranks.getAllPermissions(this);
+        return allPermissions;
     }
 
     @Override

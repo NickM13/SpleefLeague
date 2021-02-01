@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -17,7 +17,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class BackCommand extends CoreCommand {
 
     public BackCommand() {
-        super("back", Rank.MODERATOR, Rank.BUILDER);
+        super("back", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/back");
         setDescription("Return to a previous location");
     }

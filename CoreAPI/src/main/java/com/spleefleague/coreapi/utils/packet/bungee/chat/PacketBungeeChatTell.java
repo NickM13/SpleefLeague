@@ -31,8 +31,8 @@ public class PacketBungeeChatTell extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.TELL.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.CHAT_TELL;
     }
 
 }

@@ -1,10 +1,12 @@
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.coreapi.chat.ChatColor;
 
 import javax.annotation.Nullable;
@@ -15,8 +17,8 @@ import javax.annotation.Nullable;
 public class RankCommand extends CoreCommand {
 
     public RankCommand() {
-        super("rank", Rank.DEVELOPER);
-        setOptions("ranks", pi -> Ranks.getRankNames());
+        super("rank", CoreRank.DEVELOPER);
+        setOptions("ranks", pi -> Core.getInstance().getRankManager().getRankNames());
     }
 
     @CommandAnnotation
@@ -25,11 +27,7 @@ public class RankCommand extends CoreCommand {
                            @HelperArg("identifier") String identifier,
                            @HelperArg("ladder") @NumberArg(minValue = -1000, maxValue = 1000) Integer ladder,
                            @EnumArg ChatColor chatColor) {
-        if (Ranks.createRank(identifier, ladder, org.bukkit.ChatColor.valueOf(chatColor.name()))) {
-            success(sender, "Rank " + identifier + " created.");
-        } else {
-            error(sender, "Rank already exists!");
-        }
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
@@ -38,10 +36,7 @@ public class RankCommand extends CoreCommand {
                              @OptionArg(listName = "ranks") String rank,
                              @LiteralArg("name") String l2,
                              @Nullable String displayName) {
-        if (displayName == null) displayName = "";
-        if (Ranks.setRankName(rank, displayName)) {
-            success(sender, "Rank display name set to " + displayName);
-        }
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
@@ -50,9 +45,7 @@ public class RankCommand extends CoreCommand {
                                @OptionArg(listName = "ranks") String rank,
                                @LiteralArg("ladder") String l2,
                                @HelperArg("ladder") @NumberArg(minValue = -10000, maxValue = 10000) Integer ladder) {
-        if (Ranks.setRankLadder(rank, ladder)) {
-            success(sender, "Rank ladder value set to " + ladder);
-        }
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
@@ -61,9 +54,7 @@ public class RankCommand extends CoreCommand {
                                @OptionArg(listName = "ranks") String rank,
                                @LiteralArg("maxfriends") String l2,
                                @HelperArg("maxfriends") @NumberArg(minValue = -1, maxValue = 10000) Integer maxFriends) {
-        if (Ranks.setRankMaxFriends(rank, maxFriends)) {
-            success(sender, "Rank ladder value set to " + maxFriends);
-        }
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
@@ -72,9 +63,7 @@ public class RankCommand extends CoreCommand {
                               @OptionArg(listName = "ranks") String rank,
                               @LiteralArg("color") String l2,
                               @EnumArg ChatColor color) {
-        if (Ranks.setRankColor(rank, org.bukkit.ChatColor.valueOf(color.name()))) {
-            success(sender, "Rank color set to " + color.name());
-        }
+            error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
@@ -83,16 +72,14 @@ public class RankCommand extends CoreCommand {
                               @OptionArg(listName = "ranks") String rank,
                               @LiteralArg("hasOp") String l2,
                               Boolean hasOp) {
-        if (Ranks.setRankOp(rank, hasOp)) {
-            success(sender, "Rank hasOp set to " + hasOp);
-        }
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
     public void rankInfo(CorePlayer sender,
                          @LiteralArg("info") String l1,
                          @OptionArg(listName = "ranks") String rankName) {
-        Rank rank = Ranks.getRank(rankName);
+        CoreRank rank = Core.getInstance().getRankManager().getRank(rankName);
         String formatted = "{ identifier: " + rank.getIdentifier() + ", " +
                 "name: " + rank.getDisplayName() + ", " +
                 "ladder: " + rank.getLadder() + ", " +

@@ -10,7 +10,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -18,7 +18,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class FlyCommand extends CoreCommand {
     
     public FlyCommand() {
-        super("fly", Rank.MODERATOR, Rank.BUILDER);
+        super("fly", CoreRank.MODERATOR, CoreRank.BUILDER);
         setUsage("/fly [player]");
         setDescription("Toggle player's flight");
     }

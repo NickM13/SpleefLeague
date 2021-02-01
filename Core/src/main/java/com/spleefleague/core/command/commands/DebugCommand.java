@@ -10,26 +10,19 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.core.util.variable.Warp;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author NickM13
@@ -37,7 +30,7 @@ import java.util.Map;
 public class DebugCommand extends CoreCommand {
     
     public DebugCommand() {
-        super("debug", Rank.DEVELOPER);
+        super("debug", CoreRank.DEVELOPER);
         setUsage("/debug " + ChatColor.MAGIC + "[hope u no read]");
         setDescription("debu" + ChatColor.MAGIC + "g more read?");
         setOptions("sounds", pi -> CoreUtils.enumToStrSet(Sound.class, true));

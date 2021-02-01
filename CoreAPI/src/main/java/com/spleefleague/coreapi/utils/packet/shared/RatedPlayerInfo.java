@@ -8,12 +8,13 @@ import java.util.UUID;
  */
 public class RatedPlayerInfo extends PacketVariable {
 
+    public NumAction action;
     public UUID uuid;
     public int elo;
 
     public RatedPlayerInfo() { }
 
-    public RatedPlayerInfo(UUID uuid, int elo) {
+    public RatedPlayerInfo(NumAction action, UUID uuid, int elo) {
         this.uuid = uuid;
         this.elo = elo;
     }

@@ -1,9 +1,10 @@
-package com.spleefleague.proxycore.player;
+package com.spleefleague.proxycore.party;
 
 import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.party.PartyManager;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 
 import java.util.*;
 
@@ -31,7 +32,7 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
 
     public boolean onCreate(UUID owner) {
         if (super.create(new ProxyParty(owner), owner)) {
-            ProxyCore.getInstance().sendPacket(owner, new PacketBungeeParty(PartyAction.CREATE, owner));
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner, new PacketBungeeParty(PartyAction.CREATE, owner));
             return true;
         }
         return false;

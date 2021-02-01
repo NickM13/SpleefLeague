@@ -6,15 +6,13 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueLeave;
+import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave;
 
 /**
  * @author NickM13
@@ -22,7 +20,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.PacketQueueLeave;
 public class LeaveCommand extends CoreCommand {
     
     public LeaveCommand() {
-        super("leave", Rank.DEFAULT);
+        super("leave", CoreRank.DEFAULT);
         addAlias("l");
         setUsage("/leave");
         setDescription("Leave all queues");
@@ -37,7 +35,7 @@ public class LeaveCommand extends CoreCommand {
         } else if (Core.getInstance().unqueuePlayerGlobally(sender)) {
             success(sender, "You have left all queues");
         } else {
-            Core.getInstance().sendPacket(new PacketQueueLeave(sender.getPlayer().getUniqueId()));
+            Core.getInstance().sendPacket(new PacketSpigotQueueLeave(sender.getPlayer().getUniqueId()));
         }
     }
     

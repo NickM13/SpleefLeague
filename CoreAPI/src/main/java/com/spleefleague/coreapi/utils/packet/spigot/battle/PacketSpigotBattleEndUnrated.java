@@ -23,8 +23,8 @@ public class PacketSpigotBattleEndUnrated extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.BATTLE_END_UNRATED.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.BATTLE_END_UNRATED;
     }
 
 }

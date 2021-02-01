@@ -3,7 +3,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -17,7 +17,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class UrlCommand extends CoreCommand {
     
     public UrlCommand() {
-        super("url", Rank.MODERATOR);
+        super("url", CoreRank.MODERATOR);
     }
     
     @CommandAnnotation

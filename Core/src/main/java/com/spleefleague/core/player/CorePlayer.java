@@ -26,11 +26,12 @@ import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.music.NoteBlockMusic;
+import com.spleefleague.core.player.friends.CorePlayerFriends;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.CoreParty;
-import com.spleefleague.core.player.rank.PermRank;
-import com.spleefleague.core.player.rank.Rank;
-import com.spleefleague.core.player.rank.TempRank;
+import com.spleefleague.core.player.rank.CorePermanentRank;
+import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.player.rank.CoreTempRank;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.*;
@@ -43,6 +44,8 @@ import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.PlayerStatistics;
+import com.spleefleague.coreapi.player.options.PlayerOptions;
+import com.spleefleague.coreapi.player.purse.PlayerPurse;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -85,21 +88,22 @@ public class CorePlayer extends DBPlayer {
     @DBField private String nickname = null;
     @DBField private UUID disguise = null;
 
-    @DBField private PermRank permRank;
-    @DBField private List<TempRank> tempRanks;
+    @DBField private CorePermanentRank permRank = new CorePermanentRank();
+    @DBField private List<CoreTempRank> tempRanks = new ArrayList<>();
 
     @DBField private Boolean vanished;
     private Boolean ghosting = false;
 
-    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
-
-    @DBField private String gameMode = org.bukkit.GameMode.SURVIVAL.name();
-    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
-    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
+    @DBField private String gameMode = "ADVENTURE";
+    @DBField private final PlayerOptions options = new PlayerOptions();
+    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles(this);
     @DBField private final PlayerRatings ratings = new PlayerRatings();
     @DBField private long lastOnline = -1;
+    @DBField private PlayerPurse purse = new PlayerPurse();
 
-    @DBField protected PlayerStatistics statistics = new PlayerStatistics();
+    @DBField private PlayerStatistics statistics = new PlayerStatistics();
+
+    @DBField private CorePlayerFriends friends = new CorePlayerFriends(this);
 
     /**
      * Non-database variables
@@ -127,7 +131,6 @@ public class CorePlayer extends DBPlayer {
     private final Set<FakeWorld<?>> fakeWorlds = new TreeSet<>((left, right) -> right.getPriority() - left.getPriority());
     private Battle<?> battle;
     private BattleState battleState;
-    private final PregameState pregameState;
     private GlobalZone globalZone;
 
     private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
@@ -144,8 +147,6 @@ public class CorePlayer extends DBPlayer {
         this.chatChannel = ChatChannel.getDefaultChannel();
         this.lastLocation = null;
         this.checkpoint = null;
-        this.permRank = new PermRank();
-        this.tempRanks = new ArrayList<>();
         this.vanished = false;
         this.party = null;
         this.lastAction = System.currentTimeMillis();
@@ -153,7 +154,6 @@ public class CorePlayer extends DBPlayer {
         this.afkWarned = false;
         this.battle = null;
         this.battleState = BattleState.NONE;
-        this.pregameState = new PregameState(this);
         this.globalZone = GlobalZones.getWilderness();
     }
     
@@ -162,7 +162,6 @@ public class CorePlayer extends DBPlayer {
         this.uuid = player.getUniqueId();
         this.username = player.getName();
         this.battleState = BattleState.NONE;
-        this.pregameState = new PregameState(this);
     }
     
     /**
@@ -172,7 +171,7 @@ public class CorePlayer extends DBPlayer {
     @Override
     public void newPlayer(UUID uuid, String username) {
         super.newPlayer(uuid, username);
-        permRank.setRank(Rank.DEFAULT);
+        permRank.setRank(CoreRank.DEFAULT);
     }
 
     public Player getPlayer() {
@@ -194,17 +193,13 @@ public class CorePlayer extends DBPlayer {
         permissions = getPlayer().addAttachment(Core.getInstance());
         setRank(permRank.getRank());
         PersonalScoreboard.initPlayerScoreboard(this);
-        collectibles.setOwner(this);
-        statistics.setOwner(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         FakeWorld.onPlayerJoin(getPlayer());
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
-        ratings.setOwner(this);
         GlobalZones.onPlayerJoin(this);
-        super.init();
     }
     
     @Override
@@ -221,9 +216,6 @@ public class CorePlayer extends DBPlayer {
                 texture.value,
                 texture.signature));
 
-        collectibles.setOwner(this);
-        ratings.setOwner(this);
-        statistics.setOwner(this);
         super.initOffline();
     }
     
@@ -233,7 +225,6 @@ public class CorePlayer extends DBPlayer {
     @Override
     public void afterLoad() {
         super.afterLoad();
-        collectibles.setOwner(this);
     }
     
     /**
@@ -369,7 +360,7 @@ public class CorePlayer extends DBPlayer {
      *
      * @return CorePlayerOptions object
      */
-    public CorePlayerOptions getOptions() {
+    public PlayerOptions getOptions() {
         return options;
     }
     
@@ -391,7 +382,7 @@ public class CorePlayer extends DBPlayer {
             if (lastAction + AFK_TIMEOUT < time) {
                 setAfk(true);
             } else if (!afkWarned && lastAction + AFK_WARNING < time
-                    && getRank().equals(Rank.DEFAULT)) {
+                    && getRank().equals(CoreRank.DEFAULT)) {
                 Core.getInstance().sendMessage(this, "You will be kicked for AFK in 30 seconds!");
                 afkWarned = true;
             }
@@ -406,9 +397,9 @@ public class CorePlayer extends DBPlayer {
         boolean wasAfk = this.afk;
         if (this.afk) {
             setAfk(false);
-            getStatistics().get("general").add("afkTime", System.currentTimeMillis() - lastAction);
+            statistics.get("general").add("afkTime", System.currentTimeMillis() - lastAction);
         } else {
-            getStatistics().get("general").add("playTime", System.currentTimeMillis() - lastAction);
+            statistics.get("general").add("playTime", System.currentTimeMillis() - lastAction);
         }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
@@ -424,7 +415,7 @@ public class CorePlayer extends DBPlayer {
     public void setAfk(boolean state) {
         if (afk != state) {
             afk = state;
-            if (afk && getRank().equals(Rank.DEFAULT)) {
+            if (afk && getRank().equals(CoreRank.DEFAULT)) {
                 // TODO: Removed temporarily to keep Sudofox's alts from being kicked
                 //getPlayer().kickPlayer("Kicked for AFK!");
                 //return;
@@ -453,8 +444,6 @@ public class CorePlayer extends DBPlayer {
         return 0;
     }
 
-
-    
     public boolean isFlying() {
         return getPlayer().isFlying()
                 || getPlayer().isGliding();
@@ -545,8 +534,16 @@ public class CorePlayer extends DBPlayer {
     /**
      * @return Purse Object
      */
-    public CorePlayerPurse getPurse() {
+    public PlayerPurse getPurse() {
         return purse;
+    }
+
+    public PlayerStatistics getStatistics() {
+        return statistics;
+    }
+
+    public CorePlayerFriends getFriends() {
+        return friends;
     }
 
     /**
@@ -646,9 +643,7 @@ public class CorePlayer extends DBPlayer {
      */
     @Deprecated
     public void invcopy(CorePlayer target) {
-        loadPregameState(null);
-        pregameState.save(PregameState.PSFlag.INVENTORY);
-        getPlayer().getInventory().setContents(target.getInventory());
+        getPlayer().getInventory().setContents(target.getPlayer().getInventory().getContents());
     }
 
     /**
@@ -657,7 +652,7 @@ public class CorePlayer extends DBPlayer {
      * @return Whether player can build
      */
     public boolean canBuild() {
-        return (getRank().hasPermission(Rank.BUILDER) && getPlayer().getGameMode().equals(GameMode.CREATIVE) && !isInBattle());
+        return (getRank().hasPermission(CoreRank.BUILDER) && getPlayer().getGameMode().equals(GameMode.CREATIVE) && !isInBattle());
     }
 
     /**
@@ -682,14 +677,14 @@ public class CorePlayer extends DBPlayer {
         getPlayer().setPlayerListName(getTabName());
 
         permissions.getPermissions().clear();
-        
+
         for (String p : CoreCommand.getAllPermissions()) {
             boolean has = false;
             if (getPermanentRank().hasPermission(p)) {
                 has = true;
             } else {
-                for (TempRank tr : tempRanks) {
-                    if (tr.getRank().hasExclusivePermission(p)) {
+                for (CoreTempRank ctr : tempRanks) {
+                    if (ctr.getRank().hasExclusivePermission(p)) {
                         has = true;
                         break;
                     }
@@ -715,7 +710,7 @@ public class CorePlayer extends DBPlayer {
      *
      * @param rank Rank
      */
-    public void setRank(Rank rank) {
+    public void setRank(CoreRank rank) {
         permRank.setRank(rank);
         updateRank();
     }
@@ -723,14 +718,15 @@ public class CorePlayer extends DBPlayer {
     /**
      * Adds a temporary rank and calls updateRank()
      *
-     * @param rank Rank
+     * @param rankName Rank Name
      * @param hours Hours
      * @return Whether rank was added
      */
-    public boolean addTempRank(String rank, Integer hours) {
-        TempRank tempRank = new TempRank(rank, hours * 60L * 60L * 1000L + System.currentTimeMillis());
-        if (tempRank.getRank() != null) {
-            Core.getInstance().sendMessage(this, "Added temp rank " + rank + " for " + hours + " hours");
+    public boolean addTempRank(String rankName, Integer hours) {
+        CoreRank rank = Core.getInstance().getRankManager().getRank(rankName);
+        if (rank != null) {
+            CoreTempRank tempRank = new CoreTempRank(rank, hours * 60L * 60L * 1000L + System.currentTimeMillis());
+            Core.getInstance().sendMessage(this, "Added temp rank " + rankName + " for " + hours + " hours");
             tempRanks.add(tempRank);
             updateRank();
             return true;
@@ -743,13 +739,13 @@ public class CorePlayer extends DBPlayer {
      */
     public void clearTempRank() {
         if (tempRanks.isEmpty()) return;
-        Iterator<TempRank> it = tempRanks.iterator();
+        Iterator<CoreTempRank> it = tempRanks.iterator();
         while (it.hasNext()) {
             it.remove();
         }
         updateRank();
     }
-    public Rank getPermanentRank() {
+    public CoreRank getPermanentRank() {
         return permRank.getRank();
     }
 
@@ -759,13 +755,13 @@ public class CorePlayer extends DBPlayer {
      *
      * @return Highest TempRank, if no TempRanks available then Permanent Rank
      */
-    public Rank getRank() {
+    public CoreRank getRank() {
         if (tempRanks.size() > 0) {
-            TempRank highestRank = null;
-            for (TempRank tr : tempRanks) {
+            CoreTempRank highestRank = null;
+            for (CoreTempRank ctr : tempRanks) {
                 if (highestRank == null ||
-                        tr.getRank().getLadder() > highestRank.getRank().getLadder()) {
-                    highestRank = tr;
+                        ctr.getRank().getLadder() > highestRank.getRank().getLadder()) {
+                    highestRank = ctr;
                 }
             }
             if (highestRank != null) {
@@ -1153,9 +1149,6 @@ public class CorePlayer extends DBPlayer {
     public final void joinBattle(Battle<?> battle, BattleState battleState) {
         this.battle = battle;
         this.battleState = battleState;
-        if (battleState != BattleState.SPECTATOR_GLOBAL) {
-            savePregameState();
-        }
         CorePlugin.addIngamePlayerName(this);
     }
     
@@ -1168,9 +1161,6 @@ public class CorePlayer extends DBPlayer {
         BattleState temp = battleState;
         this.battle = null;
         this.battleState = BattleState.NONE;
-        if (temp != BattleState.SPECTATOR_GLOBAL && Core.getInstance().getServerType().equals(Core.ServerType.LOBBY)) {
-            loadPregameState(exitLocation);
-        }
         CorePlugin.removeIngamePlayerName(this);
     }
     
@@ -1247,11 +1237,7 @@ public class CorePlayer extends DBPlayer {
      */
     @Deprecated
     public final ItemStack[] getInventory() {
-        if (pregameState.getInventory() != null) {
-            return pregameState.getInventory();
-        } else {
-            return getPlayer().getInventory().getContents();
-        }
+        return getPlayer().getInventory().getContents();
     }
 
     /**
@@ -1270,24 +1256,6 @@ public class CorePlayer extends DBPlayer {
      */
     public final void setHeldItem(ItemStack itemStack) {
         getPlayer().getInventory().setItemInMainHand(itemStack);
-    }
-    
-    /**
-     * Save all current player variables to be loaded
-     * back after a game has finished
-     */
-    public final void savePregameState() {
-        pregameState.save(PregameState.PSFlag.ALL);
-    }
-    
-    /**
-     * Load saved variables, takes a location to teleport
-     * player to if they have post-game Arena warp enabled
-     *
-     * @param arenaLoc Location
-     */
-    public final void loadPregameState(@Nullable Location arenaLoc) {
-        pregameState.load(arenaLoc);
     }
 
     @Override

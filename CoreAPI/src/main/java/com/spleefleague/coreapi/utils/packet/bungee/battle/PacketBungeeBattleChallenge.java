@@ -27,8 +27,8 @@ public class PacketBungeeBattleChallenge extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.CHALLENGE.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.BATTLE_CHALLENGE;
     }
     
 }

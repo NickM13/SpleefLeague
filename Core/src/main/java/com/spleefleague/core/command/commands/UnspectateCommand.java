@@ -10,7 +10,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
 
 /**
@@ -19,7 +19,7 @@ import com.spleefleague.core.plugin.CorePlugin;
 public class UnspectateCommand extends CoreCommand {
     
     public UnspectateCommand() {
-        super("unspectate", Rank.DEFAULT);
+        super("unspectate", CoreRank.DEFAULT);
         setUsage("/unspectate");
         setDescription("Stop spectating a match");
     }

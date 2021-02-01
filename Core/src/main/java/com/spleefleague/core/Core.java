@@ -26,12 +26,11 @@ import com.spleefleague.core.menu.hotbars.main.socialmedia.Credits;
 import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.CorePlayerOptions;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.CorePartyManager;
-import com.spleefleague.core.player.rank.Ranks;
+import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.queue.PlayerQueue;
@@ -46,6 +45,7 @@ import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerHub;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -85,6 +85,7 @@ public class Core extends CorePlugin<CorePlayer> {
     private Set<String> servers = new HashSet<>();
 
     private CorePartyManager partyManager;
+    private CoreRankManager rankManager;
 
     /**
      * Called when the plugin is enabling
@@ -100,14 +101,12 @@ public class Core extends CorePlugin<CorePlayer> {
         setPluginDB("SpleefLeague");
 
         Credits.init();
-        Ranks.init();
         Chat.init();
         Warp.init();
         Infraction.init();
         Collectible.init();
         Vendors.init();
         Tickets.init();
-        CorePlayerOptions.init();
         FakeWorld.init();
         Arenas.init();
         NoteBlockMusic.init();
@@ -120,6 +119,8 @@ public class Core extends CorePlugin<CorePlayer> {
         playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
         commandManager = new CommandManager();
         partyManager = new CorePartyManager();
+        rankManager = new CoreRankManager();
+        rankManager.init();
 
         // Initialize listeners
         initListeners();
@@ -172,6 +173,10 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public CorePartyManager getPartyManager() {
         return partyManager;
+    }
+
+    public CoreRankManager getRankManager() {
+        return rankManager;
     }
 
     @Override
@@ -340,9 +345,9 @@ public class Core extends CorePlugin<CorePlayer> {
     public void returnToHub(CorePlayer cp) {
         if (cp == null) return;
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
-            plugin.getPlayers().saveForTransfer(cp.getUniqueId());
+            //plugin.getPlayers().saveForTransfer(cp.getUniqueId());
         }
-        Core.getInstance().sendPacket(new PacketHub(Lists.newArrayList(cp)));
+        Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(cp)));
     }
 
     public void onBungeeConnect(UUID uuid) {

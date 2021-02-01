@@ -11,7 +11,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.NumberArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class WalkSpeedCommand extends CoreCommand {
 
     public WalkSpeedCommand() {
-        super("wspeed", Rank.MODERATOR, Rank.BUILDER);
+        super("wspeed", CoreRank.MODERATOR, CoreRank.BUILDER);
         addAlias("walkspeed");
         setUsage("/wspeed [player] <-10 to 10>");
         setDescription("Set walking speed");

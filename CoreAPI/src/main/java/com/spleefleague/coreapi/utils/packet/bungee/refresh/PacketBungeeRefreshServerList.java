@@ -20,8 +20,9 @@ public class PacketBungeeRefreshServerList extends PacketBungee {
         this.minigameServers = minigameServers;
     }
 
-    public int getTag() {
-        return PacketType.Bungee.SERVER_LIST.ordinal();
+    @Override
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.REFRESH_SERVER_LIST;
     }
 
 }

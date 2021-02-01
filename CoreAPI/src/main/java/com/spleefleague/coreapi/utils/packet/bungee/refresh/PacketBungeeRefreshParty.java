@@ -25,8 +25,9 @@ public class PacketBungeeRefreshParty extends PacketBungee {
         this.partyInfo = new PartyContainerInfo(players);
     }
 
-    public int getTag() {
-        return PacketType.Bungee.REFRESH_PARTY.ordinal();
+    @Override
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.REFRESH_PARTY;
     }
 
 }

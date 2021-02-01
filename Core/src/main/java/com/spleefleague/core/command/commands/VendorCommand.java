@@ -12,7 +12,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendor;
 
 import java.util.Iterator;
@@ -33,7 +33,7 @@ import com.spleefleague.core.menu.InventoryMenuContainerChest;
 public class VendorCommand extends CoreCommand {
     
     public VendorCommand() {
-        super("vendor", Rank.DEVELOPER);
+        super("vendor", CoreRank.DEVELOPER);
         setUsage("/vendor");
         setOptions("vendors", (cp) -> Vendors.getVendors().keySet());
     }

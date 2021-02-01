@@ -11,7 +11,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import org.bukkit.entity.Player;
 
@@ -21,7 +21,7 @@ import org.bukkit.entity.Player;
 public class ReplyCommand extends CoreCommand {
     
     public ReplyCommand() {
-        super("reply", Rank.DEFAULT);
+        super("reply", CoreRank.DEFAULT);
         addAlias("r");
         setUsage("/reply <message>");
     }

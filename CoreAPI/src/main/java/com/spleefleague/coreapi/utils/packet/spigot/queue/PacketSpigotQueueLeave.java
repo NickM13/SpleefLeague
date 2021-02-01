@@ -20,8 +20,8 @@ public class PacketSpigotQueueLeave extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.QUEUE_LEAVE.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.QUEUE_LEAVE;
     }
 
 }

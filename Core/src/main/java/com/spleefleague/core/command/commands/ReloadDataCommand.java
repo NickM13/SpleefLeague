@@ -11,10 +11,9 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.arena.Arenas;
-import com.spleefleague.core.menu.hotbars.main.CollectiblesMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.settings.Settings;
 
@@ -24,7 +23,7 @@ import com.spleefleague.core.settings.Settings;
 public class ReloadDataCommand extends CoreCommand {
     
     public ReloadDataCommand() {
-        super("reloaddata", Rank.DEVELOPER);
+        super("reloaddata", CoreRank.DEVELOPER);
     }
     
     @CommandAnnotation

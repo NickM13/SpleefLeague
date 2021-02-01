@@ -2,11 +2,24 @@ package com.spleefleague.proxycore.player;
 
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.PlayerStatistics;
+import com.spleefleague.coreapi.player.collectibles.PlayerCollectibles;
+import com.spleefleague.coreapi.player.options.PlayerOptions;
+import com.spleefleague.coreapi.player.purse.PlayerPurse;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
+import com.spleefleague.proxycore.party.ProxyParty;
+import com.spleefleague.proxycore.player.friends.ProxyFriendsList;
+import com.spleefleague.proxycore.player.ranks.ProxyPermanentRank;
+import com.spleefleague.proxycore.player.ranks.ProxyRank;
+import com.spleefleague.proxycore.player.ranks.ProxyTempRank;
+import com.spleefleague.proxycore.player.ratings.ProxyPlayerRatings;
+import com.spleefleague.proxycore.player.statistics.ProxyPlayerStatistics;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -28,19 +41,23 @@ public class ProxyCorePlayer extends DBPlayer {
     @DBField private String nickname = null;
     @DBField private UUID disguise = null;
 
-    @DBField private PermRank permRank;
-    @DBField private List<TempRank> tempRanks;
+    @DBField private ProxyPermanentRank permRank;
+    @DBField private List<ProxyTempRank> tempRanks;
 
     @DBField private Boolean vanished;
 
-    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
+    @DBField private final PlayerPurse purse = new PlayerPurse();
+    @DBField private final PlayerOptions options = new PlayerOptions();
+    @DBField private final PlayerCollectibles collectibles = new PlayerCollectibles();
 
-    @DBField private final CorePlayerOptions options = new CorePlayerOptions();
-    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles();
     @DBField private long lastOnline = -1;
 
-    private final ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings();
-    @DBField private final ProxyPlayerStatistics statistics = new ProxyPlayerStatistics();
+    @DBField private final ProxyPlayerRatings proxyRatings = new ProxyPlayerRatings(this);
+    @DBField private final ProxyPlayerStatistics statistics = new ProxyPlayerStatistics(this);
+
+    @DBField private final ProxyFriendsList friends = new ProxyFriendsList(this);
+
+    private boolean online = false;
 
     public ProxyCorePlayer() {
 
@@ -48,20 +65,56 @@ public class ProxyCorePlayer extends DBPlayer {
 
     @Override
     public void init() {
-        proxyRatings.setOwner(this);
-        statistics.setOwner(this);
+        online = true;
     }
 
     @Override
     public void initOffline() {
         super.initOffline();
-        proxyRatings.setOwner(this);
-        statistics.setOwner(this);
+        online = false;
     }
 
     @Override
     public void close() {
 
+    }
+
+    /**
+     * @return Name of player as TextComponent to allow for quick /tell
+     */
+    public TextComponent getChatName() {
+        TextComponent text = new TextComponent(getRank().getColor() + nickname);
+
+        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
+        text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + nickname));
+
+        return text;
+    }
+
+    /**
+     * Returns highest TempRank, if no TempRanks available then Permanent Rank
+     * This allows us to set Admins to Default for a set time
+     *
+     * @return Highest TempRank, if no TempRanks available then Permanent Rank
+     */
+    public ProxyRank getRank() {
+        if (tempRanks.size() > 0) {
+            ProxyTempRank highestRank = null;
+            for (ProxyTempRank ctr : tempRanks) {
+                if (highestRank == null ||
+                        ctr.getRank().getLadder() > highestRank.getRank().getLadder()) {
+                    highestRank = ctr;
+                }
+            }
+            if (highestRank != null) {
+                return highestRank.getRank();
+            }
+        }
+        return permRank.getRank();
+    }
+
+    public void setLastOnline() {
+        lastOnline = System.currentTimeMillis();
     }
 
     public PlayerStatistics getStatistics() {
@@ -117,6 +170,10 @@ public class ProxyCorePlayer extends DBPlayer {
 
     public ProxyPlayerRatings getProxyRatings() {
         return proxyRatings;
+    }
+
+    public ProxyFriendsList getFriends() {
+        return friends;
     }
 
     public void setLastQueueRequest(PacketSpigotQueueJoin packet) {

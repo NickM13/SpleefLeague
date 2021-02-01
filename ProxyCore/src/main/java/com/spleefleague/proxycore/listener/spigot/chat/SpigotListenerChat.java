@@ -14,7 +14,7 @@ public class SpigotListenerChat extends SpigotListener<PacketSpigotChat> {
 
     @Override
     protected void receive(Connection sender, PacketSpigotChat packet) {
-        ProxyCore.getInstance().sendPacket(new PacketBungeeChat(packet));
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeChat(packet));
     }
 
 }

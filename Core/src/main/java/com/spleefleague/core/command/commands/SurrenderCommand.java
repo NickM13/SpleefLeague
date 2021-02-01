@@ -11,7 +11,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * @author NickM13
@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.Rank;
 public class SurrenderCommand extends CoreCommand {
     
     public SurrenderCommand() {
-        super("surrender", Rank.DEFAULT);
+        super("surrender", CoreRank.DEFAULT);
         this.addAlias("ff");
     }
     

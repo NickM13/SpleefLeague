@@ -3,7 +3,7 @@ package com.spleefleague.core.menu.hotbars.main.options.moderator;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.Material;
 
 /**
@@ -19,7 +19,7 @@ public class ArenaMenu {
                 .setName("Arena Setup")
                 .setDisplayItem(Material.GRASS_BLOCK)
                 .setDescription("For editing arena values of all gamemodes")
-                .setAvailability(cp -> cp.getRank().hasPermission(Rank.DEVELOPER))
+                .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.DEVELOPER))
                 .createLinkedContainer("Arenas");
         
         menuItem.getLinkedChest()

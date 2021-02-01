@@ -96,26 +96,22 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         
     }
     
-    private CorePlayer owner;
+    private final CorePlayer owner;
     private final SortedMap<String, Map<String, CollectibleInfo>> collectibles;
     private final SortedMap<String, String> activeCollectibles;
     private final SortedMap<String, Boolean> enabledMap;
     private final Set<String> collectedLeaves;
     private Holdable heldItem;
-    
-    public CorePlayerCollectibles() {
+
+    public CorePlayerCollectibles(CorePlayer owner) {
+        this.owner = owner;
         this.collectibles = new TreeMap<>();
         this.activeCollectibles = new TreeMap<>();
         this.enabledMap = new TreeMap<>();
         this.collectedLeaves = new HashSet<>();
-        this.owner = null;
         this.heldItem = null;
     }
-    
-    public void setOwner(CorePlayer owner) {
-        this.owner = owner;
-    }
-    
+
     /**
      * Collectibles are saved to documents within a document
      * example:

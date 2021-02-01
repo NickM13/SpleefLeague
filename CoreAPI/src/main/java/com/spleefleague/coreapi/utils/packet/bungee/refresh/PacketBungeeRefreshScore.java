@@ -25,8 +25,8 @@ public class PacketBungeeRefreshScore extends PacketBungee {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Bungee.REFRESH_SCORE.ordinal();
+    public PacketType.Bungee getBungeeTag() {
+        return PacketType.Bungee.REFRESH_SCORE;
     }
 
 }

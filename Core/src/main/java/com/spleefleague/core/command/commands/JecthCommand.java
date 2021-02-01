@@ -12,7 +12,7 @@ import com.spleefleague.core.command.annotation.EnumArg;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.Material;
 
 import javax.annotation.Nullable;
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 public class JecthCommand extends CoreCommand {
 
     public JecthCommand() {
-        super("jecth", Rank.DEVELOPER);
+        super("jecth", CoreRank.DEVELOPER);
     }
     
     @CommandAnnotation

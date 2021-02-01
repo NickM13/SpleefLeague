@@ -1,12 +1,13 @@
 package com.spleefleague.coreapi.player.purse;
 
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.player.purse.currency.currencies.*;
 
 /**
  * @author NickM13
  */
-public class PlayerPurse {
+public class PlayerPurse extends DBEntity {
 
     @DBField private final CurrencyCoin coins = new CurrencyCoin();
     @DBField private final CurrencyCommonOre commonOre = new CurrencyCommonOre();

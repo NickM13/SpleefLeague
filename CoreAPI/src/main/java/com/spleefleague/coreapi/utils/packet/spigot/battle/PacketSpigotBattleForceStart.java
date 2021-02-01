@@ -30,8 +30,8 @@ public class PacketSpigotBattleForceStart extends PacketSpigot {
     }
 
     @Override
-    public int getTag() {
-        return PacketType.Spigot.FORCE_START.ordinal();
+    public PacketType.Spigot getSpigotTag() {
+        return PacketType.Spigot.BATTLE_FORCE_START;
     }
 
 }

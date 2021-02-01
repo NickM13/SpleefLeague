@@ -9,7 +9,7 @@ import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.gear.Gear;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorables;
 
 import java.util.Objects;
@@ -21,7 +21,7 @@ import java.util.Objects;
 public class GearCommand extends HoldableCommand {
 
     public GearCommand() {
-        super(Gear.class, "gear", Rank.DEVELOPER);
+        super(Gear.class, "gear", CoreRank.DEVELOPER);
         this.setOptions("shovelTypes", cp -> Gear.getGearTypes());
     }
 

@@ -9,7 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -20,7 +20,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 public class ColorArmorCommand extends CoreCommand {
     
     public ColorArmorCommand() {
-        super("colorarmor", Rank.SENIOR_MODERATOR);
+        super("colorarmor", CoreRank.SENIOR_MODERATOR);
         setUsage("/colorarmor <r=0-255> <g=0-255> <b=0-255>");
         setDescription("¯\\_(ツ)_/¯");
     }

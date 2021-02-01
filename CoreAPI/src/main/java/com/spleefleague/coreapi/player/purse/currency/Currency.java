@@ -1,12 +1,12 @@
 package com.spleefleague.coreapi.player.purse.currency;
 
 import com.spleefleague.coreapi.chat.Chat;
-import com.spleefleague.coreapi.database.variable.DBVariable;
-import org.bson.Document;
+import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 
-public abstract class Currency extends DBVariable<Document> {
+public abstract class Currency extends DBEntity {
 
-    protected int amount = 0;
+    @DBField protected int amount = 0;
 
     public Currency() {
 
@@ -17,18 +17,6 @@ public abstract class Currency extends DBVariable<Document> {
     public abstract String getChatColor();
 
     public abstract String getName();
-
-    @Override
-    public void load(Document document) {
-        amount = document.getInteger("amount");
-    }
-
-    @Override
-    public Document save() {
-        Document doc = new Document();
-        doc.put("amount", amount);
-        return doc;
-    }
 
     public int getAmount() {
         return amount;
