@@ -8,6 +8,7 @@ package com.spleefleague.core.game.battle;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -89,6 +90,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected final List<BP> sortedBattlers = new ArrayList<>();
     protected final Set<BP> remainingPlayers = new HashSet<>();
     protected final Set<BP> deadBattlers = new HashSet<>();
+    protected final Set<UUID> battlerUuids = new HashSet<>();
     
     private final Map<String, BattleRequest> battleRequests = new HashMap<>();
     
@@ -174,6 +176,10 @@ public abstract class Battle<BP extends BattlePlayer> {
      */
     protected abstract void sendStartMessage();
 
+    protected final void sendNotification(TextComponent text) {
+        getPlugin().sendMessageFriends(text, ChatChannel.GLOBAL, battlers.keySet().stream().map(CorePlayer::getUniqueId).collect(Collectors.toSet()));
+    }
+
     /**
      * Start a round<br>
      * Resets the field and its players, also used in Reset Request
@@ -249,6 +255,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                 BP bp = c.newInstance(cp2, this);
                 bp.setSpawn(getSpawn(battlers.size()).toLocation(arena.getWorld()));
                 battlers.put(cp2, bp);
+                battlerUuids.add(cp2.getUniqueId());
                 sortedBattlers.add(bp);
                 //spawnBattler(bp);
             }
@@ -285,6 +292,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         if (!battlers.containsKey(cp)) return;
         saveBattlerStats(battlers.get(cp));
         battlers.remove(cp);
+        battlerUuids.remove(cp.getUniqueId());
         removePlayer(cp);
     }
 

@@ -102,6 +102,8 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
         container.addStaticItem(classicMenu, 6, 1);
         container.addStaticItem(multiMenu, 5, 1);
 
+        SpleggGun.createMenu();
+
         GamemodeMenu.getItem().getLinkedChest().addStaticItem(spleggMenuItem, 4, 1);
 
         LeaderboardMenu.addLeaderboardMenu(SpleggMode.VERSUS.getBattleMode());

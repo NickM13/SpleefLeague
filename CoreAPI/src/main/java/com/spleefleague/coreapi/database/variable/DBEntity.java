@@ -13,12 +13,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.mongodb.client.model.UpdateOptions;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
-import com.spleefleague.coreapi.database.converter.FieldConverter;
-import com.spleefleague.coreapi.database.converter.converters.EnumConverter;
+import com.spleefleague.coreapi.utils.PacketUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -96,7 +94,7 @@ public class DBEntity {
         }
 
         if (clazz == float.class) {
-            return (double) obj;
+            return ((Double) obj).floatValue();
         } else if (Enum.class.isAssignableFrom(clazz)) {
             return ((Enum<?>) obj).name();
         } else if (DBVariable.class.isAssignableFrom(clazz)) {
@@ -106,9 +104,30 @@ public class DBEntity {
         } else if (DBEntity.class.isAssignableFrom(clazz)) {
             DBEntity dbe = (DBEntity) obj;
             return dbe.toDocument();
-        } else {
-            return obj;
+        } else if (Map.class.isAssignableFrom(clazz)) {
+            Map map = (Map<?, ?>) obj;
+            Document doc = new Document();
+            for (Object mapObj : map.entrySet()) {
+                Map.Entry entry = (Map.Entry) mapObj;
+                doc.put(toDocumentable(entry.getKey().getClass(), entry.getKey()).toString(), toDocumentable(entry.getValue().getClass(), entry.getValue()));
+            }
+            return doc;
+        } else if (List.class.isAssignableFrom(clazz)) {
+            List<?> list = (List<?>) obj;
+            List<Object> newList = new ArrayList<>();
+            for (Object o : list) {
+                newList.add(toDocumentable(o.getClass(), o));
+            }
+            return newList;
+        } else if (Set.class.isAssignableFrom(clazz)) {
+            Set<?> set = (Set<?>) obj;
+            List<Object> newList = new ArrayList<>();
+            for (Object o : set) {
+                newList.add(toDocumentable(o.getClass(), o));
+            }
+            return newList;
         }
+        return obj;
     }
 
     /**
@@ -122,7 +141,7 @@ public class DBEntity {
         while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
             for (Field f : clazz.getDeclaredFields()) {
                 DBField dbField = f.getAnnotation(DBField.class);
-                if (dbField != null && dbField.save()) {
+                if (dbField != null && dbField.write()) {
                     try {
                         f.setAccessible(true);
                         if (f.getName().equals("_id") || f.get(this) == null) continue;
@@ -169,6 +188,151 @@ public class DBEntity {
         }
     }
 
+    private Object convertToField(Class<?> clazz, Object obj) {
+        try {
+            if (noConvertSet.contains(clazz)) {
+                return obj;
+            } else if (clazz == float.class) {
+                return ((Double) obj).floatValue();
+            } else if (clazz.equals(UUID.class)) {
+                return UUID.fromString((String) obj);
+            } else if (Enum.class.isAssignableFrom(clazz)) {
+                try {
+                    return clazz.getDeclaredMethod("valueOf", String.class).invoke(clazz, obj.toString());
+                } catch (ClassCastException exception) {
+                    return false;
+                }
+            } else if (DBEntity.class.isAssignableFrom(clazz)) {
+                DBEntity dbEntity = (DBEntity) clazz.getDeclaredConstructor().newInstance();
+                dbEntity.load((Document) obj);
+                return dbEntity;
+            } else if (DBVariable.class.isAssignableFrom(clazz)) {
+                DBVariable<?> dbVar = (DBVariable<?>) clazz.getDeclaredConstructor().newInstance();
+                for (Method method : clazz.getMethods()) {
+                    if (method.getName().equalsIgnoreCase("load")) {
+                        method.invoke(dbVar, obj);
+                        break;
+                    }
+                }
+                return dbVar;
+            }
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+            Logger.getGlobal().log(Level.SEVERE, null, e);
+        }
+        return null;
+    }
+
+    private boolean loadField(Field field, Object docObj) {
+        try {
+            if (noConvertSet.contains(field.getType())) {
+                field.set(this, docObj);
+            } else if (field.getType() == float.class) {
+                field.set(this, ((Double) docObj).floatValue());
+            } else if (field.getType().equals(UUID.class)) {
+                field.set(this, UUID.fromString((String) docObj));
+            } else if (Map.class.isAssignableFrom(field.getType())) {
+                Map mapObj = (Map<?, ?>) field.get(this);
+                if (mapObj == null) {
+                    try {
+                        mapObj = (Map<?, ?>) field.getType().getConstructor().newInstance();
+                    } catch (NoSuchMethodException exception) {
+                        mapObj = new HashMap<>();
+                    }
+                } else {
+                    mapObj.clear();
+                }
+                for (Map.Entry<String, ?> entry : ((Document) docObj).entrySet()) {
+                    mapObj.put(entry.getKey(), entry.getValue());
+                }
+                field.set(this, mapObj);
+            } else if (List.class.isAssignableFrom(field.getType())) {
+                List listObj = (List<?>) field.get(this);
+                if (listObj == null) {
+                    try {
+                        listObj = (List<?>) field.getType().getConstructor().newInstance();
+                    } catch (NoSuchMethodException exception) {
+                        listObj = new ArrayList<>();
+                    }
+                } else {
+                    listObj.clear();
+                }
+                ParameterizedType type = (ParameterizedType) field.getGenericType();
+                Class<?> clazz = (Class<?>) type.getActualTypeArguments()[0];
+                for (Object o : (List<?>) docObj) {
+                    listObj.add(convertToField(clazz, o));
+                }
+                field.set(this, listObj);
+            } else if (Set.class.isAssignableFrom(field.getType())) {
+                Set setObj = (Set<?>) field.get(this);
+                if (setObj == null) {
+                    try {
+                        setObj = (Set<?>) field.getType().getConstructor().newInstance();
+                    } catch (NoSuchMethodException exception) {
+                        setObj = new HashSet<>();
+                    }
+                } else {
+                    setObj.clear();
+                }
+                ParameterizedType type = (ParameterizedType) field.getGenericType();
+                Class<?> clazz = (Class<?>) type.getActualTypeArguments()[0];
+                for (Object o : (List<?>) docObj) {
+                    setObj.add(convertToField(clazz, o));
+                }
+                field.set(this, setObj);
+            } else if (Enum.class.isAssignableFrom(field.getType())) {
+                try {
+                    field.set(this, field.getType().getDeclaredMethod("valueOf", String.class).invoke(field.getType(), docObj.toString()));
+                } catch (ClassCastException exception) {
+                    return false;
+                }
+            } else if (DBEntity.class.isAssignableFrom(field.getType())) {
+                DBEntity dbEntity = (DBEntity) field.get(this);
+                if (field.get(this) == null) {
+                    dbEntity = (DBEntity) field.getType().getDeclaredConstructor().newInstance();
+                }
+                dbEntity.load((Document) docObj);
+                field.set(this, dbEntity);
+            } else if (DBVariable.class.isAssignableFrom(field.getType())) {
+                DBVariable<?> dbVar = (DBVariable<?>) field.get(this);
+                if (dbVar == null) {
+                    dbVar = (DBVariable<?>) field.getType().getDeclaredConstructor().newInstance();
+                }
+                for (Method method : field.getType().getMethods()) {
+                    if (method.getName().equalsIgnoreCase("load")) {
+                        method.invoke(dbVar, docObj);
+                        break;
+                    }
+                }
+                field.set(this, dbVar);
+            } else {
+                return false;
+            }
+            return true;
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+            Logger.getGlobal().log(Level.SEVERE, null, e);
+        }
+        return false;
+    }
+
+    public boolean reloadField(Document doc, Set<String> fieldNames) {
+        Class<?> clazz = this.getClass();
+        while (clazz != null && DBEntity.class.isAssignableFrom(clazz) && !fieldNames.isEmpty()) {
+            for (Field field : clazz.getDeclaredFields()) {
+                DBField dbField = field.getAnnotation(DBField.class);
+                if (dbField != null && dbField.read()) {
+                    field.setAccessible(true);
+                    String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : field.getName();
+                    if (!fieldNames.contains(fieldName) ||
+                            !doc.containsKey(fieldName)) continue;
+                    loadField(field, doc.get(fieldName));
+                    fieldNames.remove(fieldName);
+                    if (fieldNames.isEmpty()) break;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Loads fields from a Document into the DBEntity
      *
@@ -180,78 +344,13 @@ public class DBEntity {
         Class<?> clazz = this.getClass();
         boolean fullSuccess = true;
         while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
-            for (Field f : clazz.getDeclaredFields()) {
-                DBField dbField = f.getAnnotation(DBField.class);
-                if (dbField != null && dbField.load()) {
-                    try {
-                        f.setAccessible(true);
-                        String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : f.getName();
-                        if (!doc.containsKey(fieldName)) continue;
-                        Object obj = null;
-                        if (f.getType() == boolean.class) {
-                            f.setBoolean(this, doc.getBoolean(fieldName));
-                            continue;
-                        } else if (f.getType() == int.class) {
-                            f.setInt(this, doc.getInteger(fieldName));
-                            continue;
-                        } else if (f.getType() == long.class) {
-                            f.setLong(this, doc.getLong(fieldName));
-                            continue;
-                        } else if (f.getType() == float.class) {
-                            f.setFloat(this, doc.getDouble(fieldName).floatValue());
-                            continue;
-                        } else if (f.getType() == double.class) {
-                            f.setDouble(this, doc.getDouble(fieldName));
-                            continue;
-                        } else if (Enum.class.isAssignableFrom(f.getType())) {
-                            try {
-                                obj = f.getType().getDeclaredMethod("valueOf", String.class).invoke(f.getType(), doc.get(fieldName, String.class));
-                            } catch (ClassCastException exception) {
-                                fullSuccess = false;
-                            }
-                        } else if (DBVariable.class.isAssignableFrom(f.getType())) {
-                            for (Method method : f.getType().getMethods()) {
-                                if (method.getName().equalsIgnoreCase("load")) {
-                                    if (f.get(this) == null) {
-                                        obj = f.getType().getDeclaredConstructor().newInstance();
-                                    } else {
-                                        obj = f.get(this);
-                                    }
-                                    method.invoke(obj, doc.get(fieldName, method.getParameters()[0].getType()));
-                                    break;
-                                }
-                            }
-                        } else if (f.getType().equals(UUID.class)) {
-                            obj = UUID.fromString(doc.get(fieldName, String.class));
-                        } else if (DBEntity.class.isAssignableFrom(f.getType())) {
-                            if (f.get(this) == null) {
-                                obj = f.getType().getDeclaredConstructor().newInstance();
-                            } else {
-                                obj = f.get(this);
-                            }
-                            ((DBEntity) obj).load(doc.get(fieldName, Document.class));
-                        } else if (Set.class.isAssignableFrom(f.getType())) {
-                            obj = new HashSet<>();
-                            ((HashSet<?>) obj).addAll(doc.get(fieldName, List.class));
-                        } else {
-                            try {
-                                obj = doc.get(fieldName, f.getType());
-                            } catch (ClassCastException exception) {
-                                Logger.getGlobal().log(Level.SEVERE, null, exception);
-                                fullSuccess = false;
-                            }
-                        }
-                        if (obj != null) {
-                            if (f.getType().isAssignableFrom(obj.getClass())) {
-                                f.set(this, obj);
-                            }
-                        }
-                    } catch (IllegalArgumentException | IllegalAccessException
-                            | InvocationTargetException | InstantiationException
-                            | NoSuchMethodException exception) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, exception);
-                        fullSuccess = false;
-                    }
+            for (Field field : clazz.getDeclaredFields()) {
+                DBField dbField = field.getAnnotation(DBField.class);
+                if (dbField != null && dbField.read()) {
+                    field.setAccessible(true);
+                    String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : field.getName();
+                    if (!doc.containsKey(fieldName)) continue;
+                    loadField(field, doc.get(fieldName));
                 }
             }
             for (Method m : clazz.getDeclaredMethods()) {

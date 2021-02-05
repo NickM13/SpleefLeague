@@ -3,6 +3,8 @@ package com.spleefleague.coreapi.utils.packet.bungee.player;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -12,23 +14,33 @@ import java.util.UUID;
 public class PacketBungeePlayerResync extends PacketBungee {
 
     public enum Field {
-        RANK,
-        FRIENDS,
-        RATINGS,
-        COLLECTIBLES,
-        PURSE
+        COLLECTIBLES("collectibles"),
+        CRATES("crates"),
+        FRIENDS("fields"),
+        PURSE("purse"),
+        RANK("");
+
+        String fieldName;
+
+        Field(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
     }
 
-    public Field field;
     public UUID uuid;
+    public List<Field> fields = new ArrayList<>();
 
     public PacketBungeePlayerResync() {
 
     }
 
-    public PacketBungeePlayerResync(Field field, UUID uuid) {
-        this.field = field;
+    public PacketBungeePlayerResync(UUID uuid, List<Field> fields) {
         this.uuid = uuid;
+        this.fields = fields;
     }
 
     @Override

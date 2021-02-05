@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.spleefleague.coreapi.utils.packet.shared.PacketVariable;
+import org.bson.Document;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,15 +31,15 @@ public class PacketUtil {
                 return str.isEmpty() ? null : UUID.fromString(str);
             } else if (type.equals(String.class)) {
                 return input.readUTF();
-            } else if (type.equals(boolean.class)) {
+            } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
                 return input.readBoolean();
-            } else if (type.equals(int.class)) {
+            } else if (type.equals(int.class) || type.equals(Integer.class)) {
                 return input.readInt();
-            } else if (type.equals(double.class)) {
+            } else if (type.equals(double.class) || type.equals(Double.class)) {
                 return input.readDouble();
-            } else if (type.equals(float.class)) {
+            } else if (type.equals(float.class) || type.equals(Float.class)) {
                 return input.readFloat();
-            } else if (type.equals(long.class)) {
+            } else if (type.equals(long.class) || type.equals(Long.class)) {
                 return input.readLong();
             } else if (Collection.class.isAssignableFrom(type)) {
                 int size = input.readInt();
@@ -77,15 +78,15 @@ public class PacketUtil {
                 return str.isEmpty() ? null : UUID.fromString(str);
             } else if (field.getType().equals(String.class)) {
                 return input.readUTF();
-            } else if (field.getType().equals(boolean.class)) {
+            } else if (field.getType().equals(boolean.class) || field.getType().equals(Boolean.class)) {
                 return input.readBoolean();
-            } else if (field.getType().equals(int.class)) {
+            } else if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
                 return input.readInt();
-            } else if (field.getType().equals(double.class)) {
+            } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
                 return input.readDouble();
-            } else if (field.getType().equals(float.class)) {
+            } else if (field.getType().equals(float.class) || field.getType().equals(Float.class)) {
                 return input.readFloat();
-            } else if (field.getType().equals(long.class)) {
+            } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
                 return input.readLong();
             } else if (Collection.class.isAssignableFrom(field.getType())) {
                 int size = input.readInt();
@@ -132,15 +133,15 @@ public class PacketUtil {
             output.writeUTF(o == null ? "" : o.toString());
         } else if (type.equals(String.class)) {
             output.writeUTF((String) o);
-        } else if (type.equals(boolean.class)) {
+        } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
             output.writeBoolean((boolean) o);
-        } else if (type.equals(int.class)) {
+        } else if (type.equals(int.class) || type.equals(Integer.class)) {
             output.writeInt((int) o);
-        } else if (type.equals(double.class)) {
+        } else if (type.equals(double.class) || type.equals(Double.class)) {
             output.writeDouble((double) o);
-        } else if (type.equals(float.class)) {
+        } else if (type.equals(float.class) || type.equals(Float.class)) {
             output.writeFloat((float) o);
-        } else if (type.equals(long.class)) {
+        } else if (type.equals(long.class) || type.equals(Long.class)) {
             output.writeLong((long) o);
         } else if (Collection.class.isAssignableFrom(type)) {
             Collection<?> col = (Collection<?>) o;

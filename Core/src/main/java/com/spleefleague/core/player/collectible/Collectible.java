@@ -4,10 +4,15 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.background.MenuBackground;
+import com.spleefleague.core.player.collectible.field.FieldGeneration;
 import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.collectible.key.Key;
+import com.spleefleague.core.player.collectible.music.Song;
+import com.spleefleague.core.player.collectible.particles.Particles;
 import com.spleefleague.core.player.collectible.pet.Pet;
+import com.spleefleague.core.player.collectible.victory.VictoryMessage;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
@@ -38,10 +43,17 @@ public abstract class Collectible extends Vendorable {
     }
 
     public static void init() {
+        Vendorables.init();
+
         Hat.init();
         Key.init();
         Pet.init();
         Gear.init();
+        MenuBackground.init();
+        FieldGeneration.init();
+        Song.init();
+        Particles.init();
+        VictoryMessage.init();
         collectiblesCol = Core.getInstance().getPluginDB().getCollection("Collectibles");
         loadDatabase();
     }
@@ -67,6 +79,11 @@ public abstract class Collectible extends Vendorable {
         Key.close();
         Pet.close();
         Gear.close();
+        MenuBackground.close();
+        FieldGeneration.close();
+        Song.close();
+        Particles.close();
+        VictoryMessage.close();
     }
 
     public static <T extends Collectible> T create(Class<T> collectibleClass, String identifier, String displayName) {
@@ -222,7 +239,7 @@ public abstract class Collectible extends Vendorable {
     }
 
     public final ItemStack getDisplayItem(String skin) {
-        if (skin == null || !skins.containsKey(skin)) {
+        if (skin == null || skin.isEmpty() || !skins.containsKey(skin)) {
             return getDisplayItem();
         }
         return skins.get(skin).getDisplayItem();

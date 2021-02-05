@@ -3,6 +3,7 @@ package com.spleefleague.core.game.battle.versus;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -83,13 +84,14 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     protected void sendStartMessage() {
         TextComponent text = new TextComponent();
+        text.setColor(ChatColor.GRAY.asBungee());
         text.addExtra("Starting ");
         text.addExtra(getMode().getDisplayName());
         text.addExtra(" match on ");
         text.addExtra(Chat.GAMEMAP + arena.getName());
         text.addExtra(" between ");
         text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
-        getPlugin().sendMessage(text);
+        sendNotification(text);
     }
     
     @Override

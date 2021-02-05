@@ -11,8 +11,10 @@ import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.menu.hotbars.main.HeldItemMenu;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
@@ -135,6 +137,18 @@ public class SpleggGun extends Holdable {
                 .setCloseOnAction(false);
     }
 
+    public static void createMenu() {
+        InventoryMenuItem shovelMenu = CorePlayerCollectibles.createCollectibleContainer(SpleggGun.class,
+                InventoryMenuAPI.createItemDynamic()
+                        .setName("Splegg Guns")
+                        .setDescription("Set your active Splegg Gun")
+                        .setDisplayItem(getDefault().getDisplayItem()));
+
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(shovelMenu, 1, 0);
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createActiveMenuItem(SpleggGun.class), 1, 1);
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(SpleggGun.class), 1, 2);
+    }
+
     public static InventoryMenuItem createMenu(String affix, String secondary) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> {
@@ -182,8 +196,10 @@ public class SpleggGun extends Holdable {
                     .setDescription(cp -> spleggGun.isAvailable(cp) ? spleggGun.getDescription() : "")
                     .setAction(cp -> {
                         if (spleggGun.isAvailable(cp)) {
-                            if (cp.getCollectibles().getActive(SpleggGun.class, secondary).equals(spleggGun)) {
-                                cp.getCollectibles().setActiveItem(cp.getCollectibles().getActive(SpleggGun.class, affix), secondary);
+                            SpleggGun gunCurrent = cp.getCollectibles().getActive(SpleggGun.class, affix);
+                            SpleggGun gunOther = cp.getCollectibles().getActive(SpleggGun.class, secondary);
+                            if (gunOther != null && gunOther.equals(spleggGun)) {
+                                cp.getCollectibles().setActiveItem(gunCurrent, secondary);
                             }
                             cp.getCollectibles().setActiveItem(spleggGun, affix);
                         }

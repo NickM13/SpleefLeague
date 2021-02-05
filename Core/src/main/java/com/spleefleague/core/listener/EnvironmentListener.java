@@ -445,7 +445,7 @@ public class EnvironmentListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!event.getNewGameMode().equals(cp.getGameMode())) {
+        if (cp == null || !event.getNewGameMode().equals(cp.getGameMode())) {
             event.setCancelled(true);
         }
     }

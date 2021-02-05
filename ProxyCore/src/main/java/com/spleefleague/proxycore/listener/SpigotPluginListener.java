@@ -3,15 +3,17 @@ package com.spleefleague.proxycore.listener;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.spleefleague.coreapi.utils.packet.PacketType;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.PacketBungeeBundleIn;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
+import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigotBundleIn;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.listener.spigot.battle.*;
-import com.spleefleague.proxycore.listener.spigot.chat.SpigotListenerChat;
-import com.spleefleague.proxycore.listener.spigot.chat.SpigotListenerChatTell;
+import com.spleefleague.proxycore.listener.spigot.chat.*;
 import com.spleefleague.proxycore.listener.spigot.friend.SpigotListenerFriend;
 import com.spleefleague.proxycore.listener.spigot.party.SpigotListenerParty;
-import com.spleefleague.proxycore.listener.spigot.player.SpigotListenerPlayerRating;
+import com.spleefleague.proxycore.listener.spigot.player.*;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueJoin;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueLeave;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueRequeue;
@@ -41,28 +43,42 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.BATTLE_SPECTATE, new SpigotListenerBattleSpectate());
         registeredListeners.put(PacketType.Spigot.BATTLE_CHALLENGE, new SpigotListenerBattleChallenge());
         registeredListeners.put(PacketType.Spigot.BATTLE_FORCE_START, new SpigotListenerBattleForceStart());
-        registeredListeners.put(PacketType.Spigot.CHAT, new SpigotListenerChat());
+        registeredListeners.put(PacketType.Spigot.CHAT_CHANNEL_JOIN, new SpigotListenerChatChannelJoin());
+        registeredListeners.put(PacketType.Spigot.CHAT_CONSOLE, new SpigotListenerChatConsole());
+        registeredListeners.put(PacketType.Spigot.CHAT_FRIEND, new SpigotListenerChatFriend());
+        registeredListeners.put(PacketType.Spigot.CHAT_GROUP, new SpigotListenerChatGroup());
+        registeredListeners.put(PacketType.Spigot.CHAT_PLAYER, new SpigotListenerChatPlayer());
         registeredListeners.put(PacketType.Spigot.CHAT_TELL, new SpigotListenerChatTell());
         registeredListeners.put(PacketType.Spigot.FRIEND, new SpigotListenerFriend());
         registeredListeners.put(PacketType.Spigot.PARTY, new SpigotListenerParty());
+        registeredListeners.put(PacketType.Spigot.PLAYER_COLLECTIBLE, new SpigotListenerPlayerCollectible());
+        registeredListeners.put(PacketType.Spigot.PLAYER_COLLECTIBLE_SKIN, new SpigotListenerPlayerCollectibleSkin());
+        registeredListeners.put(PacketType.Spigot.PLAYER_CRATE, new SpigotListenerPlayerCrate());
+        registeredListeners.put(PacketType.Spigot.PLAYER_CURRENCY, new SpigotListenerPlayerCurrency());
+        registeredListeners.put(PacketType.Spigot.PLAYER_INFRACTION, new SpigotListenerPlayerInfraction());
+        registeredListeners.put(PacketType.Spigot.PLAYER_OPTIONS, new SpigotListenerPlayerOptions());
+        registeredListeners.put(PacketType.Spigot.PLAYER_RANK, new SpigotListenerPlayerRank());
+        registeredListeners.put(PacketType.Spigot.PLAYER_RATING, new SpigotListenerPlayerRating());
         registeredListeners.put(PacketType.Spigot.QUEUE_JOIN, new SpigotListenerQueueJoin());
         registeredListeners.put(PacketType.Spigot.QUEUE_LEAVE, new SpigotListenerQueueLeave());
         registeredListeners.put(PacketType.Spigot.QUEUE_REQUEUE, new SpigotListenerQueueRequeue());
         registeredListeners.put(PacketType.Spigot.SERVER_HUB, new SpigotListenerServerHub());
         registeredListeners.put(PacketType.Spigot.SERVER_DIRECT, new SpigotListenerServerDirect());
-        registeredListeners.put(PacketType.Spigot.PLAYER_RATING, new SpigotListenerPlayerRating());
-        registeredListeners.put(PacketType.Spigot.PLAYER_CURRENCY, new SpigotListenerPlayerRating());
     }
 
     @EventHandler
     public void onPluginMessageReceived(PluginMessageEvent event) {
         if (event.getTag().equalsIgnoreCase("slcore:spigot")) {
             try {
-                ByteArrayDataInput input = ByteStreams.newDataInput(event.getData());
-                PacketType.Spigot tag = PacketType.Spigot.values()[input.readInt()];
-                PacketSpigot packet = tag.getClazz().getDeclaredConstructor().newInstance();
-                packet.fromByteArray(input);
-                registeredListeners.get(tag).receivePacket(event.getSender(), packet);
+                PacketSpigotBundleIn packetBundle = new PacketSpigotBundleIn();
+                packetBundle.fromByteArray(event.getData());
+                for (PacketSpigot packet : packetBundle.packets) {
+                    if (registeredListeners.containsKey(packet.getSpigotTag())) {
+                        registeredListeners.get(packet.getSpigotTag()).receivePacket(event.getSender(), packet);
+                    } else {
+                        System.out.println("Received packet with no listener: " + packet.getSpigotTag());
+                    }
+                }
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException exception) {
                 exception.printStackTrace();
             }

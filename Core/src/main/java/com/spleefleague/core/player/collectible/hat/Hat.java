@@ -22,7 +22,7 @@ public class Hat extends Collectible {
                 .setName(cp -> cp.getCollectibles().getActiveName(Hat.class))
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Hat.class))
                 .setDescription(cp -> cp.getCollectibles().getActive(Hat.class).getDescription())
-                .setAvailability(cp -> !cp.isBattler() && cp.getCollectibles().hasActive(Hat.class) && cp.getCollectibles().isEnabled(Hat.class));
+                .setAvailability(cp -> cp.getCollectibles().hasActive(Hat.class) && cp.getCollectibles().isEnabled(Hat.class));
     }
 
     public static void close() {

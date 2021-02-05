@@ -118,13 +118,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
             }
         }
         if (!loadFail && lowest != null) {
-            if (lowest.getY() + origin.getY() < 0) {
+            if (lowest.getY() < 0) {
                 loadFail = true;
-                CoreLogger.logError("Build World due to going below world (" + (lowest.getY() + origin.getY()) + ")");
+                CoreLogger.logError("Build World due to going below world (" + (lowest.getY()) + ")");
             }
-            if (highest.getY() + origin.getY() > 255) {
+            if (highest.getY() > 255) {
                 loadFail = true;
-                CoreLogger.logError("Build World due to exceeding world height (" + (lowest.getY() + origin.getY()) + ")");
+                CoreLogger.logError("Build World due to exceeding world height (" + (highest.getY()) + ")");
             }
         }
         if (!loadFail) {

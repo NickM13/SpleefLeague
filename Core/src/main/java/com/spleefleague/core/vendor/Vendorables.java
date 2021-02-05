@@ -1,6 +1,7 @@
 package com.spleefleague.core.vendor;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.player.collectible.Collectible;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -17,7 +18,16 @@ public class Vendorables {
     
     // <<Type, <Identifier, Vendorable>>
     private static final Map<String, Map<String, Vendorable>> VENDORABLE_MAP = new TreeMap<>();
-    
+    private static final Map<Vendorable.Rarity, Set<String>> RARITY_MAP = new HashMap<>();
+
+    public static void init() {
+        VENDORABLE_MAP.clear();
+        RARITY_MAP.clear();
+        for (Vendorable.Rarity rarity : Vendorable.Rarity.values()) {
+            RARITY_MAP.put(rarity, new HashSet<>());
+        }
+    }
+
     /**
      * Get the nbt tag under ventype
      *
@@ -53,11 +63,22 @@ public class Vendorables {
     public static void clear() {
         VENDORABLE_MAP.clear();
     }
-    
+
+    public static void registerParent(String parent) {
+        VENDORABLE_MAP.put(parent, new TreeMap<>());
+    }
+
     public static void register(Vendorable vendorable) {
         if (!VENDORABLE_MAP.containsKey(vendorable.getParentType()))
             VENDORABLE_MAP.put(vendorable.getParentType(), new TreeMap<>());
         VENDORABLE_MAP.get(vendorable.getParentType()).put(vendorable.getIdentifier(), vendorable);
+        if (vendorable instanceof Collectible) {
+            Collectible collectible = (Collectible) vendorable;
+            RARITY_MAP.get(collectible.getRarity()).add(collectible.getIdentifier());
+            for (String string : collectible.getSkinIds()) {
+                RARITY_MAP.get(collectible.getRarity()).add(collectible.getIdentifier() + ":" + string);
+            }
+        }
     }
     
     public static void unregister(String type, String identifier) {
@@ -107,7 +128,7 @@ public class Vendorables {
     public static <T extends Vendorable> Map<String, T> getAll(Class<T> clazz) {
         return (Map<String, T>) VENDORABLE_MAP.getOrDefault(Vendorable.getParentTypeName(clazz), new HashMap<>());
     }
-    
+
     public static Vendorable get(ItemStack itemStack) {
         String type = getTypeNbt(itemStack);
         String identifier = getIdentifierNbt(itemStack);

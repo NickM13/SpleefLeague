@@ -56,9 +56,9 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public void chooseOffensive() {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
-        if (sp.getActiveOffensive() != null) {
-            offensiveStats = sp.getActiveOffensive();
+        String offensiveOption = getCorePlayer().getOptions().getString(Ability.Type.OFFENSIVE.getOptionName());
+        if (!offensiveOption.isEmpty()) {
+            offensiveStats = Abilities.getAbility(Ability.Type.OFFENSIVE, offensiveOption);
         } else {
             offensiveStats = Abilities.getRandomAbilityStats(Ability.Type.OFFENSIVE);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &cOffensive &7power: &c" + offensiveStats.getName());
@@ -68,9 +68,9 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public void chooseUtility() {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
-        if (sp.getActiveUtility() != null) {
-            utilityStats = sp.getActiveUtility();
+        String utilityOption = getCorePlayer().getOptions().getString(Ability.Type.UTILITY.getOptionName());
+        if (!utilityOption.isEmpty()) {
+            utilityStats = Abilities.getAbility(Ability.Type.UTILITY, utilityOption);
         } else {
             utilityStats = Abilities.getRandomAbilityStats(Ability.Type.UTILITY);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &9Utility &7power: &9" + utilityStats.getName());
@@ -80,9 +80,9 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     }
 
     public void chooseMobililty() {
-        SpleefPlayer sp = Spleef.getInstance().getPlayers().get(getCorePlayer());
-        if (sp.getActiveMobility() != null) {
-            mobilityStats = sp.getActiveMobility();
+        String mobilityOption = getCorePlayer().getOptions().getString(Ability.Type.MOBILITY.getOptionName());
+        if (!mobilityOption.isEmpty()) {
+            mobilityStats = Abilities.getAbility(Ability.Type.MOBILITY, mobilityOption);
         } else {
             mobilityStats = Abilities.getRandomAbilityStats(Ability.Type.MOBILITY);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &aMobility &7power: &a" + mobilityStats.getName());

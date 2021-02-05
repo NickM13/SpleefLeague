@@ -6,6 +6,7 @@ import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
@@ -25,6 +26,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onPreLogin(net.md_5.bungee.api.event.LoginEvent event) {
+        ProxyCore.getInstance().getPlayers().saveIfLoaded(event.getConnection().getUniqueId());
         System.out.println("Checking for bans goes here! " + event.getConnection().getUniqueId());
         ProxyCore.getInstance().getInfractions();
     }
@@ -38,7 +40,18 @@ public class ConnectionListener implements Listener {
             ProxyCore.getInstance().getPacketManager().sendPacket(event.getPlayer().getUniqueId(), new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.FIRST_CONNECT, event.getPlayer().getUniqueId()));
         }, 1000, TimeUnit.MILLISECONDS);
 
-        ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
+        ProxyCore.getInstance().getPartyManager().onConnect(event.getPlayer().getUniqueId());
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
+
+        TextComponent textComponent = new TextComponent("Welcome to SpleefLeague, ");
+        textComponent.addExtra(pcp.getChatName());
+        textComponent.addExtra("!");
+        ProxyCore.getInstance().sendMessage(pcp, textComponent);
+
+        if (pcp.getFriends().getIncoming().size() > 0) {
+            textComponent = new TextComponent("You have " + pcp.getFriends().getIncoming().size() + " friend requests");
+            ProxyCore.getInstance().sendMessage(pcp, textComponent);
+        }
     }
 
     @EventHandler

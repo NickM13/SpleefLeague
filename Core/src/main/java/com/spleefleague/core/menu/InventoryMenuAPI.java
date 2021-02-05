@@ -63,6 +63,10 @@ public class InventoryMenuAPI {
         return new InventoryMenuItemStatic();
     }
 
+    public static InventoryMenuItemEmpty createItemEmpty() {
+        return new InventoryMenuItemEmpty();
+    }
+
     public static InventoryMenuItemToggle createItemToggle() {
         return new InventoryMenuItemToggle();
     }

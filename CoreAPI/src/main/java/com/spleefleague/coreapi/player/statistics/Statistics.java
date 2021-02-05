@@ -32,12 +32,13 @@ public class Statistics extends DBVariable<Document> {
         statistics.put(name, value);
     }
 
-    public void add(String name, long value) {
+    public long add(String name, long value) {
         if (!statistics.containsKey(name)) {
             statistics.put(name, value);
         } else {
             statistics.put(name, statistics.get(name) + value);
         }
+        return statistics.get(name);
     }
 
     /**
@@ -47,7 +48,7 @@ public class Statistics extends DBVariable<Document> {
      * @param value Value
      * @return Change
      */
-    public long compare(String name, long value) {
+    public long setHigher(String name, long value) {
         if (!statistics.containsKey(name)) {
             statistics.put(name, value);
             return value;
@@ -66,8 +67,8 @@ public class Statistics extends DBVariable<Document> {
      * @param compare Compared Stat Name
      * @return Change
      */
-    public long compare(String name, String compare) {
-        return compare(name, get(compare));
+    public long setHigher(String name, String compare) {
+        return setHigher(name, get(compare));
     }
 
     public long get(String name) {

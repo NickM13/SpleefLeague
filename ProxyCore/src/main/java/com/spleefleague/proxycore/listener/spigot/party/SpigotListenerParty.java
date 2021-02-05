@@ -14,17 +14,8 @@ public class SpigotListenerParty extends SpigotListener<PacketSpigotParty> {
     @Override
     protected void receive(Connection sender, PacketSpigotParty packet) {
         switch (packet.type) {
-            case CREATE:
-                ProxyCore.getInstance().getPartyManager().onCreate(packet.sender);
-                break;
-            case JOIN:
-                ProxyCore.getInstance().getPartyManager().onJoin(packet.sender, packet.target);
-                break;
             case INVITE:
                 ProxyCore.getInstance().getPartyManager().onInvite(packet.sender, packet.target);
-                break;
-            case KICK:
-                ProxyCore.getInstance().getPartyManager().onKick(packet.sender, packet.target);
                 break;
             case TRANSFER:
                 ProxyCore.getInstance().getPartyManager().onTransfer(packet.sender, packet.target);
@@ -32,11 +23,17 @@ public class SpigotListenerParty extends SpigotListener<PacketSpigotParty> {
             case LEAVE:
                 ProxyCore.getInstance().getPartyManager().onLeave(packet.sender);
                 break;
-            case JOIN_FORCE:
-                ProxyCore.getInstance().getPartyManager().onForceJoin(packet.sender, packet.target);
+            case ACCEPT:
+                ProxyCore.getInstance().getPartyManager().onAccept(packet.sender, packet.target);
                 break;
-            case INVITE_FORCE:
-                ProxyCore.getInstance().getPartyManager().onForceInvite(packet.sender, packet.target);
+            case DECLINE:
+                ProxyCore.getInstance().getPartyManager().onDecline(packet.sender, packet.target);
+                break;
+            case DISBAND:
+                ProxyCore.getInstance().getPartyManager().onDisband(packet.sender);
+                break;
+            case KICK:
+                ProxyCore.getInstance().getPartyManager().onKick(packet.sender, packet.target);
                 break;
         }
     }

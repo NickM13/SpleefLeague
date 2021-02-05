@@ -58,21 +58,20 @@ public class SetRankCommand extends CoreCommand {
         success(sender, cp.getDisplayName() + Chat.DEFAULT + "'s rank has been set to " + rank.getDisplayName());
         success(cp, Chat.DEFAULT + "Your rank has been set to " + rank.getDisplayName());
         cp.setRank(rank);
-        /*
-        if (cp.getPlayer() == null) {
-            Core.getInstance().getPlayers().save(cp);
-        }
-         */
         return true;
     }
     
     @CommandAnnotation
-    public void setrankPlayer(CorePlayer sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
+    public void setrankPlayer(CorePlayer sender,
+                              @CorePlayerArg(allowOffline = true) CorePlayer cp,
+                              @OptionArg(listName="rankList") String rank) {
         sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
     
     @CommandAnnotation
-    public void setrankConsole(CommandSender sender, CorePlayer cp, @OptionArg(listName="rankList") String rank) {
+    public void setrankConsole(CommandSender sender,
+                               @CorePlayerArg(allowOffline = true) CorePlayer cp,
+                               @OptionArg(listName="rankList") String rank) {
         sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
     

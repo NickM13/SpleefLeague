@@ -14,18 +14,20 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.crate.CrateManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.menu.hotbars.AfkHotbar;
-import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.socialmedia.Credits;
 import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.music.NoteBlockMusic;
+import com.spleefleague.core.packet.PacketManager;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CorePlayerManager;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.infraction.Infraction;
@@ -74,8 +76,8 @@ public class Core extends CorePlugin<CorePlayer> {
     private static Core instance;
     public static World DEFAULT_WORLD;
     private QueueManager queueManager;
-    private Leaderboards leaderboards;
-    private CommandManager commandManager;
+    private Leaderboards leaderboards = new Leaderboards();
+    private CommandManager commandManager = new CommandManager();
     
     // For packet managing
     private static ProtocolManager protocolManager;
@@ -84,8 +86,10 @@ public class Core extends CorePlugin<CorePlayer> {
     private Set<String> minigameServers = new HashSet<>();
     private Set<String> servers = new HashSet<>();
 
-    private CorePartyManager partyManager;
-    private CoreRankManager rankManager;
+    private CorePartyManager partyManager = new CorePartyManager();
+    private CoreRankManager rankManager = new CoreRankManager();
+    private CrateManager crateManager = new CrateManager();
+    private PacketManager packetManager = new PacketManager();
 
     /**
      * Called when the plugin is enabling
@@ -93,6 +97,7 @@ public class Core extends CorePlugin<CorePlayer> {
     @Override
     public void init() {
         instance = this;
+
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
     
@@ -116,11 +121,10 @@ public class Core extends CorePlugin<CorePlayer> {
         InventoryMenuSkullManager.init();
 
         // Initialize manager
-        playerManager = new PlayerManager<>(this, CorePlayer.class, getPluginDB().getCollection("Players"));
-        commandManager = new CommandManager();
-        partyManager = new CorePartyManager();
-        rankManager = new CoreRankManager();
+        playerManager = new CorePlayerManager(getPluginDB().getCollection("Players"));
         rankManager.init();
+        crateManager.init();
+        packetManager.init();
 
         // Initialize listeners
         initListeners();
@@ -131,7 +135,7 @@ public class Core extends CorePlugin<CorePlayer> {
         initMenus();
         initTabList();
 
-        leaderboards = new Leaderboards();
+        leaderboards.init();
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -161,6 +165,7 @@ public class Core extends CorePlugin<CorePlayer> {
         leaderboards.close();
         NoteBlockMusic.close();
         playerManager.close();
+        packetManager.close();
         running = false;
         protocolManager.removePacketListeners(Core.getInstance());
         ProtocolLibrary.getPlugin().onDisable();
@@ -179,9 +184,16 @@ public class Core extends CorePlugin<CorePlayer> {
         return rankManager;
     }
 
-    @Override
+    public CrateManager getCrateManager() {
+        return crateManager;
+    }
+
+    public PacketManager getPacketManager() {
+        return packetManager;
+    }
+
     public void refreshPlayers(Set<UUID> players) {
-        super.refreshPlayers(players);
+        playerManager.refresh(players);
         leaderboards.refresh(players);
     }
 
@@ -291,7 +303,6 @@ public class Core extends CorePlugin<CorePlayer> {
     private void initMenus() {
         AfkHotbar.init();
         SLMainHotbar.init();
-        HeldItemHotbar.init();
 
         SLMainOverlay.init();
     }
@@ -615,13 +626,10 @@ public class Core extends CorePlugin<CorePlayer> {
     /**
      * Send a packet to all servers with 1 or more players
      *
-     * @param output
+     * @param packet
      */
-    public void sendPacket(PacketSpigot output) {
-        Player sender = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
-        if (sender != null) {
-            sender.sendPluginMessage(Core.getInstance(), "slcore:spigot", output.toByteArray());
-        }
+    public void sendPacket(PacketSpigot packet) {
+        packetManager.sendPacket(packet);
     }
 
 }

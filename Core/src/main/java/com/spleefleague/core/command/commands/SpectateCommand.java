@@ -38,7 +38,7 @@ public class SpectateCommand extends CoreCommand {
     
     @CommandAnnotation
     public void spectate(CorePlayer sender,
-                         @CorePlayerArg(allowCrossServer = true) CorePlayer target) {
+                         @CorePlayerArg(allowSelf = false, allowCrossServer = true) CorePlayer target) {
         if (!sender.canJoinBattle()) {
             error(sender, CoreError.INGAME);
         } else {

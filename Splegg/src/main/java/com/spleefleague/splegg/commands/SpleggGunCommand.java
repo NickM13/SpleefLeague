@@ -1,13 +1,11 @@
 package com.spleefleague.splegg.commands;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.command.HoldableCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
@@ -28,7 +26,7 @@ import java.util.TreeSet;
 public class SpleggGunCommand extends HoldableCommand {
 
     public SpleggGunCommand() {
-        super(SpleggGun.class, "splegggun", Rank.DEVELOPER);
+        super(SpleggGun.class, "splegggun", CoreRank.DEVELOPER);
         this.addAlias("gun");
         this.setOptions("projectileFields", pi -> getProjectileFields());
         this.setOptions("nextFields", pi -> getNextFields(pi));

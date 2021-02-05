@@ -6,12 +6,12 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.player.rank.CoreRank;
-import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemFlag;
@@ -89,6 +89,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      */
     protected static void registerParentType(Class<? extends Vendorable> clazz) {
         REGISTERED_PARENT_TYPES.put(clazz.getSimpleName(), clazz);
+        Vendorables.registerParent(clazz.getSimpleName());
     }
 
     protected static void registerExactType(Class<? extends Vendorable> clazz) {
@@ -182,9 +183,9 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         Vendorables.register(this);
 
         if (rarity == null) {
-            for (net.md_5.bungee.api.ChatColor chatColor : CoreUtils.getChatColors(name)) {
+            for (ChatColor chatColor : ChatColor.getChatColors(name)) {
                 for (Rarity rarity : Rarity.values()) {
-                    if (chatColor.equals(rarity.getColor().asBungee())) {
+                    if (chatColor.equals(rarity.getColor())) {
                         setRarity(rarity);
                         break;
                     }
@@ -398,7 +399,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * @return Can Purchase
      */
     public final boolean canPurchase(CorePlayer cp) {
-        return (cp.getPurse().getCoins().getAmount() >= getCoinCost() && isAvailableToPurchase(cp));
+        return cp.getPurse().getCurrency(CoreCurrency.COIN.name()) >= getCoinCost() && isAvailableToPurchase(cp);
     }
     
     /**

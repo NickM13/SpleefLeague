@@ -24,10 +24,10 @@ import java.util.*;
  * @since 5/1/2020
  */
 public class Arenas {
-    
+
+    private static MongoCollection<Document> arenaCol;
     private static final SortedMap<String, Arena> arenaMap = new TreeMap<>();
     private static final Map<String, SortedMap<String, Arena>> modeArenaMap = new HashMap<>();
-    private static MongoCollection<Document> arenaCol;
     private static final Set<Arena> globalArenas = new HashSet<>();
     
     public static void init() {

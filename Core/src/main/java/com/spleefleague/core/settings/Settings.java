@@ -15,10 +15,6 @@ public class Settings {
 
     public static void init() {
         settingsCollection = Core.getInstance().getPluginDB().getCollection("Settings");
-        reload();
-    }
-
-    public static void reload() {
         discord = new Discord();
         Document doc = settingsCollection.find(new Document("identifier", discord.getIdentifier())).first();
         if (doc != null) discord.load(doc);

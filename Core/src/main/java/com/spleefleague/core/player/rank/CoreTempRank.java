@@ -8,6 +8,10 @@ import com.spleefleague.coreapi.player.ranks.TempRank;
  */
 public class CoreTempRank extends TempRank<CoreRank> {
 
+    public CoreTempRank() {
+
+    }
+
     public CoreTempRank(CoreRank rank, Long time) {
         super(rank, time);
     }

@@ -4,6 +4,7 @@ import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.command.CommandSender;
 
@@ -45,8 +46,8 @@ public class HoldableCommand extends CollectibleCommand {
         }
         int required = playerCount != null ? playerCount : 1;
         for (CorePlayer target : targets) {
-            Holdable heldItem = target.getCollectibles().getHeldItem();
-            if (heldItem != null && heldItem.equalsSoft(holdable)) {
+            Vendorable vendorable = Vendorables.get(target.getHeldItem());
+            if (vendorable != null && vendorable.equalsSoft(holdable)) {
                 required--;
                 if (required <= 0) {
                     return true;

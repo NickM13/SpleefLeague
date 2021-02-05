@@ -236,24 +236,4 @@ public class ZoneCommand extends CoreCommand {
         success(sender, "Pos2 set to " + pos2);
     }
 
-    @CommandAnnotation
-    public void zoneClearLeaves(CommandSender sender,
-                                @LiteralArg("leaf") String l2,
-                                @LiteralArg("clear") String l1,
-                                CorePlayer target,
-                                @OptionArg(listName = "zoneNames") String zoneName) {
-        target.getCollectibles().clearLeaves(zoneName);
-    }
-
-    @CommandAnnotation
-    public void zoneClearLeaves(CommandSender sender,
-                                @LiteralArg("leaf") String l2,
-                                @LiteralArg("clear") String l1,
-                                List<CorePlayer> targets,
-                                @OptionArg(listName = "zoneNames") String zoneName) {
-        for (CorePlayer target : targets) {
-            target.getCollectibles().clearLeaves(zoneName);
-        }
-    }
-
 }

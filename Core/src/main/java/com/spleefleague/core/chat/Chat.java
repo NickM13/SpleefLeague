@@ -15,8 +15,9 @@ import java.util.regex.Pattern;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
-import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChat;
-import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChat;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatConsole;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatFriend;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.Sound;
@@ -69,7 +70,6 @@ public class Chat {
         chatColors.put("SUCCESS", ChatColor.GREEN);
         chatColors.put("INFO", ChatColor.YELLOW);
         chatColors.put("ERROR", ChatColor.RED);
-        ChatChannel.init();
     }
 
     /**
@@ -139,84 +139,35 @@ public class Chat {
         return newmsg.toString();
     }
 
-    public static void sendMessage(CorePlayer cp, String msg, boolean url) {
-        sendMessage(cp.getChatChannel(), cp, msg, url);
+    public static void sendMessage(CorePlayer sender, String message) {
+        Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), message));
     }
 
-    public static void sendMessage(ChatChannel cc, CorePlayer cp, String message, boolean url) {
-        if (cp.isMuted() == 1) {
-            Core.getInstance().sendMessage(cp, "You're muted!");
-            return;
-        }
-        if (!cc.isAvailable(cp)) {
-            cc = ChatChannel.getDefaultChannel();
-            cp.setChatChannel(cc);
-        }
-        if (!cp.getOptions().getBoolean(cc.getName())) {
-            Core.getInstance().sendMessage(cp, "You have " + cc.getName() + " muted!");
-            Core.getInstance().sendMessage(cp, "To unmute, go to Menu->Options->Chat Channels");
-            return;
-        }
-        if (cp.isMuted() == 2) {
-            cp.sendMessage(cc.formatMessage(cp, message, url));
-        } else {
-            Core.getInstance().sendPacket(new PacketSpigotChat(cp.getUniqueId(), cc.getChannel().name(), message, url));
-        }
+    public static void sendMessage(CorePlayer sender, ChatChannel channel, String message) {
+        Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), channel.name(), message));
     }
 
     public static void sendMessage(ChatChannel channel, TextComponent text) {
-        Core.getInstance().sendPacket(new PacketSpigotChat(null, channel.getChannel().name(), text.toLegacyText(), false));
+        Core.getInstance().sendPacket(new PacketSpigotChatConsole(channel.name(), text.toLegacyText(), false));
     }
 
     public static void sendMessage(ChatChannel channel, TextComponent text, Set<UUID> blacklist) {
-        Core.getInstance().sendPacket(new PacketSpigotChat(null, channel.getChannel().name(), text.toLegacyText(), blacklist, false));
+        Core.getInstance().sendPacket(new PacketSpigotChatConsole(channel.name(), text.toLegacyText(), blacklist, false));
+    }
+
+    public static void sendMessageFriends(ChatChannel channel, TextComponent text, Set<UUID> targets) {
+        Core.getInstance().sendPacket(new PacketSpigotChatFriend(channel.name(), text.toLegacyText(), targets));
     }
 
     public static void sendMessageHere(ChatChannel channel, TextComponent text) {
-        sendMessage(new PacketBungeeChat(null, channel.getChannel().name(), text.toLegacyText(), false));
-    }
-
-    /**
-     * When a chat packet is received, process it
-     * PacketChatBungee::url is only used when sender is not null
-     *
-     * @param packet
-     */
-    public static void sendMessage(PacketBungeeChat packet) {
-        UUID uuid = packet.sender;
-        CorePlayer sender = uuid != null ? Core.getInstance().getPlayers().get(uuid) : null;
-        ChatChannel chatChannel = ChatChannel.getChannel(ChatChannel.Channel.valueOf(packet.channel));
-        TextComponent message;
-        if (sender == null) {
-            message = new TextComponent(TextComponent.fromLegacyText(packet.message));
-        } else {
-            message = chatChannel.formatMessage(sender, packet.message, packet.url);
-        }
-
-        if (sender != null) {
-            for (CorePlayer cp : chatChannel.getPlayers(sender)) {
-                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
-                        chatChannel.isAvailable(cp) &&
-                        cp.getOptions().getBoolean(chatChannel.getName()) &&
-                        !packet.blacklist.contains(cp.getUniqueId())) {
-                    cp.sendMessage(message);
-                }
-            }
-        } else {
-            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
-                if (cp.getOnlineState() == DBPlayer.OnlineState.HERE &&
-                        chatChannel.isAvailable(cp) &&
-                        cp.getOptions().getBoolean(chatChannel.getName()) &&
-                        !packet.blacklist.contains(cp.getUniqueId())) {
-                    cp.sendMessage(message);
-                }
-            }
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
+            cp.sendMessage(text);
         }
     }
 
     public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
-            if (cp.getOptions().getBoolean(channel.getName())
+            if (cp.getOptions().getBoolean("Chat:" + channel.getName())
                     && channel.isAvailable(cp)) {
                 cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
             }
@@ -304,20 +255,7 @@ public class Chat {
      * @param msg Message
      */
     public static void sendTell(CorePlayer sender, CorePlayer target, String msg) {
-        BaseComponent baseComponent = new TextComponent(Chat.DEFAULT + "[me -> ");
-        baseComponent.addExtra(target.getChatName());
-        baseComponent.addExtra(new TextComponent(Chat.DEFAULT + "] " + Chat.WHISPER + msg));
-        sender.sendMessage(baseComponent);
         Core.getInstance().sendPacket(new PacketSpigotChatTell(sender.getUniqueId(), target.getUniqueId(), msg));
-    }
-
-    public static void receiveTell(CorePlayer sender, CorePlayer target, String msg) {
-        BaseComponent baseComponent = new TextComponent(Chat.DEFAULT + "[");
-        baseComponent.addExtra(sender.getChatName());
-        baseComponent.addExtra(new TextComponent(Chat.DEFAULT + " - > me] " + Chat.WHISPER + msg));
-        target.sendMessage(baseComponent);
-        target.setReply(sender.getPlayer());
-        target.getPlayer().playSound(target.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
     }
 
     /**
@@ -331,7 +269,7 @@ public class Chat {
         String[] msgs = msg.split("\\n");
         title = msgs[0];
         subtitle = msgs.length > 1 ? msgs[1] : "";
-        Chat.sendTitle(ChatChannel.getDefaultChannel(), Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
+        Chat.sendTitle(ChatChannel.GLOBAL, Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
     }
 
 }

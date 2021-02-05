@@ -14,7 +14,7 @@ import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.game.conquest.ConquestPack;
@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 public class SuperJumpCommand extends CoreCommand {
     
     public SuperJumpCommand() {
-        super("superjump", Rank.DEFAULT);
+        super("superjump", CoreRank.DEFAULT);
         addAlias("sj");
         setUsage("/sj <mode>");
         setOptions("conquestPacks", (cp) -> ConquestPack.getPackNames());

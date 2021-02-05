@@ -83,6 +83,7 @@ public abstract class InventoryMenuItem {
     }
     
     public InventoryMenuItem setParent(InventoryMenuContainerChest container) {
+        //if (parentContainer != null) return this;
         parentContainer = container;
         if (hasLinkedContainer()) {
             if (linkedContainer instanceof InventoryMenuContainerChest) {

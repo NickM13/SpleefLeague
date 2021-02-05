@@ -55,7 +55,7 @@ public class InfractionsCommand extends CoreCommand {
         MongoCursor<Document> mc = iterable.iterator();
         for (int i = 1; i <= 10 && mc.hasNext(); i++) {
             Infraction inf = new Infraction(mc.next());
-            sender.sendMessage(ChatColor.RED + String.valueOf((page - 1) * 10 + i) + ". " + ChatColor.DARK_GRAY + "| " + inf.getType().getColor() + inf.getType() + ChatColor.DARK_GRAY + " | " + ChatColor.RED + (inf.getPunisher() == null ? "CONSOLE" : inf.getPunisher()) + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + inf.getReason() + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + TimeUtils.gcdTimeToString(inf.getTime()) + " ago");
+            sender.sendMessage(ChatColor.RED + String.valueOf((page - 1) * 10 + i) + ". " + ChatColor.DARK_GRAY + "| " + inf.getType().getColor() + inf.getType() + ChatColor.DARK_GRAY + " | " + ChatColor.RED + (inf.getPunisher() == null ? "CONSOLE" : inf.getPunisher()) + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + inf.getReason() + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + TimeUtils.gcdTimeToString(System.currentTimeMillis() - inf.getTime()) + " ago");
         }
     }
     

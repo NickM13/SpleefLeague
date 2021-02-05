@@ -47,9 +47,6 @@ public class GlobalZones {
                 if (entity instanceof ZoneLeafEntity) {
                     CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
                     ZoneLeafEntity zoneLeaf = (ZoneLeafEntity) entity;
-                    if (cp.getCollectibles().hasLeaf(zoneLeaf.getFullName())) {
-                        event.setCancelled(true);
-                    }
                 }
             }
         });

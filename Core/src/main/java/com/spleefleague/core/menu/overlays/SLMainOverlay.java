@@ -4,6 +4,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuOverlay;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.*;
+import com.spleefleague.core.menu.hotbars.main.profile.PartyMenu;
 import org.bukkit.ChatColor;
 
 /**
@@ -27,19 +28,23 @@ public class SLMainOverlay {
         overlay.addItem(LeaderboardMenu.getItem(), 8, 1);
 
         // Collectibles
-        overlay.addItem(CollectiblesMenu.getItem(), 7, 2);
+        //overlay.addItem(CollectiblesMenu.getItem(), 7, 2);
 
         // Held Item Selection
-        overlay.addItem(HeldItemMenu.getItem(), 8, 2);
+        overlay.addItem(HeldItemMenu.getItem(), 7, 2);
 
-        overlay.addItem(CompanionsMenu.getItem(), 7, 3);
+        overlay.addItem(CrateMenu.getItem(), 8, 2);
 
-        overlay.addItem(ParticlesMenu.getItem(), 8, 3);
+        //overlay.addItem(CompanionsMenu.getItem(), 7, 3);
+
+        //overlay.addItem(ParticlesMenu.getItem(), 8, 3);
 
         // Profile
         overlay.addItem(ProfileMenu.getItem(), 7, 4);
 
-        overlay.addItem(FriendsMenu.getItem(), 7, 5);
+        overlay.addItem(FriendsMenu.getItem(), 7, 3);
+
+        overlay.addItem(PartyMenu.getItem(), 8, 3);
 
         // Server Credits
         overlay.addItem(SocialMediaMenu.getItem(), 8, 4);

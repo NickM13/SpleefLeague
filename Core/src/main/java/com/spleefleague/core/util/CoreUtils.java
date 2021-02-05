@@ -121,23 +121,5 @@ public class CoreUtils {
     public static void knockbackEntity(Entity entity, Vector direction, double power) {
         entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
     }
-
-    public static List<ChatColor> getChatColors(String str) {
-        List<ChatColor> colors = new ArrayList<>();
-        for (int i = 0; i < str.length() - 1; i++) {
-            char c = str.charAt(i);
-            if (c == 167) {
-                c = str.charAt(i + 1);
-                if (c >= 'A' && c <= 'Z') {
-                    c += 32;
-                }
-                ChatColor color = ChatColor.getByChar(c);
-                if (color != null) {
-                    colors.add(color);
-                }
-            }
-        }
-        return colors;
-    }
     
 }

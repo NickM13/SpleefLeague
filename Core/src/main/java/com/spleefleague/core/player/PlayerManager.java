@@ -19,6 +19,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -39,19 +40,19 @@ import org.bukkit.scheduler.BukkitTask;
 public class PlayerManager <P extends DBPlayer> implements Listener {
 
     // Players on this server (non-vanished)
-    private final Map<UUID, P> herePlayerList;
+    protected final Map<UUID, P> herePlayerList;
     // Players on this server
-    private final Map<UUID, P> herePlayerListAll;
+    protected final Map<UUID, P> herePlayerListAll;
     // Players on any server (non-vanished)
-    private final Map<UUID, P> onlinePlayerList;
+    protected final Map<UUID, P> onlinePlayerList;
     // Players on any server
-    private final Map<UUID, P> onlinePlayerListAll;
+    protected final Map<UUID, P> onlinePlayerListAll;
     // Offline players to prevent loading offline players more than once
-    private final Map<UUID, P> offlinePlayerList;
-    private SortedSet<P> playerListSorted;
-    private final Class<P> playerClass;
-    private final MongoCollection<Document> playerCol;
-    private final JavaPlugin plugin;
+    protected final Map<UUID, P> offlinePlayerList;
+    protected SortedSet<P> playerListSorted;
+    protected final Class<P> playerClass;
+    protected final MongoCollection<Document> playerCol;
+    protected final JavaPlugin plugin;
 
     public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
         this.herePlayerList = new HashMap<>();
@@ -268,7 +269,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * @param username Player Username
      * @return DBPlayer
      */
-    private P load(UUID uuid, String username) {
+    protected P load(UUID uuid, String username) {
         offlinePlayerList.remove(uuid);
         if (herePlayerListAll.containsKey(uuid)) {
             P p = herePlayerListAll.get(uuid);
@@ -315,6 +316,13 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
         return onlinePlayerListAll.get(uuid);
     }
 
+    public void resync(UUID uuid, List<PacketBungeePlayerResync.Field> fields) {
+        if (!onlinePlayerListAll.containsKey(uuid)) {
+            CoreLogger.logWarning("Attempted to reload field of offline player");
+            return;
+        }
+    }
+
     public void refresh(Set<UUID> players) {
         onlinePlayerListAll.entrySet().removeIf(p -> !players.contains(p.getKey()));
         onlinePlayerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
@@ -356,7 +364,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      *
      * @param player Player
      */
-    private void quit(Player player) {
+    protected void quit(Player player) {
         P p = herePlayerListAll.remove(player.getUniqueId());
         herePlayerList.remove(player.getUniqueId());
         if (p != null) {
@@ -406,7 +414,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
         }
     }
 
-    private Map<UUID, List<Consumer<P>>> joinActions = new HashMap<>();
+    protected Map<UUID, List<Consumer<P>>> joinActions = new HashMap<>();
 
     public void addPlayerJoinAction(UUID uuid, Consumer<P> action, boolean runIfOnline) {
         if (runIfOnline && herePlayerListAll.containsKey(uuid)) {

@@ -6,10 +6,13 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshParty;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.chat.ChatChannel;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * @author NickM13
@@ -18,23 +21,37 @@ import java.util.*;
 public class ProxyParty extends Party {
 
     private final Set<ProxyCorePlayer> playerSet = new HashSet<>();
-    private final Set<UUID> inviteRequests, joinRequests;
 
     public ProxyParty(UUID uuid) {
         super(uuid);
+        addPlayer(uuid);
+    }
 
-        this.inviteRequests = new HashSet<>();
-        this.joinRequests = new HashSet<>();
+    public void sendMessage(TextComponent text) {
+        for (ProxyCorePlayer pcp : playerSet) {
+            if (ChatChannel.PARTY.isActive(pcp)) {
+                ProxyCore.getInstance().sendMessage(pcp, text);
+            }
+        }
     }
 
     @Override
     public void setOwner(UUID owner) {
-        UUID prevOwner = owner;
+        UUID prevOwner = this.owner;
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(owner);
         if (playerSet.contains(pcp)) {
             super.setOwner(owner);
-            sendPacket(new PacketBungeeParty(PartyAction.TRANSFER, prevOwner, owner));
         }
+    }
+
+    public boolean isOccupied(ServerInfo serverInfo) {
+        for (ProxyCorePlayer pcp : playerSet) {
+            ServerInfo serverInfo2 = pcp.getCurrentServer();
+            if (!serverInfo.getName().equals(serverInfo2.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void sendPacket(PacketBungee packet, ProxyCorePlayer... additional) {
@@ -55,60 +72,31 @@ public class ProxyParty extends Party {
         }
     }
 
-    public void sendPartyRefresh(ServerInfo serverInfo) {
-        PacketBungeeRefreshParty packet = new PacketBungeeRefreshParty(playerList);
-        ProxyCore.getInstance().getPacketManager().sendPacket(serverInfo, packet);
+    public PacketBungeeRefreshParty getPartyRefresh() {
+        return new PacketBungeeRefreshParty(playerList);
     }
 
     public Set<ProxyCorePlayer> getPlayerSet() {
         return playerSet;
     }
 
-    public boolean join(UUID sender, UUID target) {
-        if (inviteRequests.contains(sender)) {
-            addPlayer(sender);
-            inviteRequests.remove(sender);
-            return true;
-        } else if (!joinRequests.contains(sender)) {
-            joinRequests.add(sender);
-            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeParty(PartyAction.JOIN, sender, target), sender, target);
-        }
-        return false;
-    }
-
-    public boolean invite(UUID sender, UUID target) {
-        if (joinRequests.contains(target)) {
-            addPlayer(target);
-            joinRequests.remove(target);
-            return true;
-        } else if (!inviteRequests.contains(target)) {
-            inviteRequests.add(target);
-            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeParty(PartyAction.INVITE, sender, target), sender, target);
-        }
-        return false;
-    }
-
     public void kick(UUID uuid) {
         if (removePlayer(uuid)) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-            pcp.setParty(null);
             /*
             TextComponent text = new TextComponent("You were kicked from the party");
             ProxyCore.getInstance().sendMessage(pcp, text);
             */
-            sendPacket(new PacketBungeeParty(PartyAction.KICK, uuid), pcp);
         }
     }
 
     public void leave(UUID uuid) {
         if (removePlayer(uuid)) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-            pcp.setParty(null);
             /*
             TextComponent text = new TextComponent("You have left the party");
             ProxyCore.getInstance().sendMessage(pcp, text);
              */
-            sendPacket(new PacketBungeeParty(PartyAction.LEAVE, uuid), pcp);
             if (playerList.isEmpty()) return;
             if (uuid.equals(owner)) {
                 setOwner(playerList.get(0));
@@ -122,7 +110,6 @@ public class ProxyParty extends Party {
             TextComponent text = new TextComponent("You have left the party");
             ProxyCore.getInstance().sendMessage(pcp, text);
              */
-            sendPacket(new PacketBungeeParty(PartyAction.LEAVE, uuid));
             if (playerList.isEmpty()) return;
             if (uuid.equals(owner)) {
                 setOwner(playerList.get(0));
@@ -140,22 +127,35 @@ public class ProxyParty extends Party {
                 return;
             }
         }
-        sendPartyRefresh(serverInfo);
     }
 
     @Override
     public void addPlayer(UUID uuid) {
-        super.addPlayer(uuid);
-        playerSet.add(ProxyCore.getInstance().getPlayers().get(uuid));
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-        pcp.setParty(this);
-        sendPacket(new PacketBungeeParty(PartyAction.ADD, owner, uuid));
+        if (pcp == null) {
+            Logger.getGlobal().severe("Error adding player to party! ProxyParty::addPlayer");
+            return;
+        }
+        TextComponent component = new TextComponent();
+        component.addExtra(pcp.getChatName());
+        component.addExtra(" has joined the party");
+        sendMessage(component);
+        super.addPlayer(uuid);
+        playerSet.add(pcp);
     }
 
     @Override
     public boolean removePlayer(UUID uuid) {
         if (super.removePlayer(uuid)) {
-            playerSet.remove(ProxyCore.getInstance().getPlayers().get(uuid));
+            if (uuid.equals(owner)) {
+                if (playerList.size() > 1) {
+                    owner = playerList.get(0);
+                } else {
+
+                }
+            }
+            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
+            playerSet.remove(pcp);
             return true;
         }
         return false;

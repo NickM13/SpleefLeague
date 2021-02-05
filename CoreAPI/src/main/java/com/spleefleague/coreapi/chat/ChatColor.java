@@ -1,10 +1,14 @@
 package com.spleefleague.coreapi.chat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
+ * Copied from either net.md_5.bungee.api.ChatColor or the spigot one, can't remember
+ *
  * @author NickM13
  * @since 6/14/2020
  */
@@ -33,7 +37,6 @@ public enum ChatColor {
     UNDO('u', "undo"),
     RESET('r', "reset");
 
-    public static final char COLOR_CHAR = '§';
     public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRr";
     public static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)" + String.valueOf('§') + "[0-9A-FK-OR]");
     private static final Map<Character, ChatColor> BY_CHAR = new HashMap();
@@ -41,7 +44,7 @@ public enum ChatColor {
     private final String toString;
     private final String name;
 
-    private ChatColor(char code, String name) {
+    ChatColor(char code, String name) {
         this.code = code;
         this.name = name;
         this.toString = new String(new char[]{'§', code});
@@ -68,8 +71,12 @@ public enum ChatColor {
         return new String(b);
     }
 
+    public char getChar() {
+        return code;
+    }
+
     public static ChatColor getByChar(char code) {
-        return (ChatColor)BY_CHAR.get(code);
+        return BY_CHAR.get(code);
     }
 
     public String getName() {
@@ -85,6 +92,24 @@ public enum ChatColor {
             BY_CHAR.put(colour.code, colour);
         }
 
+    }
+
+    public static List<ChatColor> getChatColors(String str) {
+        List<ChatColor> colors = new ArrayList<>();
+        for (int i = 0; i < str.length() - 1; i++) {
+            char c = str.charAt(i);
+            if (c == 167) {
+                c = str.charAt(i + 1);
+                if (c >= 'A' && c <= 'Z') {
+                    c += 32;
+                }
+                ChatColor color = ChatColor.getByChar(c);
+                if (color != null) {
+                    colors.add(color);
+                }
+            }
+        }
+        return colors;
     }
 
 }

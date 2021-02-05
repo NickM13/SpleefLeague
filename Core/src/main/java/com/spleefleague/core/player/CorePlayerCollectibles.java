@@ -1,19 +1,16 @@
 package com.spleefleague.core.player;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.CollectibleSkin;
-import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
-import com.spleefleague.core.world.global.zone.GlobalZones;
-import com.spleefleague.coreapi.database.annotation.DBField;
-import com.spleefleague.coreapi.database.annotation.DBLoad;
-import com.spleefleague.coreapi.database.annotation.DBSave;
-import com.spleefleague.coreapi.database.variable.DBEntity;
-import com.spleefleague.coreapi.database.variable.DBVariable;
-import org.bson.Document;
-import org.bukkit.Bukkit;
+import com.spleefleague.coreapi.player.collectibles.CollectibleInfo;
+import com.spleefleague.coreapi.player.collectibles.PlayerCollectibles;
+import com.spleefleague.coreapi.utils.packet.shared.CollectibleAction;
+import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCollectible;
+import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCollectibleSkin;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,222 +20,76 @@ import java.util.*;
  * @author NickM13
  * @since 4/19/2020
  */
-public class CorePlayerCollectibles extends DBVariable<Document> {
-    
-    public static class CollectibleInfo extends DBEntity {
-        
-        @DBField Long collectDate;
-        @DBField String selectedSkin = null;
-        @DBField String name = null;
-        Map<String, Long> ownedSkins = new HashMap<>();
-    
-        /**
-         * For creating an empty object to load info from document
-         */
-        public CollectibleInfo() {
-
-        }
-    
-        /**
-         * For newly unlocked collectibles
-         *
-         * @param collectDate Time Collected (millis)
-         */
-        public CollectibleInfo(Long collectDate) {
-            this.collectDate = collectDate;
-        }
-
-        public void setSelectedSkin(String skin) {
-            this.selectedSkin = skin;
-        }
-
-        public String getSelectedSkin() {
-            return selectedSkin;
-        }
-
-        public boolean addSkin(String skin, Long collectDate) {
-            if (ownedSkins.containsKey(skin)) return false;
-            ownedSkins.put(skin, collectDate);
-            return true;
-        }
-
-        public boolean removeSkin(String skin) {
-            return ownedSkins.remove(skin) != null;
-        }
-
-        public Map<String, Long> getOwnedSkins() {
-            return ownedSkins;
-        }
-
-        @DBLoad(fieldName = "ownedSkins")
-        private void loadOwnedSkins(Document doc) {
-            for (Map.Entry<String, Object> entry : doc.entrySet()) {
-                ownedSkins.put(entry.getKey(), (Long) entry.getValue());
-            }
-        }
-
-        @DBSave(fieldName = "ownedSkins")
-        private Document saveOwnedSkins() {
-            Document doc = new Document();
-            for (Map.Entry<String, Long> entry : ownedSkins.entrySet()) {
-                doc.put(entry.getKey(), entry.getValue());
-            }
-            return doc;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-        
-    }
+public class CorePlayerCollectibles extends PlayerCollectibles {
     
     private final CorePlayer owner;
-    private final SortedMap<String, Map<String, CollectibleInfo>> collectibles;
-    private final SortedMap<String, String> activeCollectibles;
-    private final SortedMap<String, Boolean> enabledMap;
-    private final Set<String> collectedLeaves;
-    private Holdable heldItem;
 
     public CorePlayerCollectibles(CorePlayer owner) {
         this.owner = owner;
-        this.collectibles = new TreeMap<>();
-        this.activeCollectibles = new TreeMap<>();
-        this.enabledMap = new TreeMap<>();
-        this.collectedLeaves = new HashSet<>();
-        this.heldItem = null;
     }
 
-    /**
-     * Collectibles are saved to documents within a document
-     * example:
-     * active: {
-     *     "Pet": "Monkey",
-     *     "Shovel": "15"
-     * }
-     * held: {
-     *     "Shovel": "15"
-     * }
-     * collection: {
-     *     {
-     *         "type": "Pet"
-     *         "collection": {
-     *             {
-     *                 identifier: "Monkey",
-     *                 info: InfoDoc
-     *             },
-     *             {
-     *                 identifier: "Owl",
-     *                 info: InfoDoc
-     *             }
-     *         }
-     *     },
-     *     {
-     *         "type": "Shovel"
-     *         "collection": {
-     *             {
-     *                 identifier: "15",
-     *                 info: InfoDoc
-     *             }
-     *         }
-     *     }
-     * }
-     *
-     * @return Document with collection and active docs
-     */
     @Override
-    public Document save() {
-        Document fullDoc = new Document();
-        
-        Document fullCollectionDoc = new Document();
-        for (Map.Entry<String, Map<String, CollectibleInfo>> collectibleType : collectibles.entrySet()) {
-            Document collectionFullDoc = new Document();
-            for (Map.Entry<String, CollectibleInfo> collectible : collectibleType.getValue().entrySet()) {
-                collectionFullDoc.append(collectible.getKey(), collectible.getValue().toDocument());
-            }
-            fullCollectionDoc.append(collectibleType.getKey(), collectionFullDoc);
-        }
-        fullDoc.append("collection", fullCollectionDoc);
+    public void afterLoad() {
+        super.afterLoad();
 
-        Document activeDoc = new Document();
-        for (Map.Entry<String, String> active : activeCollectibles.entrySet()) {
-            activeDoc.append(active.getKey(), active.getValue());
-        }
-        fullDoc.append("active", activeDoc);
-
-        Document enabledDoc = new Document();
-        for (Map.Entry<String, Boolean> enabled : enabledMap.entrySet()) {
-            enabledDoc.append(enabled.getKey(), enabled.getValue());
-        }
-        fullDoc.append("enabled", enabledDoc);
-        
-        if (heldItem != null) {
-            Document heldDoc = new Document("type", heldItem.getParentType()).append("identifier", heldItem.getIdentifier());
-            fullDoc.append("held", heldDoc);
-        }
-
-        fullDoc.append("leaves", collectedLeaves);
-        
-        return fullDoc;
-    }
-    
-    /**
-     * Unwrap the saved documents and load them into collectibles
-     *
-     * @param collectiblesDoc Document with collection and active docs
-     */
-    @Override
-    public void load(Document collectiblesDoc) {
-        Document fullCollectionDoc = collectiblesDoc.get("collection", Document.class);
-        if (fullCollectionDoc != null) {
-            collectibles.clear();
-            for (Map.Entry<String, Object> typePair : fullCollectionDoc.entrySet()) {
-                String type = typePair.getKey();
-                Document collection = (Document) typePair.getValue();
-                collectibles.put(type, new TreeMap<>());
-                for (Map.Entry<String, Object> collectionPair : collection.entrySet()) {
-                    CollectibleInfo collectibleInfo = new CollectibleInfo();
-                    collectibleInfo.load((Document) collectionPair.getValue());
-                    collectibles.get(type).put(collectionPair.getKey(), collectibleInfo);
+        /*
+        for (String parent : Vendorable.getParentTypeNames()) {
+            boolean first = true;
+            for (Map.Entry<String, Vendorable> entry : Vendorables.getAll(parent).entrySet()) {
+                if (first && !(entry.getValue() instanceof Collectible)) {
+                    break;
+                }
+                first = false;
+                Collectible collectible = (Collectible) entry.getValue();
+                if (collectible.isDefault(owner) && (!collectibleMap.containsKey(parent) || !collectibleMap.get(parent).containsKey(entry.getKey()))) {
+                    add(collectible);
                 }
             }
         }
-
-        Document activeDoc = collectiblesDoc.get("active", Document.class);
-        if (activeDoc != null) {
-            activeCollectibles.clear();
-            for (Map.Entry<String, Object> activePair : activeDoc.entrySet()) {
-                activeCollectibles.put(activePair.getKey(), (String) activePair.getValue());
-            }
-        }
-
-        Document enabledDoc = collectiblesDoc.get("enabled", Document.class);
-        if (enabledDoc != null) {
-            enabledMap.clear();
-            for (Map.Entry<String, Object> enabledPair : enabledDoc.entrySet()) {
-                enabledMap.put(enabledPair.getKey(), (Boolean) enabledPair.getValue());
-            }
-        }
-        
-        Document heldDoc = collectiblesDoc.get("held", Document.class);
-        if (heldDoc != null) {
-            heldItem = (Holdable) Vendorables.get(heldDoc.get("type", String.class), heldDoc.get("identifier", String.class));
-        }
-
-        if (collectiblesDoc.containsKey("leaves")) {
-            collectedLeaves.addAll(collectiblesDoc.get("leaves", List.class));
-        }
+        */
     }
-    
+
+    public Map<Vendorable.Rarity, List<String>> getAvailableCollectibles() {
+        Map<Vendorable.Rarity, List<String>> available = new HashMap<>();
+        for (Vendorable.Rarity rarity : Vendorable.Rarity.values()) {
+            available.put(rarity, new ArrayList<>());
+        }
+        for (String parent : Vendorable.getParentTypeNames()) {
+            boolean first = true;
+            for (Map.Entry<String, Vendorable> entry : Vendorables.getAll(parent).entrySet()) {
+                if (first && !(entry.getValue() instanceof Collectible)) {
+                    break;
+                }
+                first = false;
+                Vendorable.Rarity rarity = entry.getValue().getRarity();
+                Collectible collectible = (Collectible) entry.getValue();
+                if (!collectibleMap.containsKey(parent) || !collectibleMap.get(parent).containsKey(entry.getKey())) {
+                    available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier());
+                } else {
+                    CollectibleInfo collectibleInfo = collectibleMap.get(parent).get(entry.getKey());
+                    for (String skin : collectible.getSkinIds()) {
+                        if (!collectibleInfo.getOwnedSkins().containsKey(skin)) {
+                            available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
+                        }
+                    }
+                }
+            }
+        }
+        return available;
+    }
+
     public boolean add(Collectible collectible) {
         if (collectible != null) {
-            if (!collectibles.containsKey(collectible.getParentType())) {
-                collectibles.put(collectible.getParentType(), new HashMap<>());
+            if (!collectibleMap.containsKey(collectible.getParentType())) {
+                collectibleMap.put(collectible.getParentType(), new HashMap<>());
             }
-            collectibles.get(collectible.getParentType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+            collectibleMap.get(collectible.getParentType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                    owner.getUniqueId(),
+                    collectible.getParentType(),
+                    collectible.getIdentifier(),
+                    CollectibleAction.UNLOCK,
+                    ""));
             return true;
         }
         return false;
@@ -246,9 +97,20 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
 
     public boolean removeSkin(Collectible collectible, String skin) {
         if (collectible != null) {
-            if (collectibles.containsKey(collectible.getParentType())) {
-                if (collectibles.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
-                    return (collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()).removeSkin(skin));
+            if (collectibleMap.containsKey(collectible.getParentType())) {
+                if (collectibleMap.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
+                    if (collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()).removeSkin(skin)) {
+                        Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
+                                owner.getUniqueId(),
+                                collectible.getParentType(),
+                                collectible.getIdentifier(),
+                                skin != null  ? skin : "",
+                                CollectibleAction.LOCK,
+                                ""));
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
@@ -263,22 +125,33 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      */
     public int addSkin(Collectible collectible, String skin) {
         if (collectible != null) {
-            if (!collectibles.containsKey(collectible.getParentType()) ||
-                    !collectibles.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
+            if (!collectibleMap.containsKey(collectible.getParentType()) ||
+                    !collectibleMap.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
                 if (collectible.isDefault(owner)) {
                     add(collectible);
                 } else {
                     return 1;
                 }
             }
-            return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()).addSkin(skin, System.currentTimeMillis()) ? 0 : 2;
+            if (collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()).addSkin(skin, System.currentTimeMillis())) {
+                Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
+                        owner.getUniqueId(),
+                        collectible.getParentType(),
+                        collectible.getIdentifier(),
+                        skin != null  ? skin : "",
+                        CollectibleAction.UNLOCK,
+                        ""));
+                return 0;
+            } else {
+                return 2;
+            }
         }
         return 3;
     }
     
     public boolean contains(Collectible collectible) {
-        if (collectibles.containsKey(collectible.getParentType())) {
-            return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier()) != null;
+        if (collectibleMap.containsKey(collectible.getParentType())) {
+            return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()) != null;
         }
         return false;
     }
@@ -287,48 +160,54 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         if (!contains(collectible)) {
             add(collectible);
         }
-        return collectibles.get(collectible.getParentType()).get(collectible.getIdentifier());
+        return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier());
     }
     
     public boolean remove(Collectible collectible) {
-        if (collectible != null && collectibles.containsKey(collectible.getParentType())) {
-            collectibles.get(collectible.getParentType()).remove(collectible.getIdentifier());
+        if (collectible != null && collectibleMap.containsKey(collectible.getParentType())) {
+            collectibleMap.get(collectible.getParentType()).remove(collectible.getIdentifier());
             deactivate(collectible);
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                    owner.getUniqueId(),
+                    collectible.getParentType(),
+                    collectible.getIdentifier(),
+                    CollectibleAction.LOCK,
+                    ""));
             return true;
         }
         return false;
     }
 
     /**
-     * Returns the current active collectibles item of a type, or null if there is none
+     * Returns the current active collectibleMap item of a type, or null if there is none
      *
      * @param <T> ? extends Collectible
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
     public <T extends Collectible> T getActive(Class<T> clazz) {
-        if (!activeCollectibles.containsKey(Vendorable.getParentTypeName(clazz))) return Vendorables.get(clazz, "default");
-        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getParentTypeName(clazz)));
+        if (!activeMap.containsKey(Vendorable.getParentTypeName(clazz))) return Vendorables.get(clazz, "default");
+        return Vendorables.get(clazz, activeMap.get(Vendorable.getParentTypeName(clazz)));
     }
 
     /**
-     * Returns the current active collectibles item of a type, or null if there is none
+     * Returns the current active collectibleMap item of a type, or null if there is none
      *
      * @param <T> ? extends Collectible
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
     public <T extends Collectible> T getActive(Class<T> clazz, String affix) {
-        if (!activeCollectibles.containsKey(Vendorable.getParentTypeName(clazz) + affix)) return Vendorables.get(clazz, "default");
-        return Vendorables.get(clazz, activeCollectibles.get(Vendorable.getParentTypeName(clazz) + affix));
+        if (!activeMap.containsKey(Vendorable.getParentTypeName(clazz) + affix)) return Vendorables.get(clazz, "default");
+        return Vendorables.get(clazz, activeMap.get(Vendorable.getParentTypeName(clazz) + affix));
     }
     
     public boolean hasActive(Class<? extends Collectible> clazz) {
         String typeName = Vendorable.getParentTypeName(clazz);
-        String activeName = activeCollectibles.get(typeName);
+        String activeName = activeMap.get(typeName);
         if (activeName != null) {
             if (Vendorables.get(clazz, activeName) == null) {
-                activeCollectibles.remove(typeName);
+                activeMap.remove(typeName);
                 return false;
             }
             return true;
@@ -342,13 +221,13 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
 
     public <T extends Collectible> ItemStack getActiveIcon(Class<T> clazz) {
         T collectible = getActive(clazz);
-        return collectible.getDisplayItem(getInfo(collectible).selectedSkin);
+        return collectible.getDisplayItem(getInfo(collectible).getSelectedSkin());
     }
 
     public <T extends Collectible> String getActiveName(Class<T> clazz) {
         T collectible = getActive(clazz);
         CollectibleInfo info = getInfo(collectible);
-        if (info.getSelectedSkin() != null) {
+        if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
             return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
         } else {
             return collectible.getDisplayName();
@@ -356,22 +235,18 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     }
 
     public <T extends Collectible> boolean isEnabled(Class<T> clazz) {
-        String typeName = Vendorable.getParentTypeName(clazz);
-        if (!enabledMap.containsKey(typeName)) {
-            enabledMap.put(typeName, true);
-        }
-        return enabledMap.get(typeName);
+        return owner.getOptions().getBoolean("Collectibles:" + Vendorable.getParentTypeName(clazz));
     }
 
     public <T extends Collectible> void setEnabled(Class<T> clazz, boolean state) {
-        enabledMap.put(Vendorable.getParentTypeName(clazz), state);
+        owner.getOptions().setBoolean("Collectibles:" + Vendorable.getParentTypeName(clazz), state);
         owner.refreshHotbar();
     }
     
     public <T extends Collectible> List<T> getAll(Class<T> clazz) {
         List<T> collectibleList = new ArrayList<>();
     
-        Map<String, CollectibleInfo> collectibleMap = this.collectibles.get(Vendorable.getParentTypeName(clazz));
+        Map<String, CollectibleInfo> collectibleMap = this.collectibleMap.get(Vendorable.getParentTypeName(clazz));
         if (collectibleMap != null) {
             for (Map.Entry<String, CollectibleInfo> entry : collectibleMap.entrySet()) {
                 T collectible = Vendorables.get(clazz, entry.getKey());
@@ -383,36 +258,6 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         
         return collectibleList;
     }
-    
-    
-    
-    /**
-     * Sets the player's currently held item
-     *
-     * @param holdable Holdable
-     */
-    public void setHeldItem(Holdable holdable) {
-        heldItem = holdable;
-        owner.refreshHotbar();
-    }
-    
-    /**
-     * Gets the player's currently held item
-     *
-     * @return Held Item
-     */
-    public Holdable getHeldItem() {
-        return heldItem;
-    }
-    
-    /**
-     * Whether player currently has a selected held item
-     *
-     * @return Held Item?
-     */
-    public boolean hasHeldItem() {
-        return heldItem != null;
-    }
 
     /**
      * Sets a collectible as the active collectible
@@ -423,8 +268,14 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         Collectible current = getActive(collectible.getClass());
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
-        activeCollectibles.put(collectible.getParentType(), collectible.getIdentifier());
+        activeMap.put(collectible.getParentType(), collectible.getIdentifier());
         owner.refreshHotbar();
+        Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                owner.getUniqueId(),
+                collectible.getParentType(),
+                collectible.getIdentifier(),
+                CollectibleAction.ACTIVE,
+                ""));
     }
 
     /**
@@ -436,36 +287,61 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
         Collectible current = getActive(collectible.getClass(), affix);
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
-        activeCollectibles.put(collectible.getParentType() + affix, collectible.getIdentifier());
+        activeMap.put(collectible.getParentType() + affix, collectible.getIdentifier());
         owner.refreshHotbar();
+        Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                owner.getUniqueId(),
+                collectible.getParentType(),
+                collectible.getIdentifier(),
+                CollectibleAction.ACTIVE,
+                affix));
     }
 
     public void setSkin(Collectible collectible, String skin) {
         owner.getCollectibles().getInfo(collectible).setSelectedSkin(skin);
         owner.refreshHotbar();
+        Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
+                owner.getUniqueId(),
+                collectible.getParentType(),
+                collectible.getIdentifier(),
+                skin != null ? skin : "",
+                CollectibleAction.ACTIVE,
+                ""));
     }
 
     public void removeActiveItem(Class<? extends Collectible> clazz) {
         String type = Vendorable.getParentTypeName(clazz);
-        if (activeCollectibles.containsKey(type)) {
-            Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
+        if (activeMap.containsKey(type)) {
+            Collectible collectible = Vendorables.get(clazz, activeMap.get(type));
             if (collectible != null) {
                 collectible.onDisable(owner);
             }
-            activeCollectibles.remove(type);
+            activeMap.remove(type);
             owner.refreshHotbar();
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                    owner.getUniqueId(),
+                    type,
+                    "",
+                    CollectibleAction.ACTIVE,
+                    ""));
         }
     }
 
     public void removeActiveItem(Class<? extends Collectible> clazz, String affix) {
         String type = Vendorable.getParentTypeName(clazz) + affix;
-        if (activeCollectibles.containsKey(type)) {
-            Collectible collectible = Vendorables.get(clazz, activeCollectibles.get(type));
+        if (activeMap.containsKey(type)) {
+            Collectible collectible = Vendorables.get(clazz, activeMap.get(type));
             if (collectible != null) {
                 collectible.onDisable(owner);
             }
-            activeCollectibles.remove(type);
+            activeMap.remove(type);
             owner.refreshHotbar();
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                    owner.getUniqueId(),
+                    type,
+                    "",
+                    CollectibleAction.ACTIVE,
+                    affix));
         }
     }
     
@@ -475,10 +351,16 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
      * @param collectible Collectible
      */
     protected void deactivate(Collectible collectible) {
-        if (activeCollectibles.containsKey(collectible.getParentType())
-                && activeCollectibles.get(collectible.getParentType()).equalsIgnoreCase(collectible.getIdentifier())) {
+        if (activeMap.containsKey(collectible.getParentType())
+                && activeMap.get(collectible.getParentType()).equalsIgnoreCase(collectible.getIdentifier())) {
             collectible.onDisable(owner);
-            activeCollectibles.remove(collectible.getParentType());
+            activeMap.remove(collectible.getParentType());
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
+                    owner.getUniqueId(),
+                    collectible.getParentType(),
+                    "",
+                    CollectibleAction.ACTIVE,
+                    ""));
         }
     }
 
@@ -502,7 +384,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
     private static final String COLLECTIBLE_SEARCH = "collsearch";
 
     /**
-     * Creates an Inventory Menu Container with all available collectibles of a type
+     * Creates an Inventory Menu Container with all available collectibleMap of a type
      *
      * @param clazz Class
      */
@@ -603,7 +485,7 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
                             .setDescription(collectible.getDescription())
                             .setAction(cp2 -> {
                                 cp2.getCollectibles().setActiveItem(collectible);
-                                cp2.getCollectibles().setSkin(collectible, null);
+                                cp2.getCollectibles().setSkin(collectible, "");
                             })
                             .setCloseOnAction(false));
                     for (String id : collectible.getSkinIds()) {
@@ -632,36 +514,6 @@ public class CorePlayerCollectibles extends DBVariable<Document> {
                 });
 
         return menuItem;
-    }
-
-    public boolean addLeaf(String leafName) {
-        if (!collectedLeaves.contains(leafName)) {
-            collectedLeaves.add(leafName);
-            owner.updateLeaves();
-            return true;
-        }
-        return false;
-    }
-
-    // TODO: This is temporary, redo this
-    public int getLeafCount(String zoneName) {
-        int count = 0;
-        for (String leaf : collectedLeaves) {
-            if (leaf.startsWith(zoneName)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public boolean hasLeaf(String leafName) {
-        return collectedLeaves.contains(leafName);
-    }
-
-    public void clearLeaves(String zoneName) {
-        collectedLeaves.removeIf(next -> next.startsWith(zoneName));
-        owner.updateLeaves();
-        GlobalZones.getZone(zoneName).clearLeaves(owner);
     }
     
 }

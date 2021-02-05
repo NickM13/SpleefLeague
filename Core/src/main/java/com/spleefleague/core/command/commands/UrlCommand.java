@@ -20,7 +20,7 @@ public class UrlCommand extends CoreCommand {
         super("url", CoreRank.MODERATOR);
     }
     
-    @CommandAnnotation
+    @CommandAnnotation(disabled = true)
     public void url(CorePlayer sender, CorePlayer cp) {
         cp.allowUrl();
         success(sender, "Allowing " + cp.getDisplayName() + " to send a url");

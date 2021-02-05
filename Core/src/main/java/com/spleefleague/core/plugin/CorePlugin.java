@@ -59,7 +59,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     
     private static MongoClient mongoClient;
     private MongoDatabase pluginDb;
-    
+
     // Map of all players in the database and their UUIDs (loaded as they connect)
     protected PlayerManager<P> playerManager;
 
@@ -88,11 +88,10 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public static void initMongo() {
         org.apache.logging.log4j.core.Logger coreLogger = (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
         coreLogger.addFilter(new CoreLoggerFilter());
-        //Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
-        //mongoLogger.setLevel(Level.SEVERE);
         try {
             Properties mongoProps = new Properties();
             String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
+            System.out.println("MONGO PATH " + mongoPath);
             FileInputStream file = new FileInputStream(mongoPath);
             
             mongoProps.load(file);
@@ -100,6 +99,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             
             String mongoPrefix = mongoProps.getProperty("prefix", "mongodb://");
             String credentials = mongoProps.getProperty("credentials", "");
+            System.out.println(credentials);
             if (!credentials.isEmpty()) credentials = credentials.concat("@");
             String host = mongoProps.getProperty("host", "localhost:27017") + "/";
             String defaultauthdb = mongoProps.getProperty("defaultauthdb", "admin") + "?";
@@ -204,7 +204,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final MongoDatabase getPluginDB() {
         return pluginDb;
     }
-    
+
     /**
      * Player manager that contains all online players for this plugin
      *
@@ -217,7 +217,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public void refreshPlayers(Set<UUID> players) {
         playerManager.refresh(players);
     }
-    
+
     /**
      * Adds a player to the quick ingame player name
      * references list
@@ -279,6 +279,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @return Success
      */
     public static boolean spectatePlayerGlobal(CorePlayer spectator, CorePlayer target) {
+        if (target == null) return false;
         switch (target.getOnlineState()) {
             case OFFLINE:
                 Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayName() + Chat.ERROR + " is not online");
@@ -350,14 +351,20 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(String msg) {
         TextComponent textComponent = getChatPrefix();
-        textComponent.addExtra(msg);
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent);
+        textComponent.addExtra(Chat.colorize(msg));
+        Chat.sendMessage(ChatChannel.GLOBAL, textComponent);
     }
 
     public final void sendMessage(TextComponent text) {
         TextComponent textComponent = getChatPrefix();
         textComponent.addExtra(text);
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent);
+        Chat.sendMessage(ChatChannel.GLOBAL, textComponent);
+    }
+
+    public final void sendMessageFriends(TextComponent text, ChatChannel channel, Set<UUID> players) {
+        TextComponent textComponent = getChatPrefix();
+        textComponent.addExtra(text);
+        Chat.sendMessageFriends(ChatChannel.GLOBAL, text, players);
     }
 
     /**
@@ -367,8 +374,8 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessageBlacklisted(String msg, Set<UUID> blacklist) {
         TextComponent textComponent = getChatPrefix();
-        textComponent.addExtra(msg);
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent, blacklist);
+        textComponent.addExtra(Chat.colorize(msg));
+        Chat.sendMessage(ChatChannel.GLOBAL, textComponent, blacklist);
     }
 
     /**
@@ -379,7 +386,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final void sendMessageBlacklisted(TextComponent msg, Set<UUID> blacklist) {
         TextComponent textComponent = getChatPrefix();
         textComponent.addExtra(msg);
-        Chat.sendMessage(ChatChannel.getDefaultChannel(), textComponent, blacklist);
+        Chat.sendMessage(ChatChannel.GLOBAL, textComponent, blacklist);
     }
     
     /**
@@ -390,7 +397,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(CorePlayer cp, String msg) {
         TextComponent message = getChatPrefix();
-        message.addExtra(msg);
+        message.addExtra(Chat.colorize(msg));
         Chat.sendMessageToPlayer(cp, message);
     }
 
@@ -419,7 +426,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessage(ChatChannel cc, String msg) {
         TextComponent textComponent = getChatPrefix();
-        textComponent.addExtra(msg);
+        textComponent.addExtra(Chat.colorize(msg));
         Chat.sendMessage(cc, textComponent);
     }
 
@@ -433,7 +440,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      */
     public final void sendMessageBlacklisted(ChatChannel cc, String msg, Set<UUID> blacklist) {
         TextComponent textComponent = getChatPrefix();
-        textComponent.addExtra(msg);
+        textComponent.addExtra(Chat.colorize(msg));
         Chat.sendMessage(cc, textComponent, blacklist);
     }
     

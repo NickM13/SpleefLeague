@@ -49,17 +49,16 @@ public class CoreParty extends Party {
     private final Set<CorePlayer> playerSet = new HashSet<>();
     private final Set<CorePlayer> localPlayers = new HashSet<>();
      
-    public CoreParty(UUID owner) {
+    public CoreParty(UUID owner, List<UUID> players) {
         super(owner);
+        for (UUID uuid : players) {
+            addPlayer(uuid);
+        }
     }
 
     @Override
     public void setOwner(UUID owner) {
         super.setOwner(owner);
-        TextComponent text = new TextComponent();
-        text.addExtra(Core.getInstance().getPlayers().get(owner).getChatName());
-        text.addExtra(" is now the party owner");
-        sendMessage(text);
     }
 
     public boolean isOwner(CorePlayer cp) {
@@ -107,22 +106,7 @@ public class CoreParty extends Party {
     }
 
     public boolean leave(UUID uuid) {
-        if (removePlayer(uuid)) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-            cp.leaveParty();
-            return true;
-        }
-        return false;
-    }
-
-    public boolean kick(UUID uuid) {
-        if (removePlayer(uuid)) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-            cp.leaveParty();
-
-            return true;
-        }
-        return false;
+        return removePlayer(uuid);
     }
 
     @Override
@@ -130,13 +114,6 @@ public class CoreParty extends Party {
         super.addPlayer(uuid);
 
         CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-
-        cp.joinParty(this);
-
-        TextComponent text = new TextComponent();
-        text.addExtra(cp.getChatName());
-        text.addExtra(" has joined the party");
-        sendMessage(text);
 
         playerSet.add(cp);
 
@@ -158,15 +135,9 @@ public class CoreParty extends Party {
                 .setTitle("Party List");
     }
 
-    public void refresh(List<UUID> players) {
-        if (!players.get(0).equals(owner)) {
-            setOwner(players.get(0));
-        }
-        for (UUID uuid : playerList) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-            if (cp != null && cp.isOnline()) {
-                cp.leaveParty();
-            }
+    public void refresh(CorePlayer owner, List<UUID> players) {
+        if (!this.owner.equals(owner.getUniqueId())) {
+            this.owner = owner.getUniqueId();
         }
         playerList.clear();
         playerSet.clear();
@@ -175,8 +146,6 @@ public class CoreParty extends Party {
             playerList.add(uuid);
 
             CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-
-            cp.joinParty(this);
 
             playerSet.add(cp);
             if (cp.getOnlineState() == DBPlayer.OnlineState.HERE) {

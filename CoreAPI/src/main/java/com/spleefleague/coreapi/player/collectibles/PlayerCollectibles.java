@@ -12,14 +12,12 @@ import java.util.*;
  */
 public class PlayerCollectibles extends DBEntity {
 
-    private final SortedMap<String, Map<String, CollectibleInfo>> collectibleMap;
-    private final SortedMap<String, String> activeMap;
-    private final SortedMap<String, Boolean> enabledMap;
+    protected final SortedMap<String, Map<String, CollectibleInfo>> collectibleMap;
+    protected final SortedMap<String, String> activeMap;
 
     public PlayerCollectibles() {
         this.collectibleMap = new TreeMap<>();
         this.activeMap = new TreeMap<>();
-        this.enabledMap = new TreeMap<>();
     }
 
     @DBLoad(fieldName = "collectibles")
@@ -65,23 +63,6 @@ public class PlayerCollectibles extends DBEntity {
         Document doc = new Document();
         for (Map.Entry<String, String> active : activeMap.entrySet()) {
             doc.append(active.getKey(), active.getValue());
-        }
-        return doc;
-    }
-
-    @DBLoad(fieldName = "enabled")
-    protected void loadEnabled(Document doc) {
-        enabledMap.clear();
-        for (Map.Entry<String, Object> enabledPair : doc.entrySet()) {
-            enabledMap.put(enabledPair.getKey(), (Boolean) enabledPair.getValue());
-        }
-    }
-
-    @DBSave(fieldName = "enabled")
-    protected Document saveEnabled() {
-        Document doc = new Document();
-        for (Map.Entry<String, Boolean> enabled : enabledMap.entrySet()) {
-            doc.append(enabled.getKey(), enabled.getValue());
         }
         return doc;
     }
@@ -132,17 +113,6 @@ public class PlayerCollectibles extends DBEntity {
             return true;
         }
         return false;
-    }
-
-    public boolean isEnabled(String type) {
-        if (!enabledMap.containsKey(type)) {
-            enabledMap.put(type, true);
-        }
-        return enabledMap.get(type);
-    }
-
-    public void setEnabled(String type, boolean state) {
-        enabledMap.put(type, state);
     }
 
     public void setActiveItem(String type, String identifier) {

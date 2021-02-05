@@ -29,8 +29,7 @@ public class StaffChatCommand extends CoreCommand {
     @CommandAnnotation
     public void staffchat(CorePlayer sender,
             String message) {
-        ChatChannel sc = ChatChannel.Channel.STAFF.getChatChannel();
-        Chat.sendMessage(sc, sender, message, false);
+        Chat.sendMessage(sender, ChatChannel.STAFF, message);
     }
     
 }

@@ -9,9 +9,11 @@ package com.spleefleague.core.menu.hotbars.main;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.main.collectible.GearMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
+import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
 import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
+import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,13 +36,17 @@ public class HeldItemMenu {
 
         InventoryMenuContainerChest container = menuItem.getLinkedChest();
 
-        container.addStaticItem(GearMenu.getItem(), 5, 2);
-        container.addStaticItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 5, 3);
-        container.addStaticItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 5, 4);
+        container.addMenuItem(HatMenu.getItem(), 1, 0);
+        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 1, 1);
+        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 1, 2);
 
-        container.addStaticItem(HatMenu.getItem(), 3, 2);
-        container.addStaticItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 3, 3);
-        container.addStaticItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 3, 4);
+        container.addMenuItem(GearMenu.getItem(), 2, 0);
+        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 2, 1);
+        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 2, 2);
+
+        container.addMenuItem(PetMenu.getItem(), 4, 0);
+        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Pet.class), 4, 1);
+        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Pet.class), 4, 2);
     }
     
     /**

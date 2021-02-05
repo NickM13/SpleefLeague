@@ -38,12 +38,17 @@ public class CorePlayerFriends extends FriendsList {
         }
     }
 
+    public int getCount() {
+        return friends.size();
+    }
+
     public void sendFriendRequest(CorePlayer cp) {
         if (cp == null) return;
         if (cp.equals(owner)) {
             Core.getInstance().sendMessage(owner, ChatColor.RED + "You can't add yourself!");
             return;
         }
+        incoming.remove(cp.getUniqueId());
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.ADD, owner.getUniqueId(), cp.getUniqueId()));
     }
 
@@ -58,11 +63,13 @@ public class CorePlayerFriends extends FriendsList {
             Core.getInstance().sendMessage(cp, text);
             return;
         }
+        friends.remove(cp.getUniqueId());
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.REMOVE, owner.getUniqueId(), cp.getUniqueId()));
     }
 
     public void sendFriendDecline(CorePlayer cp) {
-        Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.DECLINE, owner.getUniqueId(), cp.getUniqueId()));
+        incoming.remove(cp.getUniqueId());
+        Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.DECLINE_INCOMING, owner.getUniqueId(), cp.getUniqueId()));
     }
 
     public void setOnline(UUID uuid, CorePlayer cp) {
@@ -78,6 +85,34 @@ public class CorePlayerFriends extends FriendsList {
 
     public Set<CorePlayer> getOnline() {
         return online;
+    }
+
+    public void syncAdd(CorePlayer target) {
+        friends.put(target.getUniqueId(), new FriendInfo(target.getUniqueId()));
+        allNames.add(target.getName());
+        incoming.remove(target.getUniqueId());
+        outgoing.remove(target.getUniqueId());
+    }
+
+    public void syncRemove(CorePlayer target) {
+        friends.remove(target.getUniqueId());
+        allNames.remove(target.getName());
+    }
+
+    public void syncDeclineIncoming(CorePlayer target) {
+        incoming.remove(target.getUniqueId());
+    }
+
+    public void syncDeclineOutgoing(CorePlayer target) {
+        outgoing.remove(target.getUniqueId());
+    }
+
+    public void syncIncoming(CorePlayer target) {
+        incoming.add(target.getUniqueId());
+    }
+
+    public void syncOutgoing(CorePlayer target) {
+        outgoing.add(target.getUniqueId());
     }
 
     private static class FriendNameComparator implements Comparator<FriendInfo> {

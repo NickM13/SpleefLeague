@@ -94,10 +94,10 @@ public class ConnectionListener implements Listener {
         if (cp == null || !cp.getRank().hasPermission(CoreRank.MODERATOR)) {
             switch (event.getStatus()) {
                 case DECLINED:
-                    event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");
+                    //event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");
                     break;
                 case FAILED_DOWNLOAD:
-                    event.getPlayer().kickPlayer("There was an issue while downloading the resource pack, try logging out and back in");
+                    //event.getPlayer().kickPlayer("There was an issue while downloading the resource pack, try logging out and back in");
                     break;
             }
         }

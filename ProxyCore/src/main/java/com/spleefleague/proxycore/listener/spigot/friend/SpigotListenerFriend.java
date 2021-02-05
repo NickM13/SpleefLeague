@@ -23,7 +23,7 @@ public class SpigotListenerFriend extends SpigotListener<PacketSpigotFriend> {
             case REMOVE:
                 pcpSender.getFriends().onFriendRemove(pcpReceiver);
                 break;
-            case DECLINE:
+            case DECLINE_INCOMING:
                 pcpSender.getFriends().onFriendDecline(pcpReceiver);
                 break;
         }

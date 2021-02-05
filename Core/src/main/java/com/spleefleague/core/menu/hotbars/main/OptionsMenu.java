@@ -34,6 +34,7 @@ public class OptionsMenu {
             menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Options")
                     .setDisplayItem(Material.WRITABLE_BOOK, 1)
+                    .setSelectedItem(Material.WRITABLE_BOOK, 2)
                     .setDescription("Customize your SpleefLeague experience")
                     .createLinkedContainer("Options");
 

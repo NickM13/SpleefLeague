@@ -34,10 +34,32 @@ public class CoreRank extends Rank {
     }
 
     public CoreRank(String rankName, int ladder, ChatColor color) {
+        this.identifier = rankName;
         this.displayName = rankName;
         this.ladder = ladder;
         this.color = color;
         afterLoad();
+    }
+
+    public void setName(String name) {
+        this.displayName = name;
+        afterLoad();
+    }
+
+    public void setLadder(int ladder) {
+        this.ladder = ladder;
+    }
+
+    public void setMaxFriends(int maxFriends) {
+        this.maxFriends = maxFriends;
+    }
+
+    public void setColor(ChatColor color) {
+        this.color = color;
+    }
+
+    public void setHasOp(boolean op) {
+        this.hasOp = op;
     }
 
     public void setPriority(int priority) {

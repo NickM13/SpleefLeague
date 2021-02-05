@@ -27,8 +27,8 @@ public class BungeeListenerConnection extends BungeeListener<PacketBungeeConnect
                 plugin.getPlayers().onBungeeDisconnect(packet.uuid);
             }
         } else if (packet.type == PacketBungeeConnection.ConnectionType.FIRST_CONNECT) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(packet.uuid);
-            Core.getInstance().sendMessage(cp, "Welcome to SpleefLeague!");
+            //CorePlayer cp = Core.getInstance().getPlayers().get(packet.uuid);
+            //Core.getInstance().sendMessage(cp, "Welcome to SpleefLeague!");
         }
     }
 

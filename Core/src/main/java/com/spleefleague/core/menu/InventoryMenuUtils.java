@@ -30,7 +30,8 @@ public class InventoryMenuUtils {
         NEXT_GRAY(createCustomItem(Material.GRAY_DYE, 2)),
         PREVIOUS(createCustomItem(Material.LIME_DYE, 1)),
         NEXT(createCustomItem(Material.LIME_DYE, 2)),
-        RETURN(createCustomItem(Material.BARRIER, 1));
+        RETURN(createCustomItem(Material.BARRIER, 1)),
+        STORE(createCustomItem(Material.EMERALD, 1));
         
         ItemStack iconItem;
         
@@ -40,6 +41,12 @@ public class InventoryMenuUtils {
         
         public ItemStack getIconItem() {
             return iconItem;
+        }
+
+        public ItemStack getIconItem(int amount) {
+            ItemStack itemStack = iconItem.clone();
+            itemStack.setAmount(amount);
+            return itemStack;
         }
         
     }

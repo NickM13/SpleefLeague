@@ -30,38 +30,10 @@ public abstract class FriendsList extends DBEntity {
     @DBField protected final Set<UUID> outgoing = new HashSet<>();
     @DBField protected final Set<UUID> incoming = new HashSet<>();
 
-    @DBField protected boolean blockingRequests = false;
-    @DBField protected boolean blockingLogins = false;
-    @DBField protected boolean blockingGameNotifications = false;
-
     public FriendsList() {
 
     }
-
-    public boolean isBlockingRequests() {
-        return blockingRequests;
-    }
-
-    public void setBlockingRequests(boolean blockRequests) {
-        this.blockingRequests = blockRequests;
-    }
-
-    public boolean isBlockingLogins() {
-        return blockingLogins;
-    }
-
-    public void setBlockingLogins(boolean blockingLogins) {
-        this.blockingLogins = blockingLogins;
-    }
-
-    public boolean isBlockingGameNotifications() {
-        return blockingGameNotifications;
-    }
-
-    public void setBlockingGameNotifications(boolean blockingGameNotifications) {
-        this.blockingGameNotifications = blockingGameNotifications;
-    }
-
+    
     public boolean isFriend(UUID uuid) {
         return friends.containsKey(uuid);
     }

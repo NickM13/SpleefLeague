@@ -4,7 +4,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 
 /**
@@ -14,7 +14,7 @@ import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 public class AffixCommand extends CoreCommand {
 
     public AffixCommand() {
-        super("affix", Rank.DEVELOPER);
+        super("affix", CoreRank.DEVELOPER);
     }
 
     @CommandAnnotation

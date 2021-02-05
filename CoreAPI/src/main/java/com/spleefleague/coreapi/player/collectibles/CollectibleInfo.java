@@ -15,7 +15,7 @@ import java.util.Map;
 public class CollectibleInfo extends DBEntity {
 
     @DBField Long collectDate;
-    @DBField String selectedSkin = null;
+    @DBField String selectedSkin = "";
     @DBField String name = null;
     Map<String, Long> ownedSkins = new HashMap<>();
 

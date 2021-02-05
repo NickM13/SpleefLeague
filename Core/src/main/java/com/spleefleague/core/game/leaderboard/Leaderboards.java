@@ -27,9 +27,7 @@ public class Leaderboards {
     
     private BukkitTask decayTask;
 
-    public Leaderboards() {
-        init();
-    }
+    public Leaderboards() { }
 
     public void init() {
         leaderboardCol = Core.getInstance().getPluginDB().getCollection("Leaderboards");

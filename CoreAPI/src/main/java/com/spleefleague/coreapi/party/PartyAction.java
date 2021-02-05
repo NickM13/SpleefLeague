@@ -11,9 +11,8 @@ public enum PartyAction {
     TRANSFER,
     KICK,
     INVITE,
-    INVITE_FORCE,
-    JOIN,
-    JOIN_FORCE,
-    DISBAND
+    DISBAND,
+    ACCEPT,
+    DECLINE
 
 }

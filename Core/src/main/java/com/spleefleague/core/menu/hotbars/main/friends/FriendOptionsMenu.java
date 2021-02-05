@@ -10,10 +10,10 @@ public class FriendOptionsMenu {
 
     public static void init() {
         menuItem = InventoryMenuAPI.createItemStatic()
-                        .setName("Friend Options")
+                        .setName("Friend Settings")
                         .setDisplayItem(Material.FEATHER, 1)
-                        .setDescription("Uhh")
-                        .createLinkedContainer("Friend Options");
+                        .setDescription("Manage your preferences on all things related to your friends!")
+                        .createLinkedContainer("Friend Settings");
 
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemStatic()
@@ -24,8 +24,8 @@ public class FriendOptionsMenu {
 
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemToggle()
-                                .setEnabledFun(cp -> !cp.getFriends().isBlockingRequests())
-                                .setAction(cp -> cp.getFriends().setBlockingRequests(!cp.getFriends().isBlockingRequests())),
+                                .setEnabledFun(cp -> cp.getOptions().getBoolean("Friend:Requests"))
+                                .setAction(cp -> cp.getOptions().toggle("Friend:Requests")),
                         1, 0);
 
         menuItem.getLinkedChest()
@@ -37,8 +37,8 @@ public class FriendOptionsMenu {
 
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemToggle()
-                                .setEnabledFun(cp -> !cp.getFriends().isBlockingLogins())
-                                .setAction(cp -> cp.getFriends().setBlockingLogins(!cp.getFriends().isBlockingLogins())),
+                                .setEnabledFun(cp -> cp.getOptions().getBoolean("Friend:Connection"))
+                                .setAction(cp -> cp.getOptions().toggle("Friend:Connection")),
                         1, 1);
 
         menuItem.getLinkedChest()
@@ -50,8 +50,8 @@ public class FriendOptionsMenu {
 
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemToggle()
-                                .setEnabledFun(cp -> !cp.getFriends().isBlockingGameNotifications())
-                                .setAction(cp -> cp.getFriends().setBlockingGameNotifications(!cp.getFriends().isBlockingGameNotifications())),
+                                .setEnabledFun(cp -> cp.getOptions().getBoolean("Friend:Notifications"))
+                                .setAction(cp -> cp.getOptions().toggle("Friend:Notifications")),
                         1, 2);
     }
 

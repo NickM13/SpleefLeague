@@ -6,9 +6,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
-import com.spleefleague.coreapi.utils.packet.Packet;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
+import com.spleefleague.proxycore.chat.ProxyChat;
+import com.spleefleague.proxycore.command.PurchaseCommand;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import com.spleefleague.proxycore.game.queue.QueueManager;
@@ -27,7 +27,6 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-import javax.annotation.Nonnull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -63,6 +62,7 @@ public class ProxyCore extends Plugin {
     private final QueueManager queueManager = new QueueManager();
     private final ProxyRankManager rankManager = new ProxyRankManager();
     private final PacketManager packetManager = new PacketManager();
+    private final ProxyChat chat = new ProxyChat();
 
     @Override
     public void onLoad() {
@@ -74,6 +74,7 @@ public class ProxyCore extends Plugin {
         instance = this;
 
         initMongo();
+        initCommands();
 
         getProxy().getPluginManager().registerListener(this, new BattleListener());
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
@@ -169,6 +170,10 @@ public class ProxyCore extends Plugin {
         return rankManager;
     }
 
+    public ProxyChat getChat() {
+        return chat;
+    }
+
     public List<ServerInfo> getLobbyServers() {
         return Lists.newArrayList(lobbyServers.values());
     }
@@ -218,6 +223,10 @@ public class ProxyCore extends Plugin {
         database = mongoClient.getDatabase("SpleefLeague");
     }
 
+    private void initCommands() {
+        getProxy().getPluginManager().registerCommand(this, new PurchaseCommand());
+    }
+
     public MongoDatabase getDatabase() {
         return database;
     }
@@ -264,7 +273,7 @@ public class ProxyCore extends Plugin {
         TextComponent text2 = new TextComponent(Chat.ERROR);
         text.setColor(ChatColor.RED);
         text2.addExtra(text);
-        text2.addExtra("!");
+        text2.addExtra(ChatColor.RED + "!");
         pcp.getPlayer().sendMessage(text2);
     }
 

@@ -15,7 +15,7 @@ import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
@@ -31,7 +31,7 @@ import java.util.TreeSet;
 public class SpleefCommand extends CoreCommand {
     
     public SpleefCommand() {
-        super("spleef", Rank.DEFAULT);
+        super("spleef", CoreRank.DEFAULT);
         this.addAlias("s");
         this.setOptions("gamemodes",    pi -> CoreUtils.enumToStrSet(SpleefMode.class, true));
         this.setOptions("chalModes",    this::getChallengeModes);

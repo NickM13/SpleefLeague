@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.menu.hotbars.main.options;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
@@ -40,21 +41,20 @@ public class ChatOptionsMenu {
                 menuItem.getLinkedChest().addDeadSpace(2, i);
             }
 
-            for (String name : CoreUtils.sortCollectionByName(ChatChannel.getChannelNames())) {
-                ChatChannel.Channel channel = ChatChannel.Channel.valueOf(name);
-                ChatChannel chatChannel = ChatChannel.getChannel(channel);
+            for (String name : CoreUtils.sortCollectionByName(CoreUtils.enumToStrSet(ChatChannel.class, false))) {
+                ChatChannel channel = ChatChannel.valueOf(name);
                 menuItem.getLinkedChest()
                         .addMenuItem(InventoryMenuAPI.createItemDynamic()
-                                .setName(chatChannel.getName())
+                                .setName(channel.getName())
                                 .setDescription("")
                                 .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.WRITABLE_BOOK, 3))
                                 .setCloseOnAction(false)
-                                .setVisibility(chatChannel::isAvailable));
+                                .setVisibility(channel::isAvailable));
                 menuItem.getLinkedChest().addMenuItem(
                         InventoryMenuAPI.createItemToggle()
-                                .setAction(cp -> cp.getOptions().toggle(channel.toString()))
-                                .setEnabledFun(cp -> !cp.getOptions().getBoolean(channel.toString()))
-                                .setVisibility(chatChannel::isAvailable));
+                                .setAction(cp -> cp.getOptions().toggle("Chat:" + channel.name()))
+                                .setEnabledFun(cp -> cp.getOptions().getBoolean("Chat:" + channel.name()))
+                                .setVisibility(channel::isAvailable));
             }
         }
         return menuItem;

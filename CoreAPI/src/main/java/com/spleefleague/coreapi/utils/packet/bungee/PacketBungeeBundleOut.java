@@ -29,10 +29,8 @@ public class PacketBungeeBundleOut {
     public final byte[] toByteArray() {
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
 
-        System.out.println("BundleOut Size " + packetData.size());
         output.writeInt(packetData.size());
         for (byte[] data : packetData) {
-            System.out.println("Packet Len " + data.length);
             output.writeInt(data.length);
             output.write(data);
         }

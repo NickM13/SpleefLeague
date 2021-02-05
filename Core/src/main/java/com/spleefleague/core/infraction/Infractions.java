@@ -27,9 +27,6 @@ public class Infractions {
                 .setDuration(millis)
                 .setReason(reason);
         Infraction.create(infraction);
-
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Secretly muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -52,8 +49,6 @@ public class Infractions {
         if (target.isOnline()) {
             Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Muted by " + sender + " for " + infraction.getRemainingTimeString() + ": " + reason);
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Public muted player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -75,8 +70,6 @@ public class Infractions {
         if (target.isOnline()) {
             Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "You've been unmuted by " + sender);
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "Unmuted player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -104,8 +97,6 @@ public class Infractions {
                 player.kickPlayer("TempBan for " + infraction.getRemainingTimeString() + ": " + reason + "!");
             }
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF),
-                "TempBanned player " + target.getName() + " for " + infraction.getRemainingTimeString() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -131,7 +122,6 @@ public class Infractions {
                 player.kickPlayer("Banned: " + reason + "!");
             }
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Banned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -150,7 +140,6 @@ public class Infractions {
                 .setReason(reason);
         Infraction.create(infraction);
 
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Unbanned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -176,7 +165,6 @@ public class Infractions {
                 player.kickPlayer("Kicked: " + reason + "!");
             }
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Kicked player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
     /**
@@ -199,7 +187,6 @@ public class Infractions {
         if (target.isOnline()) {
             Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
         }
-        Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), "Warned player " + target.getName() + (reason.length() > 0 ? (": " + reason) : ""));
     }
 
 }

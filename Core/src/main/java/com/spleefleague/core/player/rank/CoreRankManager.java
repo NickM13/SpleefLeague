@@ -2,6 +2,7 @@ package com.spleefleague.core.player.rank;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.player.ranks.RankManager;
 import org.bson.Document;
@@ -68,6 +69,58 @@ public class CoreRankManager extends RankManager<CoreRank> {
         Set<Team> teams = mainScoreboard.getTeams();
         teams.forEach(Team::unregister);
         initScoreboard(mainScoreboard);
+    }
+
+    private void sortRanks() {
+        List<CoreRank> sortedRanks = new ArrayList<>(ranks.values());
+        sortedRanks.sort(Comparator.comparingInt(CoreRank::getLadder).reversed());
+        for (int i = 0; i < sortedRanks.size(); i++) {
+            sortedRanks.get(i).setPriority(i);
+        }
+    }
+
+    public boolean createRank(String identifier, int ladder, ChatColor chatColor) {
+        if (ranks.containsKey(identifier)) {
+            CoreRank rank = new CoreRank(identifier, ladder, chatColor);
+            ranks.put(identifier, rank);
+            sortRanks();
+            return true;
+        }
+        return false;
+    }
+
+    public void setRankName(String identifier, String displayName) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setName(Chat.colorize(displayName));
+        saveRank(ranks.get(identifier));
+    }
+
+    public void setRankLadder(String identifier, int ladder) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setLadder(ladder);
+        saveRank(ranks.get(identifier));
+    }
+
+    public void setRankMaxFriends(String identifier, int maxFriends) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setMaxFriends(maxFriends);
+        saveRank(ranks.get(identifier));
+    }
+
+    public void setRankColor(String identifier, ChatColor chatColor) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setColor(chatColor);
+        saveRank(ranks.get(identifier));
+    }
+
+    public void setRankOp(String identifier, boolean hasOp) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setHasOp(hasOp);
+        saveRank(ranks.get(identifier));
+    }
+
+    private void saveRank(CoreRank rank) {
+        rank.save(rankCollection);
     }
 
     @Override

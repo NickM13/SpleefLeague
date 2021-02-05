@@ -5,10 +5,9 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.annotation.OptionArg;
-import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.Rank;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 
@@ -21,7 +20,7 @@ import javax.annotation.Nullable;
 public class ClassicSpleefCommand extends CoreCommand {
 
     public ClassicSpleefCommand() {
-        super("classicspleef", Rank.DEFAULT);
+        super("classicspleef", CoreRank.DEFAULT);
         this.addAlias("cs");
         this.setOptions("arenas", cp -> Arenas.getUnpaused(SpleefMode.CLASSIC.getBattleMode()).keySet());
     }

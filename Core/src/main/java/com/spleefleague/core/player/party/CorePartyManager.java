@@ -1,7 +1,6 @@
 package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.party.PartyAction;
@@ -31,39 +30,35 @@ public class CorePartyManager extends PartyManager<CoreParty> {
         }
     }
 
+    public CoreParty getParty(CorePlayer cp) {
+        return partyMap.get(cp.getUniqueId());
+    }
+
     public void onRefresh(CorePlayer owner, List<UUID> players) {
         if (partyMap.containsKey(owner.getUniqueId())) {
-            partyMap.get(owner.getUniqueId()).refresh(players);
-        } else {
-            super.create(new CoreParty(owner.getUniqueId()), owner.getUniqueId());
-            CoreParty party = partyMap.get(owner.getUniqueId());
-            if (party != null) {
-                for (int i = 1; i < players.size(); i++) {
-                    party.addPlayer(players.get(i));
-                    partyMap.put(players.get(i), party);
-                }
-            } else {
-                CoreLogger.logError("Error: Could not create a party for " + owner.getName() + " on refresh");
+            for (UUID uuid : partyMap.get(owner.getUniqueId()).getPlayerList()) {
+                partyMap.remove(uuid);
             }
+        }
+        CoreParty party = new CoreParty(owner.getUniqueId(), players);
+        for (UUID player : players) {
+            partyMap.put(player, party);
         }
     }
 
     public void removeParty(CoreParty party) {
+        System.out.println("Clearing");
         for (CorePlayer cp : party.getPlayerSet()) {
+            System.out.println("Removing player " + cp.getName());
             partyMap.remove(cp.getUniqueId());
-            cp.leaveParty();
         }
     }
 
-    public void onCreate(UUID owner) {
-        if (super.create(new CoreParty(owner), owner)) {
-            TextComponent text = new TextComponent("You have joined a party!");
-            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(owner), text);
+    public void onDisband(UUID sender) {
+        System.out.println("Disbanding party of " + Core.getInstance().getPlayers().get(sender));
+        if (partyMap.containsKey(sender)) {
+            removeParty(partyMap.get(sender));
         }
-    }
-
-    public void onTransfer(UUID sender, UUID target) {
-        super.transfer(sender, target);
     }
 
     public void onLeave(UUID sender) {
@@ -91,11 +86,12 @@ public class CorePartyManager extends PartyManager<CoreParty> {
         }
     }
 
+    @Deprecated
     public void onKick(UUID sender) {
         CoreParty party = partyMap.remove(sender);
 
         if (party != null) {
-            party.kick(sender);
+            party.leave(sender);
         }
     }
 

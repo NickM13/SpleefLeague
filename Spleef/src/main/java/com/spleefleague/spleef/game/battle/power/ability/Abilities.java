@@ -139,17 +139,17 @@ public class Abilities {
 
         menuItem.setName(type.getColor() + type.getDisplayName() + " Power " + type.getBindName())
                 .setDescription(cp -> {
-                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
+                    AbilityStats selected = getAbility(type, cp.getOptions().getString(type.getOptionName()));
                     return "Select a " + type.getDisplayName() + " power from a selection of &c" +
                             Abilities.getAbilities(type).size() +
                             " &7unique abilities. Only one " + type.getDisplayName() + " ability may be equipped at once." +
                             "\n\n&7&lCurrently Equipped: &6" +
-                            (sp.getActive(type) != null ? sp.getActive(type).getName() : "Random Power");
+                            (selected != null ? selected.getName() : "Random Power");
                 })
                 .setDisplayItem(cp -> {
-                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp);
-                    if (sp.getActive(type) != null) {
-                        return sp.getActive(type).getDisplayItem();
+                    AbilityStats selected = getAbility(type, cp.getOptions().getString(type.getOptionName()));
+                    if (selected != null) {
+                        return selected.getDisplayItem();
                     }
                     return InventoryMenuUtils.createCustomItem(type.getMaterial(), 1);
                 })
@@ -167,12 +167,12 @@ public class Abilities {
                     for (AbilityStats abilityStats : Abilities.getAbilities(type).values()) {
                         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(cp2 -> {
-                                    SpleefPlayer sp = Spleef.getInstance().getPlayers().get(cp2);
-                                    return abilityStats.getType().getColor() + abilityStats.getName() + (sp.getActive(type) != null ? (sp.getActive(type).getName().equalsIgnoreCase(abilityStats.getName()) ? " &6(Currently Equipped!)" : "") : "");
+                                    AbilityStats selected = getAbility(type, cp.getOptions().getString(type.getOptionName()));
+                                    return abilityStats.getType().getColor() + abilityStats.getName() + (selected != null ? (selected.getName().equalsIgnoreCase(abilityStats.getName()) ? " &6(Currently Equipped!)" : "") : "");
                                 })
                                 .setDescription(abilityStats.getDescription())
                                 .setDisplayItem(abilityStats.getDisplayItem())
-                                .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActive(type, abilityStats.getName()))
+                                .setAction(cp2 -> cp.getOptions().setString(type.getOptionName(), abilityStats.getName()))
                                 .setCloseOnAction(false));
                     }
                 });
@@ -180,22 +180,22 @@ public class Abilities {
                         .setName(type.getColor() + "Random Power")
                         .setDisplayItem(InventoryMenuUtils.createCustomItem(type.getMaterial(), 1))
                         .setDescription("Select a random utility power for your next match!")
-                        .setAction(cp2 -> Spleef.getInstance().getPlayers().get(cp2).setActive(type, ""))
+                        .setAction(cp2 -> cp2.getOptions().setString(type.getOptionName(), ""))
                         .setCloseOnAction(false),
                 2, 3);
 
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
-                .setName(cp -> type.getColor() + Spleef.getInstance().getPlayers().get(cp).getActive(type).getName() + " &6(Currently Equipped!)")
-                .setDisplayItem(cp -> Spleef.getInstance().getPlayers().get(cp).getActive(type).getDisplayItem())
-                .setDescription(cp -> Spleef.getInstance().getPlayers().get(cp).getActive(type).getDescription())
+                .setName(cp -> type.getColor() + getAbility(type, cp.getOptions().getString(type.getOptionName())).getName() + " &6(Currently Equipped!)")
+                .setDisplayItem(cp -> getAbility(type, cp.getOptions().getString(type.getOptionName())).getDisplayItem())
+                .setDescription(cp -> getAbility(type, cp.getOptions().getString(type.getOptionName())).getDescription())
                 .setCloseOnAction(false)
-                .setVisibility(cp -> Spleef.getInstance().getPlayers().get(cp).getActive(type) != null), SHOWN_X, SHOWN_Y);
+                .setVisibility(cp -> getAbility(type, cp.getOptions().getString(type.getOptionName())) != null), SHOWN_X, SHOWN_Y);
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> type.getColor() + "Random Power")
                 .setDisplayItem(InventoryMenuUtils.createCustomItem(type.getMaterial(), 1))
                 .setDescription("Select a random utility power for your next match!")
                 .setCloseOnAction(false)
-                .setVisibility(cp -> Spleef.getInstance().getPlayers().get(cp).getActive(type) == null), SHOWN_X, SHOWN_Y);
+                .setVisibility(cp -> getAbility(type, cp.getOptions().getString(type.getOptionName())) == null), SHOWN_X, SHOWN_Y);
 
         return menuItem;
     }

@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Set;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bson.Document;
 import org.bukkit.OfflinePlayer;
 
@@ -54,40 +58,37 @@ public class PlayerInfoCommand extends CoreCommand {
             return;
         }
 
-        List<String> strings = new ArrayList<>();
-        strings.add(Chat.TAG_BRACE + ChatUtils.centerChat("[ " + cp.getDisplayNamePossessive() + " data" + Chat.TAG_BRACE + " ]"));
-        strings.add(Chat.TAG_BRACE + "Name: " +
-                Chat.DEFAULT + op.getName());
-        strings.add(Chat.TAG_BRACE + "UUID: " +
-                Chat.DEFAULT + op.getUniqueId().toString());
-        strings.add(Chat.TAG_BRACE + "Rank: " +
-                Chat.DEFAULT + cp.getRank().getColor() + cp.getRank().getDisplayNameUnformatted());
-        strings.add(Chat.TAG_BRACE + "State: " +
-                Chat.DEFAULT + getState(cp));
-        strings.add(Chat.TAG_BRACE + "Muted: " +
-                Chat.DEFAULT + getMuted(cp));
+        List<TextComponent> textComponents = new ArrayList<>();
+        TextComponent component;
+        textComponents.add(ChatUtils.centerChat(Chat.TAG_BRACE + "[ " + cp.getDisplayNamePossessive() + " data" + Chat.TAG_BRACE + " ]" + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Name: " +
+                Chat.DEFAULT + op.getName() + "\n"));
+
+        component = new TextComponent(Chat.TAG_BRACE + "UUID: ");
+        component.addExtra(new TextComponent(new ComponentBuilder().append(Chat.DEFAULT + op.getUniqueId().toString() + "\n")
+                .event(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, op.getUniqueId().toString()))
+                .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder().append("Click to copy to clipboard").create())).create()));
+        textComponents.add(component);
+
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Rank: " +
+                Chat.DEFAULT + cp.getRank().getColor() + cp.getRank().getDisplayNameUnformatted() + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "State: " +
+                Chat.DEFAULT + getState(cp) + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Muted: " +
+                Chat.DEFAULT + getMuted(cp) + "\n"));
         if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE)
-            strings.add(Chat.TAG_BRACE + "Last seen: " +
-                    Chat.DEFAULT + getLastSeen(cp));
-        strings.add(Chat.TAG_BRACE + "IP: " +
-                Chat.DEFAULT + getIp(cp));
-        strings.add(Chat.TAG_BRACE + "Shared accounts: " +
-                Chat.DEFAULT + getSharedAccounts(cp));
-        strings.add(Chat.TAG_BRACE + "Total online time: " +
-                Chat.DEFAULT + getOnlineTime(cp));
-        strings.add(Chat.TAG_BRACE + "Total active time: " +
-                Chat.DEFAULT + getActiveTime(cp));
+            textComponents.add(new TextComponent(Chat.TAG_BRACE + "Last seen: " +
+                    Chat.DEFAULT + getLastSeen(cp) + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "IP: " +
+                Chat.DEFAULT + getIp(cp) + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Shared accounts: " +
+                Chat.DEFAULT + getSharedAccounts(cp) + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Total online time: " +
+                Chat.DEFAULT + getOnlineTime(cp) + "\n"));
+        textComponents.add(new TextComponent(Chat.TAG_BRACE + "Total active time: " +
+                Chat.DEFAULT + getActiveTime(cp) + "\n"));
 
-        String mergeString = "";
-        Iterator<String> sit = strings.iterator();
-        while (sit.hasNext()) {
-            mergeString += sit.next();
-            if (sit.hasNext()) {
-                mergeString += "\n";
-            }
-        }
-
-        sender.sendMessage(mergeString);
+        sender.sendMessage(textComponents.toArray(new TextComponent[0]));
     }
     
     private String getMuted(CorePlayer cp) {
@@ -199,7 +200,7 @@ public class PlayerInfoCommand extends CoreCommand {
     }
     
     private String getActiveTime(CorePlayer cp) {
-        return TimeUtils.timeToString(cp.getStatistics().get("general").get("playTime"));
+        return TimeUtils.timeToString(cp.getStatistics().get("general", "playTime"));
     }
     
     private String getLastSeen(CorePlayer cp) {

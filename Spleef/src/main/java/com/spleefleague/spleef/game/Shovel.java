@@ -8,18 +8,13 @@ package com.spleefleague.spleef.game;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.menu.*;
-import com.spleefleague.core.menu.hotbars.HeldItemHotbar;
-import com.spleefleague.core.menu.hotbars.main.CollectiblesMenu;
 import com.spleefleague.core.menu.hotbars.main.HeldItemMenu;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerCollectibles;
-import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.collectible.Holdable;
-import com.spleefleague.core.player.collectible.pet.Pet;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.vendor.Vendorable;
-import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.spleef.Spleef;
 import java.util.Set;
@@ -74,6 +69,12 @@ public class Shovel extends Holdable {
                 .setAvailability(cp -> cp.isInBattle()
                         && cp.getBattleState() == BattleState.BATTLER
                         && cp.getBattle().getPlugin() instanceof Spleef);
+
+        InventoryMenuAPI.createItemHotbar(8, "shovelWorldItem")
+                .setName(cp -> cp.getCollectibles().getActiveName(Shovel.class))
+                .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Shovel.class))
+                .setDescription(cp -> cp.getCollectibles().getActive(Shovel.class).getDescription())
+                .setAvailability(cp -> cp.isInGlobal() && cp.getCollectibles().hasActive(Shovel.class) && cp.getCollectibles().isEnabled(Shovel.class));
     }
     
     public static void save(Shovel shovel) {
@@ -95,13 +96,11 @@ public class Shovel extends Holdable {
                         .setDescription("Set your active shovel")
                         .setDisplayItem(Material.DIAMOND_SHOVEL, 10));
 
-        CollectiblesMenu.getItem().getLinkedChest().addStaticItem(shovelMenu, 6, 2);
-
-        HeldItemMenu.getItem().getLinkedChest().addStaticItem(shovelMenu, 6, 2);
-        HeldItemMenu.getItem().getLinkedChest().addStaticItem(CorePlayerCollectibles.createActiveMenuItem(Shovel.class), 6, 3);
-        HeldItemMenu.getItem().getLinkedChest().addStaticItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 6, 4);
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(shovelMenu, 0, 0);
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Shovel.class), 0, 1);
+        HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 0, 2);
     }
-    
+
     protected enum ShovelType {
         DEFAULT,
         HIDDEN,

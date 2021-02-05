@@ -21,9 +21,11 @@ public class BungeeListenerRefreshAll extends BungeeListener<PacketBungeeRefresh
         }
         for (QueueContainerInfo qci : packet.queueInfoList) {
             BattleManager manager = Core.getInstance().getBattleManager(BattleMode.get(qci.name));
-            manager.setQueued(qci.queued);
-            manager.setPlaying(qci.playing);
-            manager.setSpectators(qci.spectators);
+            if (manager != null) {
+                manager.setQueued(qci.queued);
+                manager.setPlaying(qci.playing);
+                manager.setSpectators(qci.spectators);
+            }
         }
         PersonalScoreboard.refreshPlayers();
     }

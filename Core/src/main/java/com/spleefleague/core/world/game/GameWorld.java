@@ -915,19 +915,19 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     public void onProjectileBlockHit(CorePlayer shooter, BlockRaycastResult blockRaycastResult, ProjectileStats projectileStats) {
         switch (projectileStats.breakStyle) {
             case DEFAULT:
-                shooter.getStatistics().get("splegg").add("blocksBroken", breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                shooter.getStatistics().add("splegg", "blocksBroken", breakBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
                 break;
             case CORROSIVE:
-                shooter.getStatistics().get("splegg").add("blocksCorroded", corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                shooter.getStatistics().add("splegg", "blocksCorroded", corrodeBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
                 break;
             case FIRE:
-                shooter.getStatistics().get("splegg").add("blocksBurnt", burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                shooter.getStatistics().add("splegg", "blocksBurnt", burnBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
                 break;
             case ICE:
-                shooter.getStatistics().get("splegg").add("blocksIced", iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                shooter.getStatistics().add("splegg", "blocksIced", iceBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
                 break;
             case REGENERATE:
-                shooter.getStatistics().get("splegg").add("blocksEndered", breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
+                shooter.getStatistics().add("splegg", "blocksEndered", breakRegenBlocks(blockRaycastResult.getBlockPos(), projectileStats.breakRadius, projectileStats.breakPercent));
                 break;
         }
     }

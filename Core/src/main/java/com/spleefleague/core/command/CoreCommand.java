@@ -994,7 +994,6 @@ public class CoreCommand extends Command {
                                 invalidArg = false;
                             } else {
                                 invalidArg = true;
-                                cs.sendMessage(Chat.ERROR + "Invalid player");
                             }
                         }
                         strParams.add(arg);

@@ -10,7 +10,6 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
@@ -46,12 +45,12 @@ public class ChatChannelCommand extends CoreCommand {
     public ChatChannelCommand() {
         super("chatchannels", CoreRank.DEFAULT);
         this.addAlias("cc");
-        newQuickChat(ChatChannel.getChannel(Channel.GLOBAL), "global", "Global Chat");
-        newQuickChat(ChatChannel.getChannel(Channel.PARTY), "party", "Party Chat");
-        newQuickChat(ChatChannel.getChannel(Channel.VIP), "vip", "VIP Chat");
-        newQuickChat(ChatChannel.getChannel(Channel.BUILD), "builder", "Builder Chat");
-        newQuickChat(ChatChannel.getChannel(Channel.STAFF), "staff", "Staff Chat");
-        newQuickChat(ChatChannel.getChannel(Channel.ADMIN), "admin", "Admin Chat");
+        newQuickChat(ChatChannel.GLOBAL, "global", "Global Chat");
+        newQuickChat(ChatChannel.PARTY, "party", "Party Chat");
+        newQuickChat(ChatChannel.VIP, "vip", "VIP Chat");
+        newQuickChat(ChatChannel.BUILD, "builder", "Builder Chat");
+        newQuickChat(ChatChannel.STAFF, "staff", "Staff Chat");
+        newQuickChat(ChatChannel.ADMIN, "admin", "Admin Chat");
         setUsage("/cc <channel> | /chatchannels");
         setDescription("Set your current chat channel");
         setOptions("chatChannels", pi -> getAvailableChatNames(pi));

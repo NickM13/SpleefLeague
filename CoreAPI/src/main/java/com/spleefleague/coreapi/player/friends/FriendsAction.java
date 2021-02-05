@@ -7,7 +7,8 @@ public enum FriendsAction {
 
     ADD,
     REMOVE,
-    DECLINE,
+    DECLINE_INCOMING,
+    DECLINE_OUTGOING,
     INCOMING,
     OUTGOING
 

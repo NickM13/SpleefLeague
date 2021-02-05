@@ -17,6 +17,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -41,42 +42,8 @@ public class ChatListener implements Listener {
             });
         }
 
-        String formattedMessage = e.getMessage();
-        boolean url = false;
-        Matcher urlMatcher = Chat.getUrlPattern().matcher(formattedMessage);
-        String message = e.getMessage();
-        for (int i = 0; i < message.length(); i++) {
-            int pos = e.getMessage().indexOf(32, i);
-            if (pos == -1) {
-                pos = message.length();
-            }
-            if (urlMatcher.region(i, pos).find()) {
-                url = true;
-                break;
-            }
-        }
-        if (url) {
-            if (!cp.canSendUrl() && !cp.getRank().hasPermission(CoreRank.MODERATOR, Lists.newArrayList(CoreRank.BUILDER))) {
-                e.setCancelled(true);
-                Core.getInstance().sendMessage(cp, "Please ask for permission to send a link");
-                Core.getInstance().sendMessage(ChatChannel.getChannel(ChatChannel.Channel.STAFF), cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
-                CoreLogger.logInfo(cp.getPlayer().getName() + " tried to send a url: " + e.getMessage());
-                return;
-            }
-        } else {
-            if (CAPS_PATTERN.matcher(e.getMessage()).matches() &&
-                    !cp.getRank().hasPermission(CoreRank.MODERATOR, Lists.newArrayList(CoreRank.BUILDER))) {
-                formattedMessage = e.getMessage().toLowerCase().trim();
-                formattedMessage = formattedMessage.substring(0, 1).toUpperCase() + formattedMessage.substring(1);
-                if (!formattedMessage.endsWith(".")
-                        && !formattedMessage.endsWith("!")
-                        && !formattedMessage.endsWith("?")) {
-                    formattedMessage += "!";
-                }
-            }
-        }
-        
-        Chat.sendMessage(cp, formattedMessage, url);
+        Chat.sendMessage(cp, e.getMessage());
+
         CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + e.getMessage());
         
         e.setCancelled(true);

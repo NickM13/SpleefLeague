@@ -26,13 +26,17 @@ import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.music.NoteBlockMusic;
+import com.spleefleague.core.player.crates.CorePlayerCrates;
 import com.spleefleague.core.player.friends.CorePlayerFriends;
 import com.spleefleague.core.player.infraction.Infraction;
+import com.spleefleague.core.player.options.CorePlayerOptions;
 import com.spleefleague.core.player.party.CoreParty;
+import com.spleefleague.core.player.purse.CorePlayerPurse;
 import com.spleefleague.core.player.rank.CorePermanentRank;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.player.rank.CoreTempRank;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
+import com.spleefleague.core.player.statistics.CorePlayerStatistics;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.*;
 import com.spleefleague.core.world.ChunkCoord;
@@ -41,11 +45,15 @@ import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.PlayerStatistics;
+import com.spleefleague.coreapi.player.crate.PlayerCrates;
 import com.spleefleague.coreapi.player.options.PlayerOptions;
 import com.spleefleague.coreapi.player.purse.PlayerPurse;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatChannelJoin;
+import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerRank;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -95,13 +103,14 @@ public class CorePlayer extends DBPlayer {
     private Boolean ghosting = false;
 
     @DBField private String gameMode = "ADVENTURE";
-    @DBField private final PlayerOptions options = new PlayerOptions();
+    @DBField private final CorePlayerOptions options = new CorePlayerOptions(this);
     @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles(this);
     @DBField private final PlayerRatings ratings = new PlayerRatings();
-    @DBField private long lastOnline = -1;
-    @DBField private PlayerPurse purse = new PlayerPurse();
+    @DBField private Long lastOnline = -1L;
+    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
+    @DBField private CorePlayerCrates crates = new CorePlayerCrates(this);
 
-    @DBField private PlayerStatistics statistics = new PlayerStatistics();
+    @DBField private CorePlayerStatistics statistics = new CorePlayerStatistics();
 
     @DBField private CorePlayerFriends friends = new CorePlayerFriends(this);
 
@@ -144,7 +153,7 @@ public class CorePlayer extends DBPlayer {
      */
     public CorePlayer() {
         super();
-        this.chatChannel = ChatChannel.getDefaultChannel();
+        this.chatChannel = ChatChannel.GLOBAL;
         this.lastLocation = null;
         this.checkpoint = null;
         this.vanished = false;
@@ -183,7 +192,6 @@ public class CorePlayer extends DBPlayer {
      */
     @Override
     public void init() {
-        lastOnline = System.currentTimeMillis();
         username = getPlayer().getName();
         if (nickname == null || disguise == null) {
             nickname = username;
@@ -191,7 +199,7 @@ public class CorePlayer extends DBPlayer {
         gameProfile = ((CraftPlayer) getPlayer()).getHandle().getProfile();
         updateDisguise();
         permissions = getPlayer().addAttachment(Core.getInstance());
-        setRank(permRank.getRank());
+        updateRank();
         PersonalScoreboard.initPlayerScoreboard(this);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
@@ -360,7 +368,7 @@ public class CorePlayer extends DBPlayer {
      *
      * @return CorePlayerOptions object
      */
-    public PlayerOptions getOptions() {
+    public CorePlayerOptions getOptions() {
         return options;
     }
     
@@ -386,7 +394,6 @@ public class CorePlayer extends DBPlayer {
                 Core.getInstance().sendMessage(this, "You will be kicked for AFK in 30 seconds!");
                 afkWarned = true;
             }
-            lastOnline = time;
         }
     }
 
@@ -397,9 +404,9 @@ public class CorePlayer extends DBPlayer {
         boolean wasAfk = this.afk;
         if (this.afk) {
             setAfk(false);
-            statistics.get("general").add("afkTime", System.currentTimeMillis() - lastAction);
+            statistics.add("general", "afkTime", System.currentTimeMillis() - lastAction);
         } else {
-            statistics.get("general").add("playTime", System.currentTimeMillis() - lastAction);
+            statistics.add("general", "playTime", System.currentTimeMillis() - lastAction);
         }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
@@ -478,30 +485,10 @@ public class CorePlayer extends DBPlayer {
     }
 
     /**
-     * Sets the player's party
-     * Warning: This does not add the player to the party and should
-     * not be called by anything outside of the Party class
-     *
-     * @param party Party
-     */
-    public void joinParty(CoreParty party) {
-        this.party = party;
-    }
-
-    /**
-     * Sets the player's party to null
-     * Warning: This does not add the player to the party and should
-     * not be called by anything outside of the Party class
-     */
-    public void leaveParty() {
-        party = null;
-    }
-
-    /**
      * @return Party the Player is contained in
      */
     public CoreParty getParty() {
-        return party;
+        return Core.getInstance().getPartyManager().getParty(this);
     }
     
     /**
@@ -534,8 +521,12 @@ public class CorePlayer extends DBPlayer {
     /**
      * @return Purse Object
      */
-    public PlayerPurse getPurse() {
+    public CorePlayerPurse getPurse() {
         return purse;
+    }
+
+    public CorePlayerCrates getCrates() {
+        return crates;
     }
 
     public PlayerStatistics getStatistics() {
@@ -550,11 +541,7 @@ public class CorePlayer extends DBPlayer {
      * @return Skull of player
      */
     public ItemStack getSkull() {
-        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
-        if (skullMeta != null) skullMeta.setOwningPlayer(getPlayer());
-        skull.setItemMeta(skullMeta);
-        return skull;
+        return InventoryMenuSkullManager.getPlayerSkull(getUniqueId());
     }
 
     public String getTabName() {
@@ -713,22 +700,24 @@ public class CorePlayer extends DBPlayer {
     public void setRank(CoreRank rank) {
         permRank.setRank(rank);
         updateRank();
+        PacketSpigotPlayerRank packet = new PacketSpigotPlayerRank(getUniqueId(), rank.getIdentifier(), 0L);
+        Core.getInstance().sendPacket(packet);
     }
 
     /**
      * Adds a temporary rank and calls updateRank()
      *
      * @param rankName Rank Name
-     * @param hours Hours
+     * @param duration Duration
      * @return Whether rank was added
      */
-    public boolean addTempRank(String rankName, Integer hours) {
+    public boolean addTempRank(String rankName, long duration) {
         CoreRank rank = Core.getInstance().getRankManager().getRank(rankName);
         if (rank != null) {
-            CoreTempRank tempRank = new CoreTempRank(rank, hours * 60L * 60L * 1000L + System.currentTimeMillis());
-            Core.getInstance().sendMessage(this, "Added temp rank " + rankName + " for " + hours + " hours");
+            CoreTempRank tempRank = new CoreTempRank(rank, duration + System.currentTimeMillis());
             tempRanks.add(tempRank);
             updateRank();
+            Core.getInstance().sendPacket(new PacketSpigotPlayerRank(getUniqueId(), rank.getIdentifier(), duration));
             return true;
         }
         return false;
@@ -739,11 +728,9 @@ public class CorePlayer extends DBPlayer {
      */
     public void clearTempRank() {
         if (tempRanks.isEmpty()) return;
-        Iterator<CoreTempRank> it = tempRanks.iterator();
-        while (it.hasNext()) {
-            it.remove();
-        }
+        tempRanks.clear();
         updateRank();
+        Core.getInstance().sendPacket(new PacketSpigotPlayerRank(getUniqueId(), "", 0));
     }
     public CoreRank getPermanentRank() {
         return permRank.getRank();
@@ -969,11 +956,13 @@ public class CorePlayer extends DBPlayer {
     }
 
     public void updateLeaves() {
+        /*
         if (globalZone == null || globalZone.getLeaves().isEmpty()) {
             getPlayer().sendExperienceChange(0, 0);
         } else {
             getPlayer().sendExperienceChange(Math.min(1.f, getCollectibles().getLeafCount(globalZone.getIdentifier()) / ((float) globalZone.getLeaves().size())), 0);
         }
+        */
     }
 
     /**
@@ -997,7 +986,7 @@ public class CorePlayer extends DBPlayer {
      */
     public void setChatChannel(ChatChannel cc) {
         chatChannel = cc;
-        Chat.sendMessageToPlayer(this, new TextComponent("Chat Channel set to " + cc.getDisplayName()));
+        Core.getInstance().sendPacket(new PacketSpigotChatChannelJoin(getUniqueId(), cc.name()));
     }
 
     /**

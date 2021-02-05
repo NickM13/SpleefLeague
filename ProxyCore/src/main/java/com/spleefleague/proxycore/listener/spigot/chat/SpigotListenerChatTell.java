@@ -1,6 +1,5 @@
 package com.spleefleague.proxycore.listener.spigot.chat;
 
-import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChatTell;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
@@ -14,7 +13,10 @@ public class SpigotListenerChatTell extends SpigotListener<PacketSpigotChatTell>
 
     @Override
     protected void receive(Connection sender, PacketSpigotChatTell packet) {
-        ProxyCore.getInstance().getPacketManager().sendPacket(ProxyCore.getInstance().getPlayers().get(packet.target).getCurrentServer(), new PacketBungeeChatTell(packet));
+        ProxyCore.getInstance().getChat().sendTell(
+                ProxyCore.getInstance().getPlayers().get(packet.sender),
+                ProxyCore.getInstance().getPlayers().get(packet.target),
+                packet.message);
     }
 
 }

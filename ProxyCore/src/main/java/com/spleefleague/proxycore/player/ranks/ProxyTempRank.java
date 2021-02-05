@@ -8,6 +8,14 @@ import com.spleefleague.proxycore.ProxyCore;
  */
 public class ProxyTempRank extends TempRank<ProxyRank> {
 
+    public ProxyTempRank() {
+        super();
+    }
+
+    public ProxyTempRank(ProxyRank rank, long duration) {
+        super(rank, duration);
+    }
+
     @Override
     public void afterLoad() {
         this.rank = ProxyCore.getInstance().getRankManager().getRank(this.rankName);

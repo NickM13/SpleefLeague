@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 public @interface DBField {
     
     String fieldName() default "";
-    boolean load() default true;
-    boolean save() default true;
+    boolean read() default true;
+    boolean write() default true;
 
 }

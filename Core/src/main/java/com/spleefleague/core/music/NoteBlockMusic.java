@@ -23,8 +23,11 @@ public class NoteBlockMusic {
     public static void init() {
         File file = new File(MUSIC_DIR);
         if (file.exists()) {
-            for (String s : file.list()) {
-                getSong(s);
+            String[] fileNames = file.list();
+            if (fileNames != null) {
+                for (String s : fileNames) {
+                    getSong(s);
+                }
             }
         }
         Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {

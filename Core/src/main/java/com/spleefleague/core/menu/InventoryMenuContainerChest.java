@@ -222,6 +222,11 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         menuItem.setParent(this);
         return menuItem;
     }
+    public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int x, int y, int page) {
+        addMenuItem(menuItem, (x) + (y * (pageBoundary.colLast - pageBoundary.colFirst + 1)) + (page * pageBoundary.pageItemTotal));
+        menuItem.setParent(this);
+        return menuItem;
+    }
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem) {
         unsortedItems.add(menuItem);
         menuItem.setParent(this);
@@ -369,17 +374,13 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
 
         int i = 0;
         for (InventoryMenuItem item : unsortedItems) {
-            if (!item.isVisible(cp) || i - toSkip < 0) {
-                i += itemBuffer;
-                continue;
-            }
+            if (!item.isVisible(cp)) continue;
             while ((sortedItems.containsKey(i) &&
-                    sortedItems.get(i).isVisible(cp)) ||
-                    (sortedItems.containsKey(i) &&
                     sortedItems.get(i).isVisible(cp)) ||
                     deadSpaces.contains(i % pageBoundary.pageItemTotal)) {
                 i += itemBuffer;
             }
+            if (i >= toSkip + pageBoundary.pageItemTotal) break;
             if (i >= toSkip) {
                 int slotNum = (i - toSkip);
                 int leftSpacing = pageBoundary.colFirst;

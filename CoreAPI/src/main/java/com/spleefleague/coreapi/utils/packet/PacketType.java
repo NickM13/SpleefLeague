@@ -4,8 +4,6 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleSpectate;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleChallenge;
-import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChat;
-import com.spleefleague.coreapi.utils.packet.bungee.chat.PacketBungeeChatTell;
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
@@ -13,12 +11,10 @@ import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerRes
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.*;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.*;
-import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChat;
-import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.*;
 import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
 import com.spleefleague.coreapi.utils.packet.spigot.party.PacketSpigotParty;
-import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCurrency;
-import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerRating;
+import com.spleefleague.coreapi.utils.packet.spigot.player.*;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueRequeue;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave;
@@ -39,8 +35,6 @@ public class PacketType {
         BATTLE_CHALLENGE(PacketBungeeBattleChallenge.class),
         BATTLE_SPECTATE(PacketBungeeBattleSpectate.class),
         BATTLE_START(PacketBungeeBattleStart.class),
-        CHAT(PacketBungeeChat.class),
-        CHAT_TELL(PacketBungeeChatTell.class),
         CONNECTION(PacketBungeeConnection.class),
         FRIEND(PacketBungeeFriend.class),
         PARTY(PacketBungeeParty.class),
@@ -73,11 +67,21 @@ public class PacketType {
         BATTLE_END_UNRATED(PacketSpigotBattleEndUnrated.class),
         BATTLE_FORCE_START(PacketSpigotBattleForceStart.class),
         BATTLE_SPECTATE(PacketSpigotBattleSpectate.class),
-        CHAT(PacketSpigotChat.class),
+        CHAT_CHANNEL_JOIN(PacketSpigotChatChannelJoin.class),
+        CHAT_CONSOLE(PacketSpigotChatConsole.class),
+        CHAT_FRIEND(PacketSpigotChatFriend.class),
+        CHAT_GROUP(PacketSpigotChatGroup.class),
+        CHAT_PLAYER(PacketSpigotChatPlayer.class),
         CHAT_TELL(PacketSpigotChatTell.class),
         FRIEND(PacketSpigotFriend.class),
         PARTY(PacketSpigotParty.class),
+        PLAYER_COLLECTIBLE(PacketSpigotPlayerCollectible.class),
+        PLAYER_COLLECTIBLE_SKIN(PacketSpigotPlayerCollectibleSkin.class),
+        PLAYER_CRATE(PacketSpigotPlayerCrate.class),
         PLAYER_CURRENCY(PacketSpigotPlayerCurrency.class),
+        PLAYER_INFRACTION(PacketSpigotPlayerInfraction.class),
+        PLAYER_OPTIONS(PacketSpigotPlayerOptions.class),
+        PLAYER_RANK(PacketSpigotPlayerRank.class),
         PLAYER_RATING(PacketSpigotPlayerRating.class),
         QUEUE_JOIN(PacketSpigotQueueJoin.class),
         QUEUE_LEAVE(PacketSpigotQueueLeave.class),

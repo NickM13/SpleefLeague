@@ -20,7 +20,7 @@ public class PacketSpigotPlayerInfraction extends PacketSpigot {
 
     @Override
     public PacketType.Spigot getSpigotTag() {
-        return PacketType.Spigot.SERVER_HUB;
+        return PacketType.Spigot.PLAYER_INFRACTION;
     }
 
 }

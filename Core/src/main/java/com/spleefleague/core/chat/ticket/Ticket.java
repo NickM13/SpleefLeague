@@ -9,7 +9,6 @@ package com.spleefleague.core.chat.ticket;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.chat.ChatChannel.Channel;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -128,7 +127,6 @@ public class Ticket extends DBEntity {
         if (responseTimeout < System.currentTimeMillis() || staff == null) {
             TextComponent formatted = formatStaff1(staff, msg);
             Chat.sendMessageToPlayer(getSenderPlayer(), formatted);
-            Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), formatStaff2(staff, msg));
             // 10 second response timeout
             if (staff != null) responseTimeout = System.currentTimeMillis() + 10000;
             resetTimeout();
@@ -141,7 +139,6 @@ public class Ticket extends DBEntity {
     public void sendMessageToStaff(String msg) {
         if (responseTimeout < System.currentTimeMillis()) {
             TextComponent formatted = formatSender(msg);
-            Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), formatted);
             resetTimeout();
             messages.add(formatted.toPlainText());
         } else {
@@ -161,7 +158,6 @@ public class Ticket extends DBEntity {
         TextComponent text = new TextComponent(Chat.TICKET_PREFIX + "[Ticket: ");
         text.addExtra(getSenderPlayer().getChatName());
         text.addExtra(Chat.TICKET_PREFIX + "]" + Chat.TICKET_ISSUE + " Ticket closed.");
-        Chat.sendMessage(ChatChannel.getChannel(Channel.TICKET), text);
     }
     
 }

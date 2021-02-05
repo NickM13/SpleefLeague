@@ -145,13 +145,13 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
                                 location.clone().getDirection().crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize().multiply(-i * (float) projectileStats.hSpread / 100 / projectileStats.count)),
                                 projectileStats, charge);
                     }
-                    shooter.getStatistics().get("splegg").add("eggsFired", (int) (projectileStats.count * charge * 2 + 1));
+                    shooter.getStatistics().add("splegg", "eggsFired", (int) (projectileStats.count * charge * 2 + 1));
                     break;
                 default:
                     for (int i = 0; i < projectileStats.count * charge; i++) {
                         shoot(entities, shooter, location, projectileStats, charge);
                     }
-                    shooter.getStatistics().get("splegg").add("eggsFired", (int) (projectileStats.count * charge));
+                    shooter.getStatistics().add("splegg", "eggsFired", (int) (projectileStats.count * charge));
                     break;
             }
             if (charge >= 0.2 && Math.abs(projectileStats.fireKnockback) > 0.001) {

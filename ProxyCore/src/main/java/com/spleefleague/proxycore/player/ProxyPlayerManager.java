@@ -27,6 +27,7 @@ public class ProxyPlayerManager {
         playerCol = ProxyCore.getInstance().getDatabase().getCollection("Players");
         autosaveTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             for (ProxyCorePlayer pcp : onlinePlayers.values()) {
+                pcp.updateTempRanks();
                 save(pcp);
             }
         }, 5L, 5L, TimeUnit.SECONDS);
@@ -36,8 +37,9 @@ public class ProxyPlayerManager {
                 ProxyCorePlayer pcp = it.next().getValue();
                 it.remove();
                 save(pcp);
+                System.out.println("Auto saving " + pcp.getName());
             }
-        }, 10L, 10L, TimeUnit.SECONDS);
+        }, 30L, 30L, TimeUnit.SECONDS);
     }
 
     public void close() {
@@ -52,20 +54,34 @@ public class ProxyPlayerManager {
         onlinePlayers.clear();
     }
 
-    public void onPlayerJoin(ProxiedPlayer pp) {
-        load(pp);
+    public ProxyCorePlayer onPlayerJoin(ProxiedPlayer pp) {
+        return load(pp);
     }
 
-    private void load(ProxiedPlayer pp) {
-        Document doc = playerCol.find(new Document("identifier", pp.getUniqueId().toString())).first();
-        ProxyCorePlayer pcp = new ProxyCorePlayer();
-        if (doc != null) {
-            pcp.load(doc);
+    public void onPlayerQuit(ProxiedPlayer pp) {
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(pp.getUniqueId());
+        pcp.close();
+        onlinePlayers.remove(pcp.getUniqueId());
+        save(pcp);
+    }
+
+    private ProxyCorePlayer load(ProxiedPlayer pp) {
+        ProxyCorePlayer pcp;
+        if (offlinePlayers.containsKey(pp.getUniqueId())) {
+            pcp = offlinePlayers.get(pp.getUniqueId());
         } else {
-            pcp.newPlayer(pp.getUniqueId(), pp.getName());
+            Document doc = playerCol.find(new Document("identifier", pp.getUniqueId().toString())).first();
+            pcp = new ProxyCorePlayer();
+            if (doc != null) {
+                pcp.load(doc);
+            } else {
+                pcp.newPlayer(pp.getUniqueId(), pp.getName());
+                save(pcp);
+            }
         }
         pcp.init();
         onlinePlayers.put(pp.getUniqueId(), pcp);
+        return pcp;
     }
 
     /**
@@ -79,11 +95,12 @@ public class ProxyPlayerManager {
         playerCol.replaceOne(query, pcp.toDocument(), new ReplaceOptions().upsert(true));
     }
 
-    public void onPlayerQuit(ProxiedPlayer pp) {
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(pp.getUniqueId());
-        pcp.setBattleContainer(null);
-        onlinePlayers.remove(pp.getUniqueId());
-        save(pcp);
+    public void saveIfLoaded(UUID uuid) {
+        if (offlinePlayers.containsKey(uuid)) {
+            save(offlinePlayers.get(uuid));
+        } else if (onlinePlayers.containsKey(uuid)) {
+            save(onlinePlayers.get(uuid));
+        }
     }
 
     public Collection<ProxyCorePlayer> getAll() {
@@ -109,6 +126,7 @@ public class ProxyPlayerManager {
                 pcp.newPlayer(pp.getUniqueId(), pp.getName());
             }
             pcp.initOffline();
+            offlinePlayers.put(uuid, pcp);
             return pcp;
         }
     }
