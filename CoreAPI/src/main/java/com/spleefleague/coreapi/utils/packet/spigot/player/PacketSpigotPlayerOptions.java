@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.player.options.PlayerOptions;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -50,6 +51,7 @@ public class PacketSpigotPlayerOptions extends PacketSpigot {
         this.strOption = val;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.PLAYER_OPTIONS;

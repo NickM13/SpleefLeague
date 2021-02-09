@@ -20,6 +20,7 @@ public class AffixHotStreak extends ClassicSpleefAffix {
 
     public AffixHotStreak() {
         super();
+        displayName = "Hot Streak";
         this.streakDelay = 10;
     }
 

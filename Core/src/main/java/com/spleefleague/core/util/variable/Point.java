@@ -285,4 +285,8 @@ public class Point extends DBVariable<List<Double>> {
         return Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2) + Math.pow(z - pos.z, 2));
     }
 
+    public double distance(BlockPosition pos) {
+        return Math.sqrt(Math.pow(x - pos.getX(), 2) + Math.pow(y - pos.getY(), 2) + Math.pow(z - pos.getZ(), 2));
+    }
+
 }

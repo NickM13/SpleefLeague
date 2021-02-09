@@ -52,7 +52,7 @@ public class CrateCommand extends CoreCommand {
                               @LiteralArg("priority") String l2,
                               @OptionArg(listName = "crates") String identifier,
                               @NumberArg(minValue = -1000, maxValue = 1000) Integer priority) {
-        Core.getInstance().getCrateManager().get(identifier).setPriority(priority);
+        Core.getInstance().getCrateManager().setPriority(identifier, priority);
         success(sender, "Crate " + identifier + " priority set to " + priority);
     }
 

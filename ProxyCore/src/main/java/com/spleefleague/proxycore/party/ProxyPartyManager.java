@@ -60,34 +60,43 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
         }
     }
 
-    public void onDisconnect(UUID uuid) {
-        ProxyParty party = partyMap.remove(uuid);
-
+    public void onDisconnect(UUID sender) {
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(sender);
+        if (pcp == null) {
+            Logger.getGlobal().severe("ProxyPartyManager::onDisconnect");
+            return;
+        }
+        ProxyParty party = partyMap.remove(sender);
+        TextComponent component;
         if (party != null) {
-            party.onDisconnect(uuid);
-
-            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
-            if (pcp == null) {
-                Logger.getGlobal().severe("ProxyPartyManager::onDisconnect");
-                return;
-            }
-            if (party.removePlayer(uuid)) {
-                if (party.getOwner().equals(uuid)) {
+            if (party.removePlayer(sender)) {
+                if (party.getOwner().equals(sender)) {
                     if (party.getPlayerList().size() > 1) {
                         party.setOwner(party.getPlayerList().get(0));
-                    } else if (party.getPlayerList().size() == 1) {
-                        onDisband(party.getPlayerList().get(0));
                     }
                 }
-                party.sendPacket(new PacketBungeeParty(PartyAction.LEAVE, uuid), pcp);
+                ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
+                if (!checkSize(party)) {
+                    party.sendPacket(new PacketBungeeParty(PartyAction.LEAVE, sender));
+                }
+
+                component = new TextComponent();
+                component.addExtra(ProxyCore.getInstance().getPlayers().getOffline(sender).getChatName());
+                component.addExtra(" has left the party");
+                party.sendMessage(component);
+                party.sendPacket(new PacketBungeeParty(PartyAction.LEAVE, sender));
             }
         }
 
-        outgoingInvites.remove(uuid);
+        outgoingInvites.remove(sender);
     }
 
     public ProxyParty getParty(ProxyCorePlayer pcp) {
         return partyMap.get(pcp.getUniqueId());
+    }
+
+    public ProxyParty getParty(UUID uuid) {
+        return partyMap.get(uuid);
     }
 
     public void onServerSwap(ProxyCorePlayer pcp) {
@@ -143,26 +152,30 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
             return;
         }
 
-        ProxyParty senderParty = partyMap.get(sender);
+        ProxyParty party = partyMap.get(sender);
 
         TextComponent component;
 
-        if (senderParty != null) {
-            if (senderParty.getOwner().equals(sender)) {
-                if (senderParty.removePlayer(sender)) {
+        if (party != null) {
+            if (party.getOwner().equals(sender)) {
+                if (party.removePlayer(target)) {
+                    if (!checkSize(party)) {
+                        party.sendPacket(new PacketBungeeParty(PartyAction.LEAVE, target));
+                    }
+
+                    ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
                     component = new TextComponent("You were kicked from the party");
                     ProxyCore.getInstance().sendMessage(pcpTarget, component);
 
                     component = new TextComponent("You have kicked ");
                     component.addExtra(pcpTarget.getChatName());
                     component.addExtra(" from the party");
-                    ProxyCore.getInstance().sendMessage(pcpSender, component);
                 } else {
                     component = new TextComponent();
                     component.addExtra(pcpTarget.getChatName());
                     component.addExtra(" is not in your party");
-                    ProxyCore.getInstance().sendMessage(pcpSender, component);
                 }
+                ProxyCore.getInstance().sendMessage(pcpSender, component);
             } else {
                 ProxyCore.getInstance().sendMessage(pcpSender, PartyError.NOT_OWNER.component);
             }
@@ -190,6 +203,7 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
             ProxyCore.getInstance().sendMessageError(pcpSender, PartyError.NOT_OWNER.component);
         } else {
             if (senderParty == targetParty) {
+                ProxyCore.getInstance().getQueueManager().leaveAllQueues(senderParty);
                 senderParty.setOwner(target);
 
                 component = new TextComponent();
@@ -221,7 +235,10 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
                         party.setOwner(party.getPlayerList().get(0));
                     }
                 }
-                checkSize(party);
+                ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
+                if (!checkSize(party)) {
+                    party.sendPacket(new PacketBungeeParty(PartyAction.LEAVE, sender));
+                }
                 ProxyCore.getInstance().sendMessage(pcp, new TextComponent("You have left the party"));
 
                 component = new TextComponent();
@@ -235,10 +252,12 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
         }
     }
 
-    private void checkSize(ProxyParty party) {
+    private boolean checkSize(ProxyParty party) {
         if (party.getPlayerList().size() == 1) {
             onDisband(party.getPlayerList().get(0));
+            return true;
         }
+        return false;
     }
 
     public void onAccept(UUID sender, UUID target) {
@@ -251,6 +270,7 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
 
         if (partyMap.containsKey(sender)) {
             ProxyCore.getInstance().sendMessageError(pcpSender, PartyError.IN_PARTY.component);
+            return;
         }
 
         PartyInvitation invitation = outgoingInvites.get(target).remove(sender);
@@ -260,6 +280,7 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
                 party = new ProxyParty(target);
                 partyMap.put(target, party);
             }
+            ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
             party.addPlayer(sender);
             party.sendPacket(party.getPartyRefresh());
             partyMap.put(sender, party);
@@ -285,6 +306,12 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
             component.addExtra(pcpSender.getChatName());
             component.addExtra(" has declined your party invite");
             ProxyCore.getInstance().sendMessage(pcpTarget, component);
+
+            component = new TextComponent();
+            component.addExtra("You have declined ");
+            component.addExtra(pcpTarget.getChatNamePossessive());
+            component.addExtra(" party invite");
+            ProxyCore.getInstance().sendMessage(pcpSender, component);
         } else {
             ProxyCore.getInstance().sendMessageError(pcpSender, PartyError.NO_INVITE.component);
         }
@@ -302,6 +329,7 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
             for (UUID uuid : party.getPlayerList()) {
                 partyMap.remove(uuid);
             }
+            ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
             party.sendPacket(new PacketBungeeParty(PartyAction.DISBAND, sender));
         }
     }

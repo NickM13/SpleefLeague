@@ -84,7 +84,7 @@ public class Chat {
         Stack<ChatColor> colorStack = new Stack<>();
         for (i = 0; i < msg.length() - 1; i++) {
             if (msg.charAt(i) == '&' || msg.charAt(i) == '§') {
-                if (i >= msg.length() - 2) continue;
+                if (i >= msg.length() - 1) continue;
                 switch (msg.charAt(i+1)) {
                     case 'b': newmsg.append(colorStack.push(ChatColor.AQUA)); break;
                     case '0': newmsg.append(colorStack.push(ChatColor.BLACK)); break;

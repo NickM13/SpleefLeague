@@ -3,6 +3,7 @@ package com.spleefleague.core.vendor;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.purse.CoreCurrency;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -19,23 +20,23 @@ import java.util.*;
  * @author NickM13
  * @since 4/18/2020
  */
-public class Vendors {
+public class Artisans {
     
-    private static MongoCollection<Document> vendorCollection;
-    private static final Map<String, Vendor> vendors = new HashMap<>();
-    private static final Map<UUID, Vendor> entityVendorMap = new HashMap<>();
-    private static final Map<CorePlayer, Vendor> playerSetVendorMap = new HashMap<>();
+    private static MongoCollection<Document> artisanCollection;
+    private static final Map<String, Artisan> artisans = new HashMap<>();
+    private static final Map<UUID, Artisan> entityVendorMap = new HashMap<>();
+    private static final Map<CorePlayer, Artisan> playerSetVendorMap = new HashMap<>();
     
     /**
      * Load all vendors from database
      */
     public static void init() {
-        vendorCollection = Core.getInstance().getPluginDB().getCollection("Vendors");
-        vendorCollection.find().iterator().forEachRemaining(doc -> {
-            Vendor vendor = new Vendor();
+        artisanCollection = Core.getInstance().getPluginDB().getCollection("Artisans");
+        artisanCollection.find().iterator().forEachRemaining(doc -> {
+            Artisan vendor = new Artisan();
             vendor.load(doc);
-            vendor.refreshEntities();
-            vendors.put(vendor.getIdentifier(), vendor);
+            vendor.refreshEntity();
+            artisans.put(vendor.getIdentifier(), vendor);
         });
     }
     
@@ -43,16 +44,7 @@ public class Vendors {
      * Clear the database and save all vendors
      */
     public static void close() {
-        try {
-            if (vendorCollection.find().first() != null) {
-                vendorCollection.deleteMany(new Document());
-            }
-            List<Document> docs = new ArrayList<>();
-            vendors.values().forEach(v -> docs.add(v.toDocument()));
-            if (!docs.isEmpty()) {
-                vendorCollection.insertMany(docs);
-            }
-        } catch (IllegalAccessError | NoClassDefFoundError ignored) { }
+
     }
     
     /**
@@ -62,8 +54,29 @@ public class Vendors {
      * @param name Name
      * @return Vendor
      */
-    public static Vendor getVendor(String name) {
-        return vendors.get(name.toLowerCase());
+    public static Artisan getVendor(String name) {
+        return artisans.get(name);
+    }
+
+    public static void setDisplayName(String identifier, String name) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setDisplayName(name);
+        save(artisan);
+    }
+
+    public static void setCurrency(String identifier, CoreCurrency currency) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setCurrency(currency);
+        save(artisan);
+    }
+
+    public static void setChest(String identifier, String chestName) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setCrate(chestName);
+        save(artisan);
     }
     
     /**
@@ -71,46 +84,49 @@ public class Vendors {
      *
      * @return Map of String, Vendors
      */
-    public static Map<String, Vendor> getVendors() {
-        return vendors;
+    public static Map<String, Artisan> getArtisans() {
+        return artisans;
     }
     
     /**
      * Create a new vendor
      *
-     * @param name Name
+     * @param identifier Name
      * @param displayName Display Name
      */
-    public static void createVendor(String name, String displayName) {
-        vendors.put(name.toLowerCase(), new Vendor(name, displayName));
+    public static boolean createArtisan(String identifier, String displayName) {
+        if (artisans.containsKey(identifier)) return false;
+        Artisan artisan = new Artisan(identifier, displayName);
+        artisans.put(identifier, artisan);
+        save(artisan);
+        return true;
     }
     
     /**
      * Clear all entities from a vendor and delete it from the database
      *
-     * @param vendor Vendor
+     * @param artisan Vendor
      * @return Success
      */
-    public static boolean deleteVendor(Vendor vendor) {
-        if (vendor == null) return false;
-        vendorCollection.deleteMany(new Document("name", vendor.getDisplayName()));
-        vendor.getEntities().forEach(entityUuid -> {
-            Entity entity = Bukkit.getEntity(entityUuid);
-            if (entity != null)
+    public static boolean deleteArtisan(Artisan artisan) {
+        artisan.unsave(artisanCollection);
+        if (artisan.getEntityUuid() != null) {
+            Entity entity = Bukkit.getEntity(artisan.getEntityUuid());
+            if (entity != null) {
                 clearEntityVendor(entity);
-        });
-        vendors.remove(vendor.getDisplayName());
+            }
+        }
+        artisans.remove(artisan.getDisplayName());
         return true;
     }
     
     /**
      * Save a single vendor object to the db, overwrites other with same name
      *
-     * @param vendor Vendor item
+     * @param artisan Vendor item
      */
-    public static void save(Vendor vendor) {
-        vendorCollection.deleteMany(new Document("name", vendor.getDisplayName()));
-        vendorCollection.insertOne(vendor.toDocument());
+    public static void save(Artisan artisan) {
+        artisan.save(artisanCollection);
     }
     
     /**
@@ -121,9 +137,9 @@ public class Vendors {
      * @return Success
      */
     public static boolean setPlayerVendor(CorePlayer player, String name) {
-        Vendor vendor = vendors.get(name.toLowerCase());
+        Artisan vendor = artisans.get(name);
         if (vendor != null) {
-            playerSetVendorMap.put(player, vendors.get(name.toLowerCase()));
+            playerSetVendorMap.put(player, artisans.get(name));
             return true;
         }
         return false;
@@ -143,6 +159,7 @@ public class Vendors {
         Player p = event.getPlayer();
         CorePlayer cp = Core.getInstance().getPlayers().get(p);
         Entity entity = event.getRightClicked();
+        System.out.println(entity.getUniqueId());
         if (entityVendorMap.containsKey(entity.getUniqueId())) {
             entityVendorMap.get(entity.getUniqueId()).openShop(cp);
         }
@@ -172,22 +189,30 @@ public class Vendors {
     /**
      * Sets an entity to being a vendor entity
      *
-     * @param vendor Vendor
+     * @param artisan Vendor
      * @param entity Entity
      */
-    public static void setupEntityVendor(Vendor vendor, Entity entity) {
+    public static void setupEntityVendor(Artisan artisan, Entity entity) {
+        System.out.println(entity.getUniqueId());
         if (entityVendorMap.containsKey(entity.getUniqueId())
-                && entityVendorMap.get(entity.getUniqueId()) == vendor) {
-            entityVendorMap.get(entity.getUniqueId()).removeEntity(entity);
+                && entityVendorMap.get(entity.getUniqueId()) == artisan) {
+            if (artisan.getEntityUuid() != null) {
+                Entity prevEntity = Bukkit.getEntity(artisan.getEntityUuid());
+                if (prevEntity != null) {
+                    clearEntityVendor(prevEntity);
+                }
+            }
+            entityVendorMap.get(entity.getUniqueId()).setEntityUuid(null);
         }
-        entityVendorMap.put(entity.getUniqueId(), vendor);
-        vendor.addEntity(entity);
-        entity.setCustomName(vendor.getDisplayName());
+        entityVendorMap.put(entity.getUniqueId(), artisan);
+        artisan.setEntityUuid(entity.getUniqueId());
+        entity.setCustomName(artisan.getDisplayName());
         entity.setCustomNameVisible(true);
         if (entity instanceof LivingEntity) {
             ((LivingEntity) entity).setAI(false);
         }
         entity.setInvulnerable(true);
+        save(artisan);
     }
     
     /**
@@ -197,7 +222,7 @@ public class Vendors {
      */
     public static void clearEntityVendor(Entity entity) {
         if (entityVendorMap.containsKey(entity.getUniqueId())) {
-            entityVendorMap.get(entity.getUniqueId()).removeEntity(entity);
+            entityVendorMap.get(entity.getUniqueId()).setEntityUuid(null);
             entityVendorMap.remove(entity.getUniqueId());
             entity.setCustomName("");
             entity.setCustomNameVisible(false);

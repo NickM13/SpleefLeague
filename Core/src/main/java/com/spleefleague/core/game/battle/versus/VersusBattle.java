@@ -29,6 +29,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -147,7 +148,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void updateExperience() {
-    
+
     }
 
     @Override
@@ -225,6 +226,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             int toChange = bp.equals(winner) ? eloChange : -eloChange;
             boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
             TextComponent text = new TextComponent();
+            text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));
             text.addExtra(ChatColor.GREEN + "" + eloChange);
             text.addExtra(" Rating Points (");
@@ -254,8 +256,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             text.addExtra("Battle between ");
             text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
             text.addExtra(" was peacefully concluded.");
-            getPlugin().sendMessageBlacklisted(text,
-                    battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
+            sendNotification(text);
         } else {
             BP loser = null;
             for (CorePlayer cp : battlers.keySet()) {
@@ -280,7 +281,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 text.addExtra("-");
                 text.addExtra(Chat.SCORE + loser.getRoundWins());
                 text.addExtra(")");
-                getPlugin().sendMessageBlacklisted(text, battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
+                sendNotification(text);
             } else {
                 for (BattlePlayer bp : battlers.values()) {
                     bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
@@ -291,15 +292,17 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
                 applyRewards(winner);
-                applyEloChange(winner);
+                int change = applyEloChange(winner);
+
                 Core.getInstance().sendPacket(new PacketSpigotBattleEndRated(
                         getMode().getName(),
                         getMode().getSeason(),
                         battlers.values().stream().map(bp -> new RatedPlayerInfo(
-                                NumAction.SET,
+                                NumAction.CHANGE,
                                 bp.getCorePlayer().getUniqueId(),
-                                bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason()))
+                                bp.equals(winner) ? change : -change)
                         ).collect(Collectors.toList())));
+
                 TextComponent text = new TextComponent();
                 text.addExtra(winner.getCorePlayer().getChatName());
                 text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
@@ -311,8 +314,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 text.addExtra("-");
                 text.addExtra(Chat.SCORE + loser.getRoundWins());
                 text.addExtra(")");
-                getPlugin().sendMessageBlacklisted(text,
-                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toSet()));
+                sendNotification(text);
             }
         }
         sendRequeueMessage();

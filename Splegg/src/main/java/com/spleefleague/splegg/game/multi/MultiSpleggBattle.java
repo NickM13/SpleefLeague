@@ -7,6 +7,7 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.coreapi.chat.ChatColor;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
@@ -25,11 +26,7 @@ import java.util.UUID;
  */
 public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
 
-    private static float DECAY_TIME = 10;
-
-    private final List<List<BlockPosition>> layers = new ArrayList<>();
-
-    private int currentDecayLayer = 0;
+    private static float DECAY_TIME = 60 * 4;
 
     public MultiSpleggBattle(List<UUID> players, Arena arena) {
         super(Splegg.getInstance(), players, arena, MultiSpleggPlayer.class, SpleggMode.MULTI.getBattleMode());
@@ -50,16 +47,17 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
         }
     }
 
-    private float getDecay() {
-        return (float) getRoundTime() / DECAY_TIME;
-    }
-
     @Override
     public void updateExperience() {
-        if (getDecay() >= layers.size()) {
-            chatGroup.setExperience(1, layers.size());
+        if (gameWorld.isDecaying()) {
+            float percent = 1 - gameWorld.getDecayPercent();
+            if (percent > 0) {
+                chatGroup.setExperience(percent, (int) gameWorld.getDecayRemainSeconds());
+            } else {
+                chatGroup.setExperience(0, 0);
+            }
         } else {
-            chatGroup.setExperience(getDecay() % 1, (int) Math.floor(getDecay()));
+            chatGroup.setExperience(1, (int) gameWorld.getDecayRemainSeconds());
         }
     }
 
@@ -68,17 +66,6 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
         SpleggUtils.fillFieldFast(this);
         for (MultiSpleggPlayer msp : battlers.values()) {
             msp.respawn();
-        }
-
-        BlockPosition origin = getArena().getOrigin().toBlockPosition();
-        for (BuildStructure structure : getArena().getStructures()) {
-            for (BlockPosition pos : structure.getFakeBlocks().keySet()) {
-                int layer = Math.max(0, Math.round(-pos.getY() / 10f));
-                while (layers.size() < layer + 1) {
-                    layers.add(new ArrayList<>());
-                }
-                layers.get(layer).add(pos.add(origin));
-            }
         }
     }
 
@@ -93,11 +80,8 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
         for (MultiSpleggPlayer msp : battlers.values()) {
             msp.resetAbilities();
         }
+        gameWorld.enableDecay(200, (long) DECAY_TIME * 20);
     }
-
-    private final static Random random = new Random();
-    private final static BlockData INDICATOR = Material.RED_CONCRETE.createBlockData();
-    private final static BlockData AIR = Material.AIR.createBlockData();
 
     @Override
     public void updateField() {
@@ -105,17 +89,6 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
             msp.updateAbilities();
         }
         //gameWorld.performBaseBreakRegen();
-        if (currentDecayLayer < getDecay() - 1) {
-            Vector center = new Vector(arena.getOrigin().getX(), arena.getOrigin().getY() - currentDecayLayer * 10, arena.getOrigin().getZ());
-            if (currentDecayLayer < layers.size()) {
-                for (BlockPosition pos : layers.get(currentDecayLayer)) {
-                    long time = (long) ((20 - pos.toVector().distance(center)) * 20);
-                    gameWorld.setBlockDelayed(pos, INDICATOR, time);
-                    gameWorld.addBlockDelayed(pos, AIR, time + 20);
-                }
-            }
-            currentDecayLayer++;
-        }
         /*
         for (int i = 0; i < getDecay() - 1 && i < layers.size(); i++) {
             if (!layers.get(i).isEmpty()) {

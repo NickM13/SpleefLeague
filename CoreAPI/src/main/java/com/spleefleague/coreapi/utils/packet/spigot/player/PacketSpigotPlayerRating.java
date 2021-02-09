@@ -4,6 +4,8 @@ import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author NickM13
  * @since 9/19/2020
@@ -22,6 +24,7 @@ public class PacketSpigotPlayerRating extends PacketSpigot {
         this.rpi = rpi;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.PLAYER_RATING;

@@ -13,6 +13,7 @@ public class AffixCutDown extends ClassicSpleefAffix {
 
     public AffixCutDown() {
         super();
+        displayName = "Cut Down";
         playTo = 4;
     }
 

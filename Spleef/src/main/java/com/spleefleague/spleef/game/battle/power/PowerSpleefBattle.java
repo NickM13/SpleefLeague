@@ -13,6 +13,7 @@ import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
@@ -80,7 +81,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
 
     @Override
     public void updateScoreboard() {
-        this.chatGroup.setTeamDisplayName("time", "  " + Chat.DEFAULT + getRuntimeStringNoMillis());
+        chatGroup.setTeamDisplayName("time", "  " + Chat.DEFAULT + getRuntimeStringNoMillis());
         chatGroup.setTeamDisplayName("p1score", BattleUtils.toScoreSquares(sortedBattlers.get(0), playToPoints));
         chatGroup.setTeamDisplayName("p1o", LB + Ability.Type.OFFENSIVE.getColor() + sortedBattlers.get(0).getOffensiveName() + RB);
         chatGroup.setTeamDisplayName("p1u", LB + Ability.Type.UTILITY.getColor() + sortedBattlers.get(0).getUtilityName() + RB);
@@ -175,19 +176,17 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             } else {
                 coins = new Random().nextInt(3) + 1;
             }
-            for (int i = 0; i < 1; i++) {
-                switch (getRandomOre(0.025, 0.01, 0.005, 0.001)) {
-                    case COMMON: common++; break;
-                    case RARE: rare++; break;
-                    case EPIC: epic++; break;
-                    case LEGENDARY: legendary++; break;
-                }
+            switch (getRandomOre(0.025, 0.01, 0.005, 0.001)) {
+                case COMMON: common++; break;
+                case RARE: rare++; break;
+                case EPIC: epic++; break;
+                case LEGENDARY: legendary++; break;
             }
-            if (coins > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getCoins().addAmount(coins));
-            if (common > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getCommonOre().addAmount(common));
-            if (rare > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getRareOre().addAmount(rare));
-            if (epic > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getEpicOre().addAmount(epic));
-            if (legendary > 0) psp.getCorePlayer().sendMessage(psp.getCorePlayer().getPurse().getLegendaryOre().addAmount(legendary));
+            if (coins > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
+            if (common > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
+            if (rare > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
+            if (epic > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
+            if (legendary > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
         }
     }
 

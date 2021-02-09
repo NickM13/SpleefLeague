@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
@@ -26,7 +27,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
  * @author NickM13
  */
 public class MenuListener implements Listener {
-    
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());

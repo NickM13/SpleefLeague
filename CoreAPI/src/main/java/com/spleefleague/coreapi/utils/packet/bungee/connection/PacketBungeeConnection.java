@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.bungee.connection;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -25,6 +26,7 @@ public class PacketBungeeConnection extends PacketBungee {
         this.uuid = uuid;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.CONNECTION;

@@ -8,6 +8,7 @@ package com.spleefleague.spleef.game;
 
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.coreapi.chat.ChatColor;
+import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 import com.spleefleague.spleef.game.battle.team.*;
@@ -47,7 +48,9 @@ public enum SpleefMode {
         BattleMode.createArenaMode(CLASSIC.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Classic Spleef")
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
-                .setDescription("The classic version in which you duel a single opponent with a basic diamond shovel.")
+                .setDescription("Take to the field in SpleefLeague's premier gamemode - Classic Spleef!" +
+                        " Dig out blocks from under your opponent before they are able to do the same to you!" +
+                        "\n\nAffixes: " + ClassicSpleefAffixes.getActiveDisplayNames())
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
                 .setBattleClass(ClassicSpleefBattle.class);
 

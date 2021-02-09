@@ -149,9 +149,9 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     
     @Override
     protected void saveBattlerStats(EndlessSJPlayer endlessSJPlayer) {
-        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").add("endless:playTime", endlessSJPlayer.getLevel());
-        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").add("endless:falls", endlessSJPlayer.getFalls());
-        endlessSJPlayer.getCorePlayer().getStatistics().get("superjump").compare("endless:bestLevel", "endless:level");
+        endlessSJPlayer.getCorePlayer().getStatistics().add("superjump", "endless:playTime", endlessSJPlayer.getLevel());
+        endlessSJPlayer.getCorePlayer().getStatistics().add("superjump", "endless:falls", endlessSJPlayer.getFalls());
+        endlessSJPlayer.getCorePlayer().getStatistics().setHigher("superjump", "endless:bestLevel", "endless:level");
     }
     
     @Override

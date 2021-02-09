@@ -32,14 +32,14 @@ public class TempBanCommand extends CoreCommand {
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Infractions.tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.tempban(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void tempban(CommandSender sender,
             OfflinePlayer op,
             String time,
             @Nullable String reason) {
-        Infractions.tempban(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+        Infractions.tempban(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
 }

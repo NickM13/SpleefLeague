@@ -90,7 +90,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         coreLogger.addFilter(new CoreLoggerFilter());
         try {
             Properties mongoProps = new Properties();
-            String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
+            String mongoPath = System.getProperty("user.dir") + "\\..\\..\\mongo.cfg";
             System.out.println("MONGO PATH " + mongoPath);
             FileInputStream file = new FileInputStream(mongoPath);
             
@@ -414,7 +414,9 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * @param msg Message
      */
     public final void sendMessage(CommandSender cs, String msg) {
-        cs.sendMessage(getChatPrefix() + msg);
+        TextComponent message = new TextComponent(getChatPrefix());
+        message.addExtra(msg);
+        cs.sendMessage(message.toPlainText());
     }
 
     /**

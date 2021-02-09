@@ -17,7 +17,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class UrlCommand extends CoreCommand {
     
     public UrlCommand() {
-        super("url", CoreRank.MODERATOR);
+        super("url", CoreRank.TEMP_MOD);
     }
     
     @CommandAnnotation(disabled = true)

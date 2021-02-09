@@ -12,6 +12,8 @@ import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
+import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.*;
 import com.comphenix.protocol.PacketType;
@@ -849,6 +851,120 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
                 }
             }
         }
+    }
+
+    private static final long INDICATOR_DELAY = 60;
+    private long indicatorTick = 0;
+    private long decayTick = 0;
+    private long decayTotalTicks = 0;
+    private long decayDelayStart = 0;
+    private final Map<Long, Set<BlockPosition>> decayBlocks = new HashMap<>();
+
+    /**
+     * Times should be in ticks
+     *
+     * @param startDelay Ticks
+     * @param duration Ticks
+     */
+    public void enableDecay(long startDelay, long duration) {
+        decayDelayStart = Math.max(0, startDelay) / 2;
+        // TODO: Rework to just take the transformed structure boundary boxes
+        int lowX, lowY, lowZ, highX, highY, highZ;
+        lowX = lowY = lowZ = Integer.MAX_VALUE;
+        highX = highY = highZ = Integer.MIN_VALUE;
+        decayTotalTicks = duration / 2;
+        for (long i = 0; i < decayTotalTicks; i++) {
+            decayBlocks.put(i, new HashSet<>());
+        }
+        for (BlockPosition pos : baseBlocks.keySet()) {
+            lowX = Math.min(pos.getX(), lowX);
+            lowY = Math.min(pos.getY(), lowY);
+            lowZ = Math.min(pos.getZ(), lowZ);
+            highX = Math.max(pos.getX(), highX);
+            highY = Math.max(pos.getY(), highY);
+            highZ = Math.max(pos.getZ(), highZ);
+        }
+        Dimension boundingBox = new Dimension(
+                new Point(lowX - 0.5, lowY - 0.5, lowZ - 0.5),
+                new Point(highX + 0.5, highY + 0.5, highZ + 0.5));
+        Point lowCenter = boundingBox.getLowCenter();
+        int layerHeight = 10;
+        double furthestHoriz = lowCenter.distance(boundingBox.getLow());
+        double furthestVerti = (boundingBox.getHigh().getY() - boundingBox.getLow().getY()) / layerHeight;
+        double furthest = 1 + furthestVerti;
+        for (BlockPosition pos : baseBlocks.keySet()) {
+            double dx = pos.getX() - lowCenter.getX();
+            double dy = pos.getY() - lowCenter.getY();
+            double dz = pos.getZ() - lowCenter.getZ();
+
+            double distH = Math.sqrt(dx * dx + dz * dz) / furthestHoriz;
+            double distV = dy / layerHeight;
+
+            double percentDist = 1 - (distH + distV) / furthest;
+
+            long tick = (long) (percentDist * decayTotalTicks);
+            if (tick < 0 || tick > decayTotalTicks) {
+                continue;
+            }
+            decayBlocks.get(tick).add(pos);
+        }
+
+        decayTick = -decayDelayStart;
+        indicatorTick = decayTick + INDICATOR_DELAY / 2;
+
+        BukkitTask indicatorTask = Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            if (indicatorTick < 0) {
+                indicatorTick++;
+                return;
+            }
+            if (indicatorTick > decayTotalTicks) return;
+            if (decayBlocks.containsKey(indicatorTick)) {
+                replaceBlocks(decayBlocks.get(indicatorTick), INDICATOR);
+            }
+            indicatorTick++;
+        }, 2, 2);
+        gameTasks.add(indicatorTask);
+
+        BukkitTask decayTask = Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            if (decayTick < 0) {
+                decayTick++;
+                return;
+            }
+            if (decayTick > decayTotalTicks) return;
+            if (decayBlocks.containsKey(decayTick)) {
+                replaceBlocks(decayBlocks.get(decayTick), AIR);
+                for (BlockPosition pos : decayBlocks.get(decayTick)) {
+                    baseBreakTimes.remove(pos);
+                    futureBlocks.remove(pos);
+                }
+            }
+            decayTick++;
+        }, 2, 2);
+        gameTasks.add(decayTask);
+    }
+
+    public long getDecayDelayStartRemainingSeconds() {
+        return -decayTick / 10;
+    }
+
+    public boolean isDecaying() {
+        return decayTick > 0;
+    }
+
+    public long getDecayRemainSeconds() {
+        return (decayTotalTicks - decayTick) / 10;
+    }
+
+    public float getDecayPercent() {
+        return ((float) decayTick / decayTotalTicks);
+    }
+
+    private static final BlockData AIR = Material.AIR.createBlockData();
+    private static final BlockData INDICATOR = Material.RED_CONCRETE.createBlockData();
+
+    public void decayBlock(BlockPosition pos) {
+        setBlock(pos, AIR);
+        baseBreakTimes.remove(pos);
     }
 
     private static final Set<BlockPosition> relatives = Sets.newHashSet(

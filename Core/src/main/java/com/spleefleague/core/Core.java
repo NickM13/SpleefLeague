@@ -8,7 +8,6 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ticket.Tickets;
@@ -16,6 +15,7 @@ import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.crate.CrateManager;
 import com.spleefleague.core.game.arena.Arenas;
+import com.spleefleague.core.game.battle.team.TeamInfo;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
@@ -28,9 +28,7 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.packet.PacketManager;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerManager;
-import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.party.CorePartyManager;
 import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
@@ -40,7 +38,7 @@ import com.spleefleague.core.queue.QueueManager;
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.core.settings.Settings;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.vendor.Vendors;
+import com.spleefleague.core.vendor.Artisans;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZones;
@@ -105,12 +103,12 @@ public class Core extends CorePlugin<CorePlayer> {
         initConfig();
         setPluginDB("SpleefLeague");
 
+        rankManager.init();
         Credits.init();
         Chat.init();
         Warp.init();
-        Infraction.init();
         Collectible.init();
-        Vendors.init();
+        Artisans.init();
         Tickets.init();
         FakeWorld.init();
         Arenas.init();
@@ -119,10 +117,10 @@ public class Core extends CorePlugin<CorePlayer> {
         PersonalScoreboard.init();
         Settings.init();
         InventoryMenuSkullManager.init();
+        TeamInfo.init();
 
         // Initialize manager
         playerManager = new CorePlayerManager(getPluginDB().getCollection("Players"));
-        rankManager.init();
         crateManager.init();
         packetManager.init();
 
@@ -158,9 +156,8 @@ public class Core extends CorePlugin<CorePlayer> {
         }
         BuildWorld.close();
         Warp.close();
-        Infraction.close();
         Collectible.close();
-        Vendors.close();
+        Artisans.close();
         Tickets.close();
         leaderboards.close();
         NoteBlockMusic.close();

@@ -14,4 +14,8 @@ public class ProxyPermanentRank extends PermanentRank<ProxyRank> {
         this.rank = ProxyCore.getInstance().getRankManager().getRank(this.rankName);
     }
 
+    @Override
+    public String toString() {
+        return rankName;
+    }
 }

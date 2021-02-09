@@ -22,6 +22,7 @@ public class AffixPunch extends ClassicSpleefAffixFuture {
 
     public AffixPunch() {
         super();
+        displayName = "Punch";
         this.activateTime = 5;
         this.punchDelay = 1;
         this.punchPower = 0.5;

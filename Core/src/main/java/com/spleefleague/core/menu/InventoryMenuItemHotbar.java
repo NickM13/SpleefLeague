@@ -29,6 +29,14 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     
     // <"hotbar" NBT, Item>
     private static final Map<String, InventoryMenuItemHotbar> HOTBAR_ITEMS = new HashMap<>();
+
+    private static void replaceNormal() {
+
+    }
+
+    private static void replaceCreative() {
+
+    }
     
     /**
      * Fills a player's hotbar with hotbar items if the item is

@@ -30,7 +30,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     protected void setupBaseSettings() {
-    
+
     }
     
     /**

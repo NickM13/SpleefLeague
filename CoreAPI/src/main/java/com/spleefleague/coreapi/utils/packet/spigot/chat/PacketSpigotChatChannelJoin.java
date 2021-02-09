@@ -3,8 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.chat;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -23,6 +22,7 @@ public class PacketSpigotChatChannelJoin extends PacketSpigot {
         this.channelName = channelName;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.CHAT_CHANNEL_JOIN;

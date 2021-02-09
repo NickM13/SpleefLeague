@@ -37,7 +37,7 @@ public class StaffToolsMenu {
                     .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Staff Tools")
                     .setDisplayItem(Material.REDSTONE, 1)
                     .setDescription("A variety of tools useful for the maintenance and quality of SpleefLeague.")
-                    .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.MODERATOR))
+                    .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD))
                     .createLinkedContainer("Staff Tools");
             
             menuItem.getLinkedChest()

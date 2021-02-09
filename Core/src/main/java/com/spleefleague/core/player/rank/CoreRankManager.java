@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -54,7 +53,6 @@ public class CoreRankManager extends RankManager<CoreRank> {
                 }
             }
             ranks.put(rank.getIdentifier().toUpperCase(), rank);
-            System.out.println("Loaded rank " + rank.getIdentifier().toUpperCase());
         }
 
         reloadRanks();
@@ -80,10 +78,11 @@ public class CoreRankManager extends RankManager<CoreRank> {
     }
 
     public boolean createRank(String identifier, int ladder, ChatColor chatColor) {
-        if (ranks.containsKey(identifier)) {
+        if (!ranks.containsKey(identifier)) {
             CoreRank rank = new CoreRank(identifier, ladder, chatColor);
             ranks.put(identifier, rank);
             sortRanks();
+            saveRank(rank);
             return true;
         }
         return false;
@@ -128,7 +127,7 @@ public class CoreRankManager extends RankManager<CoreRank> {
         CoreRank.DEFAULT =           getRankOrDefault("DEFAULT");
         CoreRank.ADMIN =             getRankOrDefault("ADMIN");
         CoreRank.DEVELOPER =         getRankOrDefault("DEVELOPER");
-        CoreRank.MODERATOR =         getRankOrDefault("MODERATOR");
+        CoreRank.TEMP_MOD =         getRankOrDefault("MODERATOR");
         CoreRank.SENIOR_MODERATOR =  getRankOrDefault("SENIOR_MODERATOR");
         CoreRank.BUILDER =           getRankOrDefault("BUILDER");
         CoreRank.ORGANIZER =         getRankOrDefault("ORGANIZER");

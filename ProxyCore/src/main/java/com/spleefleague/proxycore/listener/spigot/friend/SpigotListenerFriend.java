@@ -26,6 +26,12 @@ public class SpigotListenerFriend extends SpigotListener<PacketSpigotFriend> {
             case DECLINE_INCOMING:
                 pcpSender.getFriends().onFriendDecline(pcpReceiver);
                 break;
+            case FAVORITE:
+                pcpSender.getFriends().setFriendFavorite(pcpReceiver, true);
+                break;
+            case UNFAVORITE:
+                pcpSender.getFriends().setFriendFavorite(pcpReceiver, false);
+                break;
         }
         //ProxyCore.getInstance().sendPacket(packet.receiver, new PacketBungeeFriend(packet.type, packet.sender, packet.receiver));
     }

@@ -1,15 +1,19 @@
 package com.spleefleague.proxycore.listener;
 
+import com.spleefleague.coreapi.chat.ChatColor;
+import com.spleefleague.coreapi.infraction.Infraction;
+import com.spleefleague.coreapi.infraction.InfractionType;
+import com.spleefleague.coreapi.utils.TimeUtils;
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshAll;
 import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.droplet.Droplet;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.ServerSwitchEvent;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -25,10 +29,47 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionListener implements Listener {
 
     @EventHandler
-    public void onPreLogin(net.md_5.bungee.api.event.LoginEvent event) {
+    public void onPreLogin(LoginEvent event) {
+        // Save if loaded here, in case any offline player data was changed recently
         ProxyCore.getInstance().getPlayers().saveIfLoaded(event.getConnection().getUniqueId());
-        System.out.println("Checking for bans goes here! " + event.getConnection().getUniqueId());
-        ProxyCore.getInstance().getInfractions();
+        Infraction infraction = ProxyCore.getInstance().getInfractions().isBanned(event.getConnection().getUniqueId());
+        if (infraction != null) {
+            if (infraction.getType() == InfractionType.TEMPBAN) {
+                long remaining = infraction.getRemainingTime();
+                if (remaining > 0) {
+                    TextComponent component = new TextComponent();
+                    component.addExtra("You are temp-banned!");
+                    component.addExtra("\n\n");
+                    component.addExtra("Reason: " + infraction.getReason());
+                    component.addExtra("\n\n");
+                    component.addExtra("Remaining time: " + TimeUtils.timeToString(remaining));
+                    event.setCancelReason(component);
+                    event.setCancelled(true);
+                }
+            } else {
+                TextComponent component = new TextComponent();
+                component.addExtra("You are banned!");
+                component.addExtra("\n\n");
+                component.addExtra("Reason: " + infraction.getReason());
+                event.setCancelReason(component);
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onServerConnect(ServerConnectEvent event) {
+        Droplet droplet = ProxyCore.getInstance().getDropletManager().getBestLobby(ProxyCore.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId()));
+        if (droplet == null) {
+            if (!ProxyCore.getInstance().getDropletManager().isEnabled()) {
+                return;
+            }
+            System.out.println("Droplet was null!");
+            event.setCancelled(true);
+        } else {
+            System.out.println("Player was redirected!");
+            event.setTarget(droplet.getInfo());
+        }
     }
 
     @EventHandler
@@ -49,7 +90,11 @@ public class ConnectionListener implements Listener {
         ProxyCore.getInstance().sendMessage(pcp, textComponent);
 
         if (pcp.getFriends().getIncoming().size() > 0) {
-            textComponent = new TextComponent("You have " + pcp.getFriends().getIncoming().size() + " friend requests");
+            textComponent = new TextComponent("You have " + pcp.getFriends().getIncoming().size() + " friend requests ");
+            TextComponent click = new TextComponent();
+            click.addExtra(ChatColor.DARK_GRAY + "[" + ChatColor.GREEN + "Click to view" + ChatColor.DARK_GRAY + "]");
+            click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend requests"));
+            textComponent.addExtra(click);
             ProxyCore.getInstance().sendMessage(pcp, textComponent);
         }
     }
@@ -70,12 +115,14 @@ public class ConnectionListener implements Listener {
 
         if (event.getPlayer().getServer().getInfo().getPlayers().size() == 1) {
             List<QueueContainerInfo> queueInfoList = new ArrayList<>();
-            for (Map.Entry<String, QueueContainer> entry : ProxyCore.getInstance().getQueueManager().getContainerMap().entrySet()) {
+            /*
+            for (Map.Entry<String, QueueContainer> entry : ProxyCore.getInstance().getQueueManager().getContainerSoloMap().entrySet()) {
                 queueInfoList.add(new QueueContainerInfo(entry.getKey(),
                         entry.getValue().getQueueSize(),
                         entry.getValue().getPlaying().size(),
                         entry.getValue().getSpectating().size()));
             }
+            */
 
             ProxyCore.getInstance().getPacketManager().sendPacket(
                     event.getPlayer().getServer().getInfo(),

@@ -17,13 +17,18 @@ public class AffixThunderdome extends ClassicSpleefAffixFuture {
     
     public AffixThunderdome() {
         super();
-        this.activateTime = 5;
+        displayName = "Thunderdome";
+        this.activateTime = 240;
     }
 
     @Override
     public void activate(ClassicSpleefBattle battle) {
         battle.startCountdown(0);
-        battle.getGameWorld().overwriteBlocks(FakeUtils.translateBlocks(BuildStructures.get("ThunderDome").getFakeBlocks(),
+        battle.getGameWorld().overwriteBlocks(
+                FakeUtils.translateBlocks(
+                        FakeUtils.rotateBlocks(
+                                BuildStructures.get("ThunderDome").getFakeBlocks(),
+                                (int) battle.getArena().getOrigin().getYaw()),
                 battle.getArena().getOrigin().toBlockPosition()));
         for (ClassicSpleefPlayer csp : battle.getBattlers()) {
             csp.getPlayer().teleport(csp.getSpawn().clone().add(csp.getSpawn().clone().getDirection().setY(0).normalize().multiply(10)));

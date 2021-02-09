@@ -5,6 +5,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +30,7 @@ public class PacketBungeeRefreshAll extends PacketBungee {
         this.queueInfoList = queueInfoList;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.REFRESH_ALL;

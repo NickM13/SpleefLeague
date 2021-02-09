@@ -4,7 +4,7 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuOverlay;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.*;
-import com.spleefleague.core.menu.hotbars.main.profile.PartyMenu;
+import com.spleefleague.core.menu.hotbars.main.PartyMenu;
 import org.bukkit.ChatColor;
 
 /**

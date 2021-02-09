@@ -18,6 +18,7 @@ public class AffixDecay extends ClassicSpleefAffixFuture {
 
     public AffixDecay() {
         super();
+        displayName = "Decay";
         this.activateTime = 5;
     }
 

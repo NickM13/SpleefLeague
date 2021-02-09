@@ -55,7 +55,7 @@ public class TimeUtils {
     }
     
     public static Long toMillis(String time) {
-        long multiplier;
+        double multiplier;
         long total = 0;
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < time.length(); i++) {
@@ -68,7 +68,9 @@ public class TimeUtils {
                     switch (c) {
                         case 'y':
                         case 'Y':
-                            multiplier *= 52;
+                            multiplier *= 12;
+                        case 'M':
+                            multiplier *= 4.34525;
                         case 'w':
                         case 'W':
                             multiplier *= 7;
@@ -79,7 +81,6 @@ public class TimeUtils {
                         case 'H':
                             multiplier *= 60;
                         case 'm':
-                        case 'M':
                             multiplier *= 60;
                         case 's':
                         case 'S':
@@ -88,7 +89,7 @@ public class TimeUtils {
                         default:
                             return null;
                     }
-                    total += Long.parseLong(builder.toString()) * multiplier;
+                    total += Long.parseLong(builder.toString()) * (long) multiplier;
                     builder = new StringBuilder();
                 } else {
                     return null;

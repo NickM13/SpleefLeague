@@ -31,6 +31,10 @@ public class CorePlayerMenu {
         this.overlay = SLMainOverlay.getOverlay();
     }
 
+    public void setOverlay(InventoryMenuOverlay overlay) {
+        this.overlay = overlay;
+    }
+
     public void addInvSwap() {
         invSwap++;
     }
@@ -83,6 +87,7 @@ public class CorePlayerMenu {
         inventoryMenuContainer = null;
         overlaySelect = -1;
         menuTags.clear();
+        overlay = SLMainOverlay.getOverlay();
     }
 
     public void setInventoryMenuAnvil(InventoryMenuContainerAnvil inventoryMenuAnvil) {

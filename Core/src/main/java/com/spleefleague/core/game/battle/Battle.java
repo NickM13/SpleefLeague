@@ -220,6 +220,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         bp.getCorePlayer().setGhosting(false);
         Core.getInstance().applyVisibilities(bp.getCorePlayer());
         bp.respawn();
+        bp.getCorePlayer().refreshHotbar();
     }
 
     /**
@@ -244,11 +245,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                 cp.getBattle().leavePlayer(cp);
             }
             List<CorePlayer> toBattlefy = new ArrayList<>();
-            if (battleMode.getTeamStyle().equals(BattleMode.TeamStyle.TEAM)) {
-                toBattlefy.addAll(cp.getParty().getPlayerSet());
-            } else {
-                toBattlefy.add(cp);
-            }
+            toBattlefy.add(cp);
             for (CorePlayer cp2 : toBattlefy) {
                 Constructor<BP> c = battlePlayerClass.getDeclaredConstructor(CorePlayer.class, Battle.class);
                 c.setAccessible(true);
@@ -639,7 +636,6 @@ public abstract class Battle<BP extends BattlePlayer> {
             cp.joinBattle(this, battleState);
             cp.getPlayer().getInventory().setHeldItemSlot(0);
             cp.getPlayer().getInventory().clear();
-            cp.refreshHotbar();
             return true;
         }
         return false;
@@ -705,7 +701,7 @@ public abstract class Battle<BP extends BattlePlayer> {
 
     protected final void sendRequeueMessage() {
         for (BattlePlayer bp : battlers.values()) {
-            TextComponent requeueText = new TextComponent(Chat.TAG_BRACE + " [" + Chat.SUCCESS + "Queue Again!" + Chat.TAG_BRACE + "]");
+            TextComponent requeueText = new TextComponent(Chat.TAG_BRACE + " [" + Chat.SUCCESS + "Queue Again" + Chat.TAG_BRACE + "]");
             requeueText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to queue again").create()));
             requeueText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/requeue"));
             bp.getCorePlayer().sendMessage(requeueText);
@@ -740,6 +736,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         cp.getPlayer().setAllowFlight(true);
         cp.getPlayer().setFlying(true);
         cp.setGhosting(true);
+        cp.refreshHotbar();
         Core.getInstance().applyVisibilities(cp);
     }
 
@@ -839,7 +836,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     /**
      * Reset all battlers
      */
-    protected final void resetBattlers() {
+    protected void resetBattlers() {
         deadBattlers.clear();
         remainingPlayers.addAll(battlers.values());
         for (BP bp : battlers.values()) {
@@ -1044,15 +1041,17 @@ public abstract class Battle<BP extends BattlePlayer> {
         Iterator<UUID> it = waitingPlayers.iterator();
         while (it.hasNext()) {
             CorePlayer cp = Core.getInstance().getPlayers().get(it.next());
-            if (cp != null && cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
-                addBattler(cp);
-                it.remove();
+            if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) {
+                // Put something here for dynamic modes maybe
+                // Also probably cancel out if fails long enough
+                return;
             }
         }
-        if (waitingPlayers.isEmpty()) {
-            waiting = false;
-            Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::startBattle, 60L);
+        for (UUID uuid : waitingPlayers) {
+            addBattler(Core.getInstance().getPlayers().get(uuid));
         }
+        waiting = false;
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::startBattle, 40L);
     }
 
     /**

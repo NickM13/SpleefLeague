@@ -4,10 +4,12 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.menu.hotbars.main.FriendsMenu;
+import com.spleefleague.core.menu.hotbars.main.friends.FriendPendingMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import net.md_5.bungee.api.chat.*;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -56,19 +58,7 @@ public class FriendCommand extends CoreCommand {
             error(sender, "You have no pending friend requests!");
             return;
         }
-        BaseComponent component = new TextComponent("Friend requests - ");
-        Iterator<UUID> it = sender.getFriends().getIncoming().iterator();
-        while (it.hasNext()) {
-            CorePlayer cp = Core.getInstance().getPlayers().getOffline(it.next());
-            TextComponent extra = new TextComponent(cp.getDisplayName());
-            extra.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/friend add " + cp.getName()));
-            extra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(new TextComponent("Accept " + cp.getDisplayNamePossessive() + " friend request")).create()));
-            component.addExtra(extra);
-            if (it.hasNext()) {
-                component.addExtra(new TextComponent(", "));
-            }
-        }
-        sender.sendMessage(component);
+        sender.getMenu().setInventoryMenuItem(FriendPendingMenu.getItem());
     }
 
 }

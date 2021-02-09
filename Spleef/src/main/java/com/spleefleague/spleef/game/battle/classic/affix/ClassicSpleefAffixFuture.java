@@ -12,7 +12,6 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
     /**
      * Time into the round that this affix will activate, in seconds
      */
-    @DBField
     protected Integer activateTime;
     protected double lastUpdate;
 

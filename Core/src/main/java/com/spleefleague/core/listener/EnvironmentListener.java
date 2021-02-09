@@ -13,9 +13,8 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.util.variable.Warp;
-import com.spleefleague.core.vendor.Vendors;
+import com.spleefleague.core.vendor.Artisans;
 import com.spleefleague.core.world.global.lock.GlobalLock;
 import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
 import com.spleefleague.core.world.global.vehicle.LaunchPad;
@@ -283,7 +282,7 @@ public class EnvironmentListener implements Listener {
                 if (!damageableMobs.contains(event.getEntityType()))
                     event.setCancelled(true);
             } else {
-                Vendors.punchEvent(event);
+                Artisans.punchEvent(event);
             }
         } else if (!event.getEntityType().equals(EntityType.PLAYER) && !damageableMobs.contains(event.getEntityType())) {
             event.setCancelled(true);
@@ -307,7 +306,7 @@ public class EnvironmentListener implements Listener {
             }
         }
         if (event.getHand() == EquipmentSlot.HAND) {
-            Vendors.interactEvent(event);
+            Artisans.interactEvent(event);
         }
     }
 

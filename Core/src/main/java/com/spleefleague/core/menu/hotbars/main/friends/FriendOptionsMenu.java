@@ -11,7 +11,7 @@ public class FriendOptionsMenu {
     public static void init() {
         menuItem = InventoryMenuAPI.createItemStatic()
                         .setName("Friend Settings")
-                        .setDisplayItem(Material.FEATHER, 1)
+                        .setDisplayItem(Material.REDSTONE, 1)
                         .setDescription("Manage your preferences on all things related to your friends!")
                         .createLinkedContainer("Friend Settings");
 
@@ -31,7 +31,7 @@ public class FriendOptionsMenu {
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("Friend Logins")
-                                .setDisplayItem(Material.FEATHER, 1)
+                                .setDisplayItem(Material.FEATHER, 4)
                                 .setDescription("Receive friend login notifications"),
                         0, 1);
 
@@ -44,7 +44,7 @@ public class FriendOptionsMenu {
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("Game Notifications")
-                                .setDisplayItem(Material.FEATHER, 1)
+                                .setDisplayItem(Material.FEATHER, 5)
                                 .setDescription("Receive friend game notifications"),
                         0, 2);
 

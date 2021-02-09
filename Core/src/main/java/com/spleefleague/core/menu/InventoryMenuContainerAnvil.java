@@ -4,9 +4,11 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -17,7 +19,14 @@ import java.util.function.Function;
  */
 public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
 
-    protected static final ItemStack SEARCH_ICON = InventoryMenuUtils.createCustomItem(Material.PAPER, 1);
+    protected static final ItemStack SEARCH_ICON = InventoryMenuUtils.createCustomItem(Material.NAME_TAG, 1);
+
+    static {
+        ItemMeta itemMeta = SEARCH_ICON.getItemMeta();
+        assert itemMeta != null;
+        itemMeta.setDisplayName(ChatColor.WHITE + "" + ChatColor.BOLD + "Reset");
+        SEARCH_ICON.setItemMeta(itemMeta);
+    }
 
     protected Function<CorePlayer, String> titleFunc;
     protected Function<String, Boolean> successFunc;

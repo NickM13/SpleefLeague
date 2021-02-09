@@ -17,7 +17,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class BackCommand extends CoreCommand {
 
     public BackCommand() {
-        super("back", CoreRank.MODERATOR, CoreRank.BUILDER);
+        super("back", CoreRank.TEMP_MOD, CoreRank.BUILDER);
         setUsage("/back");
         setDescription("Return to a previous location");
     }

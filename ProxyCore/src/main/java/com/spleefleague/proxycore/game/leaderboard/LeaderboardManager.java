@@ -106,13 +106,13 @@ public class LeaderboardManager {
             int season = activeLeaderboard.getSeason();
             for (UUID uuid : entry.getValue().getActive().getPlayerScoreMap().keySet()) {
                 ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
-                if (pcp != null && pcp.getProxyRatings().isRanked(mode, season)) {
-                    int prevScore = pcp.getProxyRatings().getElo(mode, season);
-                    if (pcp.getProxyRatings().checkDecay(mode, season)) {
+                if (pcp != null && pcp.getRatings().isRanked(mode, season)) {
+                    int prevScore = pcp.getRatings().getElo(mode, season);
+                    if (pcp.getRatings().checkDecay(mode, season)) {
                         oldPlayerScores.getOrDefault(prevScore,
                                 oldPlayerScores.put(prevScore, new HashSet<>())).add(uuid);
-                        newPlayerScores.getOrDefault(pcp.getProxyRatings().getElo(mode, season),
-                                newPlayerScores.put(pcp.getProxyRatings().getElo(mode, season), new HashSet<>())).add(uuid);
+                        newPlayerScores.getOrDefault(pcp.getRatings().getElo(mode, season),
+                                newPlayerScores.put(pcp.getRatings().getElo(mode, season), new HashSet<>())).add(uuid);
 
                         if (pcp.getOnlineState() != DBPlayer.OnlineState.HERE) {
                             ProxyCore.getInstance().getPlayers().save(pcp);

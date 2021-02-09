@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.battle;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -25,6 +26,7 @@ public class PacketSpigotBattleChallenge extends PacketSpigot {
         this.query = query;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.BATTLE_CHALLENGE;

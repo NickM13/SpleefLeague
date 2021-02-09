@@ -3,8 +3,8 @@ package com.spleefleague.coreapi.utils.packet.bungee.friend;
 import com.spleefleague.coreapi.player.friends.FriendsAction;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
-import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -25,6 +25,7 @@ public class PacketBungeeFriend extends PacketBungee {
         this.receiver = receiver;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.FRIEND;

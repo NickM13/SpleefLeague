@@ -9,15 +9,24 @@ import java.util.UUID;
  */
 public class InfractionPV extends PacketVariable {
 
-    private InfractionType type;
-    private UUID target;
-    private UUID punisher;
-    private String reason;
-    private Long time;
-    private Long duration;
+    public InfractionType type;
+    public UUID target;
+    public String punisher;
+    public String reason;
+    public Long time;
+    public Long duration;
 
     public InfractionPV() {
 
+    }
+
+    public InfractionPV(Infraction infraction) {
+        this.type = infraction.getType();
+        this.target = infraction.getTarget();
+        this.punisher = infraction.getPunisher();
+        this.reason = infraction.getReason();
+        this.time = infraction.getTime();
+        this.duration = infraction.getDuration();
     }
 
 }

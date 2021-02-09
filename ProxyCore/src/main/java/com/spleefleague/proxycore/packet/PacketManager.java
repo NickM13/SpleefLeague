@@ -10,8 +10,8 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class PacketManager {
 
-    private Map<String, List<byte[]>> serverPacketMap = new HashMap<>();
-    private Map<String, ServerInfo> serverInfoMap = new HashMap<>();
+    private final Map<String, List<byte[]>> serverPacketMap = new ConcurrentHashMap<>();
+    private final Map<String, ServerInfo> serverInfoMap = new HashMap<>();
 
     private ScheduledTask task;
 
@@ -43,24 +43,30 @@ public class PacketManager {
         serverInfoMap.remove(name);
     }
 
-    public void run() {
-        Iterator<Map.Entry<String, List<byte[]>>> it = serverPacketMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, List<byte[]>> entry = it.next();
-            if (entry.getValue().isEmpty()) continue;
+    public void flush() {
+        run();
+    }
 
-            PacketBungeeBundleOut packetOut = new PacketBungeeBundleOut();
+    private void run() {
+        synchronized (serverPacketMap) {
+            Iterator<Map.Entry<String, List<byte[]>>> it = serverPacketMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, List<byte[]>> entry = it.next();
+                if (entry.getValue().isEmpty()) continue;
 
-            Iterator<byte[]> it2 = entry.getValue().iterator();
-            while (it2.hasNext()) {
-                packetOut.addPacket(it2.next());
-                it2.remove();
-            }
+                PacketBungeeBundleOut packetOut = new PacketBungeeBundleOut();
 
-            if (serverInfoMap.containsKey(entry.getKey())) {
-                serverInfoMap.get(entry.getKey()).sendData("slcore:bungee", packetOut.toByteArray());
-            } else {
-                it.remove();
+                Iterator<byte[]> it2 = entry.getValue().iterator();
+                while (it2.hasNext()) {
+                    packetOut.addPacket(it2.next());
+                    it2.remove();
+                }
+
+                if (serverInfoMap.containsKey(entry.getKey())) {
+                    serverInfoMap.get(entry.getKey()).sendData("slcore:bungee", packetOut.toByteArray());
+                } else {
+                    it.remove();
+                }
             }
         }
     }

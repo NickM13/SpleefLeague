@@ -25,19 +25,19 @@ public class UnbanCommand extends CoreCommand {
     
     @CommandAnnotation
     public void unban(CorePlayer sender, OfflinePlayer op, String reason) {
-        Infractions.unban(sender.getName(), op, reason);
+        Infractions.unban(sender, op, reason);
     }
     @CommandAnnotation
     public void unban(CorePlayer sender, OfflinePlayer op) {
-        Infractions.unban(sender.getName(), op, "");
+        Infractions.unban(sender, op, "");
     }
     @CommandAnnotation
     public void unban(CommandSender sender, OfflinePlayer op, String reason) {
-        Infractions.unban(sender.getName(), op, reason);
+        Infractions.unban(null, op, reason);
     }
     @CommandAnnotation
     public void unban(CommandSender sender, OfflinePlayer op) {
-        Infractions.unban(sender.getName(), op, "");
+        Infractions.unban(null, op, "");
     }
     
 }

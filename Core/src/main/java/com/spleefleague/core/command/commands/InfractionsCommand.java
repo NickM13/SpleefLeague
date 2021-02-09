@@ -6,18 +6,19 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import com.spleefleague.coreapi.infraction.Infraction;
 import org.bson.Document;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -28,34 +29,49 @@ import org.bukkit.OfflinePlayer;
 public class InfractionsCommand extends CoreCommand {
     
     public InfractionsCommand() {
-        super("infractions", CoreRank.MODERATOR);
+        super("infractions", CoreRank.TEMP_MOD);
         setUsage("/infractions <player> [page]");
         setDescription("View infractions of a player");
     }
-    
+
+    private static final String lb = ChatColor.DARK_GRAY + " | ";
+
     @CommandAnnotation
     public void infractions(CorePlayer sender, OfflinePlayer op, Integer page) {
         MongoCollection<Document> collection = Core.getInstance().getPluginDB().getCollection("Infractions");
-        FindIterable<Document> iterable = collection.find(new Document("uuid", op.getUniqueId().toString())).sort(new Document("time", -1));
-        List<Document> dbc = new ArrayList<>();
-        
-        for (Document d : iterable) {
-            dbc.add(d);
-        }
-        
-        if (dbc.isEmpty()) {
+        Document playerDoc = collection.find(new Document("identifier", op.getUniqueId().toString())).first();
+
+        if (playerDoc == null) {
             error(sender, "This player does not have any infractions");
             return;
         }
-        
-        int maxPages = (dbc.size() - 1) / 10 + 1;
-        if (page > maxPages || page < 1) page = 1;
-        sender.sendMessage(ChatColor.DARK_GRAY + "[========== " + ChatColor.GRAY + op.getName() + ChatColor.GRAY + "'s infractions (" + ChatColor.RED + page + ChatColor.GRAY + "/" + ChatColor.RED + maxPages + ChatColor.GRAY + ") " + ChatColor.DARK_GRAY + "==========]");
-        iterable.skip((page - 1) * 10);
-        MongoCursor<Document> mc = iterable.iterator();
-        for (int i = 1; i <= 10 && mc.hasNext(); i++) {
-            Infraction inf = new Infraction(mc.next());
-            sender.sendMessage(ChatColor.RED + String.valueOf((page - 1) * 10 + i) + ". " + ChatColor.DARK_GRAY + "| " + inf.getType().getColor() + inf.getType() + ChatColor.DARK_GRAY + " | " + ChatColor.RED + (inf.getPunisher() == null ? "CONSOLE" : inf.getPunisher()) + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + inf.getReason() + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + TimeUtils.gcdTimeToString(System.currentTimeMillis() - inf.getTime()) + " ago");
+
+        List<Document> infractions = playerDoc.getList("infractions", Document.class, new ArrayList<>());
+
+        if (infractions.isEmpty()) {
+            error(sender, "This player does not have any infractions");
+            return;
+        }
+
+        Collections.reverse(infractions);
+
+        int maxPages = (infractions.size() - 1) / 10 + 1;
+        page = Math.min(maxPages, Math.max(1, page));
+        sender.sendMessage(ChatColor.DARK_GRAY + "[========== " +
+                ChatColor.GRAY + op.getName() + ChatColor.GRAY + "'s infractions (" +
+                ChatColor.RED + page + ChatColor.GRAY + "/" + ChatColor.RED + maxPages + ChatColor.GRAY + ") " +
+                ChatColor.DARK_GRAY + "==========]");
+        Iterator<Document> it = infractions.iterator();
+        for (int i = 0; i < (page - 1) * 10; i++) it.next();
+        for (int i = 1; i <= 10 && it.hasNext(); i++) {
+            Infraction infraction = new Infraction();
+            Document doc = it.next();
+            infraction.load(doc);
+            sender.sendMessage(ChatColor.RED + "" + ((page - 1) * 10 + i) + "." + lb +
+                    infraction.getType().getColor() + infraction.getType().toString() + lb +
+                    ChatColor.RED + infraction.getPunisher() + lb +
+                    ChatColor.GRAY + infraction.getReason() + lb +
+                    ChatColor.GRAY + TimeUtils.gcdTimeToString(System.currentTimeMillis() - infraction.getTime()) + " ago");
         }
     }
     

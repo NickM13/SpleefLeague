@@ -26,7 +26,11 @@ public class RankCommand extends CoreCommand {
                            @HelperArg("identifier") String identifier,
                            @HelperArg("ladder") @NumberArg(minValue = -1000, maxValue = 1000) Integer ladder,
                            @EnumArg ChatColor chatColor) {
-        Core.getInstance().getRankManager().createRank(identifier, ladder, chatColor);
+        if (Core.getInstance().getRankManager().createRank(identifier, ladder, chatColor)) {
+            success(sender, "Created rank " + identifier);
+        } else {
+            error(sender, "Rank already exists");
+        }
     }
 
     @CommandAnnotation
@@ -36,7 +40,9 @@ public class RankCommand extends CoreCommand {
                              @LiteralArg("name") String l2,
                              @Nullable String displayName) {
         if (displayName == null) displayName = "";
-        Core.getInstance().getRankManager().setRankName(rank, Chat.colorize(displayName));
+        String colorized = Chat.colorize(displayName);
+        Core.getInstance().getRankManager().setRankName(rank, colorized);
+        success(sender, "Rank name set to " + colorized);
     }
 
     @CommandAnnotation
@@ -46,6 +52,7 @@ public class RankCommand extends CoreCommand {
                                @LiteralArg("ladder") String l2,
                                @HelperArg("ladder") @NumberArg(minValue = -10000, maxValue = 10000) Integer ladder) {
         Core.getInstance().getRankManager().setRankLadder(rank, ladder);
+        success(sender, "Rank ladder set to " + ladder);
     }
 
     @CommandAnnotation
@@ -55,6 +62,7 @@ public class RankCommand extends CoreCommand {
                                @LiteralArg("maxfriends") String l2,
                                @HelperArg("maxfriends") @NumberArg(minValue = -1, maxValue = 10000) Integer maxFriends) {
         Core.getInstance().getRankManager().setRankMaxFriends(rank, maxFriends);
+        success(sender, "Rank maxfriends set to " + maxFriends);
     }
 
     @CommandAnnotation
@@ -64,6 +72,7 @@ public class RankCommand extends CoreCommand {
                               @LiteralArg("color") String l2,
                               @EnumArg ChatColor color) {
         Core.getInstance().getRankManager().setRankColor(rank, color);
+        success(sender, "Rank color set to " + color);
     }
 
     @CommandAnnotation
@@ -73,6 +82,7 @@ public class RankCommand extends CoreCommand {
                               @LiteralArg("hasOp") String l2,
                               Boolean hasOp) {
         Core.getInstance().getRankManager().setRankOp(rank, hasOp);
+        success(sender, "Rank hasOp set to " + hasOp);
     }
 
     @CommandAnnotation
@@ -80,10 +90,11 @@ public class RankCommand extends CoreCommand {
                          @LiteralArg("info") String l1,
                          @OptionArg(listName = "ranks") String rankName) {
         CoreRank rank = Core.getInstance().getRankManager().getRank(rankName);
-        String formatted = "{ identifier: " + rank.getIdentifier() + ", " +
-                "name: " + rank.getDisplayName() + ", " +
+        String formatted = ChatColor.GRAY + "{ identifier: " + rank.getIdentifier() + ", " +
+                "name: " + rank.getDisplayName() + ChatColor.GRAY + ", " +
                 "ladder: " + rank.getLadder() + ", " +
                 "color: " + rank.getColor().name() + ", " +
+                "maxFriends: " + rank.getMaxFriends() + ", " +
                 "hasOp: " + rank.getHasOp() + " }";
         success(sender, formatted);
     }

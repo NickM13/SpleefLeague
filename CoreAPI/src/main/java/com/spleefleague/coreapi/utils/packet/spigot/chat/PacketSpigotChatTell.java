@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.chat;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -23,6 +24,7 @@ public class PacketSpigotChatTell extends PacketSpigot {
         this.message = message;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.CHAT_TELL;

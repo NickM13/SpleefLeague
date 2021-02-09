@@ -89,13 +89,14 @@ public class CoreUtils {
 
     /**
      * @deprecated Use StringUtils
-     * @param stringCollection
-     * @return
+     * @param stringCollection Strings
+     * @return String
      */
-    @Deprecated
     public static String mergeSetString(Collection<String> stringCollection) {
+        System.out.println(stringCollection.size());
         StringBuilder stringBuilder = new StringBuilder();
         for (String str : stringCollection) {
+            System.out.println(str);
             stringBuilder.append((stringBuilder.length() > 0 ? ", " : "") + str);
         }
         return stringBuilder.toString();

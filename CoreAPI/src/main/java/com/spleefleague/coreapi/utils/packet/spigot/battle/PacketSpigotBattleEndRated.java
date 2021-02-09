@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -24,6 +25,7 @@ public class PacketSpigotBattleEndRated extends PacketSpigot {
         this.players = players;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.BATTLE_END_RATED;

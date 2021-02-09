@@ -14,7 +14,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.menu.hotbars.main.profile.PartyMenu;
+import com.spleefleague.core.menu.hotbars.main.PartyMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.party.PartyAction;

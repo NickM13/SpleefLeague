@@ -20,26 +20,26 @@ import org.bukkit.command.CommandSender;
 public class KickCommand extends CoreCommand {
     
     public KickCommand() {
-        super("kick", CoreRank.MODERATOR);
+        super("kick", CoreRank.TEMP_MOD);
         setUsage("/kick <player> [reason]");
         setDescription("Kick a player from the server");
     }
     
     @CommandAnnotation
     public void kick(CorePlayer sender, OfflinePlayer op, String reason) {
-        Infractions.kick(sender.getName(), op, reason);
+        Infractions.kick(sender, op, reason);
     }
     @CommandAnnotation
     public void kick(CorePlayer sender, OfflinePlayer op) {
-        Infractions.kick(sender.getName(), op, "");
+        Infractions.kick(sender, op, "");
     }
     @CommandAnnotation
     public void kick(CommandSender sender, OfflinePlayer op, String reason) {
-        Infractions.kick(sender.getName(), op, reason);
+        Infractions.kick(null, op, reason);
     }
     @CommandAnnotation
     public void kick(CommandSender sender, OfflinePlayer op) {
-        Infractions.kick(sender.getName(), op, "");
+        Infractions.kick(null, op, "");
     }
     
 }

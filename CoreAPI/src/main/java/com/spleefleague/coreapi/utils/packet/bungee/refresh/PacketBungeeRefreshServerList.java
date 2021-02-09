@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.bungee.refresh;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -20,6 +21,7 @@ public class PacketBungeeRefreshServerList extends PacketBungee {
         this.minigameServers = minigameServers;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.REFRESH_SERVER_LIST;

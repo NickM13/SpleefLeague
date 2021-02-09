@@ -15,6 +15,7 @@ import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,7 +27,9 @@ public class ClassicSpleefArena {
     public static void createMenu(int x, int y) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("&6&lClassic Spleef")
-                .setDescription(cp -> "The classic version in which you duel a single opponent with a basic diamond shovel." +
+                .setDescription(cp -> "Take to the field in SpleefLeague's premier gamemode - Classic Spleef!" +
+                        " Dig out blocks from under your opponent before they are able to do the same to you!" +
+                        "\n\nAffixes: " + ClassicSpleefAffixes.getActiveDisplayNames() +
                         "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.CLASSIC.getBattleMode()).getPlaying())
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .createLinkedContainer("Classic Spleef Menu");

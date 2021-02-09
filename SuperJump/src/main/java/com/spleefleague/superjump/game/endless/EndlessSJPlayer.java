@@ -17,11 +17,11 @@ public class EndlessSJPlayer extends SJBattlePlayer {
     @Override
     public void addRoundWin() {
         super.addRoundWin();
-        getCorePlayer().getStatistics().get("superjump").add("endless:level", 1);
+        getCorePlayer().getStatistics().add("superjump", "endless:level", 1);
     }
     
     public long getLevel() {
-        return getCorePlayer().getStatistics().get("superjump").get("endless:level");
+        return getCorePlayer().getStatistics().get("superjump", "endless:level");
     }
     
 }

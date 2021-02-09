@@ -69,7 +69,7 @@ public class ChatUtils {
         return pixelCount;
     }
     
-    private static final int DESC_WIDTH = 160;
+    private static final int DESC_WIDTH = 190;
     
     private static ArrayList<String> wrapDesc(String message) {
         ArrayList<String> msgs = new ArrayList<>();

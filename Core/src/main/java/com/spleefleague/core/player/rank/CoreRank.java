@@ -18,6 +18,7 @@ public class CoreRank extends Rank {
     public static CoreRank DEFAULT,
             DEVELOPER,
             ADMIN,
+            TEMP_MOD,
             MODERATOR,
             SENIOR_MODERATOR,
             BUILDER,

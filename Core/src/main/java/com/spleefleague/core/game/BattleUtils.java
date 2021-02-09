@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
+import com.spleefleague.core.game.battle.team.TeamBattlePlayer;
+import com.spleefleague.core.game.battle.team.TeamBattleTeam;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.FakeBlock;
@@ -45,6 +47,27 @@ public class BattleUtils {
     private static char[] POINT_ANIM = {/*'─', */'═', '╪', '▓', '█'};
 
     public static String toScoreSquares(BattlePlayer bp, int playToPoints) {
+        if (playToPoints > 5) {
+            return (Chat.SCORE + bp.getRoundWins() + "/" + playToPoints);
+        } else {
+            StringBuilder stringBuilder = new StringBuilder(Chat.SCORE);
+            for (int i = 0; i < bp.getRoundWins(); i++) {
+                if (i == bp.getRoundWins() - 1) {
+                    long time = System.currentTimeMillis() - bp.getLastWin();
+                    stringBuilder.append(POINT_ANIM[(int) Math.min(POINT_ANIM.length - 1, time / 150)]);
+                } else {
+                    stringBuilder.append("█");
+                }
+            }
+            stringBuilder.append(Chat.DEFAULT);
+            for (int i = bp.getRoundWins(); i < playToPoints; i++) {
+                stringBuilder.append("─");
+            }
+            return stringBuilder.toString();
+        }
+    }
+
+    public static String toScoreSquares(TeamBattleTeam<? extends TeamBattlePlayer> bp, int playToPoints) {
         if (playToPoints > 5) {
             return (Chat.SCORE + bp.getRoundWins() + "/" + playToPoints);
         } else {

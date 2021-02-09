@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.server;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,7 @@ public class PacketSpigotServerDirect extends PacketSpigot {
         this.serverName = serverName;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.SERVER_DIRECT;

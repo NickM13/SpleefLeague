@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.shared.CollectibleAction;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -30,6 +31,7 @@ public class PacketSpigotPlayerCollectibleSkin extends PacketSpigot {
         this.affix = affix;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.PLAYER_COLLECTIBLE_SKIN;

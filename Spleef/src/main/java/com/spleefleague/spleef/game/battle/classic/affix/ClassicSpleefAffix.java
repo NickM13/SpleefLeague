@@ -16,7 +16,9 @@ import org.bukkit.inventory.ItemStack;
 public abstract class ClassicSpleefAffix extends DBEntity {
 
     @DBField
-    private boolean active = false;
+    private Boolean active = false;
+
+    protected String displayName = "";
 
     public ClassicSpleefAffix() {
         this.identifier = getClass().getSimpleName();
@@ -36,9 +38,13 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     }
 
     public void setActive(boolean state) {
-        System.out.println("Activity!" + state);
         active = state;
         ClassicSpleefAffixes.updateAffix(this);
+    }
+
+    public String getDisplayName() {
+        System.out.println("DISPLAY " + displayName);
+        return displayName;
     }
 
     /**

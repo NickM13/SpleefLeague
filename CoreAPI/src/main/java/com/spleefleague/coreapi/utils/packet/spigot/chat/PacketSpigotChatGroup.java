@@ -3,8 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.chat;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -25,6 +24,7 @@ public class PacketSpigotChatGroup extends PacketSpigot {
         this.url = url;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.CHAT_GROUP;

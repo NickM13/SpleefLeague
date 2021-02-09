@@ -21,20 +21,20 @@ import org.bukkit.command.CommandSender;
 public class UnmuteCommand extends CoreCommand {
     
     public UnmuteCommand() {
-        super("unmute", CoreRank.MODERATOR);
+        super("unmute", CoreRank.TEMP_MOD);
     }
     
     @CommandAnnotation
     public void unmute(CorePlayer sender,
             OfflinePlayer op,
             @Nullable String reason) {
-        Infractions.unmute(sender.getName(), op, reason == null ? "" : reason);
+        Infractions.unmute(sender, op, reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void unmute(CommandSender sender,
             OfflinePlayer op,
             @Nullable String reason) {
-        Infractions.unmute(sender.getName(), op, reason == null ? "" : reason);
+        Infractions.unmute(null, op, reason == null ? "" : reason);
     }
 
 }

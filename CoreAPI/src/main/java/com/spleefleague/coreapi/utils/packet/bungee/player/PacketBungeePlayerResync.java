@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.bungee.player;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -43,6 +44,7 @@ public class PacketBungeePlayerResync extends PacketBungee {
         this.fields = fields;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.PLAYER_RESYNC;

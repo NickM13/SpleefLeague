@@ -10,6 +10,8 @@ public enum FriendsAction {
     DECLINE_INCOMING,
     DECLINE_OUTGOING,
     INCOMING,
-    OUTGOING
+    OUTGOING,
+    FAVORITE,
+    UNFAVORITE
 
 }

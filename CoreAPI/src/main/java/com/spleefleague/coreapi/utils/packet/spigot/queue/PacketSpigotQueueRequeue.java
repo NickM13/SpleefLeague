@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.queue;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,7 @@ public class PacketSpigotQueueRequeue extends PacketSpigot {
         this.uuid = uuid;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.QUEUE_REQUEUE;

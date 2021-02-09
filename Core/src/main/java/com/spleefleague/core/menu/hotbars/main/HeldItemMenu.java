@@ -36,17 +36,17 @@ public class HeldItemMenu {
 
         InventoryMenuContainerChest container = menuItem.getLinkedChest();
 
-        container.addMenuItem(HatMenu.getItem(), 1, 0);
-        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 1, 1);
-        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 1, 2);
+        container.addMenuItem(HatMenu.getItem(), 2, 0);
+        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 2, 1);
+        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 2, 2);
 
-        container.addMenuItem(GearMenu.getItem(), 2, 0);
-        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 2, 1);
-        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 2, 2);
+        container.addMenuItem(GearMenu.getItem(), 3, 0);
+        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 3, 1);
+        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 3, 2);
 
-        container.addMenuItem(PetMenu.getItem(), 4, 0);
-        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Pet.class), 4, 1);
-        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Pet.class), 4, 2);
+        //container.addMenuItem(PetMenu.getItem(), 4, 0);
+        //container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Pet.class), 4, 1);
+        //container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Pet.class), 4, 2);
     }
     
     /**

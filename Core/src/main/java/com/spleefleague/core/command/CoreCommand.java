@@ -603,8 +603,10 @@ public class CoreCommand extends Command {
                             if (!hasPerms) continue;
                         }
                         params.add(cp);
-                    } else {
+                    } else if (cp == null && !methodInfo.cpSender) {
                         params.add(cs);
+                    } else {
+                        continue;
                     }
 
                     int paramSize = Math.min(methodInfo.maxParams, args.length) + 1;
@@ -914,21 +916,24 @@ public class CoreCommand extends Command {
         for (Map.Entry<Integer, List<MethodInfo>> methodEntry : tabMap.entrySet()) {
             for (MethodInfo methodInfo : methodEntry.getValue()) {
                 if (args.length > methodInfo.maxParams) continue;
-                if (cp != null && methodInfo.cpSender) {
-                    if (!cp.getRank().hasPermission(methodInfo.minRank)) {
-                        boolean hasPerms = false;
-                        for (CoreRank aRank : methodInfo.additionalRanks) {
-                            if (cp.getRank().equals(aRank)) {
-                                hasPerms = true;
-                                break;
+                if (cp != null) {
+                    if (methodInfo.cpSender) {
+                        if (!cp.getRank().hasPermission(methodInfo.minRank)) {
+                            boolean hasPerms = false;
+                            for (CoreRank aRank : methodInfo.additionalRanks) {
+                                if (cp.getRank().equals(aRank)) {
+                                    hasPerms = true;
+                                    break;
+                                }
                             }
+                            if (!hasPerms) continue;
                         }
-                        if (!hasPerms) continue;
+                    } else {
+                        continue;
                     }
                 }
 
                 Object obj;
-                int paramSize = Math.min(methodInfo.maxParams, args.length) + 1;
                 boolean invalidArg = false;
                 List<String> strParams = new ArrayList<>();
 

@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -24,6 +25,7 @@ public class PacketBungeeRefreshScore extends PacketBungee {
         this.players = players;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.REFRESH_SCORE;

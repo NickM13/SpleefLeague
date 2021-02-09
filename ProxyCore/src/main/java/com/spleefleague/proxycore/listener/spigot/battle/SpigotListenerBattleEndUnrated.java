@@ -25,9 +25,6 @@ public class SpigotListenerBattleEndUnrated extends SpigotListener<PacketSpigotB
                 pcp.setBattleContainer(null);
             }
         }
-        QueueContainer container = ProxyCore.getInstance().getQueueManager().getContainerMap().get(packet.mode);
-        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeRefreshQueue(new QueueContainerInfo(packet.mode,
-                container.getQueueSize(), container.getPlaying().size(), container.getSpectating().size())));
     }
 
 }

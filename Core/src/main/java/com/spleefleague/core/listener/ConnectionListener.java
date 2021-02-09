@@ -6,18 +6,12 @@
 
 package com.spleefleague.core.listener;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
-import java.time.Instant;
-import java.util.Date;
-
 import com.spleefleague.core.world.global.zone.GlobalZones;
-import org.bson.Document;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,38 +27,7 @@ public class ConnectionListener implements Listener {
     
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event) {
-        Infraction infraction = Infraction.getMostRecent(event.getPlayer().getUniqueId(),
-                Lists.newArrayList(Infraction.Type.BAN,
-                        Infraction.Type.TEMPBAN,
-                        Infraction.Type.UNBAN));
-        Infraction reasoning = Infraction.getMostRecent(event.getPlayer().getUniqueId(),
-                Lists.newArrayList(Infraction.Type.BAN,
-                        Infraction.Type.TEMPBAN,
-                        Infraction.Type.UNBAN,
-                        Infraction.Type.WARNING));
         
-        if (infraction != null) {
-            switch (infraction.getType()) {
-                case BAN:
-                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are banned!"
-                            + "\n" + reasoning.getReason());
-                    return;
-                case TEMPBAN:
-                    if (!infraction.isExpired()) {
-                        event.disallow(PlayerLoginEvent.Result.KICK_BANNED, "You are temporarily banned! "
-                                + infraction.getRemainingTimeString()
-                                + "\n" + reasoning.getReason());
-                    }
-                    return;
-            }
-        }
-        
-        Document joinDoc = new Document("date", Date.from(Instant.now()));
-        joinDoc.append("type", "JOIN");
-        joinDoc.append("ip", event.getAddress().getHostAddress());
-        joinDoc.append("uuid", event.getPlayer().getUniqueId().toString());
-
-        Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(joinDoc);
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
@@ -91,7 +54,7 @@ public class ConnectionListener implements Listener {
             return;
         }
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
-        if (cp == null || !cp.getRank().hasPermission(CoreRank.MODERATOR)) {
+        if (cp == null || !cp.getRank().hasPermission(CoreRank.TEMP_MOD)) {
             switch (event.getStatus()) {
                 case DECLINED:
                     //event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");

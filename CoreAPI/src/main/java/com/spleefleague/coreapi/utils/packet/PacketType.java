@@ -7,8 +7,11 @@ import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleCha
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.*;
+import com.spleefleague.coreapi.utils.packet.bungee.server.PacketBungeeServerKill;
+import com.spleefleague.coreapi.utils.packet.bungee.server.PacketBungeeServerPing;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.*;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.*;
@@ -18,8 +21,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.*;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueRequeue;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave;
-import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerDirect;
-import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerHub;
+import com.spleefleague.coreapi.utils.packet.spigot.server.*;
 
 /**
  * @author NickM13
@@ -38,12 +40,15 @@ public class PacketType {
         CONNECTION(PacketBungeeConnection.class),
         FRIEND(PacketBungeeFriend.class),
         PARTY(PacketBungeeParty.class),
+        PLAYER_KICK(PacketBungeePlayerKick.class),
         PLAYER_RESYNC(PacketBungeePlayerResync.class),
         REFRESH_ALL(PacketBungeeRefreshAll.class),
         REFRESH_PARTY(PacketBungeeRefreshParty.class),
         REFRESH_QUEUE(PacketBungeeRefreshQueue.class),
         REFRESH_SCORE(PacketBungeeRefreshScore.class),
-        REFRESH_SERVER_LIST(PacketBungeeRefreshServerList.class);
+        REFRESH_SERVER_LIST(PacketBungeeRefreshServerList.class),
+        SERVER_KILL(PacketBungeeServerKill.class),
+        SERVER_PING(PacketBungeeServerPing.class);
 
         private final Class<? extends PacketBungee> clazz;
 
@@ -80,6 +85,7 @@ public class PacketType {
         PLAYER_CRATE(PacketSpigotPlayerCrate.class),
         PLAYER_CURRENCY(PacketSpigotPlayerCurrency.class),
         PLAYER_INFRACTION(PacketSpigotPlayerInfraction.class),
+        PLAYER_JOIN_SERVER(PacketSpigotPlayerJoinOther.class),
         PLAYER_OPTIONS(PacketSpigotPlayerOptions.class),
         PLAYER_RANK(PacketSpigotPlayerRank.class),
         PLAYER_RATING(PacketSpigotPlayerRating.class),
@@ -87,7 +93,10 @@ public class PacketType {
         QUEUE_LEAVE(PacketSpigotQueueLeave.class),
         QUEUE_REQUEUE(PacketSpigotQueueRequeue.class),
         SERVER_DIRECT(PacketSpigotServerDirect.class),
-        SERVER_HUB(PacketSpigotServerHub.class);
+        SERVER_HUB(PacketSpigotServerHub.class),
+        SERVER_PING(PacketSpigotServerPing.class),
+        SERVER_RESTART(PacketSpigotServerRestart.class),
+        SERVER_STOP(PacketSpigotServerStop.class);
 
         private final Class<? extends PacketSpigot> clazz;
 

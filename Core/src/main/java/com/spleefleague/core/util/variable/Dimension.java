@@ -91,6 +91,20 @@ public class Dimension extends DBVariable<Document> {
     public Point getHigh() {
         return high;
     }
+
+    public Point getLowCenter() {
+        return new Point(
+                low.x + (high.x - low.x) / 2,
+                low.y,
+                low.z + (high.z - low.z) / 2);
+    }
+
+    public Point getHighCenter() {
+        return new Point(
+                low.x + (high.x - low.x) / 2,
+                high.y,
+                low.z + (high.z - low.z) / 2);
+    }
     
     public Point getCenter() {
         return new Point(

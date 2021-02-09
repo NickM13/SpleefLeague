@@ -5,6 +5,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.options.StaffToolsMenu;
+import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefBattle;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefPlayer;
 import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixArtillery;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -75,6 +77,10 @@ public class ClassicSpleefAffixes {
         }
     }
 
+    public static String getActiveDisplayNames() {
+        return CoreUtils.mergeSetString(activeAffixes.stream().map(ClassicSpleefAffix::getDisplayName).collect(Collectors.toSet()));
+    }
+
     private static <T extends ClassicSpleefAffix> void initAffix(T affix) {
         Document doc = affixCol.find(new Document("identifier", affix.getIdentifier())).first();
         if (doc != null) affix.load(doc);
@@ -98,6 +104,7 @@ public class ClassicSpleefAffixes {
         } else {
             activeAffixes.remove(affix);
         }
+        affix.save(affixCol);
     }
 
     public static void startBattle(ClassicSpleefBattle battle) {

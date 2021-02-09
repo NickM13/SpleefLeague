@@ -72,7 +72,7 @@ public class SuperJumpCommand extends CoreCommand {
 
     @CommandAnnotation(minRank = "DEVELOPER")
     public void sjEndless(CorePlayer sender, @LiteralArg(value="endless") String l, @HelperArg("[level]") Integer level) {
-        sender.getStatistics().get("superjump").set("endless:level", level);
+        sender.getStatistics().setHigher("superjump", "endless:level", level);
         SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getBattleMode(), sender);
     }
     

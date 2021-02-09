@@ -27,8 +27,8 @@ public class CrateMenu {
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Crates")
-                .setDisplayItem(Material.YELLOW_SHULKER_BOX, 1)
-                .setSelectedItem(Material.YELLOW_SHULKER_BOX, 2)
+                .setDisplayItem(Material.YELLOW_SHULKER_BOX, 3)
+                .setSelectedItem(Material.YELLOW_SHULKER_BOX, 4)
                 .setDescription("")
                 .createLinkedContainer("Crates");
 

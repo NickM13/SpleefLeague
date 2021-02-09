@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpectate;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,7 @@ public class PacketBungeeBattleSpectate extends PacketBungee {
         this.target = packet.target;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.BATTLE_SPECTATE;

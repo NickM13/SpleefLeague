@@ -122,6 +122,7 @@ public class Crate extends DBEntity {
 
     public void setPriority(int priority) {
         this.priority = priority;
+
     }
 
     public int getPriority() {

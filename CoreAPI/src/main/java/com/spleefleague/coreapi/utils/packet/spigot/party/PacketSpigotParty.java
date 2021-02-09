@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -31,6 +32,7 @@ public class PacketSpigotParty extends PacketSpigot {
         this.target = target;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.PARTY;

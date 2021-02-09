@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -30,6 +31,7 @@ public class PacketBungeeParty extends PacketBungee {
         this.target = target;
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.PARTY;

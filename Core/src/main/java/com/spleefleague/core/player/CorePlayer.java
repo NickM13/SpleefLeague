@@ -28,7 +28,6 @@ import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.crates.CorePlayerCrates;
 import com.spleefleague.core.player.friends.CorePlayerFriends;
-import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.options.CorePlayerOptions;
 import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.purse.CorePlayerPurse;
@@ -45,19 +44,13 @@ import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.global.zone.GlobalZone;
 import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
-import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.player.PlayerRatings;
 import com.spleefleague.coreapi.player.PlayerStatistics;
-import com.spleefleague.coreapi.player.crate.PlayerCrates;
-import com.spleefleague.coreapi.player.options.PlayerOptions;
-import com.spleefleague.coreapi.player.purse.PlayerPurse;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatChannelJoin;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerRank;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
@@ -66,7 +59,6 @@ import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
@@ -434,22 +426,6 @@ public class CorePlayer extends DBPlayer {
     public boolean isAfk() {
         return afk;
     }
-    
-    /**
-     * @return 0 if not muted, 1 if publicly muted, 2 if secretly muted
-     */
-    public int isMuted() {
-        Infraction lastMute = Infraction.getMostRecent(getUniqueId(), Lists.newArrayList(Infraction.Type.MUTE_SECRET, Infraction.Type.MUTE_PUBLIC));
-        
-        if (lastMute != null && !lastMute.isExpired()) {
-            switch (lastMute.getType()) {
-                case MUTE_PUBLIC: return 1;
-                case MUTE_SECRET: return 2;
-                default: break;
-            }
-        }
-        return 0;
-    }
 
     public boolean isFlying() {
         return getPlayer().isFlying()
@@ -583,7 +559,6 @@ public class CorePlayer extends DBPlayer {
     public TextComponent getChatName() {
         TextComponent text = new TextComponent(getRank().getColor() + nickname);
 
-        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
         text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + nickname));
 
         return text;
@@ -595,7 +570,6 @@ public class CorePlayer extends DBPlayer {
     public TextComponent getChatNamePossessive() {
         TextComponent text = new TextComponent(getRank().getColor() + nickname + "'s");
 
-        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
         text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + nickname));
 
         return text;
@@ -607,7 +581,6 @@ public class CorePlayer extends DBPlayer {
     public TextComponent getChatNameRanked() {
         TextComponent text = new TextComponent(getRank().getChatTag() + getRank().getColor() + nickname);
 
-        text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to send a message").create()));
         text.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + nickname));
 
         return text;

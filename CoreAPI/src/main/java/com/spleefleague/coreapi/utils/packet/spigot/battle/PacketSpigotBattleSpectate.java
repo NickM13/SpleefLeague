@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,7 @@ public class PacketSpigotBattleSpectate extends PacketSpigot {
         this.target = target.getUniqueId();
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.BATTLE_SPECTATE;

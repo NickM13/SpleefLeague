@@ -800,13 +800,15 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     private boolean pushing = false;
 
     public void pushChanges() {
-        for (Map.Entry<ChunkCoord, Map<Short, FakeBlock>> entry : chunkChanges.entrySet()) {
-            if (entry.getValue().isEmpty()) continue;
-            PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), entry.getValue());
-            for (FWP fwp : playerMap.values()) {
-                Core.sendPacket(fwp.getCorePlayer(), multiBlockChangePacket, 0L);
+        synchronized (chunkChanges) {
+            for (Map.Entry<ChunkCoord, Map<Short, FakeBlock>> entry : chunkChanges.entrySet()) {
+                if (entry.getValue().isEmpty()) continue;
+                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), entry.getValue());
+                for (FWP fwp : playerMap.values()) {
+                    Core.sendPacket(fwp.getCorePlayer(), multiBlockChangePacket, 0L);
+                }
+                entry.getValue().clear();
             }
-            entry.getValue().clear();
         }
     }
 

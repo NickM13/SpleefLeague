@@ -47,7 +47,7 @@ public class CrateManager {
             sortedCrates.add(crate);
         }
 
-        sortedCrates.sort(Comparator.comparingInt(Crate::getPriority).reversed());
+        sortedCrates.sort(Comparator.comparingInt(Crate::getPriority));
     }
 
     public Set<String> getCrateNames() {

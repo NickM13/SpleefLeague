@@ -18,9 +18,9 @@ public class FriendPendingMenu {
                         .setName("Pending Friend Requests")
                         .setDisplayItem(cp -> {
                             if (cp.getFriends().getIncoming().size() > 0) {
-                                return InventoryMenuUtils.MenuIcon.STORE.getIconItem();
+                                return InventoryMenuUtils.createCustomItem(Material.FEATHER, 6);
                             } else {
-                                return InventoryMenuUtils.MenuIcon.LOCKED.getIconItem();
+                                return InventoryMenuUtils.createCustomItem(Material.FEATHER, 7);
                             }
                         })
                         .setDescription("")

@@ -266,6 +266,7 @@ public class Arenas {
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("&a&lRandom Arena")
                 .setDisplayItem(Material.PAPER, 1)
+                .setDescription("Join the queue for any available arena!")
                 .setAction(cp -> plugin.queuePlayer(mode, cp)));
 
         Arenas.getAll(mode).values().forEach(arena -> container.addMenuItem(arena.createMenu((cp -> plugin.queuePlayer(mode, cp, arena)))));

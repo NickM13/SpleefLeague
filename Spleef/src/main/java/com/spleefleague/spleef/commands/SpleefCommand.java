@@ -51,7 +51,8 @@ public class SpleefCommand extends CoreCommand {
 
     protected SortedSet<String> getArenas(PriorInfo pi) {
         BattleMode mode = SpleefMode.valueOf(pi.getArgs().get(pi.getArgs().size() - 1).toUpperCase()).getBattleMode();
-        if (mode.getTeamStyle() == BattleMode.TeamStyle.VERSUS ||
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.TEAM ||
+                mode.getTeamStyle() == BattleMode.TeamStyle.VERSUS ||
                 mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
             return Sets.newTreeSet(Arenas.getUnpaused(mode).keySet());
         }

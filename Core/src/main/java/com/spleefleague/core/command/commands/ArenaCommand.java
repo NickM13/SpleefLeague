@@ -340,6 +340,16 @@ public class ArenaCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void arenaSetTeamCount(CorePlayer sender,
+                                 @LiteralArg("set") String l,
+                                 @LiteralArg("teamcount") String l2,
+                                 @OptionArg(listName = "arenas") String arenaName,
+                                 Integer teamCount) {
+        Arenas.get(arenaName).setTeamCount(teamCount);
+        success(sender, "Team count set to " + teamCount);
+    }
+
+    @CommandAnnotation
     public void arenaSetTeamSize(CorePlayer sender,
                                  @LiteralArg("set") String l,
                                  @LiteralArg("teamsize") String l2,

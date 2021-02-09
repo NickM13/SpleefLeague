@@ -42,7 +42,10 @@ public class PersonalScoreboard {
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
-            Objects.requireNonNull(scoreboard.getTeam(cp2.getRank().getIdentifierShort())).addEntry(cp2.getName());
+            Team team = scoreboard.getTeam(cp2.getRank().getIdentifierShort());
+            if (team != null) {
+                team.addEntry(cp2.getName());
+            }
         }
 
         /*
@@ -124,6 +127,7 @@ public class PersonalScoreboard {
         
         this.showRanks = showRanks;
         if (showRanks) {
+            System.out.println("PersonalScoreboard:130 Initializing scoreboard for " + owner.getDisplayName());
             Core.getInstance().getRankManager().initScoreboard(scoreboard);
         }
     }

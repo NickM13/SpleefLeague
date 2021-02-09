@@ -25,7 +25,7 @@ import java.util.List;
 public class GameModeCommand extends CoreCommand {
 
     public GameModeCommand() {
-        super("gamemode", CoreRank.MODERATOR);
+        super("gamemode", CoreRank.TEMP_MOD);
         setOptions("gamemodes", cp -> CoreUtils.enumToStrSet(GameMode.class, true));
         addAlias("gm");
         setUsage("/gm <0-3> [player]");

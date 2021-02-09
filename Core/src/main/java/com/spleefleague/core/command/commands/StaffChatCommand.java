@@ -21,7 +21,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class StaffChatCommand extends CoreCommand {
     
     public StaffChatCommand() {
-        super("staffchat", CoreRank.MODERATOR);
+        super("staffchat", CoreRank.TEMP_MOD);
         addAlias("sc");
         setUsage("/staffchat <message>");
     }

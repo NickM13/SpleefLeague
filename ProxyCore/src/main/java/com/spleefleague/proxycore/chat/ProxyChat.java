@@ -4,7 +4,6 @@ import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatEmoticons;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
@@ -49,7 +48,7 @@ public class ProxyChat {
                     String emote = ChatEmoticons.getEmoticons().get(str);
                     if (emote != null) {
                         if (builder.length() > 0) {
-                            component = new TextComponent(textComponent);
+                            component = new TextComponent(baseFormat);
                             component.setText(builder.toString());
                             textComponent.addExtra(component);
                             builder = new StringBuilder();
@@ -59,7 +58,7 @@ public class ProxyChat {
                         component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(":" + str + ":").create()));
                         component.setColor(net.md_5.bungee.api.ChatColor.RESET);
                         textComponent.addExtra(component);
-                        i = pos - 1;
+                        i = pos;
                         continue;
                     }
                 }
@@ -72,14 +71,14 @@ public class ProxyChat {
                     url = true;
 
                     if (builder.length() > 0) {
-                        component = new TextComponent(textComponent);
+                        component = new TextComponent(baseFormat);
                         component.setText(builder.toString());
                         textComponent.addExtra(component);
                         builder = new StringBuilder();
                     }
 
                     String urlString = message.substring(i, pos);
-                    component = new TextComponent(textComponent);
+                    component = new TextComponent(baseFormat);
                     component.setText(urlString);
                     component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
                     textComponent.addExtra(component);
@@ -90,7 +89,7 @@ public class ProxyChat {
             builder.append(c);
         }
         if (builder.length() > 0) {
-            component = new TextComponent(textComponent);
+            component = new TextComponent(baseFormat);
             component.setText(builder.toString());
             textComponent.addExtra(component);
         }

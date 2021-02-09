@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.player;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 /**
@@ -25,6 +26,7 @@ public class PacketSpigotPlayerCrate extends PacketSpigot {
         this.opened = opened;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.PLAYER_CRATE;

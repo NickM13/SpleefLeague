@@ -15,6 +15,7 @@ import com.spleefleague.core.util.CoreUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +41,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void setupBattleRequests() {
         addBattleRequest(new ResetRequest(this));
         addBattleRequest(new EndGameRequest(this));
-        //addBattleRequest(new PlayToRequest(this));
         addBattleRequest(new PauseRequest(this));
     }
     
@@ -129,6 +129,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     protected void endRound(BP winner) {
         winner.addRoundWin();
+        winner.addRoundWin();
         if (winner.getRoundWins() < playToPoints) {
             chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
             startRound();
@@ -160,7 +161,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      *
      * @param winner Battle Player
      */
-    protected void applyEloChange(BP winner) {
+    protected void applyEloChange(@Nonnull BP winner) {
         applyEloChange(winner.getCorePlayer(), 0);
     }
     
@@ -173,12 +174,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     public void endBattle(BP winner) {
         applyEloChange(winner);
         if (winner != null) {
-            /*
-            getPlugin().sendMessage(Chat.PLAYER_NAME + winner.getPlayer().getName()
-                    + winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason())
-                    + Chat.DEFAULT + " has " + BattleUtils.randomDefeatSynonym() + " all other players in "
-                    + Chat.GAMEMODE + getMode().getDisplayName());
-            */
             sendEndMessage(winner);
         }
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);

@@ -13,14 +13,12 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.player.infraction.Infraction;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +36,7 @@ import org.bukkit.OfflinePlayer;
 public class PlayerInfoCommand extends CoreCommand {
     
     public PlayerInfoCommand() {
-        super("playerinfo", CoreRank.DEFAULT);
+        super("playerinfo", CoreRank.TEMP_MOD);
         addAlias("pi");
         setUsage("/playerinfo [player]");
         setDescription("Get player's server statistics");
@@ -79,10 +77,12 @@ public class PlayerInfoCommand extends CoreCommand {
         if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE)
             textComponents.add(new TextComponent(Chat.TAG_BRACE + "Last seen: " +
                     Chat.DEFAULT + getLastSeen(cp) + "\n"));
+        /*
         textComponents.add(new TextComponent(Chat.TAG_BRACE + "IP: " +
                 Chat.DEFAULT + getIp(cp) + "\n"));
         textComponents.add(new TextComponent(Chat.TAG_BRACE + "Shared accounts: " +
                 Chat.DEFAULT + getSharedAccounts(cp) + "\n"));
+        */
         textComponents.add(new TextComponent(Chat.TAG_BRACE + "Total online time: " +
                 Chat.DEFAULT + getOnlineTime(cp) + "\n"));
         textComponents.add(new TextComponent(Chat.TAG_BRACE + "Total active time: " +
@@ -92,17 +92,14 @@ public class PlayerInfoCommand extends CoreCommand {
     }
     
     private String getMuted(CorePlayer cp) {
-        switch (cp.isMuted()) {
-            case 1: return "Yes";
-            case 2: return "Yes (Secretly)";
-            case 0: default: return "No";
-        }
+        return "Maybe?";
     }
     
     private String getState(CorePlayer cp) {
         String state;
         
         if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
+            /*
             Infraction infraction = Infraction.getMostRecent(cp.getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
             if (infraction == null) {
                 state = "Offline";
@@ -119,6 +116,8 @@ public class PlayerInfoCommand extends CoreCommand {
                         break;
                 }
             }
+             */
+            state = "Offline";
         } else {
             if (cp.isAfk()) {
                 state = "Away";
@@ -129,6 +128,8 @@ public class PlayerInfoCommand extends CoreCommand {
         
         return state;
     }
+
+    /*
     
     private String getIp(CorePlayer cp) {
         Document doc = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString()).append("type", "JOIN")).sort(new Document("date", -1)).first();
@@ -170,6 +171,8 @@ public class PlayerInfoCommand extends CoreCommand {
         
         return sharedAccounts;
     }
+
+    */
     
     private String getOnlineTime(CorePlayer cp) {
         String onlineTime = "";

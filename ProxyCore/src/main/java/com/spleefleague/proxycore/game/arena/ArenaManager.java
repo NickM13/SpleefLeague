@@ -3,10 +3,7 @@ package com.spleefleague.proxycore.game.arena;
 import com.spleefleague.proxycore.ProxyCore;
 import org.bson.Document;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -41,6 +38,10 @@ public class ArenaManager {
 
     public int getArenaCount(String mode) {
         return modeArenaMap.get(mode).size();
+    }
+
+    public Collection<Arena> getArenas(String mode) {
+        return modeArenaMap.get(mode).values();
     }
 
     public Arena getArena(String mode, String arenaName) {

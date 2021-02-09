@@ -1,5 +1,6 @@
 package com.spleefleague.core.player.friends;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.chat.ChatColor;
@@ -38,6 +39,10 @@ public class CorePlayerFriends extends FriendsList {
         }
     }
 
+    public boolean canAddFriends() {
+        return owner.getRank().getMaxFriends() <= 0 || owner.getRank().getMaxFriends() > friends.size();
+    }
+
     public int getCount() {
         return friends.size();
     }
@@ -48,7 +53,9 @@ public class CorePlayerFriends extends FriendsList {
             Core.getInstance().sendMessage(owner, ChatColor.RED + "You can't add yourself!");
             return;
         }
-        incoming.remove(cp.getUniqueId());
+        if (canAddFriends()) {
+            incoming.remove(cp.getUniqueId());
+        }
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.ADD, owner.getUniqueId(), cp.getUniqueId()));
     }
 
@@ -70,6 +77,16 @@ public class CorePlayerFriends extends FriendsList {
     public void sendFriendDecline(CorePlayer cp) {
         incoming.remove(cp.getUniqueId());
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.DECLINE_INCOMING, owner.getUniqueId(), cp.getUniqueId()));
+    }
+
+    public void toggleFavorite(UUID uuid) {
+        if (friends.containsKey(uuid)) {
+            friends.get(uuid).favorite = !friends.get(uuid).favorite;
+            Core.getInstance().sendPacket(new PacketSpigotFriend(
+                    friends.get(uuid).favorite ? FriendsAction.FAVORITE : FriendsAction.UNFAVORITE,
+                    owner.getUniqueId(),
+                    uuid));
+        }
     }
 
     public void setOnline(UUID uuid, CorePlayer cp) {
@@ -173,6 +190,10 @@ public class CorePlayerFriends extends FriendsList {
 
     public Set<String> getAllNames() {
         return allNames;
+    }
+
+    public FriendInfo getInfo(UUID uuid) {
+        return friends.get(uuid);
     }
 
 }

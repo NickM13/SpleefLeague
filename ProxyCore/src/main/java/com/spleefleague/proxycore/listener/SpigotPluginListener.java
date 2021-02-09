@@ -1,10 +1,6 @@
 package com.spleefleague.proxycore.listener;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 import com.spleefleague.coreapi.utils.packet.PacketType;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketBungeeBundleIn;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigotBundleIn;
 import com.spleefleague.proxycore.ProxyCore;
@@ -19,6 +15,7 @@ import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueLeave
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueRequeue;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerDirect;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerHub;
+import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerPing;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -64,6 +61,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.QUEUE_REQUEUE, new SpigotListenerQueueRequeue());
         registeredListeners.put(PacketType.Spigot.SERVER_HUB, new SpigotListenerServerHub());
         registeredListeners.put(PacketType.Spigot.SERVER_DIRECT, new SpigotListenerServerDirect());
+        registeredListeners.put(PacketType.Spigot.SERVER_PING, new SpigotListenerServerPing());
     }
 
     @EventHandler

@@ -8,6 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
+import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
@@ -23,24 +24,26 @@ import org.bukkit.command.CommandSender;
 public class MuteCommand extends CoreCommand {
     
     public MuteCommand() {
-        super("mute", CoreRank.MODERATOR);
+        super("mute", CoreRank.TEMP_MOD);
     }
     
     @CommandAnnotation
     public void mutePublic(CorePlayer sender,
-            @LiteralArg(value="public") String l,
-            OfflinePlayer op,
-            String time,
-            @Nullable String reason) {
-        Infractions.mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+                           @LiteralArg(value="public") String l,
+                           OfflinePlayer op,
+                           @HelperArg("time") String time,
+                           @Nullable String reason) {
+        System.out.println("Core Player");
+        Infractions.mutePublic(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void mutePublic(CommandSender sender,
-            @LiteralArg(value="public") String l,
-            OfflinePlayer op,
-            String time,
-            @Nullable String reason) {
-        Infractions.mutePublic(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+                           @LiteralArg(value="public") String l,
+                           OfflinePlayer op,
+                           @HelperArg("time") String time,
+                           @Nullable String reason) {
+        System.out.println("Command sender");
+        Infractions.mutePublic(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
     /**
@@ -57,19 +60,19 @@ public class MuteCommand extends CoreCommand {
      */
     @CommandAnnotation
     public void muteSecret(CorePlayer sender,
-            @LiteralArg(value="secret") String l,
-            OfflinePlayer op,
-            String time,
-            @Nullable String reason) {
-        Infractions.muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+                           @LiteralArg(value="secret") String l,
+                           OfflinePlayer op,
+                           @HelperArg("time") String time,
+                           @Nullable String reason) {
+        Infractions.muteSecret(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     @CommandAnnotation
     public void muteSecret(CommandSender sender,
-            @LiteralArg(value="secret") String l,
-            OfflinePlayer op,
-            String time,
-            @Nullable String reason) {
-        Infractions.muteSecret(sender.getName(), op, TimeUtils.toMillis(time), reason == null ? "" : reason);
+                           @LiteralArg(value="secret") String l,
+                           OfflinePlayer op,
+                           @HelperArg("time") String time,
+                           @Nullable String reason) {
+        Infractions.muteSecret(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
     
 }

@@ -8,9 +8,6 @@ package com.spleefleague.core.chat;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
-import com.spleefleague.coreapi.chat.Chat;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.function.Function;
 
@@ -45,13 +42,13 @@ public enum ChatChannel {
             null),
     STAFF("Staff",
             net.md_5.bungee.api.ChatColor.LIGHT_PURPLE,
-            cp -> cp.getRank().hasPermission(CoreRank.MODERATOR)),
+            cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD)),
     SUPERJUMP("SuperJump",
             net.md_5.bungee.api.ChatColor.GOLD,
             null),
     TICKET("Ticket",
             net.md_5.bungee.api.ChatColor.GOLD,
-            cp -> cp.getRank().hasPermission(CoreRank.MODERATOR)),
+            cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD)),
     VIP("VIP",
             net.md_5.bungee.api.ChatColor.DARK_PURPLE,
             cp -> cp.getRank().hasPermission(CoreRank.VIP));

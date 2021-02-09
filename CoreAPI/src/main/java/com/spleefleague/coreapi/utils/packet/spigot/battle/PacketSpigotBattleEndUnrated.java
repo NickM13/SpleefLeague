@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.battle;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ public class PacketSpigotBattleEndUnrated extends PacketSpigot {
         this.players = players;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.BATTLE_END_UNRATED;

@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ public class PacketBungeeBattleStart extends PacketBungee {
         fromByteArray(input);
     }
 
+    @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
         return PacketType.Bungee.BATTLE_START;

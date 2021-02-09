@@ -128,11 +128,20 @@ public class PacketUtil {
 
     private static void writeFromField(Class<?> type, Object o, ByteArrayDataOutput output) {
         if (Enum.class.isAssignableFrom(type)) {
-            output.writeInt(((Enum) o).ordinal());
+            if (o == null) {
+                output.writeInt(0);
+                System.out.println("Enum " + type + " was null");
+            } else {
+                output.writeInt(((Enum) o).ordinal());
+            }
         } else if (type.equals(UUID.class)) {
             output.writeUTF(o == null ? "" : o.toString());
         } else if (type.equals(String.class)) {
-            output.writeUTF((String) o);
+            if (o == null) {
+                output.writeUTF("");
+            } else {
+                output.writeUTF((String) o);
+            }
         } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
             output.writeBoolean((boolean) o);
         } else if (type.equals(int.class) || type.equals(Integer.class)) {

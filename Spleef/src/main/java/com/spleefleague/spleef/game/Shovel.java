@@ -66,9 +66,10 @@ public class Shovel extends Holdable {
                     }
                 })
                 .setDescription(cp -> cp.getCollectibles().getActive(Shovel.class).getDescription())
-                .setAvailability(cp -> cp.isInBattle()
-                        && cp.getBattleState() == BattleState.BATTLER
-                        && cp.getBattle().getPlugin() instanceof Spleef);
+                .setAvailability(cp -> cp.isInBattle() &&
+                        cp.getBattleState() == BattleState.BATTLER &&
+                        cp.getBattle().getPlugin() instanceof Spleef &&
+                        !cp.getBattle().getBattler(cp).isFallen());
 
         InventoryMenuAPI.createItemHotbar(8, "shovelWorldItem")
                 .setName(cp -> cp.getCollectibles().getActiveName(Shovel.class))

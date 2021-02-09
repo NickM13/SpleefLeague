@@ -3,6 +3,7 @@ package com.spleefleague.coreapi.utils.packet.spigot.chat;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.PacketType;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class PacketSpigotChatConsole extends PacketSpigot {
         this.url = url;
     }
 
+    @Nonnull
     @Override
     public PacketType.Spigot getSpigotTag() {
         return PacketType.Spigot.CHAT_CONSOLE;

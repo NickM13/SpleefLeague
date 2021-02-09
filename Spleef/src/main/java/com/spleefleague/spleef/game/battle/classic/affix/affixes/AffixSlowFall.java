@@ -23,6 +23,7 @@ public class AffixSlowFall extends ClassicSpleefAffix {
 
     public AffixSlowFall() {
         super();
+        displayName = "Slow Fall";
     }
 
     @Override

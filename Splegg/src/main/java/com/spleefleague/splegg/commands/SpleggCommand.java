@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * @author NickM13
@@ -39,9 +40,15 @@ public class SpleggCommand extends CoreCommand {
         this.setContainer("splegg");
     }
 
+
     protected SortedSet<String> getArenas(PriorInfo pi) {
-        String mode = pi.getArgs().get(pi.getArgs().size() - 1);
-        return Sets.newTreeSet(Arenas.getUnpaused(SpleggMode.valueOf(mode.toUpperCase()).getBattleMode()).keySet());
+        BattleMode mode = SpleggMode.valueOf(pi.getArgs().get(pi.getArgs().size() - 1).toUpperCase()).getBattleMode();
+        if (mode.getTeamStyle() == BattleMode.TeamStyle.TEAM ||
+                mode.getTeamStyle() == BattleMode.TeamStyle.VERSUS ||
+                mode.getTeamStyle() == BattleMode.TeamStyle.SOLO) {
+            return Sets.newTreeSet(Arenas.getUnpaused(mode).keySet());
+        }
+        return new TreeSet<>();
     }
 
     protected SortedSet<String> getPlayers(PriorInfo pi) {
@@ -54,7 +61,7 @@ public class SpleggCommand extends CoreCommand {
     }
 
     public void splegg(CorePlayer sender) {
-
+        sender.getMenu().setInventoryMenuItem(Splegg.getInstance().getSpleggMenu());
     }
 
     @CommandAnnotation(minRank="DEVELOPER")

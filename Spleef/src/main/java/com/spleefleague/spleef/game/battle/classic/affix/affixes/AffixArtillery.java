@@ -13,11 +13,11 @@ import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffix;
 public class AffixArtillery extends ClassicSpleefAffix {
 
     private static final ProjectileStats projectileStats = new ProjectileStats();
-    @DBField
     private int blocks = 4;
 
     public AffixArtillery() {
         super();
+        displayName = "Artillery";
     }
 
     /**

@@ -1,8 +1,13 @@
 package com.spleefleague.core.infraction;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.ChatChannel;
-import com.spleefleague.core.player.infraction.Infraction;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.coreapi.infraction.Infraction;
+import com.spleefleague.coreapi.infraction.InfractionType;
+import com.spleefleague.coreapi.utils.TimeUtils;
+import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerInfraction;
+import io.github.waterfallmc.waterfall.exception.ProxyCommandException;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -19,14 +24,20 @@ public class Infractions {
      * @param millis Time in milliseconds
      * @param reason Reason
      */
-    public static void muteSecret(String sender, OfflinePlayer target, long millis, String reason) {
+    public static void muteSecret(CorePlayer sender, OfflinePlayer target, long millis, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_SECRET)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.MUTE_SECRET)
                 .setDuration(millis)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
+
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have secretly muted " + target.getName() + " for " + TimeUtils.timeToString(millis));
+            Core.getInstance().sendMessage(sender, component);
+        }
     }
 
     /**
@@ -37,17 +48,19 @@ public class Infractions {
      * @param millis Time in milliseconds
      * @param reason Reason
      */
-    public static void mutePublic(String sender, OfflinePlayer target, long millis, String reason) {
+    public static void mutePublic(CorePlayer sender, OfflinePlayer target, long millis, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_PUBLIC)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.MUTE_PUBLIC)
                 .setDuration(millis)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Muted by " + sender + " for " + infraction.getRemainingTimeString() + ": " + reason);
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have muted " + target.getName() + " for " + TimeUtils.timeToString(millis));
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 
@@ -58,17 +71,19 @@ public class Infractions {
      * @param target OfflinePlayer
      * @param reason Reason
      */
-    public static void unmute(String sender, OfflinePlayer target, String reason) {
+    public static void unmute(CorePlayer sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.MUTE_SECRET)
-                .setDuration(0)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.MUTE_SECRET)
+                .setDuration(0L)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "You've been unmuted by " + sender);
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have unmuted " + target.getName());
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 
@@ -80,22 +95,20 @@ public class Infractions {
      * @param millis Time in milliseconds
      * @param reason Reason
      */
-    public static void tempban(String sender, OfflinePlayer target, long millis, String reason) {
+    public static void tempban(CorePlayer sender, OfflinePlayer target, long millis, String reason) {
         if (target == null) return;
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.TEMPBAN)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.TEMPBAN)
                 .setDuration(millis)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Player player = (Player) target;
-            if (player.getLocation().getWorld() != null) {
-                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-                player.kickPlayer("TempBan for " + infraction.getRemainingTimeString() + ": " + reason + "!");
-            }
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have kicked " + target.getName());
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 
@@ -106,21 +119,19 @@ public class Infractions {
      * @param target OfflinePlayer
      * @param reason Reason
      */
-    public static void ban(String sender, OfflinePlayer target, String reason) {
+    public static void ban(CorePlayer sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.BAN)
-                .setDuration(0)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.BAN)
+                .setDuration(0L)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Player player = (Player) target;
-            if (player.getLocation().getWorld() != null) {
-                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-                player.kickPlayer("Banned: " + reason + "!");
-            }
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have banned " + target.getName() + " for " + reason);
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 
@@ -131,15 +142,20 @@ public class Infractions {
      * @param target OfflinePlayer
      * @param reason Reason
      */
-    public static void unban(String sender, OfflinePlayer target, String reason) {
+    public static void unban(CorePlayer sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.UNBAN)
-                .setDuration(0)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.UNBAN)
+                .setDuration(0L)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have unbanned " + target.getName());
+            Core.getInstance().sendMessage(sender, component);
+        }
     }
 
     /**
@@ -149,21 +165,19 @@ public class Infractions {
      * @param target OfflinePlayer
      * @param reason Reason
      */
-    public static void kick(String sender, OfflinePlayer target, String reason) {
+    public static void kick(CorePlayer sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.WARNING)
-                .setDuration(0)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.KICK)
+                .setDuration(0L)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Player player = (Player) target;
-            if (player.getLocation().getWorld() != null) {
-                player.getLocation().getWorld().strikeLightning(((Player) target).getLocation());
-                player.kickPlayer("Kicked: " + reason + "!");
-            }
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have kicked " + target.getName());
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 
@@ -175,17 +189,20 @@ public class Infractions {
      * @param target OfflinePlayer
      * @param reason Reason
      */
-    public static void warn(String sender, OfflinePlayer target, String reason) {
+    public static void warn(CorePlayer sender, OfflinePlayer target, String reason) {
         Infraction infraction = new Infraction();
-        infraction.setUuid(target.getUniqueId())
-                .setPunisher(sender)
-                .setType(Infraction.Type.WARNING)
-                .setDuration(0)
+        infraction.setTarget(target.getUniqueId())
+                .setPunisher(sender == null ? "" : sender.getName())
+                .setType(InfractionType.WARNING)
+                .setDuration(0L)
                 .setReason(reason);
-        Infraction.create(infraction);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerInfraction(infraction));
 
-        if (target.isOnline()) {
-            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(target.getPlayer()), "Warning from " + sender + ": " + reason);
+        if (sender != null) {
+            TextComponent component = new TextComponent();
+            component.addExtra("You have warned " + target.getName() + " for " +
+                    reason);
+            Core.getInstance().sendMessage(sender, component);
         }
     }
 

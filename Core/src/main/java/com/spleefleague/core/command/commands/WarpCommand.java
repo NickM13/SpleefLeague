@@ -21,7 +21,7 @@ import com.spleefleague.core.command.annotation.OptionArg;
 public class WarpCommand extends CoreCommand {
 
     public WarpCommand() {
-        super("warp", CoreRank.MODERATOR, CoreRank.BUILDER);
+        super("warp", CoreRank.TEMP_MOD, CoreRank.BUILDER);
         setUsage("/warp [name]");
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");

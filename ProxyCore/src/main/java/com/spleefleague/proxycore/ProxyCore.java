@@ -7,8 +7,11 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
+import com.spleefleague.proxycore.chat.ChatChannel;
 import com.spleefleague.proxycore.chat.ProxyChat;
+import com.spleefleague.proxycore.command.DebugCommand;
 import com.spleefleague.proxycore.command.PurchaseCommand;
+import com.spleefleague.proxycore.droplet.DropletManager;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import com.spleefleague.proxycore.game.queue.QueueManager;
@@ -21,12 +24,16 @@ import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.party.ProxyPartyManager;
 import com.spleefleague.proxycore.player.ProxyPlayerManager;
 import com.spleefleague.proxycore.player.ranks.ProxyRankManager;
+import com.spleefleague.proxycore.season.SeasonManager;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ReconnectHandler;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -63,6 +70,9 @@ public class ProxyCore extends Plugin {
     private final ProxyRankManager rankManager = new ProxyRankManager();
     private final PacketManager packetManager = new PacketManager();
     private final ProxyChat chat = new ProxyChat();
+    private final SeasonManager seasonManager = new SeasonManager();
+
+    private final DropletManager dropletManager = new DropletManager();
 
     @Override
     public void onLoad() {
@@ -80,12 +90,15 @@ public class ProxyCore extends Plugin {
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
         getProxy().getPluginManager().registerListener(this, new SpigotPluginListener());
 
+        dropletManager.init();
+        seasonManager.init();
+
         playerManager.init();
+        rankManager.init();
         leaderboardManager.init();
         infractionManager.init();
         arenaManager.init();
         queueManager.init();
-        rankManager.init();
         packetManager.init();
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
@@ -146,6 +159,7 @@ public class ProxyCore extends Plugin {
         rankManager.close();
         infractionManager.close();
         packetManager.close();
+        seasonManager.close();
 
         serverPingTask.cancel();
     }
@@ -202,7 +216,7 @@ public class ProxyCore extends Plugin {
             mongoLogger.setLevel(Level.SEVERE);
 
             Properties mongoProps = new Properties();
-            String mongoPath = System.getProperty("user.dir") + "\\mongo.cfg";
+            String mongoPath = System.getProperty("user.dir") + "\\..\\mongo.cfg";
             FileInputStream file = new FileInputStream(mongoPath);
 
             mongoProps.load(file);
@@ -224,7 +238,7 @@ public class ProxyCore extends Plugin {
     }
 
     private void initCommands() {
-        getProxy().getPluginManager().registerCommand(this, new PurchaseCommand());
+        getProxy().getPluginManager().registerCommand(this, new DebugCommand());
     }
 
     public MongoDatabase getDatabase() {
@@ -239,6 +253,14 @@ public class ProxyCore extends Plugin {
         return partyManager;
     }
 
+    public DropletManager getDropletManager() {
+        return dropletManager;
+    }
+
+    public SeasonManager getSeasonManager() {
+        return seasonManager;
+    }
+
     public void sendMessage(String text) {
         playerManager.getAll().forEach(pcp -> {
             if (pcp.getPlayer() != null) {
@@ -248,7 +270,18 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendMessage(TextComponent text) {
-        playerManager.getAll().forEach(pcp -> pcp.getPlayer().sendMessage(text));
+        sendMessage(ChatChannel.GLOBAL, text);
+    }
+
+    public void sendMessage(ChatChannel channel, TextComponent text) {
+        TextComponent component = new TextComponent(getChatTag());
+        component.setColor(ChatColor.GRAY);
+        component.addExtra(text);
+        playerManager.getAll().forEach(pcp -> {
+            if (channel.isActive(pcp)) {
+                pcp.getPlayer().sendMessage(component);
+            }
+        });
     }
 
     public static String getChatTag() {
@@ -270,7 +303,7 @@ public class ProxyCore extends Plugin {
 
     public void sendMessageError(ProxyCorePlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
-        TextComponent text2 = new TextComponent(Chat.ERROR);
+        TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.RED);
         text2.addExtra(text);
         text2.addExtra(ChatColor.RED + "!");
@@ -279,7 +312,7 @@ public class ProxyCore extends Plugin {
 
     public void sendMessageSuccess(ProxyCorePlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
-        TextComponent text2 = new TextComponent(Chat.ERROR);
+        TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.GREEN);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);
@@ -287,7 +320,7 @@ public class ProxyCore extends Plugin {
 
     public void sendMessageInfo(ProxyCorePlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
-        TextComponent text2 = new TextComponent(Chat.ERROR);
+        TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.YELLOW);
         text2.addExtra(text);
         pcp.getPlayer().sendMessage(text2);

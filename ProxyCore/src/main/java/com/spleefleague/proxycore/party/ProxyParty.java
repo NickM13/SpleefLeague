@@ -27,6 +27,14 @@ public class ProxyParty extends Party {
         addPlayer(uuid);
     }
 
+    public int getAvgRating(String mode, int season) {
+        int rating = 0;
+        for (ProxyCorePlayer pcp : playerSet) {
+            rating += pcp.getRatings().getElo(mode, season);
+        }
+        return rating / playerSet.size();
+    }
+
     public void sendMessage(TextComponent text) {
         for (ProxyCorePlayer pcp : playerSet) {
             if (ChatChannel.PARTY.isActive(pcp)) {
@@ -80,23 +88,19 @@ public class ProxyParty extends Party {
         return playerSet;
     }
 
+    public int getPlayerCount() {
+        return playerSet.size();
+    }
+
     public void kick(UUID uuid) {
         if (removePlayer(uuid)) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-            /*
-            TextComponent text = new TextComponent("You were kicked from the party");
-            ProxyCore.getInstance().sendMessage(pcp, text);
-            */
         }
     }
 
     public void leave(UUID uuid) {
         if (removePlayer(uuid)) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-            /*
-            TextComponent text = new TextComponent("You have left the party");
-            ProxyCore.getInstance().sendMessage(pcp, text);
-             */
             if (playerList.isEmpty()) return;
             if (uuid.equals(owner)) {
                 setOwner(playerList.get(0));
@@ -106,10 +110,6 @@ public class ProxyParty extends Party {
 
     public void onDisconnect(UUID uuid) {
         if (removePlayer(uuid)) {
-            /*
-            TextComponent text = new TextComponent("You have left the party");
-            ProxyCore.getInstance().sendMessage(pcp, text);
-             */
             if (playerList.isEmpty()) return;
             if (uuid.equals(owner)) {
                 setOwner(playerList.get(0));
@@ -147,13 +147,6 @@ public class ProxyParty extends Party {
     @Override
     public boolean removePlayer(UUID uuid) {
         if (super.removePlayer(uuid)) {
-            if (uuid.equals(owner)) {
-                if (playerList.size() > 1) {
-                    owner = playerList.get(0);
-                } else {
-
-                }
-            }
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
             playerSet.remove(pcp);
             return true;

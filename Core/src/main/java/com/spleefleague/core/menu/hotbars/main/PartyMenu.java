@@ -1,4 +1,4 @@
-package com.spleefleague.core.menu.hotbars.main.profile;
+package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
@@ -20,6 +20,7 @@ public class PartyMenu {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Party")
                 .setDisplayItem(Material.CAKE, 1)
+                .setSelectedItem(Material.CAKE, 2)
                 .setDescription("View your current party")
                 .createLinkedContainer("Party");
 
@@ -28,7 +29,6 @@ public class PartyMenu {
                     container.clearSorted();
                     CoreParty party = cp.getParty();
                     if (party != null) {
-                        boolean isOwner = party.isOwner(cp);
                         int i = 0;
                         for (UUID uuid : party.getPlayerList()) {
                             CorePlayer cp2 = Core.getInstance().getPlayers().get(uuid);

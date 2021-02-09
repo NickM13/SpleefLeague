@@ -48,6 +48,10 @@ public class ProxyFriendsList extends FriendsList {
         return doc;
     }
 
+    public boolean canAddFriends() {
+        return owner.getRank().getMaxFriends() <= 0 || owner.getRank().getMaxFriends() > friends.size();
+    }
+
     private void addFriend(ProxyCorePlayer pcp) {
         friends.put(pcp.getUniqueId(), new FriendInfo(pcp.getUniqueId()));
         outgoing.remove(pcp.getUniqueId());
@@ -57,7 +61,9 @@ public class ProxyFriendsList extends FriendsList {
     }
 
     public int receiveFriendRequest(ProxyCorePlayer pcp) {
-        if (!owner.getOptions().getBoolean("Friend:Requests")) {
+        if (!canAddFriends()) {
+            return 6;
+        } else if (!owner.getOptions().getBoolean("Friend:Requests")) {
             return 4;
         } else if (friends.containsKey(pcp.getUniqueId())) {
             return 2;
@@ -100,6 +106,11 @@ public class ProxyFriendsList extends FriendsList {
             ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
             return;
         }
+        if (!canAddFriends()) {
+            text = new TextComponent("Your friends list is full");
+            ProxyCore.getInstance().sendMessageError(owner, text);
+            return;
+        }
         switch (pcp.getFriends().receiveFriendRequest(owner)) {
             case 0:
                 addFriend(pcp);
@@ -139,6 +150,10 @@ public class ProxyFriendsList extends FriendsList {
                 text.addExtra(" is blocking friend requests");
                 ProxyCore.getInstance().sendMessageError(owner, text);
                 break;
+            case 6:
+                text = new TextComponent("Their friends list is full");
+                ProxyCore.getInstance().sendMessageError(owner, text);
+                break;
         }
     }
 
@@ -147,6 +162,10 @@ public class ProxyFriendsList extends FriendsList {
             PacketBungeeFriend packet =  new PacketBungeeFriend(FriendsAction.REMOVE,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
+            TextComponent text = new TextComponent();
+            text.addExtra(pcp.getChatName());
+            text.addExtra(" has removed you as a friend!");
+            ProxyCore.getInstance().sendMessage(owner, text);
             ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
         }
     }
@@ -197,6 +216,12 @@ public class ProxyFriendsList extends FriendsList {
             ProxyCore.getInstance().sendMessageError(owner, text);
         }
         pcp.getFriends().receiveFriendDecline(owner);
+    }
+
+    public void setFriendFavorite(ProxyCorePlayer pcp, boolean favorited) {
+        if (friends.containsKey(pcp.getUniqueId())) {
+            friends.get(pcp.getUniqueId()).favorite = favorited;
+        }
     }
 
 }

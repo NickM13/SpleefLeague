@@ -22,7 +22,7 @@ import org.bukkit.command.CommandSender;
 public class TeleportPosCommand extends CoreCommand {
     
     public TeleportPosCommand() {
-        super("tppos", CoreRank.MODERATOR, CoreRank.BUILDER);
+        super("tppos", CoreRank.TEMP_MOD, CoreRank.BUILDER);
     }
     
     /*

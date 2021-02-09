@@ -21,6 +21,7 @@ public class AffixLateGame extends ClassicSpleefAffix {
 
     public AffixLateGame() {
         super();
+        displayName = "Late Game";
         crumblePercent = 0.72;
     }
 
