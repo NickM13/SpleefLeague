@@ -28,6 +28,8 @@ public class Rank extends DBEntity {
     @DBField protected Boolean hasOp = false;
     @DBField protected ChatColor color = ChatColor.YELLOW;
     @DBField protected Integer maxFriends = 25;
+    @DBField protected Double coinMultiplier = 1D;
+    @DBField protected Double oreMultiplier = 1D;
 
     protected final Set<String> permissions = new HashSet<>();
     protected final Set<String> exclusivePermissions = new HashSet<>();
@@ -66,6 +68,14 @@ public class Rank extends DBEntity {
 
     public int getMaxFriends() {
         return  maxFriends;
+    }
+
+    public double getOreMultiplier() {
+        return oreMultiplier;
+    }
+
+    public double getCoinMultiplier() {
+        return coinMultiplier;
     }
 
     public boolean getHasOp() {

@@ -115,6 +115,7 @@ public class DropletManager {
             if (!dropletProps.getProperty("enabled", "false").equals("true")) {
                 System.out.println("Droplets are not currently enabled");
                 System.out.println("To enable, set enabled=true in droplets.cfg");
+                initDisabled();
                 return;
             }
 
@@ -144,17 +145,28 @@ public class DropletManager {
             mainHost = HOSTS.get(0);
         } catch (FileNotFoundException e) {
             System.out.println("droplet.cfg not found in folder before waterfall");
+            initDisabled();
             return;
         } catch (IOException e) {
             e.printStackTrace();
+            initDisabled();
             return;
         }
+        System.out.println("Successfully initialized droplets manager");
 
         ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::pingAwaiting, 10, 20, TimeUnit.SECONDS);
         initConfigServers();
         initReconnectHandler();
 
         enabled = true;
+    }
+
+    private Droplet MINIGAME_DROPLET;
+
+    private void initDisabled() {
+        ServerInfo info = ProxyCore.getInstance().getProxy().getServerInfo("minigame1");
+        InetSocketAddress socket = (InetSocketAddress) info.getSocketAddress();
+        MINIGAME_DROPLET = new Droplet(info.getName(), socket.getHostName(), socket.getPort(), DropletType.MINIGAME, info);
     }
 
     private void initConfigServers() {
@@ -322,7 +334,7 @@ public class DropletManager {
     }
 
     public Droplet getAvailable(DropletType type) {
-        if (!enabled) return null;
+        if (!enabled) return MINIGAME_DROPLET;
 
         Droplet bestDroplet = null;
         int bestSize = 0;
@@ -372,6 +384,7 @@ public class DropletManager {
     }
 
     public Droplet getBestLobby(ProxyCorePlayer cp) {
+        if (!enabled) return null;
         Set<FriendDroplet> friendDroplets = new TreeSet<>(Comparator.comparingInt(FriendDroplet::getFriendCount));
 
         for (ProxyCorePlayer friend : cp.getFriends().getOnline()) {

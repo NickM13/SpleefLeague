@@ -10,17 +10,17 @@ import com.spleefleague.core.player.CorePlayer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.spleefleague.core.request.RequestManager;
 import com.spleefleague.coreapi.chat.ChatColor;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.chat.ChatEmoticons;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatConsole;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatFriend;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
 import net.md_5.bungee.api.chat.*;
-import org.bukkit.Sound;
 
 /**
  * @author NickM13
@@ -70,6 +70,83 @@ public class Chat {
         chatColors.put("SUCCESS", ChatColor.GREEN);
         chatColors.put("INFO", ChatColor.YELLOW);
         chatColors.put("ERROR", ChatColor.RED);
+    }
+
+    private static class FormattedPlayerMessage {
+
+        TextComponent textComponent;
+        boolean containsUrl;
+
+        public FormattedPlayerMessage(TextComponent textComponent, boolean containsUrl) {
+            this.textComponent = textComponent;
+            this.containsUrl = containsUrl;
+        }
+
+    }
+
+    private static FormattedPlayerMessage formatPlayerMessage(String message, TextComponent baseFormat) {
+        TextComponent textComponent = (TextComponent) baseFormat.duplicate();
+
+        Matcher urlMatcher = URL_PATTERN.matcher(message);
+        StringBuilder builder = new StringBuilder();
+        TextComponent component;
+        boolean url = false;
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == ':') {
+                int pos = message.indexOf(':', i + 1);
+                if (pos != -1) {
+                    String str = message.substring(i + 1, pos);
+                    String emote = ChatEmoticons.getEmoticons().get(str);
+                    if (emote != null) {
+                        if (builder.length() > 0) {
+                            component = new TextComponent(baseFormat);
+                            component.setText(builder.toString());
+                            textComponent.addExtra(component);
+                            builder = new StringBuilder();
+                        }
+
+                        component = new TextComponent(emote);
+                        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(":" + str + ":").create()));
+                        component.setColor(net.md_5.bungee.api.ChatColor.RESET);
+                        textComponent.addExtra(component);
+                        i = pos;
+                        continue;
+                    }
+                }
+            } else {
+                int pos = message.indexOf(' ', i);
+                if (pos == -1) {
+                    pos = message.length();
+                }
+                if (urlMatcher.region(i, pos).find()) {
+                    url = true;
+
+                    if (builder.length() > 0) {
+                        component = new TextComponent(baseFormat);
+                        component.setText(builder.toString());
+                        textComponent.addExtra(component);
+                        builder = new StringBuilder();
+                    }
+
+                    String urlString = message.substring(i, pos);
+                    component = new TextComponent(baseFormat);
+                    component.setText(urlString);
+                    component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
+                    textComponent.addExtra(component);
+                    i = pos - 1;
+                    continue;
+                }
+            }
+            builder.append(c);
+        }
+        if (builder.length() > 0) {
+            component = new TextComponent(baseFormat);
+            component.setText(builder.toString());
+            textComponent.addExtra(component);
+        }
+
+        return new FormattedPlayerMessage(textComponent, url);
     }
 
     /**
@@ -140,11 +217,46 @@ public class Chat {
     }
 
     public static void sendMessage(CorePlayer sender, String message) {
-        Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), message));
+        sendMessage(sender, sender.getChatChannel(), message);
     }
 
     public static void sendMessage(CorePlayer sender, ChatChannel channel, String message) {
-        Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), channel.name(), message));
+        if (channel == null) channel = sender.getChatChannel();
+
+        if (!channel.isAvailable(sender)) {
+            Core.getInstance().sendMessage(sender, "You have " + channel.getName() + " muted!");
+            Core.getInstance().sendMessage(sender, "To unmute, go to Menu->Options->Chat Channels");
+            return;
+        }
+
+        FormattedPlayerMessage playerMessage = formatPlayerMessage(message, channel.getPlayerMessageBase());
+
+        if (playerMessage.containsUrl) {
+            if (!sender.canSendUrl()) {
+                Core.getInstance().sendMessage(sender, "Please ask for permission to send a URL");
+                return;
+            } else {
+                //sender.disallowUrl();
+            }
+        }
+
+        if (channel.isGlobal()) {
+            Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), channel.name(), message));
+        } else {
+            System.out.println("Sending local chat");
+            TextComponent textComponent = new TextComponent();
+
+            textComponent.addExtra(channel.getTagComponent());
+            textComponent.addExtra(channel.isShowingTag() ? sender.getChatName() : sender.getChatNameRanked());
+            textComponent.addExtra(net.md_5.bungee.api.ChatColor.GRAY + ": ");
+            textComponent.addExtra(playerMessage.textComponent);
+
+            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHereExtended()) {
+                if (channel.isActive(cp)) {
+                    cp.sendMessage(textComponent);
+                }
+            }
+        }
     }
 
     public static void sendMessage(ChatChannel channel, TextComponent text) {
@@ -157,12 +269,6 @@ public class Chat {
 
     public static void sendMessageFriends(ChatChannel channel, TextComponent text, Set<UUID> targets) {
         Core.getInstance().sendPacket(new PacketSpigotChatFriend(channel.name(), text.toLegacyText(), targets));
-    }
-
-    public static void sendMessageHere(ChatChannel channel, TextComponent text) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
-            cp.sendMessage(text);
-        }
     }
 
     public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {

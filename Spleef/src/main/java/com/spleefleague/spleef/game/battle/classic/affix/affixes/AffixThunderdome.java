@@ -18,7 +18,7 @@ public class AffixThunderdome extends ClassicSpleefAffixFuture {
     public AffixThunderdome() {
         super();
         displayName = "Thunderdome";
-        this.activateTime = 240;
+        this.activateTime = 180;
     }
 
     @Override

@@ -142,6 +142,9 @@ public class ProxyPartyManager extends PartyManager<ProxyParty> {
             ProxyCore.getInstance().sendMessage(pcpSender, component);
             outgoingInvites.get(sender).put(target, new PartyInvitation());
         }
+
+        //TODO: delete this
+        onAccept(target, sender);
     }
 
     public void onKick(UUID sender, UUID target) {

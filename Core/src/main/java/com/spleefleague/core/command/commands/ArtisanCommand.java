@@ -18,8 +18,6 @@ import com.spleefleague.core.vendor.Artisans;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.util.Iterator;
-
 /**
  * @author NickM13
  */
@@ -55,7 +53,7 @@ public class ArtisanCommand extends CoreCommand {
                                @OptionArg(listName = "artisans") String artisan,
                                @HelperArg(value = "displayName") String displayName) {
         displayName = Chat.colorize(displayName);
-        Artisans.getVendor(artisan).setDisplayName(displayName);
+        Artisans.setDisplayName(artisan, displayName);
         success(sender, artisan + " display name set to " + displayName);
     }
 
@@ -65,18 +63,38 @@ public class ArtisanCommand extends CoreCommand {
                                    @LiteralArg(value = "currency") String l2,
                                    @OptionArg(listName = "artisans") String artisan,
                                    @EnumArg CoreCurrency currency) {
-        Artisans.getVendor(artisan).setCurrency(currency);
+        Artisans.setCurrency(artisan, currency);
         success(sender, artisan + " currency set to " + currency.displayName);
     }
 
     @CommandAnnotation
     public void artisanSetCrate(CorePlayer sender,
-                                   @LiteralArg(value = "set") String l1,
-                                   @LiteralArg(value = "crate") String l2,
-                                   @OptionArg(listName = "artisans") String artisan,
-                                   @OptionArg(listName = "crates") String crate) {
-        Artisans.getVendor(artisan).setCrate(crate);
+                                @LiteralArg(value = "set") String l1,
+                                @LiteralArg(value = "crate") String l2,
+                                @OptionArg(listName = "artisans") String artisan,
+                                @OptionArg(listName = "crates") String crate) {
+        Artisans.setCrate(artisan, crate);
         success(sender, artisan + " crate set to " + Core.getInstance().getCrateManager().get(crate).getDisplayName());
+    }
+
+    @CommandAnnotation
+    public void artisanSetBackground(CorePlayer sender,
+                                     @LiteralArg(value = "set") String l1,
+                                     @LiteralArg(value = "background") String l2,
+                                     @OptionArg(listName = "artisans") String artisan,
+                                     @NumberArg Integer background) {
+        Artisans.setBackground(artisan, background);
+        success(sender, artisan + " crate set to " + background);
+    }
+
+    @CommandAnnotation
+    public void artisanSetCoins(CorePlayer sender,
+                                     @LiteralArg(value = "set") String l1,
+                                     @LiteralArg(value = "coinCost") String l2,
+                                     @OptionArg(listName = "artisans") String artisan,
+                                     @NumberArg Integer coinCost) {
+        Artisans.setCoinCost(artisan, coinCost);
+        success(sender, artisan + " coin cost set to " + coinCost);
     }
 
     @CommandAnnotation

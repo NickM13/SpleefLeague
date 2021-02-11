@@ -1,6 +1,7 @@
 package com.spleefleague.core.menu;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemFlag;
@@ -31,8 +32,10 @@ public class InventoryMenuUtils {
         PREVIOUS(createCustomItem(Material.LIME_DYE, 1)),
         NEXT(createCustomItem(Material.LIME_DYE, 2)),
         RETURN(createCustomItem(Material.BARRIER, 1)),
+        CRAFT_GRAY(createCustomItem(Material.IRON_AXE, 1)),
+        CRAFT(createCustomItem(Material.IRON_AXE, 2)),
         STORE(createCustomItem(Material.EMERALD, 1));
-        
+
         ItemStack iconItem;
         
         MenuIcon(ItemStack iconItem) {
@@ -49,6 +52,16 @@ public class InventoryMenuUtils {
             return itemStack;
         }
         
+    }
+
+    private static InventoryMenuItem BACK_BUTTON = InventoryMenuAPI.createItemStatic()
+            .setName(ChatColor.RED + "" + ChatColor.BOLD + "Return")
+            .setDisplayItem(InventoryMenuUtils.MenuIcon.RETURN.getIconItem())
+            .setCloseOnAction(false)
+            .setAction(cp -> cp.getMenu().onBackButton());
+
+    public static InventoryMenuItem getBackButton() {
+        return BACK_BUTTON;
     }
     
     /**

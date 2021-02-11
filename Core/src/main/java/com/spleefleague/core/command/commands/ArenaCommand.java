@@ -206,7 +206,7 @@ public class ArenaCommand extends CoreCommand {
                               @LiteralArg("spawn") String l2,
                               @OptionArg(listName = "arenas") String arenaName,
                               @Nullable @HelperArg("[insertPos]") Integer index) {
-        Position pos = new Position(sender.getLocation());
+        Position pos = new Position(sender.getLocation(), 2);
         if (index != null) {
             if (Arenas.get(arenaName).insertSpawn(pos, index)) {
                 success(sender, "Spawn added " + pos);

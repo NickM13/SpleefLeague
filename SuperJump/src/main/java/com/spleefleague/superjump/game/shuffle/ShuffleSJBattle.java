@@ -20,8 +20,8 @@ import java.util.UUID;
  */
 public class ShuffleSJBattle extends VersusBattle<ShuffleSJPlayer> {
 
-    public ShuffleSJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, ShuffleSJPlayer.class, SJMode.SHUFFLE.getBattleMode());
+    public ShuffleSJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, ShuffleSJPlayer.class, SJMode.SHUFFLE.getBattleMode());
     }
     
     @Override

@@ -84,8 +84,7 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     public void initMenu() {
         spleggMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Splegg")
-                .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!" +
-                        "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
+                .setDescription("Dispatch your foes from up close or from afar with an arsenal of ranged weapons in this fast paced spin on Spleef!")
                 .setDisplayItem(Material.EGG, 1)
                 .createLinkedContainer("Splegg");
 

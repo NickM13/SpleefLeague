@@ -23,7 +23,7 @@ public class SpigotListenerBattleForceStart extends SpigotListener<PacketSpigotB
         for (UUID uuid : packet.players) {
             players.add(new QueuePlayer(ProxyCore.getInstance().getPlayers().get(uuid), packet.query, 0));
         }
-        ProxyCore.getInstance().getQueueManager().forceStart(packet.mode, packet.query, players);
+        ProxyCore.getInstance().getQueueManager().forceStart(packet.mode, packet.query, packet.players);
     }
 
 }

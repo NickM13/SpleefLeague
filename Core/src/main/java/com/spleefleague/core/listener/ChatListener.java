@@ -6,18 +6,15 @@
 
 package com.spleefleague.core.listener;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatPlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,6 +32,22 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChatMessageSend(AsyncPlayerChatEvent e) {
         CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
+
+        if (cp == null) {
+            e.getPlayer().sendMessage("Error sending your message");
+            e.setCancelled(true);
+            return;
+        }
+
+        for (char c : e.getMessage().toCharArray()) {
+            if (c >= 20000 && c < 30000) {
+                if (!cp.getRank().hasPermission(CoreRank.DEVELOPER)) {
+                    Chat.sendMessageToPlayerError(cp, new TextComponent("You can't send that!"));
+
+                    e.setCancelled(true);
+                }
+            }
+        }
 
         if (e.getMessage().length() > GOGOGADGET.length() + 1 && e.getMessage().substring(0, GOGOGADGET.length()).equalsIgnoreCase(GOGOGADGET)) {
             Bukkit.getScheduler().runTask(Core.getInstance(), () -> {

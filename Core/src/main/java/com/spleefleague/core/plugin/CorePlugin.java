@@ -364,7 +364,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final void sendMessageFriends(TextComponent text, ChatChannel channel, Set<UUID> players) {
         TextComponent textComponent = getChatPrefix();
         textComponent.addExtra(text);
-        Chat.sendMessageFriends(ChatChannel.GLOBAL, text, players);
+        Chat.sendMessageFriends(channel, text, players);
     }
 
     /**

@@ -111,8 +111,8 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         spleefMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Spleef")
                 .setDescription(cp -> "A competitive gamemode in which you must knock your opponent into the water while avoiding a similar fate." +
-                        "\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!" +
-                        "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
+                        "\n\nThis is not with any ordinary weapon; the weapon of choice is a shovel, and you must destroy the blocks underneath your foe!"
+                        /*"\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying()*/)
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .createLinkedContainer("Spleef");
 
@@ -125,9 +125,9 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         InventoryMenuItem powerTrainingMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER_TRAINING.getBattleMode());
         powerMenu.getLinkedChest().addStaticItem(powerTrainingMenu, 4, 5);
 
-        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE), 6, 2);
-        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY), 6, 3);
-        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY), 6, 4);
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE, powerMenu.getLinkedChest()), 6, 2);
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY, powerMenu.getLinkedChest()), 6, 3);
+        powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY, powerMenu.getLinkedChest()), 6, 4);
 
         InventoryMenuItem teamMenu = Arenas.createMenu(getInstance(), SpleefMode.TEAM.getBattleMode());
 
@@ -148,6 +148,8 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         LeaderboardMenu.addLeaderboardMenu(SpleefMode.TEAM.getBattleMode());
         LeaderboardMenu.addLeaderboardMenu(SpleefMode.MULTI.getBattleMode());
         LeaderboardMenu.addLeaderboardMenu(SpleefMode.POWER.getBattleMode());
+
+        PowerTrainingArena.createMenu();
     }
     
     public void initCommands() {

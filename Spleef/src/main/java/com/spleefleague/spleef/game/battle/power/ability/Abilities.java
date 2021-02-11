@@ -78,15 +78,15 @@ public class Abilities {
 
         applyHotbarItemStats(Ability.Type.MOBILITY, PowerTrainingBattle.class, "Place Block", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.MOBILITY.getSlot(), "too much pizza")
-                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.MOBILITY).getLinkedChest()));
+                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.MOBILITY, null).getLinkedChest()));
 
         applyHotbarItemStats(Ability.Type.OFFENSIVE, PowerTrainingBattle.class, "Drop Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.OFFENSIVE.getSlot(), "pstOffensiveItem")
-                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.OFFENSIVE).getLinkedChest()));
+                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.OFFENSIVE, null).getLinkedChest()));
 
         applyHotbarItemStats(Ability.Type.UTILITY, PowerTrainingBattle.class, "Swap Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.UTILITY.getSlot(), "pstUtilityItem")
-                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.UTILITY).getLinkedChest()));
+                        .setLinkedContainer(createAbilityMenuItem(Ability.Type.UTILITY, null).getLinkedChest()));
     }
 
     private static void applyHotbarItemStats(Ability.Type type, Class<? extends Battle<?>> battleClass, String keybind, boolean swappable, InventoryMenuItemHotbar hotbarItem) {
@@ -134,7 +134,7 @@ public class Abilities {
         return abilityMap.get(type).get(name);
     }
 
-    public static InventoryMenuItem createAbilityMenuItem(Ability.Type type) {
+    public static InventoryMenuItem createAbilityMenuItem(Ability.Type type, InventoryMenuContainerChest returnContainer) {
         InventoryMenuItemDynamic menuItem = InventoryMenuAPI.createItemDynamic();
 
         menuItem.setName(type.getColor() + type.getDisplayName() + " Power " + type.getBindName())
@@ -172,15 +172,31 @@ public class Abilities {
                                 })
                                 .setDescription(abilityStats.getDescription())
                                 .setDisplayItem(abilityStats.getDisplayItem())
-                                .setAction(cp2 -> cp.getOptions().setString(type.getOptionName(), abilityStats.getName()))
+                                .setAction(cp2 -> {
+                                    cp2.getOptions().setString(type.getOptionName(), abilityStats.getName());
+                                    if (cp2.getBattle() instanceof PowerTrainingBattle) {
+                                        ((PowerTrainingBattle) cp2.getBattle()).updatePowers();
+                                    }
+                                    if (returnContainer != null) {
+                                        cp2.getMenu().setInventoryMenuContainer(returnContainer);
+                                    }
+                                })
                                 .setCloseOnAction(false));
                     }
                 });
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
                         .setName(type.getColor() + "Random Power")
                         .setDisplayItem(InventoryMenuUtils.createCustomItem(type.getMaterial(), 1))
-                        .setDescription("Select a random utility power for your next match!")
-                        .setAction(cp2 -> cp2.getOptions().setString(type.getOptionName(), ""))
+                        .setDescription("Select a random " + type.getDisplayName() + " power for your next match!")
+                        .setAction(cp2 -> {
+                            cp2.getOptions().setString(type.getOptionName(), "");
+                            if (cp2.getBattle() instanceof PowerTrainingBattle) {
+                                ((PowerTrainingBattle) cp2.getBattle()).updatePowers();
+                            }
+                            if (returnContainer != null) {
+                                cp2.getMenu().setInventoryMenuContainer(returnContainer);
+                            }
+                        })
                         .setCloseOnAction(false),
                 2, 3);
 
@@ -193,7 +209,7 @@ public class Abilities {
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> type.getColor() + "Random Power")
                 .setDisplayItem(InventoryMenuUtils.createCustomItem(type.getMaterial(), 1))
-                .setDescription("Select a random utility power for your next match!")
+                .setDescription("Select a random " + type.getDisplayName() + " power for your next match!")
                 .setCloseOnAction(false)
                 .setVisibility(cp -> getAbility(type, cp.getOptions().getString(type.getOptionName())) == null), SHOWN_X, SHOWN_Y);
 

@@ -11,6 +11,7 @@ import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
 public class GameWorldPlayer extends ProjectileWorldPlayer {
 
     private long lastHit = 0;
+    private long lastPortal = 0;
 
     public GameWorldPlayer(CorePlayer cp) {
         super(cp);
@@ -19,6 +20,14 @@ public class GameWorldPlayer extends ProjectileWorldPlayer {
     public boolean hit() {
         if (lastHit < System.currentTimeMillis()) {
             lastHit = System.currentTimeMillis() + 250;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean portal() {
+        if (lastPortal < System.currentTimeMillis()) {
+            lastPortal = System.currentTimeMillis() + 250;
             return true;
         }
         return false;

@@ -6,6 +6,7 @@ import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -41,7 +42,10 @@ public enum ChatChannel {
     PARTY("Party",
             ChatColor.AQUA,
             pcp -> pcp.getParty() != null,
-            null),
+            null,
+            (sender, receiver) -> {
+                return sender.getParty().getPlayerSet().contains(receiver);
+            }),
     SPLEEF("Spleef",
             ChatColor.GOLD,
             null,
@@ -67,15 +71,28 @@ public enum ChatChannel {
     private final ChatColor tagColor;
     private final Function<ProxyCorePlayer, Boolean> available;
     private final String playerChatColor;
+    private final BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive;
 
     private final TextComponent tagComponent;
     private final TextComponent playerMessageComponent;
 
-    ChatChannel(String name, ChatColor tagColor, Function<ProxyCorePlayer, Boolean> available, String playerChatColor) {
+    ChatChannel(String name,
+                ChatColor tagColor,
+                Function<ProxyCorePlayer, Boolean> available,
+                String playerChatColor) {
+        this(name, tagColor, available, playerChatColor, null);
+    }
+
+    ChatChannel(String name,
+                ChatColor tagColor,
+                Function<ProxyCorePlayer, Boolean> available,
+                String playerChatColor,
+                BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive) {
         this.displayName = name;
         this.tagColor = tagColor;
         this.available = available;
         this.playerChatColor = playerChatColor == null ? Chat.PLAYER_CHAT : playerChatColor;
+        this.receive = receive;
 
         if (tagColor != null) {
             tagComponent = new TextComponent(Chat.TAG_BRACE + "[" + tagColor + name + Chat.TAG_BRACE + "] ");
@@ -127,6 +144,13 @@ public enum ChatChannel {
 
     public boolean isActive(ProxyCorePlayer pcp) {
         return isAvailable(pcp) && pcp.getOptions().getBoolean("Chat:" + name());
+    }
+
+    public boolean canReceive(ProxyCorePlayer sender, ProxyCorePlayer receiver) {
+        if (receive != null) {
+            return receive.apply(sender, receiver);
+        }
+        return true;
     }
 
     public TextComponent getTagComponent() {

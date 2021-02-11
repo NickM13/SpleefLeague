@@ -14,6 +14,7 @@ import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.CommandManager;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.crate.CrateManager;
+import com.spleefleague.core.game.BattleSessionManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.team.TeamInfo;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
@@ -74,20 +75,21 @@ public class Core extends CorePlugin<CorePlayer> {
     private static Core instance;
     public static World DEFAULT_WORLD;
     private QueueManager queueManager;
-    private Leaderboards leaderboards = new Leaderboards();
-    private CommandManager commandManager = new CommandManager();
+    private final Leaderboards leaderboards = new Leaderboards();
+    private final CommandManager commandManager = new CommandManager();
     
     // For packet managing
     private static ProtocolManager protocolManager;
 
-    private Set<String> lobbyServers = new HashSet<>();
-    private Set<String> minigameServers = new HashSet<>();
-    private Set<String> servers = new HashSet<>();
+    private final Set<String> lobbyServers = new HashSet<>();
+    private final Set<String> minigameServers = new HashSet<>();
+    private final Set<String> servers = new HashSet<>();
 
-    private CorePartyManager partyManager = new CorePartyManager();
-    private CoreRankManager rankManager = new CoreRankManager();
-    private CrateManager crateManager = new CrateManager();
-    private PacketManager packetManager = new PacketManager();
+    private final CorePartyManager partyManager = new CorePartyManager();
+    private final CoreRankManager rankManager = new CoreRankManager();
+    private final CrateManager crateManager = new CrateManager();
+    private final PacketManager packetManager = new PacketManager();
+    private final BattleSessionManager battleSessionManager = new BattleSessionManager();
 
     /**
      * Called when the plugin is enabling
@@ -108,7 +110,6 @@ public class Core extends CorePlugin<CorePlayer> {
         Chat.init();
         Warp.init();
         Collectible.init();
-        Artisans.init();
         Tickets.init();
         FakeWorld.init();
         Arenas.init();
@@ -123,6 +124,9 @@ public class Core extends CorePlugin<CorePlayer> {
         playerManager = new CorePlayerManager(getPluginDB().getCollection("Players"));
         crateManager.init();
         packetManager.init();
+        battleSessionManager.init();
+
+        Artisans.init();
 
         // Initialize listeners
         initListeners();
@@ -163,6 +167,7 @@ public class Core extends CorePlugin<CorePlayer> {
         NoteBlockMusic.close();
         playerManager.close();
         packetManager.close();
+        battleSessionManager.close();
         running = false;
         protocolManager.removePacketListeners(Core.getInstance());
         ProtocolLibrary.getPlugin().onDisable();
@@ -187,6 +192,10 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public PacketManager getPacketManager() {
         return packetManager;
+    }
+
+    public BattleSessionManager getBattleSessionManager() {
+        return battleSessionManager;
     }
 
     public void refreshPlayers(Set<UUID> players) {
@@ -363,33 +372,12 @@ public class Core extends CorePlugin<CorePlayer> {
         if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
         //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
         PersonalScoreboard.onPlayerJoin(cp);
-        TextComponent text = new TextComponent();
-        text.addExtra(cp.getChatName());
-        text.addExtra(" has logged in");
-        for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
-            if (cp.equals(cp2)) continue;
-            if (cp2.getFriends().isFriend(uuid)) {
-                Chat.sendMessageToPlayer(cp2, text);
-            }
-        }
     }
 
     public void onBungeeDisconnect(UUID uuid) {
         CorePlayer cp = getPlayers().getOffline(uuid);
         //Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
         PersonalScoreboard.onPlayerQuit(uuid);
-
-        if (cp.isVanished()) return;
-        TextComponent text = new TextComponent();
-        text.addExtra(cp.getChatName());
-        text.addExtra(" has logged out");
-
-        for (CorePlayer cp2 : playerManager.getAllHereExtended()) {
-            if (cp.equals(cp2)) continue;
-            if (cp2.getFriends().isFriend(uuid)) {
-                Chat.sendMessageToPlayer(cp2, text);
-            }
-        }
     }
 
     /**

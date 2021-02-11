@@ -25,17 +25,11 @@ import com.spleefleague.core.world.game.GameWorld;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattlePing;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -57,7 +51,8 @@ import javax.annotation.Nullable;
 public abstract class Battle<BP extends BattlePlayer> {
 
     protected CorePlugin<?> plugin;
-    
+
+    protected final UUID battleId;
     protected org.bukkit.GameMode gameMode = org.bukkit.GameMode.ADVENTURE;
     protected GameWorld gameWorld;
     protected BattleMode battleMode;
@@ -108,7 +103,8 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected int roundCountdown = 3;
     protected int countdown = 0;
 
-    public Battle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public Battle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        this.battleId = battleId;
         this.plugin = plugin;
         this.arena = arena;
         this.battlePlayerClass = battlePlayerClass;
@@ -140,6 +136,10 @@ public abstract class Battle<BP extends BattlePlayer> {
             ongoing = true;
             startRound();
         }
+    }
+
+    public void ping() {
+        Core.getInstance().sendPacket(new PacketSpigotBattlePing(battleId));
     }
 
     public final void waitForPlayers() {
@@ -233,7 +233,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     /**
      * Adds a player to the battle, creates a Battle Player
      * and sets player's battle state to BATTLER
-     *
+     *<br>
      * If a player is a party leader and the mode is team based
      * then add all party members to the battle list
      *
@@ -687,8 +687,14 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param legendary legendary ore
      * @return Ore Type
      */
-    protected static OreType getRandomOre(double common, double rare, double epic, double legendary) {
+    protected static OreType getRandomOre(CorePlayer cp, boolean winner, double common, double rare, double epic, double legendary) {
         double r = Math.random();
+        double multiplier = winner ? 1 : 0.75;
+        multiplier *= cp.getRank().getOreMultiplier();
+        common *= multiplier;
+        rare *= multiplier;
+        epic *= multiplier;
+        legendary *= multiplier;
         if (r < common) return OreType.COMMON;
         r -= common;
         if (r < rare) return OreType.RARE;
@@ -697,6 +703,14 @@ public abstract class Battle<BP extends BattlePlayer> {
         r -= epic;
         if (r < legendary) return OreType.LEGENDARY;
         return OreType.NONE;
+    }
+
+    protected static int getRandomCoins(CorePlayer cp, boolean winner, int baseMin, int baseMax) {
+        Random random = new Random();
+        double coins = random.nextInt(baseMax - baseMin) + baseMin;
+        coins *= winner ? 1 : 0.75;
+        coins *= cp.getRank().getCoinMultiplier();
+        return (int) coins;
     }
 
     protected final void sendRequeueMessage() {

@@ -33,8 +33,8 @@ import java.util.UUID;
  */
 public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
     
-    public EndlessSJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, EndlessSJPlayer.class, SJMode.ENDLESS.getBattleMode());
+    public EndlessSJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, EndlessSJPlayer.class, SJMode.ENDLESS.getBattleMode());
     }
     
     @Override

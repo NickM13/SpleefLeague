@@ -2,19 +2,19 @@ package com.spleefleague.proxycore.game.queue;
 
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatColor;
-import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
-import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshQueue;
-import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.droplet.Droplet;
+import com.spleefleague.proxycore.droplet.DropletType;
+import com.spleefleague.proxycore.game.BattleSessionManager;
+import com.spleefleague.proxycore.game.arena.Arena;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.config.ServerInfo;
 
 import java.util.*;
 
@@ -26,8 +26,59 @@ public class QueueContainerDynamic extends QueueContainer {
 
     protected long delayStart = -1;
 
-    public QueueContainerDynamic(String identifier, String displayName, int reqTeams, int maxTeams) {
-        super(identifier, displayName, reqTeams, maxTeams);
+    protected final List<Integer> teamSizes = new ArrayList<>();
+    protected final Map<Integer, Integer> sizeIndexHash = new HashMap<>();
+
+    protected int minPartySize = 1;
+    protected int maxPartySize = 1;
+    protected boolean allowSolo = true;
+    protected boolean allowPartySplit = true;
+
+    protected final TeamStyle teamStyle;
+
+    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle, int minTeams, int maxTeams) {
+        super(identifier, displayName, minTeams, maxTeams);
+        this.teamStyle = teamStyle;
+        initTeamSizes();
+    }
+
+    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle) {
+        super(identifier, displayName, teamStyle.minSize, teamStyle.maxSize);
+        this.teamStyle = teamStyle;
+        initTeamSizes();
+    }
+
+    public void initTeamSizes() {
+        teamSizes.clear();
+        sizeIndexHash.clear();
+
+        allowSolo = false;
+        minPartySize = Integer.MAX_VALUE;
+        maxPartySize = Integer.MIN_VALUE;
+
+        Set<Integer> sizes = new HashSet<>();
+        for (Arena arena : ProxyCore.getInstance().getArenaManager().getArenas(identifier)) {
+            sizes.add(arena.getTeamSize());
+        }
+        for (Integer size : sizes) {
+            teamSizes.add(size);
+            sizeIndexHash.put(size, teamSizes.size() - 1);
+            minPartySize = Math.min(minPartySize, size);
+            maxPartySize = Math.max(maxPartySize, size);
+        }
+        allowSolo = minPartySize == 1;
+        allowPartySplit = maxPartySize == 1;
+        if (teamStyle.allowPartySplit) {
+            maxPartySize *= maxTeams;
+        }
+    }
+
+    public boolean canQueueSolo() {
+        return allowSolo;
+    }
+
+    public boolean isValidParty(ProxyParty party) {
+        return party.getPlayerCount() >= minPartySize && party.getPlayerCount() <= maxPartySize;
     }
 
     /**
@@ -52,26 +103,31 @@ public class QueueContainerDynamic extends QueueContainer {
         QueueParty replaced = leave(party);
         QueueParty qp = new QueueParty(party, query, party.getAvgRating(identifier, SEASON));
         if (qp.query.equals("arena:*") && replaced != null) return -1;
+        queuedEntities.add(qp);
         queueSize += qp.size;
         checkDelayedStart();
         return replaced != null ? 1 : 0;
     }
 
     private void checkDelayedStart() {
-        if (getQueueSize() >= this.maxTeams) {
-            delayStart = 0;
-        } else {
-            if (delayStart < 0) {
-                if (getQueueSize() >= this.reqTeams) {
-                    TextComponent text = new TextComponent(getDisplayName() + " match starting in " + DYNAMIC_DELAY_START + " seconds ");
-                    TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Queue Now" + Chat.TAG_BRACE + "]");
-                    accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to join!").create()));
-                    accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request queue " + identifier));
-                    text.addExtra(accept);
-                    ProxyCore.getInstance().sendMessage(text);
-                    delayStart = System.currentTimeMillis() + DYNAMIC_DELAY_START * 1000L;
+        if (teamStyle.delayStart) {
+            if (getQueueSize() >= this.maxTeams) {
+                delayStart = 0;
+            } else {
+                if (delayStart < 0) {
+                    if (getQueueSize() >= this.reqTeams) {
+                        TextComponent text = new TextComponent(getDisplayName() + " match starting in " + DYNAMIC_DELAY_START + " seconds ");
+                        TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Queue Now" + Chat.TAG_BRACE + "]");
+                        accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to join!").create()));
+                        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/request queue " + identifier));
+                        text.addExtra(accept);
+                        ProxyCore.getInstance().sendMessage(text);
+                        delayStart = System.currentTimeMillis() + DYNAMIC_DELAY_START * 1000L;
+                    }
                 }
             }
+        } else {
+            delayStart = 0;
         }
     }
 
@@ -79,7 +135,7 @@ public class QueueContainerDynamic extends QueueContainer {
      * Removes a player from the queue, returning true if a player was successfully removed
      *
      * @param pcp Proxy Core Player
-     * @return
+     * @return Player
      */
     public QueuePlayer leave(ProxyCorePlayer pcp) {
         Iterator<QueueEntity> qit = queuedEntities.iterator();
@@ -98,7 +154,7 @@ public class QueueContainerDynamic extends QueueContainer {
      * Removes a player from the queue, returning true if a player was successfully removed
      *
      * @param party Proxy Party
-     * @return
+     * @return Party
      */
     public QueueParty leave(ProxyParty party) {
         Iterator<QueueEntity> qit = queuedEntities.iterator();
@@ -113,85 +169,110 @@ public class QueueContainerDynamic extends QueueContainer {
         return null;
     }
 
-    protected boolean matchAfter(int start, int maxCount, QueuedChunk queueChunk) {
-        if (maxCount <= 0) return true;
+    protected boolean matchAfter(int start, QueuedChunk queueChunk) {
+        if (queueChunk.filledTeams.size() <= 0) return true;
+        if (start >= queuedEntities.size()) return false;
         ListIterator<QueueEntity> pit = queuedEntities.listIterator(start);
         while (pit.hasNext()) {
             QueueEntity qp = pit.next();
-            if (!queueChunk.joinNoRating(qp)) {
+            if (!queueChunk.join(qp, teamStyle.compareRating)) {
                 continue;
             }
-            if (matchAfter(pit.nextIndex(), maxCount - 1, queueChunk)) {
+            if (matchAfter(pit.nextIndex(), queueChunk)) {
                 return true;
             }
         }
         return false;
     }
 
-    public QueuedChunk getMatchedPlayers(int minCount, int maxCount) {
+    public QueuedChunk getMatchedPlayers() {
         QueuedChunk queueChunk = new QueuedChunk();
         ListIterator<QueueEntity> pit = queuedEntities.listIterator();
         while (pit.hasNext()) {
             QueueEntity queueEntity = pit.next();
-            queueChunk.start(queueEntity);
-            if (matchAfter(pit.nextIndex(), maxCount - 1, queueChunk)) {
-                return queueChunk;
+            int startIndex = -1;
+            if (allowPartySplit) {
+                if (sizeIndexHash.containsKey(1)) {
+                    startIndex = sizeIndexHash.get(1);
+                }
+            } else {
+                if (sizeIndexHash.containsKey(queueEntity.size)) {
+                    startIndex = sizeIndexHash.get(queueEntity.size);
+                } else {
+                    for (int i = 0; i < teamSizes.size(); i++) {
+                        if (queueEntity.size < teamSizes.get(i)) {
+                            startIndex = i;
+                            break;
+                        }
+                    }
+                }
             }
-            if (queueChunk.total >= minCount) {
-                return queueChunk;
+            if (startIndex < 0) continue;
+            for (int i = startIndex; i < teamSizes.size(); i++) {
+                queueChunk.start(queueEntity, teamSizes.get(i), teamStyle.maxSize);
+                if (matchAfter(pit.nextIndex(), queueChunk)) {
+                    return queueChunk;
+                }
+                if (queueChunk.filledTeams.size() >= reqTeams) {
+                    return queueChunk;
+                }
             }
         }
         return null;
     }
 
-
     public void checkQueue() {
-        if (delayStart < System.currentTimeMillis() && delayStart >= 0) {
-            QueuedChunk chunk = getMatchedPlayers(reqTeams, maxTeams);
-            if (chunk != null) startMatch(chunk.entities, chunk.query.toString());
+        while (delayStart < System.currentTimeMillis() && delayStart >= 0) {
+            QueuedChunk chunk = getMatchedPlayers();
+            if (chunk == null || !startMatch(chunk)) break;
             delayStart = -1;
             checkDelayedStart();
         }
     }
 
-    public boolean startMatch(List<QueueEntity> entities, String query) {
-        ServerInfo minigameServer = ProxyCore.getInstance().getMinigameServers().get(0);
-        if (minigameServer == null) {
+    private boolean startMatch(QueuedChunk chunk) {
+        List<UUID> players = new ArrayList<>();
+        for (QueueTeam team : chunk.filledTeams) {
+            players.addAll(team.players);
+        }
+        return startMatch(players, chunk.query.toString());
+    }
+
+    public boolean startMatch(List<UUID> players, String query) {
+        Droplet droplet = ProxyCore.getInstance().getDropletManager().getAvailable(DropletType.MINIGAME);
+        if (droplet == null) {
             ProxyCore.getInstance().getLogger().warning("There are no minigame servers available right now!");
-            for (QueueEntity qp : entities) {
-                if (qp instanceof QueuePlayer) {
-                    ProxyCore.getInstance().sendMessage(((QueuePlayer) qp).pcp, ChatColor.RED + "No available minigame servers!");
-                }
+            for (UUID uuid : players) {
+                ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+                ProxyCore.getInstance().sendMessage(pcp, ChatColor.RED + "No available minigame servers!");
             }
             return false;
         }
 
-        List<UUID> playerUuids = new ArrayList<>();
+        Set<ProxyParty> parties = new HashSet<>();
 
-        for (QueueEntity queueEntity : entities) {
-            if (queueEntity instanceof QueuePlayer) {
-                QueuePlayer qp = (QueuePlayer) queueEntity;
-                ProxyCore.getInstance().getQueueManager().leaveAllQueues(qp.pcp.getUniqueId());
-                qp.pcp.setBattleContainer(this);
-                qp.pcp.setBattling(true);
-                playing.add(qp.pcp.getUniqueId());
-                qp.pcp.getPlayer().connect(minigameServer);
-                qp.pcp.setLastQueueRequest(new PacketSpigotQueueJoin(qp.pcp.getUniqueId(), identifier, queueEntity.query));
-                playerUuids.add(qp.pcp.getUniqueId());
-            } else if (queueEntity instanceof QueueParty) {
-                QueueParty qp = (QueueParty) queueEntity;
-                for (ProxyCorePlayer pcp : qp.party.getPlayerSet()) {
-                    ProxyCore.getInstance().getQueueManager().leaveAllQueues(pcp.getUniqueId());
-                    pcp.setBattleContainer(this);
-                    pcp.setBattling(true);
-                    playing.add(pcp.getUniqueId());
-                    pcp.getPlayer().connect(minigameServer);
-                    pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, queueEntity.query));
-                    playerUuids.add(pcp.getUniqueId());
-                }
+        for (UUID uuid : players) {
+            ProxyParty party = ProxyCore.getInstance().getPartyManager().getParty(uuid);
+            if (parties.add(party)) {
+                ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
             }
         }
-        ProxyCore.getInstance().getPacketManager().sendPacket(minigameServer, new PacketBungeeBattleStart(identifier, query, playerUuids));
+
+        UUID battleId = UUID.randomUUID();
+
+        for (UUID uuid : players) {
+            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+            ProxyCore.getInstance().getQueueManager().leaveAllQueues(pcp.getUniqueId());
+            pcp.setCurrrentBattle(battleId);
+            playing.add(pcp.getUniqueId());
+            pcp.connect(droplet);
+            pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, query));
+        }
+
+        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players));
+
+        BattleSessionManager.createBattleSession(battleId, identifier, droplet, players);
+
         return true;
     }
 

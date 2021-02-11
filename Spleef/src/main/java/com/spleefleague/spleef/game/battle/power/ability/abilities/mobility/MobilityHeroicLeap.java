@@ -33,7 +33,7 @@ public class MobilityHeroicLeap extends AbilityMobility {
     public void update() {
         if (heroicLeaping >= 0D) {
             Vector dropDir = heroicDrop;
-            if (FakeUtils.isOnGround(getUser().getCorePlayer())) {
+            if (heroicLeaping < getUser().getBattle().getRoundTime() + 0.5 && FakeUtils.isOnGround(getUser().getCorePlayer())) {
                 getPlayer().setVelocity(new Vector(0, 0, 0));
                 heroicLeaping = -1;
                 if (dropDir != null) {
@@ -55,7 +55,7 @@ public class MobilityHeroicLeap extends AbilityMobility {
                     applyCooldown();
                 }
             } else if (dropDir != null) {
-                getPlayer().setVelocity(dropDir.clone().multiply(0.6));
+                getPlayer().setVelocity(dropDir.clone().multiply(3));
                 getPlayer().setSneaking(true);
             }
         }

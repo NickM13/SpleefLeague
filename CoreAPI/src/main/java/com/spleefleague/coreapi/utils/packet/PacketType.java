@@ -68,9 +68,9 @@ public class PacketType {
     public enum Spigot {
 
         BATTLE_CHALLENGE(PacketSpigotBattleChallenge.class),
-        BATTLE_END_RATED(PacketSpigotBattleEndRated.class),
-        BATTLE_END_UNRATED(PacketSpigotBattleEndUnrated.class),
+        BATTLE_END(PacketSpigotBattleEnd.class),
         BATTLE_FORCE_START(PacketSpigotBattleForceStart.class),
+        BATTLE_PING(PacketSpigotBattlePing.class),
         BATTLE_SPECTATE(PacketSpigotBattleSpectate.class),
         CHAT_CHANNEL_JOIN(PacketSpigotChatChannelJoin.class),
         CHAT_CONSOLE(PacketSpigotChatConsole.class),

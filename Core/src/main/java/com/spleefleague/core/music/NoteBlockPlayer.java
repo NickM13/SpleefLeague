@@ -72,9 +72,8 @@ public class NoteBlockPlayer {
                 }
             }
             tickCursor++;
-            if (tickCursor > getSong().getLengthSeconds() * 20 && song.isLooping() && song.getLoops() <= 0) {
-                //if (looping)
-                tickCursor = 0;
+            if (tickCursor > song.getLengthSeconds() * 20 && song.isLooping()) {
+                tickCursor = song.getLoopStartStretched();
             }
         }
     }

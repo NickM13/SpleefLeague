@@ -12,6 +12,7 @@ import com.spleefleague.proxycore.chat.ProxyChat;
 import com.spleefleague.proxycore.command.DebugCommand;
 import com.spleefleague.proxycore.command.PurchaseCommand;
 import com.spleefleague.proxycore.droplet.DropletManager;
+import com.spleefleague.proxycore.game.BattleSessionManager;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import com.spleefleague.proxycore.game.queue.QueueManager;
@@ -90,6 +91,8 @@ public class ProxyCore extends Plugin {
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
         getProxy().getPluginManager().registerListener(this, new SpigotPluginListener());
 
+        BattleSessionManager.init();
+
         dropletManager.init();
         seasonManager.init();
 
@@ -152,6 +155,8 @@ public class ProxyCore extends Plugin {
 
     @Override
     public void onDisable() {
+        BattleSessionManager.close();
+
         playerManager.close();
         leaderboardManager.close();
         arenaManager.close();
@@ -239,6 +244,7 @@ public class ProxyCore extends Plugin {
 
     private void initCommands() {
         getProxy().getPluginManager().registerCommand(this, new DebugCommand());
+        getProxy().getPluginManager().registerCommand(this, new PurchaseCommand());
     }
 
     public MongoDatabase getDatabase() {

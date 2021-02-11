@@ -85,7 +85,7 @@ public class PurchaseCommand extends Command {
                 purchaseRank(pcp, strings[2]);
                 break;
             case TEMPRANK:
-                purchaseTempRank(pcp, strings[2], Integer.parseInt(strings[3]));
+                purchaseTempRank(pcp, strings[2], strings.length >= 4 ? Integer.parseInt(strings[3]) : 31);
                 break;
             case CRATE:
                 purchaseCrate(pcp, strings[2], Integer.parseInt(strings[3]));

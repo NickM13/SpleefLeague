@@ -12,11 +12,74 @@ import java.util.*;
  */
 public abstract class QueueContainer {
 
+    protected static final int MAX_PARTY_QUEUE_SIZE = 8;
+
+    public static int getMaxPartyQueueSize() {
+        return MAX_PARTY_QUEUE_SIZE;
+    }
+
+    protected static class QueueTeam {
+        List<UUID> players = new ArrayList<>();
+        int total = 0;
+        final int teamSize;
+        final int id;
+
+        public QueueTeam(int teamSize, int id) {
+            this.teamSize = teamSize;
+            this.id = id;
+        }
+
+        public boolean add(UUID uuid) {
+            if (total + 1 > teamSize) {
+                return false;
+            } else {
+                players.add(uuid);
+                total++;
+                return true;
+            }
+        }
+
+        public boolean add(List<UUID> uuid) {
+            if (total + uuid.size() > teamSize) {
+                return false;
+            } else {
+                System.out.println("Adding players");
+                players.addAll(uuid);
+                total += uuid.size();
+                return true;
+            }
+        }
+
+        public boolean isFull() {
+            return teamSize == total;
+        }
+
+        public int getRemaining() {
+            return teamSize - total;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            QueueTeam queueTeam = (QueueTeam) o;
+            return id == queueTeam.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+    }
+
     protected static class QueuedChunk {
-        List<QueueEntity> entities = new ArrayList<>();
+        List<QueueTeam> openTeams = new ArrayList<>();
+        List<QueueTeam> filledTeams = new ArrayList<>();
+
+        boolean teamSplitting;
+        int teamSize;
         StringBuilder query;
         int minElo, maxElo;
-        int total;
 
         /**
          * Attemps to match two query searches, returning null if any sub queries return an empty string
@@ -48,53 +111,129 @@ public abstract class QueueContainer {
             return matchedQuery.toString();
         }
 
-        public void start(QueueEntity entity) {
-            entities.clear();
+        public void start(QueueEntity entity, int teamSize, int maxTeamCount) {
+            this.teamSize = teamSize;
+            this.teamSplitting = teamSize == 1;
+            openTeams.clear();
+            filledTeams.clear();
+            for (int i = 0; i < maxTeamCount; i++) {
+                QueueTeam team = new QueueTeam(teamSize, i);
+                openTeams.add(team);
+            }
+
             minElo = entity.getRatingMin();
             maxElo = entity.getRatingMax();
-            entities.add(entity);
             query = new StringBuilder(entity.query);
-            total = entity.size;
+
+            pushEntity(entity);
         }
 
-        public boolean join(QueueEntity entity) {
-            if (entity.getRatingMin() > maxElo || entity.getRatingMax() < minElo) {
-                System.out.println("Ratings were out of bounds!");
-                return false;
+        private boolean pushEntity(QueueEntity entity) {
+            if (teamSplitting) {
+                List<UUID> toAdd = new ArrayList<>();
+                if (entity instanceof QueueParty) {
+                    toAdd.addAll(((QueueParty) entity).party.getPlayerList());
+                } else if (entity instanceof QueuePlayer) {
+                    toAdd.add(((QueuePlayer) entity).pcp.getUniqueId());
+                } else {
+                    Thread.dumpStack();
+                    return false;
+                }
+                boolean success = false;
+                int remaining = toAdd.size();
+                for (QueueTeam team : openTeams) {
+                    remaining -= team.getRemaining();
+                    if (remaining <= 0) success = true;
+                }
+                if (success) {
+                    for (UUID uuid : toAdd) {
+                        QueueTeam team = openTeams.get(0);
+                        team.add(uuid);
+                        if (team.isFull()) {
+                            filledTeams.add(team);
+                            openTeams.remove(0);
+                        }
+                    }
+                }
+                return success;
+            } else {
+                if (entity instanceof QueueParty) {
+                    Iterator<QueueTeam> it = openTeams.iterator();
+                    while (it.hasNext()) {
+                        QueueTeam team = it.next();
+                        if (team.add(((QueueParty) entity).party.getPlayerList())) {
+                            if (team.isFull()) {
+                                filledTeams.add(team);
+                                it.remove();
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                } else if (entity instanceof QueuePlayer) {
+                    Iterator<QueueTeam> it = openTeams.iterator();
+                    while (it.hasNext()) {
+                        QueueTeam team = it.next();
+                        if (team.add(((QueuePlayer) entity).pcp.getUniqueId())) {
+                            if (team.isFull()) {
+                                filledTeams.add(team);
+                                it.remove();
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            Thread.dumpStack();
+            return false;
+        }
+
+        public boolean join(QueueEntity entity, boolean compareRating) {
+            if (compareRating) {
+                /*
+                if (entity.getRatingMin() > maxElo || entity.getRatingMax() < minElo) {
+                    return false;
+                }
+                */
             }
             String newQuery = matchQueries(query.toString(), entity.query);
             if (newQuery == null) {
                 return false;
             }
-            query = new StringBuilder(newQuery);
-            minElo = Math.max(minElo, entity.getRatingMin());
-            maxElo = Math.min(maxElo, entity.getRatingMax());
-            entities.add(entity);
-            total += entity.size;
-            return true;
-        }
 
-        public boolean joinNoRating(QueueEntity entity) {
-            String newQuery = matchQueries(query.toString(), entity.query);
-            if (newQuery == null) {
-                return false;
+            if (pushEntity(entity)) {
+                query = new StringBuilder(newQuery);
+                minElo = Math.max(minElo, entity.getRatingMin());
+                maxElo = Math.min(maxElo, entity.getRatingMax());
+                return true;
             }
-            query = new StringBuilder(newQuery);
-            minElo = Math.max(minElo, entity.getRatingMin());
-            maxElo = Math.min(maxElo, entity.getRatingMax());
-            entities.add(entity);
-            total += entity.size;
-            return true;
+            return false;
         }
 
     }
 
     public enum TeamStyle {
-        SOLO,
-        VERSUS,
-        TEAM,
-        DYNAMIC,
-        BONANZA
+        SOLO(   true,  false, true,  1, 1 ),
+        VERSUS( false, false, true,  2, 2 ),
+        DYNAMIC(true,  true,  false, 3, 32),
+        BONANZA(true,  false, true,  1, 1 );
+
+        boolean allowPartySplit;
+        boolean delayStart;
+        boolean compareRating;
+
+        int minSize;
+        int maxSize;
+
+        TeamStyle(boolean allowPartySplit, boolean delayStart, boolean compareRating, int minSize, int maxSize) {
+            this.allowPartySplit = allowPartySplit;
+            this.delayStart = delayStart;
+            this.compareRating = compareRating;
+
+            this.minSize = minSize;
+            this.maxSize = maxSize;
+        }
     }
 
     protected final String identifier;

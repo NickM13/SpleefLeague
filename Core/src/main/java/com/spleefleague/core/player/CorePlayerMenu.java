@@ -66,6 +66,7 @@ public class CorePlayerMenu {
                 invSwap = 0;
                 this.inventoryMenuContainer = null;
                 this.menuTags.clear();
+                this.overlay = SLMainOverlay.getOverlay();
             }
         }
     }

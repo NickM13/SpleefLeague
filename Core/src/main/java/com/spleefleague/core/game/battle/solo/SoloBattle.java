@@ -8,7 +8,7 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndUnrated;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,8 +21,8 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected BP battler;
     
-    public SoloBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
-        super(plugin, players, arena, battlePlayerClass, battleMode);
+    public SoloBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
     
     /**
@@ -145,7 +145,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void endBattle(BP winner) {
-        Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(getMode().getName(), Lists.newArrayList(battler.getCorePlayer().getUniqueId())));
+        Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         destroy();
     }
     

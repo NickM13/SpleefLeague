@@ -33,23 +33,7 @@ public class PowerSpleefArena {
     private static final String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
     
     public static void createMenu(int x, int y) {
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName("&6&lPower Spleef")
-                .setDescription(cp -> "A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!" +
-                        "\n\n&7&lCurrently Playing: &6" + Spleef.getInstance().getBattleManager(SpleefMode.POWER.getBattleMode()).getPlaying())
-                .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
-                .createLinkedContainer("Power Spleef Menu");
 
-        menuItem.getLinkedChest()
-                .setOpenAction((container, cp2) -> Arenas.fillMenu(Spleef.getInstance(), container, SpleefMode.POWER.getBattleMode()));
-
-        menuItem.getLinkedChest().addStaticItem(PowerTrainingArena.createMenu(), 0, 4);
-
-        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE), 2, 4);
-        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY), 4, 4);
-        menuItem.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY), 6, 4);
-
-        Spleef.getInstance().getSpleefMenu().getLinkedChest().addStaticItem(menuItem, x, y);
     }
     
     public static void initLeaderboard() {

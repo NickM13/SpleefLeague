@@ -73,6 +73,12 @@ public class PortalPair {
 
     public Map<UUID, LastTeleport> lastTeleports = new HashMap<>();
 
+    public int colorIndex;
+
+    public PortalPair(int colorIndex) {
+        this.colorIndex = colorIndex;
+    }
+
     public boolean canTeleport1(UUID uuid) {
         return (!lastTeleports.containsKey(uuid) || lastTeleports.get(uuid).time < System.currentTimeMillis() || !lastTeleports.get(uuid).first);
     }

@@ -15,11 +15,11 @@ public class GamemodeMenu {
     
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Gamemodes")
-                .setDescription("Check these out!")
+                .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Games")
+                .setDescription("Browse SpleefLeague's catalog of custom created games.")
                 .setDisplayItem(Material.NETHER_STAR, 2)
                 .setSelectedItem(Material.NETHER_STAR, 3)
-                .createLinkedContainer("Gamemodes");
+                .createLinkedContainer("Games");
     }
     
     /**

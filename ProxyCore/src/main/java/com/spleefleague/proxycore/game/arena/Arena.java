@@ -9,6 +9,7 @@ package com.spleefleague.proxycore.game.arena;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 
@@ -65,7 +66,7 @@ public class Arena extends DBEntity {
      * @return Display Name
      */
     public String getName() {
-        return name;
+        return ChatColor.stripColor(name);
     }
 
     /**

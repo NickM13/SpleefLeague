@@ -99,14 +99,7 @@ public class ProxyChat {
 
     public void sendMessage(ProxyCorePlayer sender, ChatChannel channel, String message) {
         if (sender == null) return;
-
         if (channel == null) channel = sender.getChatChannel();
-
-        if (!channel.isAvailable(sender)) {
-            ProxyCore.getInstance().sendMessage(sender, "You have " + channel.getDisplayName() + " muted!");
-            ProxyCore.getInstance().sendMessage(sender, "To unmute, go to Menu->Options->Chat Channels");
-            return;
-        }
 
         TextComponent textComponent = new TextComponent();
 
@@ -116,19 +109,10 @@ public class ProxyChat {
 
         FormattedPlayerMessage playerMessage = formatPlayerMessage(message, channel.getPlayerMessageBase());
 
-        if (playerMessage.containsUrl) {
-            if (!sender.canSendUrl()) {
-                ProxyCore.getInstance().sendMessage(sender, "Please ask for permission to send a URL");
-                return;
-            } else {
-                sender.disallowUrl();
-            }
-        }
-
         textComponent.addExtra(playerMessage.textComponent);
 
         for (ProxyCorePlayer pcp : ProxyCore.getInstance().getPlayers().getAll()) {
-            if (channel.isActive(pcp)) {
+            if (channel.isActive(pcp) && channel.canReceive(sender, pcp)) {
                 pcp.getPlayer().sendMessage(textComponent);
             }
         }

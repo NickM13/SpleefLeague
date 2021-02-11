@@ -9,9 +9,12 @@ package com.spleefleague.spleef.game.battle.team;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleUtils;
+import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.team.TeamBattle;
 import com.spleefleague.core.game.battle.team.TeamBattleTeam;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.spleef.Spleef;
@@ -21,6 +24,7 @@ import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.ChatColor;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -28,8 +32,8 @@ import java.util.UUID;
  */
 public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
     
-    public TeamSpleefBattle(List<UUID> players, Arena arena) {
-        super(Spleef.getInstance(), players, arena, TeamSpleefPlayer.class, SpleefMode.TEAM.getBattleMode());
+    public TeamSpleefBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(Spleef.getInstance(), battleId, players, arena, TeamSpleefPlayer.class, SpleefMode.TEAM.getBattleMode());
     }
 
     /**
@@ -93,6 +97,36 @@ public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
     @Override
     public void fillField() {
         SpleefUtils.fillFieldFast(this);
+    }
+
+    @Override
+    protected void applyRewards(TeamBattleTeam<TeamSpleefPlayer> winner) {
+        if (winner.getRoundWins() < 5) {
+            // No rewards for less than 5 round games
+            return;
+        }
+        for (TeamSpleefPlayer bp : battlers.values()) {
+            int coins;
+            int common = 0, rare = 0, epic = 0, legendary = 0;
+            Battle.OreType ore;
+            coins = getRandomCoins(bp.getCorePlayer(),
+                    winner.getPlayers().contains(bp),
+                    0, 15);
+            ore = getRandomOre(bp.getCorePlayer(),
+                    winner.getPlayers().contains(bp),
+                    0.050, 0.02, 0.01, 0.002);
+            switch (ore) {
+                case COMMON: common++; break;
+                case RARE: rare++; break;
+                case EPIC: epic++; break;
+                case LEGENDARY: legendary++; break;
+            }
+            if (coins > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
+            if (common > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
+            if (rare > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
+            if (epic > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
+            if (legendary > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
+        }
     }
 
     @Override

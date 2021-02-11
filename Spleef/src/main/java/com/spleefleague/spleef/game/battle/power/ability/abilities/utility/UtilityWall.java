@@ -49,7 +49,7 @@ public class UtilityWall extends AbilityUtility {
             BlockRaycastResult result = results.next();
             if ((blocks.containsKey(result.getBlockPos()) && !blocks.get(result.getBlockPos()).getBlockData().getMaterial().isAir()) ||
                     !world.getBlockAt(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).getType().isAir()) {
-                Set<BlockPosition> changedBlocks = gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
+                gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
                         structure.getFakeBlocks(), Math.round(getPlayer().getLocation().getYaw() / 45) * 45),
                         result.getBlockPos()));
                 return true;

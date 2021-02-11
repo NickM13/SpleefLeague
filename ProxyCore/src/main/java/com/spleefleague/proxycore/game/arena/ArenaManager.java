@@ -40,8 +40,10 @@ public class ArenaManager {
         return modeArenaMap.get(mode).size();
     }
 
+    private static final SortedMap<String, Arena> EMPTY = new TreeMap<>();
+
     public Collection<Arena> getArenas(String mode) {
-        return modeArenaMap.get(mode).values();
+        return modeArenaMap.getOrDefault(mode, EMPTY).values();
     }
 
     public Arena getArena(String mode, String arenaName) {

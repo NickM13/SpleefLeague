@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.UUID;
 
 public class BungeeListenerBattleStart extends BungeeListener<PacketBungeeBattleStart> {
 
@@ -33,9 +34,8 @@ public class BungeeListenerBattleStart extends BungeeListener<PacketBungeeBattle
         if (arena == null) Arenas.getRandom(mode);
         try {
             Battle<?> battle = mode.getBattleClass()
-                    .getDeclaredConstructor(List.class, Arena.class)
-                    .newInstance(packet.players, arena);
-            //battle.startBattle();
+                    .getDeclaredConstructor(UUID.class, List.class, Arena.class)
+                    .newInstance(packet.battleId, packet.players, arena);
             Core.getInstance().getBattleManager(mode).startMatch(battle);
             mode.addBattle(battle);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {

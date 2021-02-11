@@ -34,8 +34,8 @@ public class ProSJBattle extends SoloBattle<ProSJPlayer> {
     protected Point nextJumpPoint;
     protected int forwardVision = 1;
 
-    public ProSJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, ProSJPlayer.class, SJMode.PRO.getBattleMode());
+    public ProSJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, ProSJPlayer.class, SJMode.PRO.getBattleMode());
     }
     
     @Override

@@ -6,6 +6,7 @@ import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefBattle;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixFuture;
 import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
 
 import java.util.Random;
 import java.util.Set;
@@ -19,8 +20,11 @@ public class AffixDecay extends ClassicSpleefAffixFuture {
     public AffixDecay() {
         super();
         displayName = "Decay";
-        this.activateTime = 5;
+        this.activateTime = 90;
     }
+
+    private static final BlockData INDICATOR = Material.RED_CONCRETE_POWDER.createBlockData();
+    private static final BlockData AIR = Material.AIR.createBlockData();
 
     @Override
     protected void updateActive(ClassicSpleefBattle battle) {
@@ -29,8 +33,8 @@ public class AffixDecay extends ClassicSpleefAffixFuture {
         BlockPosition randomPos = blockPositionSet.toArray(new BlockPosition[0])[new Random().nextInt(blockPositionSet.size())];
         FakeBlock fb = battle.getGameWorld().getFakeBlocks().get(randomPos);
         if (fb != null && !fb.getBlockData().getMaterial().isAir()) {
-            battle.getGameWorld().setBlock(randomPos, Material.SNOW.createBlockData("[layers=7]"));
-            battle.getGameWorld().setBlockDelayed(randomPos, Material.AIR.createBlockData(), 20L);
+            battle.getGameWorld().setBlock(randomPos, INDICATOR);
+            battle.getGameWorld().setBlockDelayed(randomPos, AIR, 20L);
         }
     }
 

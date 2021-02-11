@@ -72,10 +72,24 @@ public class Artisans {
         save(artisan);
     }
 
-    public static void setChest(String identifier, String chestName) {
+    public static void setCrate(String identifier, String chestName) {
         Artisan artisan = artisans.get(identifier);
         if (artisan == null) return;
         artisan.setCrate(chestName);
+        save(artisan);
+    }
+
+    public static void setBackground(String identifier, int background) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setBackground(background);
+        save(artisan);
+    }
+
+    public static void setCoinCost(String identifier, int coin) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setCoinCost(coin);
         save(artisan);
     }
     
@@ -159,7 +173,6 @@ public class Artisans {
         Player p = event.getPlayer();
         CorePlayer cp = Core.getInstance().getPlayers().get(p);
         Entity entity = event.getRightClicked();
-        System.out.println(entity.getUniqueId());
         if (entityVendorMap.containsKey(entity.getUniqueId())) {
             entityVendorMap.get(entity.getUniqueId()).openShop(cp);
         }
@@ -193,6 +206,13 @@ public class Artisans {
      * @param entity Entity
      */
     public static void setupEntityVendor(Artisan artisan, Entity entity) {
+        if (artisan == null) return;
+        if (artisan.getEntityUuid() != null) {
+            Entity entity1 = Bukkit.getEntity(artisan.getEntityUuid());
+            if (entity1 != null) {
+                clearEntityVendor(entity1);
+            }
+        }
         System.out.println(entity.getUniqueId());
         if (entityVendorMap.containsKey(entity.getUniqueId())
                 && entityVendorMap.get(entity.getUniqueId()) == artisan) {
@@ -222,8 +242,7 @@ public class Artisans {
      */
     public static void clearEntityVendor(Entity entity) {
         if (entityVendorMap.containsKey(entity.getUniqueId())) {
-            entityVendorMap.get(entity.getUniqueId()).setEntityUuid(null);
-            entityVendorMap.remove(entity.getUniqueId());
+            entityVendorMap.remove(entity.getUniqueId()).setEntityUuid(null);
             entity.setCustomName("");
             entity.setCustomNameVisible(false);
             if (entity instanceof LivingEntity) {

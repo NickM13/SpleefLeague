@@ -31,6 +31,10 @@ public class ProxyFriendsList extends FriendsList {
         return new HashSet<>();
     }
 
+    public Set<UUID> getAll() {
+        return friends.keySet();
+    }
+
     public void addFriend(UUID uuid) {
         friends.put(uuid, new FriendInfo(uuid));
     }

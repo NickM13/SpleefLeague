@@ -3,7 +3,6 @@ package com.spleefleague.core.game.battle.versus;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
@@ -24,8 +23,7 @@ import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.coreapi.utils.packet.shared.NumAction;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
-import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndRated;
-import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndUnrated;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
@@ -43,8 +41,8 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     
     protected int playToPoints = 5;
     
-    public VersusBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
-        super(plugin, players, arena, battlePlayerClass, battleMode);
+    public VersusBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
     
     /**
@@ -155,19 +153,21 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void updatePhysicalScoreboard() {
         for (Position scoreboard : scoreboards) {
             if (sortedBattlers.size() > 0) {
-                BuildStructure score0 = BuildStructures.get("score" + sortedBattlers.get(0).getRoundWins());
+                int score = sortedBattlers.get(0).getRoundWins();
+                BuildStructure score0 = BuildStructures.get("score" + (score > 9 ? "+" : score));
                 if (score0 != null) {
                     Map<BlockPosition, FakeBlock> blocks = score0.getFakeBlocks();
                     blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(blocks, (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
-                    gameWorld.setBlocks(blocks);
+                    gameWorld.setBlocksForced(blocks);
                 }
             }
             if (sortedBattlers.size() > 1) {
-                BuildStructure score1 = BuildStructures.get("score" + sortedBattlers.get(1).getRoundWins());
+                int score = sortedBattlers.get(1).getRoundWins();
+                BuildStructure score1 = BuildStructures.get("score" + (score > 9 ? "+" : score));
                 if (score1 != null) {
                     Map<BlockPosition, FakeBlock> blocks = score1.getFakeBlocks();
-                    blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(FakeUtils.translateBlocks(blocks, new BlockPosition(6, 0, 0)), (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
-                    gameWorld.setBlocks(blocks);
+                    blocks = FakeUtils.translateBlocks(FakeUtils.rotateBlocks(FakeUtils.translateBlocks(blocks, new BlockPosition(7, 0, 0)), (int) scoreboard.getYaw()), scoreboard.toBlockPosition());
+                    gameWorld.setBlocksForced(blocks);
                 }
             }
         }
@@ -249,9 +249,6 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     public void endBattle(BP winner) {
         if (winner == null) {
-            Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
-                    getMode().getName(),
-                    battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
             TextComponent text = new TextComponent();
             text.addExtra("Battle between ");
             text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
@@ -266,9 +263,6 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
             }
             if (loser == null) {
-                Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
-                        getMode().getName(),
-                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 loser = winner;
                 TextComponent text = new TextComponent();
                 text.addExtra(winner.getCorePlayer().getChatName());
@@ -294,15 +288,6 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 applyRewards(winner);
                 int change = applyEloChange(winner);
 
-                Core.getInstance().sendPacket(new PacketSpigotBattleEndRated(
-                        getMode().getName(),
-                        getMode().getSeason(),
-                        battlers.values().stream().map(bp -> new RatedPlayerInfo(
-                                NumAction.CHANGE,
-                                bp.getCorePlayer().getUniqueId(),
-                                bp.equals(winner) ? change : -change)
-                        ).collect(Collectors.toList())));
-
                 TextComponent text = new TextComponent();
                 text.addExtra(winner.getCorePlayer().getChatName());
                 text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
@@ -317,6 +302,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 sendNotification(text);
             }
         }
+        Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         sendRequeueMessage();
         destroy();
     }

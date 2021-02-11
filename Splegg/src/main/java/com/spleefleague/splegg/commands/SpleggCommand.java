@@ -60,6 +60,7 @@ public class SpleggCommand extends CoreCommand {
         return Sets.newTreeSet(Arenas.getUnpaused(SpleggMode.valueOf(mode.toUpperCase()).getBattleMode()).keySet());
     }
 
+    @CommandAnnotation
     public void splegg(CorePlayer sender) {
         sender.getMenu().setInventoryMenuItem(Splegg.getInstance().getSpleggMenu());
     }

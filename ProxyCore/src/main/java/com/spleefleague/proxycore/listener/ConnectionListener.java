@@ -9,6 +9,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshA
 import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.droplet.Droplet;
+import com.spleefleague.proxycore.game.BattleSessionManager;
 import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -20,6 +21,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -94,6 +96,14 @@ public class ConnectionListener implements Listener {
             TextComponent click = new TextComponent();
             click.addExtra(ChatColor.DARK_GRAY + "[" + ChatColor.GREEN + "Click to view" + ChatColor.DARK_GRAY + "]");
             click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend requests"));
+            textComponent.addExtra(click);
+            ProxyCore.getInstance().sendMessage(pcp, textComponent);
+        }
+        if (pcp.getCurrentBattle() != null && BattleSessionManager.isOngoing(pcp.getCurrentBattle())) {
+            textComponent = new TextComponent("Looks like you disconnected from your last battle! Would you like to rejoin?");
+            TextComponent click = new TextComponent();
+            click.addExtra(ChatColor.DARK_GRAY + "[" + ChatColor.GREEN + "Rejoin battle" + ChatColor.DARK_GRAY + "]");
+            click.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/rejoin"));
             textComponent.addExtra(click);
             ProxyCore.getInstance().sendMessage(pcp, textComponent);
         }

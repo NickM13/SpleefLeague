@@ -249,9 +249,9 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
-            if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
+            //if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
                 event.setCancelled(true);
-            }
+            //}
         }
     }
 
@@ -298,7 +298,7 @@ public class EnvironmentListener implements Listener {
      * @param event Event
      */
     @EventHandler
-    public void onEntityInteractEntity(PlayerInteractEntityEvent event) {
+    public void onEntityInteractEntity(PlayerInteractAtEntityEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         if (!cp.canBuild()) {
             if (!interactableEntities.contains(event.getRightClicked().getType())) {
@@ -523,7 +523,9 @@ public class EnvironmentListener implements Listener {
 
     private static final Set<Material> interactables = Sets.newHashSet(Material.STONE_BUTTON, Material.OAK_BUTTON, Material.SPRUCE_BUTTON,
             Material.BIRCH_BUTTON, Material.JUNGLE_BUTTON, Material.ACACIA_BUTTON, Material.DARK_OAK_BUTTON, Material.LEVER,
-            Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.OAK_DOOR, Material.JUNGLE_DOOR, Material.DARK_OAK_DOOR);
+            Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.OAK_DOOR, Material.JUNGLE_DOOR, Material.DARK_OAK_DOOR,
+            Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.JUNGLE_FENCE_GATE,
+            Material.OAK_FENCE_GATE, Material.BELL, Material.CHEST, Material.TRAPPED_CHEST);
 
     /**
      * Prevent most of world from being interacted with

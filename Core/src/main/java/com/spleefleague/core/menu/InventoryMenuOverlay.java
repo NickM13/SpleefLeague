@@ -55,6 +55,10 @@ public class InventoryMenuOverlay {
         return this;
     }
 
+    public void clear() {
+        sortedItems.clear();
+    }
+
     public void addItem(InventoryMenuItem item, int x, int y) {
         addItem(item, (x) + (y * (colLast - colFirst + 1)));
     }

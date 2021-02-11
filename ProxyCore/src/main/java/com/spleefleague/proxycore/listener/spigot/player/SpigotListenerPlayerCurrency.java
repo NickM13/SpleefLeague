@@ -18,7 +18,15 @@ public class SpigotListenerPlayerCurrency extends SpigotListener<PacketSpigotPla
 
     @Override
     protected void receive(Connection sender, PacketSpigotPlayerCurrency packet) {
-        System.out.println("SpigotListenerPlayerCurrency.java");
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
+        switch (packet.action) {
+            case SET:
+                pcp.getPurse().setCurrency(packet.type.name(), packet.amount);
+                break;
+            case CHANGE:
+                pcp.getPurse().addCurrency(packet.type.name(), packet.amount);
+                break;
+        }
     }
 
 }

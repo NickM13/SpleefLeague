@@ -41,6 +41,7 @@ public class PersonalScoreboard {
         
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
+
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
             Team team = scoreboard.getTeam(cp2.getRank().getIdentifierShort());
             if (team != null) {

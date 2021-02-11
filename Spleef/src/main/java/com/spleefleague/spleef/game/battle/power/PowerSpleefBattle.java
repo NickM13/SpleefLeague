@@ -10,6 +10,8 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleUtils;
+import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
@@ -40,8 +42,8 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
 
     private BuildStructure randomField;
 
-    public PowerSpleefBattle(List<UUID> players, Arena arena) {
-        super(Spleef.getInstance(), players, arena, PowerSpleefPlayer.class, SpleefMode.POWER.getBattleMode());
+    public PowerSpleefBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(Spleef.getInstance(), battleId, players, arena, PowerSpleefPlayer.class, SpleefMode.POWER.getBattleMode());
     }
     
     /**
@@ -115,7 +117,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         super.startRound();
         for (PowerSpleefPlayer psp : battlers.values()) {
             psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
-            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("Guilles_Theme.nbs"), 0.2f);
+            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("Biogra11.nbs"), 0.2f);
         }
     }
 
@@ -168,25 +170,27 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             // No rewards for less than 5 round games
             return;
         }
-        for (PowerSpleefPlayer psp : battlers.values()) {
+        for (BattlePlayer bp : battlers.values()) {
             int coins;
             int common = 0, rare = 0, epic = 0, legendary = 0;
-            if (psp.getPlayer().equals(winner.getPlayer())) {
-                coins = new Random().nextInt(4) + 3;
-            } else {
-                coins = new Random().nextInt(3) + 1;
-            }
-            switch (getRandomOre(0.025, 0.01, 0.005, 0.001)) {
+            Battle.OreType ore;
+            coins = getRandomCoins(bp.getCorePlayer(),
+                    bp.getPlayer().equals(winner.getPlayer()),
+                    0, 4);
+            ore = getRandomOre(bp.getCorePlayer(),
+                    bp.getPlayer().equals(winner.getPlayer()),
+                    0.025, 0.01, 0.005, 0.001);
+            switch (ore) {
                 case COMMON: common++; break;
                 case RARE: rare++; break;
                 case EPIC: epic++; break;
                 case LEGENDARY: legendary++; break;
             }
-            if (coins > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-            if (common > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-            if (rare > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-            if (epic > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-            if (legendary > 0) psp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
+            if (coins > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
+            if (common > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
+            if (rare > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
+            if (epic > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
+            if (legendary > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
         }
     }
 

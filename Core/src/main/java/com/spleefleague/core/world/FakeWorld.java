@@ -141,6 +141,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             public void onPacketSending(PacketEvent event) {
                 PacketContainer mapChunkPacket = event.getPacket();
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                if (cp == null) return;
                 ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
                 Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
                 Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
@@ -246,7 +247,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             removeBlock(entry.getKey());
         }
         fakeBlocks.clear();
-        fakeChunks.clear();
+        synchronized (fakeChunks) {
+            fakeChunks.clear();
+        }
     }
 
     public void reset() {
@@ -267,7 +270,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             fwpit.remove();
         }
         fakeBlocks.clear();
-        fakeChunks.clear();
+        synchronized (fakeChunks) {
+            fakeChunks.clear();
+        }
         playerMap.clear();
     }
 
@@ -345,19 +350,21 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * @param cp Core Player
      */
     public void clearPlayer(CorePlayer cp) {
-        for (Map.Entry<ChunkCoord, Set<BlockPosition>> entry : fakeChunks.entrySet()) {
-            Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
-            for (BlockPosition pos : entry.getValue()) {
-                short relativeLoc = (short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + pos.getY());
-                if (!fakeBlocks.containsKey(relativeLoc)) {
-                    fakeBlocks.put(relativeLoc, new FakeBlock(getHighestBlock(pos, cp)));
+        synchronized (fakeChunks) {
+            for (Map.Entry<ChunkCoord, Set<BlockPosition>> entry : fakeChunks.entrySet()) {
+                Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
+                for (BlockPosition pos : entry.getValue()) {
+                    short relativeLoc = (short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + pos.getY());
+                    if (!fakeBlocks.containsKey(relativeLoc)) {
+                        fakeBlocks.put(relativeLoc, new FakeBlock(getHighestBlock(pos, cp)));
+                    }
                 }
-            }
-            if (fakeBlocks.size() > 0) {
-                PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
-                        entry.getKey(),
-                        fakeBlocks);
-                Core.sendPacket(cp, multiBlockChangePacket);
+                if (fakeBlocks.size() > 0) {
+                    PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(
+                            entry.getKey(),
+                            fakeBlocks);
+                    Core.sendPacket(cp, multiBlockChangePacket);
+                }
             }
         }
 
@@ -490,7 +497,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     }
 
     public final boolean isReallySolid(BlockPosition pos) {
-        return isBlockSolid(pos) || getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getBlockData().getMaterial().isAir();
+        return isBlockSolid(pos) || !getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getBlockData().getMaterial().isAir();
     }
 
     /**
@@ -507,11 +514,34 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
         FakeBlock fb = new FakeBlock(blockData);
         fakeBlocks.put(pos, fb);
-        if (!fakeChunks.containsKey(coord)) {
-            fakeChunks.put(coord, new HashSet<>());
+        synchronized (fakeChunks) {
+            if (!fakeChunks.containsKey(coord)) {
+                fakeChunks.put(coord, new HashSet<>());
+            }
+            fakeChunks.get(coord).add(pos);
         }
-        fakeChunks.get(coord).add(pos);
         updateBlock(pos);
+        return true;
+    }
+
+    /**
+     * Sets a fake block status in the world with the option to
+     * instantly update and display or not
+     *
+     * @param pos Block Position
+     * @param blockData Block Data
+     */
+    public boolean setBlockForced(BlockPosition pos, BlockData blockData) {
+        ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
+        FakeBlock fb = new FakeBlock(blockData);
+        fakeBlocks.put(pos, fb);
+        synchronized (fakeChunks) {
+            if (!fakeChunks.containsKey(coord)) {
+                fakeChunks.put(coord, new HashSet<>());
+            }
+            fakeChunks.get(coord).add(pos);
+            updateBlock(pos);
+        }
         return true;
     }
 
@@ -523,11 +553,13 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     public void removeBlock(BlockPosition pos) {
         ChunkCoord coord = ChunkCoord.fromBlockPos(pos);
         if (fakeBlocks.remove(pos) != null) {
-            fakeChunks.get(coord).remove(pos);
-            if (fakeChunks.get(coord).isEmpty()) {
-                fakeChunks.remove(coord);
+            synchronized (fakeChunks) {
+                fakeChunks.get(coord).remove(pos);
+                if (fakeChunks.get(coord).isEmpty()) {
+                    fakeChunks.remove(coord);
+                }
+                updateBlock(pos);
             }
-            updateBlock(pos);
         }
     }
 
@@ -543,6 +575,16 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 removeBlock(entry.getKey());
             } else {
                 setBlock(entry.getKey(), entry.getValue().getBlockData());
+            }
+        }
+    }
+
+    public void setBlocksForced(Map<BlockPosition, FakeBlock> blocks) {
+        for (Map.Entry<BlockPosition, FakeBlock> entry : blocks.entrySet()) {
+            if (entry.getValue().getBlockData().getMaterial().isAir()) {
+                removeBlock(entry.getKey());
+            } else {
+                setBlockForced(entry.getKey(), entry.getValue().getBlockData());
             }
         }
     }
@@ -607,7 +649,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         Set<BlockPosition> prevBlocks = new HashSet<>();
         for (Map.Entry<BlockPosition, FakeBlock> block : blocks.entrySet()) {
             FakeBlock fb = fakeBlocks.get(block.getKey());
-            if (fb == null || fb.getBlockData().getMaterial().isAir()) {
+            if ((fb == null || fb.getBlockData().getMaterial().isAir()) && getWorld().getBlockAt(block.getKey().toLocation(getWorld())).getType().isAir()) {
                 prevBlocks.add(block.getKey());
                 setBlock(block.getKey(), block.getValue().getBlockData());
             }

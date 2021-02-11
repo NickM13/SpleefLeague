@@ -19,6 +19,7 @@ public class SpigotListenerBattleSpectate extends SpigotListener<PacketSpigotBat
 
     @Override
     protected void receive(Connection sender, PacketSpigotBattleSpectate packet) {
+        /*
         ProxyCorePlayer spectator = ProxyCore.getInstance().getPlayers().get(packet.spectator);
         ProxyCorePlayer target = ProxyCore.getInstance().getPlayers().get(packet.target);
         if (target.getBattleContainer() != null) {
@@ -31,6 +32,7 @@ public class SpigotListenerBattleSpectate extends SpigotListener<PacketSpigotBat
         } else {
             spectator.getPlayer().sendMessage(new TextComponent(ChatColor.YELLOW + target.getName() + ChatColor.RED + "'s game cannot be spectated"));
         }
+         */
     }
 
 }

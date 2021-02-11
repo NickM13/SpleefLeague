@@ -5,7 +5,6 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
-import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.request.EndGameRequest;
@@ -16,8 +15,7 @@ import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.coreapi.utils.packet.shared.NumAction;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
-import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndRated;
-import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEndUnrated;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -37,8 +35,8 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     protected Set<TeamBattleTeam<BP>> remainingTeams = new HashSet<>();
     protected int playToPoints = 1;
 
-    public TeamBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
-        super(plugin, players, arena, battlePlayerClass, battleMode);
+    public TeamBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
 
     /**
@@ -291,9 +289,6 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      */
     public void endBattleTeam(TeamBattleTeam<BP> winner) {
         if (winner == null) {
-            Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
-                    getMode().getName(),
-                    battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
             TextComponent text = new TextComponent();
             text.addExtra("Battle between ");
             text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
@@ -308,9 +303,6 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                 }
             }
             if (loser == null) {
-                Core.getInstance().sendPacket(new PacketSpigotBattleEndUnrated(
-                        getMode().getName(),
-                        battlers.values().stream().map(bp -> bp.getCorePlayer().getUniqueId()).collect(Collectors.toList())));
                 /*
                 loser = winner;
                 TextComponent text = new TextComponent();
@@ -338,15 +330,6 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                 applyRewards(winner);
                 int change = applyEloChange(winner);
 
-                Core.getInstance().sendPacket(new PacketSpigotBattleEndRated(
-                        getMode().getName(),
-                        getMode().getSeason(),
-                        battlers.values().stream().map(bp -> new RatedPlayerInfo(
-                                NumAction.CHANGE,
-                                bp.getCorePlayer().getUniqueId(),
-                                bp.equals(winner) ? change : -change)
-                        ).collect(Collectors.toList())));
-
                 /*
                 TextComponent text = new TextComponent();
                 text.addExtra(winner.getCorePlayer().getChatName());
@@ -363,10 +346,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                  */
             }
         }
-        if (winner != null) {
-            applyEloChange(winner);
-            sendEndMessage(winner);
-        }
+        Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);
         finished = true;
     }

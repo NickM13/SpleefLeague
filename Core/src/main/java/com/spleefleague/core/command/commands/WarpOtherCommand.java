@@ -26,16 +26,33 @@ public class WarpOtherCommand extends CoreCommand {
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");
     }
-    
+
     @CommandAnnotation
-    public void warpOther(CommandSender cs,
-            CorePlayer cp,
-            @OptionArg(listName="warpList") String warpName) {
+    public void warpOther(CorePlayer cs,
+                          CorePlayer cp,
+                          @OptionArg(listName="warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
         if (warp != null) {
             if (cp.warp(warp)) {
                 success(cp, "You were warped to " + warp.getIdentifier());
                 success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
+            } else {
+
+            }
+        }
+    }
+
+    @CommandAnnotation
+    public void warpOther(CommandSender cs,
+                          CorePlayer cp,
+                          @OptionArg(listName="warpList") String warpName) {
+        Warp warp = Warp.getWarp(warpName);
+        if (warp != null) {
+            if (cp.warp(warp)) {
+                success(cp, "You were warped to " + warp.getIdentifier());
+                success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
+            } else {
+
             }
         }
     }

@@ -54,6 +54,8 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         for (Vendorable.Rarity rarity : Vendorable.Rarity.values()) {
             available.put(rarity, new ArrayList<>());
         }
+        /*
+        // This finds all possible items that you haven't unlocked that arent locked behind a base item
         for (String parent : Vendorable.getParentTypeNames()) {
             boolean first = true;
             for (Map.Entry<String, Vendorable> entry : Vendorables.getAll(parent).entrySet()) {
@@ -71,6 +73,24 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                         if (!collectibleInfo.getOwnedSkins().containsKey(skin)) {
                             available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
                         }
+                    }
+                }
+            }
+        }
+        */
+        for (String parent : Vendorable.getParentTypeNames()) {
+            boolean first = true;
+            for (Map.Entry<String, Vendorable> entry : Vendorables.getAll(parent).entrySet()) {
+                if (first) {
+                    if (!(entry.getValue() instanceof Collectible)) break;
+                    first = false;
+                }
+                Vendorable.Rarity rarity = entry.getValue().getRarity();
+                Collectible collectible = (Collectible) entry.getValue();
+                if (collectible.getUnlockType().isRolled()) {
+                    available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier());
+                    for (String skin : collectible.getSkinIds()) {
+                        available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
                     }
                 }
             }
@@ -224,8 +244,38 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         return collectible.getDisplayItem(getInfo(collectible).getSelectedSkin());
     }
 
+    public <T extends Collectible> ItemStack getActiveIcon(Class<T> clazz, String affix) {
+        T collectible = getActive(clazz, affix);
+        return collectible.getDisplayItem(getInfo(collectible).getSelectedSkin());
+    }
+
     public <T extends Collectible> String getActiveName(Class<T> clazz) {
         T collectible = getActive(clazz);
+        CollectibleInfo info = getInfo(collectible);
+        if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
+            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+        } else {
+            return collectible.getDisplayName();
+        }
+    }
+
+    public <T extends Collectible> String getActiveName(Class<T> clazz, String affix) {
+        T collectible = getActive(clazz, affix);
+        CollectibleInfo info = getInfo(collectible);
+        if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
+            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+        } else {
+            return collectible.getDisplayName();
+        }
+    }
+
+    public <T extends Collectible> ItemStack getSkinnedIcon(Collectible collectible) {
+        if (!contains(collectible)) return collectible.getDisplayItem();
+        return collectible.getDisplayItem(getInfo(collectible).getSelectedSkin());
+    }
+
+    public <T extends Collectible> String getSkinnedName(Collectible collectible) {
+        if (!contains(collectible)) return collectible.getDisplayName();
         CollectibleInfo info = getInfo(collectible);
         if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
             return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";

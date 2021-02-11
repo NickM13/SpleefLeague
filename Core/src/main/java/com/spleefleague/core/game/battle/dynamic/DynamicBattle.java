@@ -12,6 +12,7 @@ import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
@@ -30,8 +31,8 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected int initBattlerCount;
     protected int avgBattlerRating;
 
-    public DynamicBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
-        super(plugin, players, arena, battlePlayerClass, battleMode);
+    public DynamicBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
         roundCountdown = 10;
     }
     
@@ -164,7 +165,9 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void applyEloChange(@Nonnull BP winner) {
         applyEloChange(winner.getCorePlayer(), 0);
     }
-    
+
+    protected abstract void applyRewards(BP winner);
+
     /**
      * End a battle with a determined winner
      *
@@ -172,10 +175,12 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void endBattle(BP winner) {
-        applyEloChange(winner);
         if (winner != null) {
+            applyEloChange(winner);
             sendEndMessage(winner);
+            applyRewards(winner);
         }
+        Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);
         finished = true;
     }

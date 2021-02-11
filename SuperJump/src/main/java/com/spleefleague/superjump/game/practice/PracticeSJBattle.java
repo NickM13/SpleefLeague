@@ -20,8 +20,8 @@ import java.util.UUID;
  */
 public class PracticeSJBattle extends SoloBattle<PracticeSJPlayer> {
 
-    public PracticeSJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, PracticeSJPlayer.class, SJMode.PRACTICE.getBattleMode());
+    public PracticeSJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, PracticeSJPlayer.class, SJMode.PRACTICE.getBattleMode());
     }
     
     @Override

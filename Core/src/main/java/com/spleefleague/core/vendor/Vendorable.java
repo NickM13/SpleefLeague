@@ -55,20 +55,26 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
 
     public enum UnlockType {
 
-        DEFAULT(true),
-        HIDDEN(false),
-        EVENT(false),
-        SHOP(true),
-        EXPLORE(true);
+        DEFAULT(true, false),
+        HIDDEN(false, false),
+        EVENT(false, false),
+        SHOP(true, true),
+        EXPLORE(true, false);
 
-        boolean showLocked;
+        private final boolean showLocked;
+        private final boolean rolled;
 
-        UnlockType(boolean showLocked) {
+        UnlockType(boolean showLocked, boolean rolled) {
             this.showLocked = showLocked;
+            this.rolled = rolled;
         }
 
         public boolean shouldShowLocked() {
             return showLocked;
+        }
+
+        public boolean isRolled() {
+            return rolled;
         }
 
     }

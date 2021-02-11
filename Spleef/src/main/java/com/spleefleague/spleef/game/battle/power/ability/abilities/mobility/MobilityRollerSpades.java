@@ -154,7 +154,6 @@ public class MobilityRollerSpades extends AbilityMobility {
     public void reset() {
         getPlayer().removePotionEffect(PotionEffectType.SPEED);
         spadeTime = -1;
-        marked.clear();
         clear();
     }
 

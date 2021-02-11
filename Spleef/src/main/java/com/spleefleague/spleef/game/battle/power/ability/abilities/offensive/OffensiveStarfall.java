@@ -47,8 +47,8 @@ public class OffensiveStarfall extends AbilityOffensive {
     public boolean onUse() {
         starfall = getUser().getBattle().getRoundTime() + MAX_TIME;
         getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 2);
-        getPlayer().addPotionEffect(PotionEffectType.SLOW.createEffect(80, 2));
-        getUser().setChanneling(true);
+        getPlayer().addPotionEffect(PotionEffectType.SLOW.createEffect(80, 1));
+        getUser().setChanneling(false);
         return true;
     }
 

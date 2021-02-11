@@ -14,13 +14,15 @@ import java.util.UUID;
  */
 public class PacketBungeeBattleStart extends PacketBungee {
 
+    public UUID battleId;
     public String mode;
     public String query;
     public List<UUID> players;
 
     public PacketBungeeBattleStart() { }
 
-    public PacketBungeeBattleStart(String mode, String query, List<UUID> players) {
+    public PacketBungeeBattleStart(UUID uuid, String mode, String query, List<UUID> players) {
+        this.battleId = uuid;
         this.mode = mode;
         this.query = query;
         this.players = players;

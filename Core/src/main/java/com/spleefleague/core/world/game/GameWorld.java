@@ -515,19 +515,25 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         }
     }
 
-    private static List<Color> colors = Lists.newArrayList(Color.BLUE, Color.AQUA, Color.RED, Color.YELLOW);
+    private static final List<Color> colors = Lists.newArrayList(
+            Color.BLUE, Color.AQUA,
+            Color.RED, Color.YELLOW,
+            Color.GREEN, Color.TEAL,
+            Color.BLACK, Color.WHITE);
 
     private int portalPhysicCheck = 0;
 
     protected void updatePlayerPortals() {
-        int i = 0;
-        for (PortalPair portal : playerPortals.values()) {
+        for (Map.Entry<UUID, PortalPair> entry : playerPortals.entrySet()) {
+            PortalPair portal = entry.getValue();
+            int i = portal.colorIndex;
             if (portal.isLinked()) {
-                for (GameWorldPlayer gwp : getPlayerMap().values()) {
+                GameWorldPlayer gwp = getPlayerMap().get(entry.getKey());
+                if (gwp != null) {
                     Location toCompare = gwp.getPlayer().getLocation().clone().add(0, 1, 0);
-                    if (portal.canTeleport1(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal1().getTpLoc()) < 1.5) {
+                    if (portal.canTeleport1(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal1().getTpLoc()) < 1.5 && gwp.portal()) {
                         portal.teleportTo2(gwp.getPlayer());
-                    } else if (portal.canTeleport2(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal2().getTpLoc()) < 1.5) {
+                    } else if (portal.canTeleport2(gwp.getPlayer().getUniqueId()) && toCompare.distance(portal.getPortal2().getTpLoc()) < 1.5 && gwp.portal()) {
                         portal.teleportTo1(gwp.getPlayer());
                     }
                 }
@@ -706,7 +712,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
 
     public void createPortal(CorePlayer shooter, BlockPosition pos, BlockFace face) {
         if (!playerPortals.containsKey(shooter.getUniqueId())) {
-            playerPortals.put(shooter.getUniqueId(), new PortalPair());
+            playerPortals.put(shooter.getUniqueId(), new PortalPair(playerPortals.size()));
         }
         playerPortals.get(shooter.getUniqueId()).pushPortal(getWorld(), pos, face);
     }

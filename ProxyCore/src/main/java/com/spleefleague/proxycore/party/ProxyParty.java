@@ -89,7 +89,7 @@ public class ProxyParty extends Party {
     }
 
     public int getPlayerCount() {
-        return playerSet.size();
+        return playerList.size();
     }
 
     public void kick(UUID uuid) {

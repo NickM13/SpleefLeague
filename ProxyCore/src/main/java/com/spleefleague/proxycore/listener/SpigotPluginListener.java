@@ -30,16 +30,16 @@ import java.util.Map;
  */
 public class SpigotPluginListener implements Listener {
 
-    private final Map<PacketType.Spigot, SpigotListener<?>> registeredListeners = new HashMap();
+    private final Map<PacketType.Spigot, SpigotListener<?>> registeredListeners = new HashMap<>();
 
     public SpigotPluginListener() {
         ProxyCore.getInstance().getProxy().registerChannel("slcore:spigot");
 
-        registeredListeners.put(PacketType.Spigot.BATTLE_END_RATED, new SpigotListenerBattleEndRated());
-        registeredListeners.put(PacketType.Spigot.BATTLE_END_UNRATED, new SpigotListenerBattleEndUnrated());
+        registeredListeners.put(PacketType.Spigot.BATTLE_END, new SpigotListenerBattleEnd());
         registeredListeners.put(PacketType.Spigot.BATTLE_SPECTATE, new SpigotListenerBattleSpectate());
         registeredListeners.put(PacketType.Spigot.BATTLE_CHALLENGE, new SpigotListenerBattleChallenge());
         registeredListeners.put(PacketType.Spigot.BATTLE_FORCE_START, new SpigotListenerBattleForceStart());
+        registeredListeners.put(PacketType.Spigot.BATTLE_PING, new SpigotListenerBattlePing());
         registeredListeners.put(PacketType.Spigot.CHAT_CHANNEL_JOIN, new SpigotListenerChatChannelJoin());
         registeredListeners.put(PacketType.Spigot.CHAT_CONSOLE, new SpigotListenerChatConsole());
         registeredListeners.put(PacketType.Spigot.CHAT_FRIEND, new SpigotListenerChatFriend());

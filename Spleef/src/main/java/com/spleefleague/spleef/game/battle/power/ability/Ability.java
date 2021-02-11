@@ -21,9 +21,27 @@ import java.util.function.Function;
 public abstract class Ability {
 
     public enum Type {
-        OFFENSIVE(3, Material.NETHER_BRICK, ChatColor.RED + "" + ChatColor.BOLD, "Offensive", "(Drop Item)", Color.fromRGB(255, 63, 63), "Spleef:PowerOffensive"),
-        UTILITY(4, Material.IRON_INGOT, ChatColor.BLUE + "" + ChatColor.BOLD, "Utility", "(Swap Item)", Color.fromRGB(63, 63, 255), "Spleef:PowerUtility"),
-        MOBILITY(5, Material.GOLD_INGOT, ChatColor.GREEN + "" + ChatColor.BOLD, "Mobility", "(Place Block)", Color.fromRGB(127, 255, 127), "Spleef:PowerMobility");
+        MOBILITY(5,
+                Material.GOLD_INGOT,
+                ChatColor.GREEN + "" + ChatColor.BOLD,
+                "Mobility",
+                "(Place Block)",
+                Color.fromRGB(127, 255, 127),
+                "Spleef:PowerMobility"),
+        OFFENSIVE(3,
+                Material.NETHER_BRICK,
+                ChatColor.RED + "" + ChatColor.BOLD,
+                "Offensive",
+                "(Drop Item)",
+                Color.fromRGB(255, 63, 63),
+                "Spleef:PowerOffensive"),
+        UTILITY(4,
+                Material.IRON_INGOT,
+                ChatColor.BLUE + "" + ChatColor.BOLD,
+                "Utility",
+                "(Swap Item)",
+                Color.fromRGB(63, 63, 255),
+                "Spleef:PowerUtility");
 
         private final int slot;
         private final Material material;

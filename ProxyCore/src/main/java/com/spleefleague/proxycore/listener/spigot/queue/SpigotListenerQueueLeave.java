@@ -22,8 +22,12 @@ public class SpigotListenerQueueLeave extends SpigotListener<PacketSpigotQueueLe
             hasLeft = true;
         }
         ProxyParty party = ProxyCore.getInstance().getPartyManager().getParty(packet.player);
-        if (party != null && party.getOwner().equals(packet.player) && ProxyCore.getInstance().getQueueManager().leaveAllQueues(party)) {
-            party.sendMessage(new TextComponent("Your party has left all queues"));
+        if (party != null) {
+            if (party.getOwner().equals(packet.player) && ProxyCore.getInstance().getQueueManager().leaveAllQueues(party)) {
+                party.sendMessage(new TextComponent("Your party has left all queues"));
+            } else {
+                ProxyCore.getInstance().getPartyManager().onLeave(packet.player);
+            }
             hasLeft = true;
         }
         if (!hasLeft) {

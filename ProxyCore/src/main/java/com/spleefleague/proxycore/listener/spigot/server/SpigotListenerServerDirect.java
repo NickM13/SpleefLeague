@@ -25,7 +25,7 @@ public class SpigotListenerServerDirect extends SpigotListener<PacketSpigotServe
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.player);
         if (pcp != null && pcp.getPlayer() != null) {
             pcp.transfer(server);
-            pcp.setBattleContainer(null);
+            pcp.setCurrentServer(null);
         }
     }
 

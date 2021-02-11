@@ -9,9 +9,19 @@ import com.spleefleague.core.player.CorePlayer;
  * @since 5/4/2020
  */
 public class ClassicSJPlayer extends BattlePlayer {
-    
+
+    private int falls = 0;
+
     public ClassicSJPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
     }
-    
+
+    public void addFall() {
+        falls++;
+    }
+
+    public int getFalls() {
+        return falls;
+    }
+
 }

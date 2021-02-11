@@ -59,7 +59,7 @@ public class AbilityUtils {
     public static void startFling(PowerSpleefPlayer psp, Vector direction, double time) {
         flingMap.put(psp.getPlayer().getUniqueId(), new PlayerFling(psp, direction, time));
         psp.getPlayer().setGravity(true);
-        psp.getPlayer().setVelocity(direction.clone().normalize().multiply(1.1));
+        psp.getPlayer().setVelocity(direction.clone().multiply(1.1));
     }
 
 }

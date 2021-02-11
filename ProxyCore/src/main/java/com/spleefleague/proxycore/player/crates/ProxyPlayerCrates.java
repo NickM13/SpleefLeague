@@ -38,4 +38,5 @@ public class ProxyPlayerCrates extends PlayerCrates {
         ProxyCore.getInstance().getPlayers().save(owner);
         ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(owner.getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.CRATES)));
     }
+
 }

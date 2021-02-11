@@ -3,6 +3,7 @@ package com.spleefleague.proxycore.player;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.proxycore.ProxyCore;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.bson.Document;
@@ -55,7 +56,19 @@ public class ProxyPlayerManager {
     }
 
     public ProxyCorePlayer onPlayerJoin(ProxiedPlayer pp) {
-        return load(pp);
+        ProxyCorePlayer pcp = load(pp);
+
+        TextComponent text = new TextComponent();
+        text.addExtra(pcp.getChatName());
+        text.addExtra(" has logged in");
+        for (UUID uuid : pcp.getFriends().getAll()) {
+            ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (friend != null && friend.getOptions().getBoolean("Friend:Connection")) {
+                ProxyCore.getInstance().sendMessage(friend, text);
+            }
+        }
+
+        return pcp;
     }
 
     public void onPlayerQuit(ProxiedPlayer pp) {
@@ -63,6 +76,17 @@ public class ProxyPlayerManager {
         pcp.close();
         onlinePlayers.remove(pcp.getUniqueId());
         save(pcp);
+
+        TextComponent text = new TextComponent();
+        text.addExtra(pcp.getChatName());
+        text.addExtra(" has logged out");
+
+        for (UUID uuid : pcp.getFriends().getAll()) {
+            ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (friend != null && friend.getOptions().getBoolean("Friend:Connection")) {
+                ProxyCore.getInstance().sendMessage(friend, text);
+            }
+        }
     }
 
     private ProxyCorePlayer load(ProxiedPlayer pp) {

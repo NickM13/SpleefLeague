@@ -11,6 +11,7 @@ import com.spleefleague.core.vendor.Vendorables;
 import org.bukkit.command.CommandSender;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * @author NickM13
@@ -217,6 +218,28 @@ public class CollectibleCommand extends CoreCommand {
             sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
         } else {
             sender.sendMessage(target.getChatName() + " already had " + identifier);
+        }
+    }
+
+    /**
+     * Adds a collectible to the players collection
+     *
+     * @param sender     Sender
+     * @param l          add
+     * @param targets     Targets
+     * @param identifier Collectible Identifier
+     */
+    @CommandAnnotation
+    public void collectibleAdds(CommandSender sender,
+                               @LiteralArg("add") String l,
+                               List<CorePlayer> targets,
+                               @OptionArg(listName = "collectibles") String identifier) {
+        for (CorePlayer target : targets) {
+            if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
+                sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
+            } else {
+                sender.sendMessage(target.getChatName() + " already had " + identifier);
+            }
         }
     }
 

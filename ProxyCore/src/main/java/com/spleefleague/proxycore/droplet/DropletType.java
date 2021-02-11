@@ -6,8 +6,8 @@ package com.spleefleague.proxycore.droplet;
  */
 public enum DropletType {
 
-    LOBBY(false, 40, 70),
-    MINIGAME(true, 30, 100);
+    LOBBY(false, 50, 70),
+    MINIGAME(true, 20, 100);
 
     public boolean restricted;
     public int softCap;

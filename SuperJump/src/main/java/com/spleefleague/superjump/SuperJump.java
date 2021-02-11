@@ -94,8 +94,8 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     private void initMenu() {
         superJumpMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "SuperJump")
-                .setDescription("Jump and run your way to the finish line as fast as you can. Whether you are racing a single opponent, a group of friends, or even the clock, the objective is the same!" +
-                        "\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying())
+                .setDescription("Jump and run your way to the finish line as fast as you can. Whether you are racing a single opponent, a group of friends, or even the clock, the objective is the same!"
+                        /*"\n\n&7&lCurrently Playing: &6" + getCurrentlyPlaying()*/)
                 .setDisplayItem(Material.LEATHER_BOOTS, 1)
                 .createLinkedContainer("SuperJump");
         

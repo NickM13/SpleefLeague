@@ -54,7 +54,6 @@ public class CorePlayerCrates extends PlayerCrates {
         Map<Vendorable.Rarity, List<String>> available = owner.getCollectibles().getAvailableCollectibles();
 
         double roll;
-        System.out.println("Collectible Count " + collectibleCount + ", " + crate.getCollectibleMin() + ", " + crate.getCollectibleMax());
         for (int i = 0; i < collectibleCount; i++) {
             roll = Math.random() * crate.getTotalCollectibleWeight();
             for (Map.Entry<String, Double> entry : crate.getCollectibleWeightMap().entrySet()) {
@@ -62,7 +61,7 @@ public class CorePlayerCrates extends PlayerCrates {
                 if (roll < 0) {
                     Vendorable.Rarity rarity = Vendorable.Rarity.valueOf(entry.getKey());
                     if (available.get(rarity).isEmpty()) {
-                        Core.getInstance().sendMessage(owner, "Uh oh, you didn't have any collectibles available to roll for!");
+                        Core.getInstance().sendMessage(owner, "Uh oh, something went wrong with your roll!");
                     } else {
                         int roll2 = random.nextInt(available.get(rarity).size());
                         String str = available.get(rarity).remove(roll2);
@@ -75,12 +74,24 @@ public class CorePlayerCrates extends PlayerCrates {
                             continue;
                         }
                         if (parts.length > 2) {
-                            String skin = parts[2];
-                            crateLoot.collectibleSkins.add(collectible.getSkin(skin));
-                            owner.getCollectibles().addSkin(collectible, skin);
+                            if (!owner.getCollectibles().contains(collectible)) {
+                                owner.getCollectibles().add(collectible);
+                            } else {
+                                String skin = parts[2];
+                                if (owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin)) {
+                                    // Roll fragment
+                                } else {
+                                    crateLoot.collectibleSkins.add(collectible.getSkin(skin));
+                                    owner.getCollectibles().addSkin(collectible, skin);
+                                }
+                            }
                         } else {
-                            crateLoot.collectibles.add(collectible);
-                            owner.getCollectibles().add(collectible);
+                            if (owner.getCollectibles().contains(collectible)) {
+                                // Roll fragment
+                            } else {
+                                crateLoot.collectibles.add(collectible);
+                                owner.getCollectibles().add(collectible);
+                            }
                         }
                     }
                 }

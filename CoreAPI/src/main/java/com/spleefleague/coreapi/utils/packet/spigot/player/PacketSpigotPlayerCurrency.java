@@ -18,7 +18,11 @@ public class PacketSpigotPlayerCurrency extends PacketSpigot {
         ORE_COMMON,
         ORE_EPIC,
         ORE_LEGENDARY,
-        ORE_RARE;
+        ORE_RARE,
+        FRAGMENT_COMMON,
+        FRAGMENT_EPIC,
+        FRAGMENT_LEGENDARY,
+        FRAGMENT_RARE;
 
     }
 

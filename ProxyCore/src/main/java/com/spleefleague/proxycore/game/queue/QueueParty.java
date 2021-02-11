@@ -12,7 +12,6 @@ import java.util.UUID;
 public class QueueParty extends QueueEntity {
 
     ProxyParty party;
-    int size;
     UUID uuid;
 
     public QueueParty(ProxyParty party, String query, int rating) {

@@ -19,8 +19,8 @@ import java.util.UUID;
  */
 public class ConquestSJBattle extends SoloBattle<ConquestSJPlayer> {
 
-    public ConquestSJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, ConquestSJPlayer.class, SJMode.CONQUEST.getBattleMode());
+    public ConquestSJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, ConquestSJPlayer.class, SJMode.CONQUEST.getBattleMode());
     }
     
     /*

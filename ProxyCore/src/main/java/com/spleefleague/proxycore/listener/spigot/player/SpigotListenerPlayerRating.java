@@ -22,7 +22,7 @@ public class SpigotListenerPlayerRating extends SpigotListener<PacketSpigotPlaye
         ProxyCore.getInstance().getLeaderboards().get(packet.mode).getLeaderboards().get(packet.season).setPlayerScore(rpi.uuid, rpi.elo);
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(rpi.uuid);
         if (pcp != null && pcp.getPlayer() != null) {
-            pcp.setBattleContainer(null);
+            pcp.setCurrrentBattle(null);
         }
     }
 

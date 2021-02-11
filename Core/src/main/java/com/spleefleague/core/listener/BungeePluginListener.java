@@ -34,7 +34,6 @@ public class BungeePluginListener implements PluginMessageListener {
         registeredListeners.put(PacketType.Bungee.PARTY, new BungeeListenerParty());
         registeredListeners.put(PacketType.Bungee.PLAYER_RESYNC, new BungeeListenerPlayerResync());
         registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new BungeeListenerRefreshAll());
-        registeredListeners.put(PacketType.Bungee.REFRESH_QUEUE, new BungeeListenerRefreshQueue());
         registeredListeners.put(PacketType.Bungee.REFRESH_PARTY, new BungeeListenerRefreshParty());
         registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new BungeeListenerRefreshScore());
         registeredListeners.put(PacketType.Bungee.REFRESH_SERVER_LIST, new BungeeListenerRefreshServerList());

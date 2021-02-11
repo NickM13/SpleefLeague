@@ -99,7 +99,7 @@ public class CorePlayer extends DBPlayer {
     @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles(this);
     @DBField private final PlayerRatings ratings = new PlayerRatings();
     @DBField private Long lastOnline = -1L;
-    @DBField private CorePlayerPurse purse = new CorePlayerPurse();
+    @DBField private CorePlayerPurse purse = new CorePlayerPurse(this);
     @DBField private CorePlayerCrates crates = new CorePlayerCrates(this);
 
     @DBField private CorePlayerStatistics statistics = new CorePlayerStatistics();
@@ -115,7 +115,7 @@ public class CorePlayer extends DBPlayer {
     private long urlTime;
 
     // Current selected chat channel to send messages in
-    private ChatChannel chatChannel;
+    @DBField private ChatChannel chatChannel;
     
     // 5 min, sets player to afk
     private static final long AFK_WARNING = 1000L * 60 * 4 + 30;

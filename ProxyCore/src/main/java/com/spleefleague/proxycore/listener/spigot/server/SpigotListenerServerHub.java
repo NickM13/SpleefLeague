@@ -27,7 +27,7 @@ public class SpigotListenerServerHub extends SpigotListener<PacketSpigotServerHu
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
             if (pcp != null && pcp.getPlayer() != null) {
                 pcp.transfer(lobby);
-                pcp.setBattleContainer(null);
+                pcp.setCurrrentBattle(null);
             }
         }
     }

@@ -64,6 +64,7 @@ public class CrateMenu {
                 .addDeadSpace(0, 2)
                 .addDeadSpace(0, 3)
                 .addDeadSpace(0, 4)
+
                 .addDeadSpace(4, 0)
                 .addDeadSpace(4, 1)
                 .addDeadSpace(4, 2)

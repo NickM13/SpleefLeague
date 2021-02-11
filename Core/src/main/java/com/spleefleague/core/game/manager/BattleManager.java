@@ -49,8 +49,6 @@ public abstract class BattleManager {
 
     protected final List<Battle<?>> battles;
 
-    protected int queued, playing, spectators;
-
     protected BattleManager(BattleMode mode) {
         this.name = mode.getName();
         this.displayName = mode.getDisplayName();
@@ -66,6 +64,14 @@ public abstract class BattleManager {
      * and updating the field and experience bar for timers
      */
     public void init() {
+        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            Iterator<? extends Battle<?>> bit = battles.iterator();
+            Battle<?> b;
+            while (bit.hasNext()) {
+                b = bit.next();
+                b.ping();
+            }
+        }, 0L, 30 * 20L);
         Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
             Iterator<? extends Battle<?>> bit = battles.iterator();
             Battle<?> b;
@@ -143,30 +149,6 @@ public abstract class BattleManager {
         return players;
     }
 
-    public void setQueued(int num) {
-        queued = num;
-    }
-
-    public void setPlaying(int num) {
-        playing = num;
-    }
-
-    public void setSpectators(int num) {
-        spectators = num;
-    }
-
-    public int getQueued() {
-        return queued;
-    }
-
-    public int getPlaying() {
-        return playing;
-    }
-
-    public int getSpectators() {
-        return spectators;
-    }
-    
     public abstract void startMatch(List<CorePlayer> corePlayers, String name);
 
     public void startMatch(Battle<?> battle) {

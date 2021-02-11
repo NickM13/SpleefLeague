@@ -41,8 +41,8 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
     private int regenSpeed = 0;
     private boolean cooldowns;
 
-    public PowerTrainingBattle(List<UUID> players, Arena arena) {
-        super(Spleef.getInstance(), players, arena, PowerTrainingPlayer.class, SpleefMode.POWER.getBattleMode());
+    public PowerTrainingBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(Spleef.getInstance(), battleId, players, arena, PowerTrainingPlayer.class, SpleefMode.POWER.getBattleMode());
     }
 
     @Override

@@ -19,8 +19,8 @@ import java.util.UUID;
  */
 public class PartySJBattle extends DynamicBattle<PartySJPlayer> {
 
-    public PartySJBattle(List<UUID> players, Arena arena) {
-        super(SuperJump.getInstance(), players, arena, PartySJPlayer.class, SJMode.PARTY.getBattleMode());
+    public PartySJBattle(UUID battleId, List<UUID> players, Arena arena) {
+        super(SuperJump.getInstance(), battleId, players, arena, PartySJPlayer.class, SJMode.PARTY.getBattleMode());
     }
     
     @Override
@@ -29,7 +29,13 @@ public class PartySJBattle extends DynamicBattle<PartySJPlayer> {
     }
 
     @Override
+    protected void applyRewards(PartySJPlayer partySJPlayer) {
+
+    }
+
+    @Override
     protected void sendEndMessage(PartySJPlayer partySJPlayer) {
 
     }
+
 }

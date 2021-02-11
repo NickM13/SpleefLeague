@@ -19,14 +19,6 @@ public class BungeeListenerRefreshAll extends BungeeListener<PacketBungeeRefresh
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
             plugin.refreshPlayers(Sets.newHashSet(packet.players));
         }
-        for (QueueContainerInfo qci : packet.queueInfoList) {
-            BattleManager manager = Core.getInstance().getBattleManager(BattleMode.get(qci.name));
-            if (manager != null) {
-                manager.setQueued(qci.queued);
-                manager.setPlaying(qci.playing);
-                manager.setSpectators(qci.spectators);
-            }
-        }
         PersonalScoreboard.refreshPlayers();
     }
 

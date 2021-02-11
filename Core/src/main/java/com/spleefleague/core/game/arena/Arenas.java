@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.BattleSessionManager;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
@@ -242,8 +243,8 @@ public class Arenas {
     public static InventoryMenuItem createMenu(CorePlugin<?> plugin, BattleMode mode) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mode.getDisplayName())
-                .setDescription(cp -> mode.getDescription() +
-                        "\n\n&7&lCurrently Playing: &6" + plugin.getBattleManager(mode).getPlaying())
+                .setDescription(cp -> mode.getDescription()
+                        + "\n\n&7&lCurrently Playing: &6" + Core.getInstance().getBattleSessionManager().getOngoing(mode.getName()))
                 .setDisplayItem(mode.getDisplayItem());
 
         if (mode.isForceRandom()) {

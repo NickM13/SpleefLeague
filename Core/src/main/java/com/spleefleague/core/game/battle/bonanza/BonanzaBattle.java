@@ -16,8 +16,8 @@ import java.util.UUID;
  */
 public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> {
     
-    public BonanzaBattle(CorePlugin<?> plugin, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
-        super(plugin, players, arena, battlePlayerClass, battleMode);
+    public BonanzaBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+        super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
     
     /**

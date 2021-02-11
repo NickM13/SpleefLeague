@@ -16,6 +16,7 @@ import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.crates.ProxyPlayerCrates;
 import com.spleefleague.proxycore.player.friends.ProxyFriendsList;
+import com.spleefleague.proxycore.player.purse.ProxyPlayerPurse;
 import com.spleefleague.proxycore.player.ranks.ProxyPermanentRank;
 import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import com.spleefleague.proxycore.player.ranks.ProxyTempRank;
@@ -38,8 +39,6 @@ public class ProxyCorePlayer extends DBPlayer {
 
     private Droplet droplet = null;
     private ServerInfo currentServer = null;
-    private boolean battling = false;
-    private QueueContainer battleContainer = null;
     private PacketSpigotQueueJoin lastQueueRequest = null;
 
     @DBField private String nickname = null;
@@ -50,7 +49,7 @@ public class ProxyCorePlayer extends DBPlayer {
 
     @DBField private Boolean vanished = false;
 
-    @DBField private final PlayerPurse purse = new PlayerPurse();
+    @DBField private final ProxyPlayerPurse purse = new ProxyPlayerPurse(this);
     @DBField private final PlayerOptions options = new PlayerOptions();
     @DBField private final PlayerCollectibles collectibles = new PlayerCollectibles();
 
@@ -62,9 +61,11 @@ public class ProxyCorePlayer extends DBPlayer {
 
     @DBField private final ProxyFriendsList friends = new ProxyFriendsList(this);
 
-    private boolean online = false;
+    @DBField private ChatChannel chatChannel = ChatChannel.GLOBAL;
 
-    private ChatChannel chatChannel = ChatChannel.GLOBAL;
+    @DBField private UUID currentBattle = null;
+
+    private boolean online = false;
 
     private long url = 0;
 
@@ -94,7 +95,6 @@ public class ProxyCorePlayer extends DBPlayer {
     @Override
     public void close() {
         lastOnline = System.currentTimeMillis();
-        setBattleContainer(null);
     }
 
     public void updateTempRanks() {
@@ -145,7 +145,7 @@ public class ProxyCorePlayer extends DBPlayer {
         return vanished;
     }
 
-    public PlayerPurse getPurse() {
+    public ProxyPlayerPurse getPurse() {
         return purse;
     }
 
@@ -250,6 +250,11 @@ public class ProxyCorePlayer extends DBPlayer {
         currentServer = server;
     }
 
+    public void connect(Droplet droplet) {
+        getPlayer().connect(droplet.getInfo());
+        setCurrentDroplet(droplet);
+    }
+
     public void setCurrentServer(ServerInfo currentServer) {
         this.currentServer = currentServer;
     }
@@ -270,26 +275,12 @@ public class ProxyCorePlayer extends DBPlayer {
         return ProxyCore.getInstance().getProxy().getPlayer(uuid);
     }
 
-    public boolean isBattling() {
-        return battling;
+    public void setCurrrentBattle(UUID battleUuid) {
+        this.currentBattle = battleUuid;
     }
 
-    public void setBattling(boolean state) {
-        battling = state;
-    }
-
-    public QueueContainer getBattleContainer() {
-        return battleContainer;
-    }
-
-    public void setBattleContainer(QueueContainer battleContainer) {
-        if (this.battleContainer != null) {
-            this.battleContainer.removePlayer(getUniqueId());
-        }
-        this.battleContainer = battleContainer;
-        if (battleContainer == null) {
-            this.battling = false;
-        }
+    public UUID getCurrentBattle() {
+        return currentBattle;
     }
 
     public ProxyParty getParty() {

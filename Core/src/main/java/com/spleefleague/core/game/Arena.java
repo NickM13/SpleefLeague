@@ -228,7 +228,7 @@ public class Arena extends DBEntity {
      */
     public String getMenuDescription() {
         String desc = description;
-        desc += ChatColor.GRAY + "" + ChatColor.BOLD + "\n\nIn Queue: " + ChatColor.GOLD + getOngoingQueues();
+        //desc += ChatColor.GRAY + "" + ChatColor.BOLD + "\n\nIn Queue: " + ChatColor.GOLD + getOngoingQueues();
         //desc += "\n&6Matches: " + getOngoingMatches();
         return desc;
     }

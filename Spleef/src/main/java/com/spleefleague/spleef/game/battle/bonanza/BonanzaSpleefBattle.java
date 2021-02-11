@@ -30,9 +30,9 @@ public class BonanzaSpleefBattle extends BonanzaBattle<BonanzaSpleefPlayer> {
     protected long fieldResetTime = 0;
     protected BonanzaSpleefPlayer bountyPlayer = null;
     
-    public BonanzaSpleefBattle(List<UUID> players,
+    public BonanzaSpleefBattle(UUID battleId, List<UUID> players,
                                Arena arena) {
-        super(Spleef.getInstance(), players, arena, BonanzaSpleefPlayer.class, SpleefMode.BONANZA.getBattleMode());
+        super(Spleef.getInstance(), battleId, players, arena, BonanzaSpleefPlayer.class, SpleefMode.BONANZA.getBattleMode());
     }
 
     public Location getRandomSpawn() {
