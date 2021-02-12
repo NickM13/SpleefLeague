@@ -37,6 +37,7 @@ public class PersonalScoreboard {
         PersonalScoreboard ps = new PersonalScoreboard(cp, true);
         scoreboards.put(cp.getUniqueId(), ps);
         ps.setScoreboardName("SpleefLeague, " + cp.getDisplayName());
+        if (cp.getPlayer() == null) return;
         cp.getPlayer().setScoreboard(ps.getScoreboard());
         
         // Pull all online players and add them to their respective ranked teams
@@ -67,12 +68,6 @@ public class PersonalScoreboard {
             scoreboards.remove(cp.getUniqueId()).close();
         }
     }
-
-    public static void refreshPlayers() {
-        scoreboards.forEach((uuid, sb) -> {
-            sb.getTabList().refreshPlayers();
-        });
-    }
     
     public static void updatePlayerRank(CorePlayer cp) {
         Team team;
@@ -101,12 +96,11 @@ public class PersonalScoreboard {
     }
 
     public static void onPlayerJoin(CorePlayer corePlayer) {
-        scoreboards.forEach((uuid2, sb) -> sb.getTabList().addPlayer(corePlayer));
+
     }
 
     public static void onPlayerQuit(UUID uuid) {
         scoreboards.remove(uuid);
-        scoreboards.forEach((uuid2, sb) -> sb.getTabList().removePlayer(uuid));
     }
     
     protected Scoreboard scoreboard;
@@ -170,7 +164,6 @@ public class PersonalScoreboard {
 
     public void update() {
         tabList.updateHeaderFooter();
-        tabList.updatePlayerList();
     }
     
 }

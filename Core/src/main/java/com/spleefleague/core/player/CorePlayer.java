@@ -192,7 +192,7 @@ public class CorePlayer extends DBPlayer {
         updateDisguise();
         permissions = getPlayer().addAttachment(Core.getInstance());
         updateRank();
-        PersonalScoreboard.initPlayerScoreboard(this);
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> PersonalScoreboard.initPlayerScoreboard(this), 2L);
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         FakeWorld.onPlayerJoin(getPlayer());
@@ -233,6 +233,7 @@ public class CorePlayer extends DBPlayer {
     @Override
     public void close() {
         if (battle != null) {
+            System.out.println("We are here!");
             battle.leavePlayer(this);
         }
 

@@ -27,6 +27,15 @@ public class ProxyParty extends Party {
         addPlayer(uuid);
     }
 
+    public boolean isQueueReady() {
+        for (ProxyCorePlayer pcp : playerSet) {
+            if (pcp.isBattling() || !pcp.isOnline()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int getAvgRating(String mode, int season) {
         int rating = 0;
         for (ProxyCorePlayer pcp : playerSet) {

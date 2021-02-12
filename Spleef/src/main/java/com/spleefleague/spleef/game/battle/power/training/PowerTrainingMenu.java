@@ -12,6 +12,7 @@ import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.world.build.BuildStructure;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public class PowerTrainingArena {
+public class PowerTrainingMenu {
 
     private static final String mainColor = ChatColor.AQUA + "" + ChatColor.BOLD;
 
@@ -48,7 +49,7 @@ public class PowerTrainingArena {
 
             InventoryMenuItemHotbar options = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(8, "pstOptions")
                     .setName(cp -> "&a&lTraining Options")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.REDSTONE, 1))
                     .setDescription("Various training options for Power Spleef Training mode")
                     .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
                             cp.getBattle() instanceof PowerTrainingBattle &&
@@ -59,7 +60,7 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lTraining Field")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BAKED_POTATO, 2))
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
                         List<BuildStructure> structures = BuildStructures.getAll("spleef:power");
@@ -81,7 +82,7 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lPower Cooldowns")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BAKED_POTATO, 3))
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
                         return "Cooldowns are currently " + (battle.isCooldownEnabled() ? ChatColor.GREEN + "enabled" : ChatColor.GRAY + "disabled");
@@ -91,13 +92,13 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lReset Field")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BAKED_POTATO, 6))
                     .setDescription("")
                     .setAction(cp -> cp.getBattle().reset()));
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lRegeneration Speed")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BAKED_POTATO, 4))
                     .setDescription(cp -> {
                         PowerTrainingBattle battle = (PowerTrainingBattle) cp.getBattle();
                         String str = (battle.getRegenSpeed() == 0 ? ChatColor.GREEN : ChatColor.GRAY) + "Normal (1x)\n" +
@@ -111,7 +112,7 @@ public class PowerTrainingArena {
 
             options.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                     .setName(cp -> "&a&lLeave Match")
-                    .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getMobility().getStats().getDisplayItem())
+                    .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BAKED_POTATO, 5))
                     .setDescription("")
                     .setAction(cp -> cp.getBattle().leavePlayer(cp)));
         }

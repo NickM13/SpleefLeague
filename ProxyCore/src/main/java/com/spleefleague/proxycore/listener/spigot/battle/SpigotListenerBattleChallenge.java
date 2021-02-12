@@ -1,6 +1,5 @@
 package com.spleefleague.proxycore.listener.spigot.battle;
 
-import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleChallenge;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleChallenge;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
@@ -17,7 +16,7 @@ public class SpigotListenerBattleChallenge extends SpigotListener<PacketSpigotBa
     protected void receive(Connection sender, PacketSpigotBattleChallenge packet) {
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.receiver);
         if (pcp != null) {
-            ProxyCore.getInstance().getPacketManager().sendPacket(pcp.getCurrentServer(), new PacketBungeeBattleChallenge(packet));
+            ProxyCore.getInstance().getChallengeManager().onChallenge(packet.sender, packet.receiver, packet.mode, packet.query);
         }
     }
 

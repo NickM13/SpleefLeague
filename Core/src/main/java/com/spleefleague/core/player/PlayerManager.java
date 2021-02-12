@@ -324,6 +324,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
     }
 
     public void refresh(Set<UUID> players) {
+        players.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList()));
         onlinePlayerListAll.entrySet().removeIf(p -> !players.contains(p.getKey()));
         onlinePlayerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
         for (UUID uuid : players) {

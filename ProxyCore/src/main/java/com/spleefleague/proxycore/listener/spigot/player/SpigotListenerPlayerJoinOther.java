@@ -7,6 +7,7 @@ import com.spleefleague.proxycore.droplet.Droplet;
 import com.spleefleague.proxycore.droplet.DropletType;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 
 /**
@@ -27,12 +28,8 @@ public class SpigotListenerPlayerJoinOther extends SpigotListener<PacketSpigotPl
             // Hopefully does not happen
             return;
         }
-        Droplet targetDroplet = pcpTarget.getCurrentDroplet();
-        if (targetDroplet != null && targetDroplet.getType() == DropletType.LOBBY) {
-
-        } else {
-
-        }
+        ServerInfo info = pcpTarget.getCurrentServer();
+        // TODO: Set up
     }
 
 }

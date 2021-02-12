@@ -19,7 +19,6 @@ public class BungeeListenerRefreshAll extends BungeeListener<PacketBungeeRefresh
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
             plugin.refreshPlayers(Sets.newHashSet(packet.players));
         }
-        PersonalScoreboard.refreshPlayers();
     }
 
 }

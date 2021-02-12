@@ -1,4 +1,4 @@
-package com.spleefleague.proxycore.game;
+package com.spleefleague.proxycore.game.session;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.proxycore.ProxyCore;

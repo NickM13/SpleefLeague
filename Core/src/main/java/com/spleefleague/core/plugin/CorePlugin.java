@@ -316,17 +316,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public abstract TextComponent getChatPrefix();
 
     public void challengePlayer(CorePlayer sender, CorePlayer target, BattleMode battleMode, String arenaName) {
-        if (!target.canJoinBattle()) {
-            sender.sendMessage(Chat.ERROR + "That player is in a battle!");
-            return;
-        }
         Arena arena = Arenas.get(arenaName, battleMode);
-        sender.sendMessage(new ComponentBuilder().append("You have challenged ")
-                .append(target.getChatName())
-                .append(" to a game of ")
-                .append(Chat.GAMEMODE + battleMode.getDisplayName())
-                .append(" on ")
-                .append(Chat.GAMEMAP + arena.getName()).create());
         /*
         Chat.sendRequest(target,
                 sender,

@@ -4,13 +4,10 @@ import com.google.common.collect.Sets;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import org.bson.Document;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -20,6 +17,11 @@ public class CorePlayerManager extends PlayerManager<CorePlayer> {
 
     public CorePlayerManager(MongoCollection<Document> collection) {
         super(Core.getInstance(), CorePlayer.class, collection);
+    }
+
+    @Override
+    public void close() {
+        super.close();
     }
 
     @Override

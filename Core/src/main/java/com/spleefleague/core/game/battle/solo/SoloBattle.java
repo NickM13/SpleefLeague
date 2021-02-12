@@ -60,7 +60,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
      * @param cp Core Player
      */
     @Override
-    protected final void joinBattler(CorePlayer cp) {
+    public final void joinBattler(CorePlayer cp) {
     
     }
     

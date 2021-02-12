@@ -17,6 +17,8 @@ import com.spleefleague.core.crate.CrateManager;
 import com.spleefleague.core.game.BattleSessionManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.team.TeamInfo;
+import com.spleefleague.core.game.history.GameHistory;
+import com.spleefleague.core.game.history.GameHistoryManager;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
@@ -119,6 +121,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Settings.init();
         InventoryMenuSkullManager.init();
         TeamInfo.init();
+        GameHistoryManager.init();
 
         // Initialize manager
         playerManager = new CorePlayerManager(getPluginDB().getCollection("Players"));
@@ -165,6 +168,7 @@ public class Core extends CorePlugin<CorePlayer> {
         Tickets.close();
         leaderboards.close();
         NoteBlockMusic.close();
+        GameHistoryManager.close();
         playerManager.close();
         packetManager.close();
         battleSessionManager.close();
@@ -361,9 +365,6 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public void returnToHub(CorePlayer cp) {
         if (cp == null) return;
-        for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
-            //plugin.getPlayers().saveForTransfer(cp.getUniqueId());
-        }
         Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(cp)));
     }
 
@@ -415,7 +416,7 @@ public class Core extends CorePlugin<CorePlayer> {
                             List<PlayerInfoData> newData = new ArrayList<>();
                             for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
                                 CorePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
-                                if (cp == null || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE || cp.isVanished()) {
+                                if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE || cp.isVanished()) {
                                     newData.add(playerInfoData);
                                 }
                             }

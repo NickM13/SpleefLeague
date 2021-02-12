@@ -55,7 +55,7 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      * @param cp Core Player
      */
     @Override
-    protected void joinBattler(CorePlayer cp) {
+    public void joinBattler(CorePlayer cp) {
     
     }
     

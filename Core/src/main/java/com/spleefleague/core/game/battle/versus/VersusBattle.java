@@ -9,6 +9,7 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
+import com.spleefleague.core.game.history.GameHistory;
 import com.spleefleague.core.game.request.EndGameRequest;
 import com.spleefleague.core.game.request.PauseRequest;
 import com.spleefleague.core.game.request.PlayToRequest;
@@ -104,7 +105,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      * @param cp Core Player
      */
     @Override
-    protected void joinBattler(CorePlayer cp) {
+    public void joinBattler(CorePlayer cp) {
     
     }
     
@@ -202,6 +203,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 matchPointing = true;
             }
         } else {
+            gameHistory.setEndReason(GameHistory.EndReason.NORMAL);
             endBattle(winner);
         }
     }
@@ -276,6 +278,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 text.addExtra(Chat.SCORE + loser.getRoundWins());
                 text.addExtra(")");
                 sendNotification(text);
+                gameHistory.setEndReason(GameHistory.EndReason.CANCEL);
             } else {
                 for (BattlePlayer bp : battlers.values()) {
                     bp.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
@@ -300,13 +303,15 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 text.addExtra(Chat.SCORE + loser.getRoundWins());
                 text.addExtra(")");
                 sendNotification(text);
+                gameHistory.setPlayerStats(winner.getPlayer().getUniqueId(), 0, winner.getRoundWins());
+                gameHistory.setPlayerStats(loser.getPlayer().getUniqueId(), 1, loser.getRoundWins());
             }
         }
         Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         sendRequeueMessage();
         destroy();
     }
-    
+
     /**
      * Called when a battler leaves boundaries
      *
@@ -360,6 +365,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     @Override
     protected void leaveBattler(CorePlayer cp) {
         remainingPlayers.remove(battlers.get(cp));
+        gameHistory.setEndReason(GameHistory.EndReason.FORFEIT);
         if (remainingPlayers.isEmpty()) {
             endBattle(null);
         } else {

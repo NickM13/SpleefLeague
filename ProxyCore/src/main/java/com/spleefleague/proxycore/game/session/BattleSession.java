@@ -1,4 +1,4 @@
-package com.spleefleague.proxycore.game;
+package com.spleefleague.proxycore.game.session;
 
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -14,6 +14,7 @@ import java.util.UUID;
  */
 public class BattleSession extends DBEntity {
 
+    private final UUID battleId;
     @DBField private Boolean ongoing;
     @DBField private final String mode;
     @DBField private final String serverName;
@@ -24,6 +25,7 @@ public class BattleSession extends DBEntity {
     private long lastPing;
 
     public BattleSession(UUID battleId, String mode, Droplet droplet, List<UUID> players) {
+        this.battleId = battleId;
         this.identifier = battleId.toString();
         this.mode = mode;
         this.serverName = droplet.getName();
@@ -35,6 +37,14 @@ public class BattleSession extends DBEntity {
 
     public void end() {
         this.ongoing = false;
+    }
+
+    public UUID getBattleId() {
+        return battleId;
+    }
+
+    public String getMode() {
+        return mode;
     }
 
     public List<UUID> getPlayers() {

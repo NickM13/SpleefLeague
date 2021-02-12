@@ -9,7 +9,6 @@ package com.spleefleague.spleef.game;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
-import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
 import com.spleefleague.spleef.game.battle.team.*;
 import com.spleefleague.spleef.game.battle.power.*;

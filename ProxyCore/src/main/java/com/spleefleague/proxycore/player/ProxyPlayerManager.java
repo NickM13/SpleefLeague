@@ -63,8 +63,11 @@ public class ProxyPlayerManager {
         text.addExtra(" has logged in");
         for (UUID uuid : pcp.getFriends().getAll()) {
             ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
-            if (friend != null && friend.getOptions().getBoolean("Friend:Connection")) {
-                ProxyCore.getInstance().sendMessage(friend, text);
+            if (friend != null) {
+                if (friend.getOptions().getBoolean("Friend:Connection")) {
+                    ProxyCore.getInstance().sendMessage(friend, text);
+                }
+                friend.getFriends().onPlayerJoin(pcp);
             }
         }
 
@@ -83,8 +86,11 @@ public class ProxyPlayerManager {
 
         for (UUID uuid : pcp.getFriends().getAll()) {
             ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
-            if (friend != null && friend.getOptions().getBoolean("Friend:Connection")) {
-                ProxyCore.getInstance().sendMessage(friend, text);
+            if (friend != null) {
+                if (friend.getOptions().getBoolean("Friend:Connection")) {
+                    ProxyCore.getInstance().sendMessage(friend, text);
+                }
+                friend.getFriends().onPlayerLeave(pcp);
             }
         }
     }

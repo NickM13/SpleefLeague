@@ -29,7 +29,7 @@ public class SpleggGunCommand extends HoldableCommand {
         super(SpleggGun.class, "splegggun", CoreRank.DEVELOPER);
         this.addAlias("gun");
         this.setOptions("projectileFields", pi -> getProjectileFields());
-        this.setOptions("nextFields", pi -> getNextFields(pi));
+        this.setOptions("nextFields", this::getNextFields);
         this.setContainer("splegg");
     }
 

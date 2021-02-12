@@ -50,7 +50,7 @@ public class BattleMode {
     protected boolean joinOngoing = false;
     protected boolean forceRandom = false;
     protected Class<? extends Battle<?>> battleClass = null;
-    protected final Set<Battle<?>> ongoingBattles = new HashSet<>();
+    protected final Map<UUID, Battle<?>> ongoingBattles = new HashMap<>();
 
     private BattleMode(String name) {
         this.name = name;
@@ -143,12 +143,12 @@ public class BattleMode {
         return this;
     }
 
-    public Set<Battle<?>> getOngoingBattles() {
+    public Map<UUID, Battle<?>> getOngoingBattles() {
         return ongoingBattles;
     }
     
     public void addBattle(Battle<?> battle) {
-        this.ongoingBattles.add(battle);
+        this.ongoingBattles.put(battle.getBattleId(), battle);
     }
     
     public void removeBattle(Battle<?> battle) {

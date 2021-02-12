@@ -13,6 +13,7 @@ import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
+import com.spleefleague.core.game.history.GameHistory;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.purse.CoreCurrency;
@@ -79,6 +80,16 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         chatGroup.addTeam("p2o", "");
         chatGroup.addTeam("p2u", "");
         chatGroup.addTeam("p2m", "");
+    }
+
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (PowerSpleefPlayer psp : sortedBattlers) {
+            gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:offensive", psp.getOffensiveName());
+            gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:utility", psp.getUtilityName());
+            gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:mobility", psp.getMobilityName());
+        }
     }
 
     @Override
@@ -208,6 +219,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             if (!psp.getCorePlayer().equals(cp)) {
                 psp.addRoundWin();
                 if (psp.getRoundWins() >= playToPoints) {
+                    gameHistory.setEndReason(GameHistory.EndReason.NORMAL);
                     endBattle(psp);
                     return;
                 } else if (psp.getRoundWins() == playToPoints - 1) {

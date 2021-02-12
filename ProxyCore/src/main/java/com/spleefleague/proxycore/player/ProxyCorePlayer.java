@@ -40,6 +40,7 @@ public class ProxyCorePlayer extends DBPlayer {
     private Droplet droplet = null;
     private ServerInfo currentServer = null;
     private PacketSpigotQueueJoin lastQueueRequest = null;
+    private boolean battling = false;
 
     @DBField private String nickname = null;
     @DBField private UUID disguise = null;
@@ -245,14 +246,12 @@ public class ProxyCorePlayer extends DBPlayer {
         return crates;
     }
 
-    public void transfer(ServerInfo server) {
+    public void connect(ServerInfo server) {
         getPlayer().connect(server);
-        currentServer = server;
     }
 
     public void connect(Droplet droplet) {
         getPlayer().connect(droplet.getInfo());
-        setCurrentDroplet(droplet);
     }
 
     public void setCurrentServer(ServerInfo currentServer) {
@@ -275,8 +274,23 @@ public class ProxyCorePlayer extends DBPlayer {
         return ProxyCore.getInstance().getProxy().getPlayer(uuid);
     }
 
-    public void setCurrrentBattle(UUID battleUuid) {
+    public void setBattling(boolean battling) {
+        this.battling = battling;
+    }
+
+    public boolean isBattling() {
+        return battling;
+    }
+
+    public void setCurrentBattle(UUID battleUuid) {
         this.currentBattle = battleUuid;
+    }
+
+    public void leaveBattle(UUID battleId) {
+        if (currentBattle != null && currentBattle.equals(battleId)) {
+            currentBattle = null;
+            battling = false;
+        }
     }
 
     public UUID getCurrentBattle() {

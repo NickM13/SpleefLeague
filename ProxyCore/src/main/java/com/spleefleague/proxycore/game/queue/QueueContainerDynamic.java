@@ -7,7 +7,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.droplet.Droplet;
 import com.spleefleague.proxycore.droplet.DropletType;
-import com.spleefleague.proxycore.game.BattleSessionManager;
+import com.spleefleague.proxycore.game.session.BattleSessionManager;
 import com.spleefleague.proxycore.game.arena.Arena;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
@@ -77,8 +77,12 @@ public class QueueContainerDynamic extends QueueContainer {
         return allowSolo;
     }
 
-    public boolean isValidParty(ProxyParty party) {
-        return party.getPlayerCount() >= minPartySize && party.getPlayerCount() <= maxPartySize;
+    public int isValidParty(ProxyParty party) {
+        if (allowPartySplit) {
+            return party.getPlayerCount() <= maxPartySize ? 0 : 1;
+        } else {
+            return sizeIndexHash.containsKey(party.getPlayerCount()) ? 0 : 2;
+        }
     }
 
     /**
@@ -249,11 +253,11 @@ public class QueueContainerDynamic extends QueueContainer {
             return false;
         }
 
-        Set<ProxyParty> parties = new HashSet<>();
+        Set<ProxyParty> blacklist = new HashSet<>();
 
         for (UUID uuid : players) {
             ProxyParty party = ProxyCore.getInstance().getPartyManager().getParty(uuid);
-            if (parties.add(party)) {
+            if (blacklist.add(party)) {
                 ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
             }
         }
@@ -263,15 +267,16 @@ public class QueueContainerDynamic extends QueueContainer {
         for (UUID uuid : players) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
             ProxyCore.getInstance().getQueueManager().leaveAllQueues(pcp.getUniqueId());
-            pcp.setCurrrentBattle(battleId);
+            pcp.setCurrentBattle(battleId);
+            pcp.setBattling(true);
             playing.add(pcp.getUniqueId());
             pcp.connect(droplet);
             pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, query));
         }
 
-        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players));
-
         BattleSessionManager.createBattleSession(battleId, identifier, droplet, players);
+
+        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players));
 
         return true;
     }

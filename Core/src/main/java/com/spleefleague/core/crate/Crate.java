@@ -27,8 +27,6 @@ public class Crate extends DBEntity {
     @DBField private Boolean hidden = true;
     @DBField private Map<String, Double> currencyWeights = new HashMap<>();
     @DBField private Map<String, Double> collectibleWeights = new HashMap<>();
-    @DBField private Integer currencyCount = 0;
-    @DBField private Integer collectibleCount = 1;
     @DBField private Double collectibleMin = 1D;
     @DBField private Double collectibleMax = 1D;
     @DBField private Double currencyMin = 0D;

@@ -25,7 +25,6 @@ public class PersonalTablist {
     private final CorePlayer owner;
     private final List<UUID> currentList = new ArrayList<>();
     private final Map<UUID, CorePlayer> targetList = new HashMap<>();
-    private boolean changed = true;
 
     public PersonalTablist(CorePlayer owner) {
         this.owner = owner;
@@ -34,13 +33,10 @@ public class PersonalTablist {
 
     public void addPlayer(CorePlayer cp) {
         targetList.put(cp.getUniqueId(), cp);
-        changed = true;
     }
 
     public void removePlayer(UUID uuid) {
-        changed = true;
         Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
-        //updatePlayerList();
     }
 
     public void clear() {
@@ -63,38 +59,4 @@ public class PersonalTablist {
         Core.sendPacketSilently(owner.getPlayer(), packetContainer, 1L);
     }
 
-    public void updatePlayerList() {
-        if (!changed) return;
-
-        updateHeaderFooter();
-        if (true) return;
-
-        clear();
-        try {
-            PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
-            Field playerListField = PacketPlayOutPlayerInfo.class.getDeclaredField("b");
-            playerListField.setAccessible(true);
-            List playerList = (List) playerListField.get(nmsPacket);
-            for (CorePlayer cp : targetList.values()) {
-                currentList.add(cp.getUniqueId());
-                playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
-                        .newInstance(nmsPacket, new GameProfile(cp.getDisguise(), cp.getNickname()), 0, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
-            }
-            PacketContainer playerInfoPacket = new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
-
-            Core.sendPacketSilently(owner.getPlayer(), playerInfoPacket, 1L);
-        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {
-            CoreLogger.logError(exception);
-        }
-        updateHeaderFooter();
-        changed = false;
-    }
-
-    public void refreshPlayers() {
-        targetList.clear();
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAllOnline()) {
-            targetList.put(cp.getUniqueId(), cp);
-        }
-        changed = true;
-    }
 }

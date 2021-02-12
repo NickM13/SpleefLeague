@@ -61,7 +61,7 @@ public class MobilityJetpack extends AbilityMobility {
                         getPlayer().setVelocity(getPlayer().getVelocity().setY(Math.min(UP_CAP, getPlayer().getVelocity().getY() + UP_POWER)));
                         fuel = Math.max(0, fuel - CONSUME_FLY);
                     } else {
-                        getPlayer().setVelocity(getPlayer().getVelocity().setY(Math.max(getPlayer().getVelocity().getY() - DOWN_POWER / 2, -DOWN_CAP)));
+                        getPlayer().setVelocity(getPlayer().getVelocity().setY(Math.max(getPlayer().getVelocity().getY() - DOWN_POWER / 4, -DOWN_CAP)));
                         fuel = Math.max(0, fuel - CONSUME_FLY / 2);
                     }
                 }

@@ -115,7 +115,7 @@ public class MobilityHookshot extends AbilityMobility {
                 killEntity();
             }
             if (isAlive()) {
-                if (hookedBlock != null && projectileWorld.isReallySolid(hookedBlock.getBlockPos())) {
+                if (hookedBlock != null && !projectileWorld.isReallySolid(hookedBlock.getBlockPos())) {
                     killEntity();
                     return;
                 }

@@ -21,14 +21,29 @@ import java.util.UUID;
 public class ProxyFriendsList extends FriendsList {
 
     private final ProxyCorePlayer owner;
+    private final Set<ProxyCorePlayer> online = new HashSet<>();
 
     public ProxyFriendsList(ProxyCorePlayer owner) {
         super();
         this.owner = owner;
+        for (UUID uuid : friends.keySet()) {
+            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (pcp != null) {
+                online.add(pcp);
+            }
+        }
+    }
+
+    public void onPlayerJoin(ProxyCorePlayer pcp) {
+        online.add(pcp);
+    }
+
+    public void onPlayerLeave(ProxyCorePlayer pcp) {
+        online.remove(pcp);
     }
 
     public Set<ProxyCorePlayer> getOnline() {
-        return new HashSet<>();
+        return online;
     }
 
     public Set<UUID> getAll() {

@@ -111,8 +111,14 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      * @param cp Core Player
      */
     @Override
-    protected void joinBattler(CorePlayer cp) {
+    public void joinBattler(CorePlayer cp) {
 
+    }
+
+    @Override
+    protected void onRejoin(BP bp) {
+        teamBattleTeamMap.get(bp).addPlayer(bp);
+        addBattlerGhost(bp.getCorePlayer());
     }
     
     /**
@@ -195,6 +201,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                     }
                 }
             } else {
+                failBattler(cp);
                 // Pew!
             }
         }

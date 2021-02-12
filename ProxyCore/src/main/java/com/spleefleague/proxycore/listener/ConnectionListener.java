@@ -9,19 +9,18 @@ import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshA
 import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.droplet.Droplet;
-import com.spleefleague.proxycore.game.BattleSessionManager;
-import com.spleefleague.proxycore.game.queue.QueueContainer;
+import com.spleefleague.proxycore.droplet.DropletManager;
+import com.spleefleague.proxycore.game.session.BattleSessionManager;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -121,18 +120,12 @@ public class ConnectionListener implements Listener {
     @EventHandler
     public void onServerSwitch(ServerSwitchEvent event) {
         ProxyCorePlayer pcp  = ProxyCore.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
-        pcp.setCurrentServer(event.getPlayer().getServer().getInfo());
+        ServerInfo info = event.getPlayer().getServer().getInfo();
+        pcp.setCurrentServer(info);
+        pcp.setCurrentDroplet(ProxyCore.getInstance().getDropletManager().getDropletByName(info.getName()));
 
         if (event.getPlayer().getServer().getInfo().getPlayers().size() == 1) {
             List<QueueContainerInfo> queueInfoList = new ArrayList<>();
-            /*
-            for (Map.Entry<String, QueueContainer> entry : ProxyCore.getInstance().getQueueManager().getContainerSoloMap().entrySet()) {
-                queueInfoList.add(new QueueContainerInfo(entry.getKey(),
-                        entry.getValue().getQueueSize(),
-                        entry.getValue().getPlaying().size(),
-                        entry.getValue().getSpectating().size()));
-            }
-            */
 
             ProxyCore.getInstance().getPacketManager().sendPacket(
                     event.getPlayer().getServer().getInfo(),

@@ -1,9 +1,9 @@
 package com.spleefleague.coreapi.utils.packet;
 
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
+import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleRejoin;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleSpectate;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
-import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleChallenge;
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
@@ -34,7 +34,7 @@ public class PacketType {
      */
     public enum Bungee {
 
-        BATTLE_CHALLENGE(PacketBungeeBattleChallenge.class),
+        BATTLE_REJOIN(PacketBungeeBattleRejoin.class),
         BATTLE_SPECTATE(PacketBungeeBattleSpectate.class),
         BATTLE_START(PacketBungeeBattleStart.class),
         CONNECTION(PacketBungeeConnection.class),
@@ -68,9 +68,11 @@ public class PacketType {
     public enum Spigot {
 
         BATTLE_CHALLENGE(PacketSpigotBattleChallenge.class),
+        BATTLE_CHALLENGE_CONFIRM(PacketSpigotBattleChallengeConfirm.class),
         BATTLE_END(PacketSpigotBattleEnd.class),
         BATTLE_FORCE_START(PacketSpigotBattleForceStart.class),
         BATTLE_PING(PacketSpigotBattlePing.class),
+        BATTLE_REJOIN(PacketSpigotBattleRejoin.class),
         BATTLE_SPECTATE(PacketSpigotBattleSpectate.class),
         CHAT_CHANNEL_JOIN(PacketSpigotChatChannelJoin.class),
         CHAT_CONSOLE(PacketSpigotChatConsole.class),

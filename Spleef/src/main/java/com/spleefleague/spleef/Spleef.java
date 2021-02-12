@@ -13,31 +13,19 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import com.spleefleague.spleef.commands.*;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.ability.Abilities;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityUtils;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
-import com.spleefleague.spleef.game.battle.power.training.PowerTrainingArena;
+import com.spleefleague.spleef.game.battle.power.training.PowerTrainingMenu;
 import com.spleefleague.spleef.player.SpleefPlayer;
 import com.spleefleague.spleef.game.SpleefMode;
-import com.spleefleague.spleef.game.battle.bonanza.BonanzaSpleefArena;
-import com.spleefleague.spleef.game.battle.classic.ClassicSpleefArena;
-import com.spleefleague.spleef.game.battle.multi.MultiSpleefArena;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefArena;
-import com.spleefleague.spleef.game.battle.team.TeamSpleefArena;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -149,7 +137,7 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         LeaderboardMenu.addLeaderboardMenu(SpleefMode.MULTI.getBattleMode());
         LeaderboardMenu.addLeaderboardMenu(SpleefMode.POWER.getBattleMode());
 
-        PowerTrainingArena.createMenu();
+        PowerTrainingMenu.createMenu();
     }
     
     public void initCommands() {

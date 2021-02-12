@@ -12,12 +12,12 @@ import com.spleefleague.proxycore.chat.ProxyChat;
 import com.spleefleague.proxycore.command.DebugCommand;
 import com.spleefleague.proxycore.command.PurchaseCommand;
 import com.spleefleague.proxycore.droplet.DropletManager;
-import com.spleefleague.proxycore.game.BattleSessionManager;
+import com.spleefleague.proxycore.game.challenge.ChallengeManager;
+import com.spleefleague.proxycore.game.session.BattleSessionManager;
 import com.spleefleague.proxycore.game.arena.ArenaManager;
 import com.spleefleague.proxycore.game.leaderboard.LeaderboardManager;
 import com.spleefleague.proxycore.game.queue.QueueManager;
 import com.spleefleague.proxycore.infraction.ProxyInfractionManager;
-import com.spleefleague.proxycore.listener.BattleListener;
 import com.spleefleague.proxycore.listener.ConnectionListener;
 import com.spleefleague.proxycore.listener.SpigotPluginListener;
 import com.spleefleague.proxycore.packet.PacketManager;
@@ -27,14 +27,11 @@ import com.spleefleague.proxycore.player.ProxyPlayerManager;
 import com.spleefleague.proxycore.player.ranks.ProxyRankManager;
 import com.spleefleague.proxycore.season.SeasonManager;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ReconnectHandler;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -72,6 +69,7 @@ public class ProxyCore extends Plugin {
     private final PacketManager packetManager = new PacketManager();
     private final ProxyChat chat = new ProxyChat();
     private final SeasonManager seasonManager = new SeasonManager();
+    private final ChallengeManager challengeManager = new ChallengeManager();
 
     private final DropletManager dropletManager = new DropletManager();
 
@@ -87,7 +85,6 @@ public class ProxyCore extends Plugin {
         initMongo();
         initCommands();
 
-        getProxy().getPluginManager().registerListener(this, new BattleListener());
         getProxy().getPluginManager().registerListener(this, new ConnectionListener());
         getProxy().getPluginManager().registerListener(this, new SpigotPluginListener());
 
@@ -95,6 +92,7 @@ public class ProxyCore extends Plugin {
 
         dropletManager.init();
         seasonManager.init();
+        challengeManager.init();
 
         playerManager.init();
         rankManager.init();
@@ -157,6 +155,7 @@ public class ProxyCore extends Plugin {
     public void onDisable() {
         BattleSessionManager.close();
 
+        challengeManager.close();
         playerManager.close();
         leaderboardManager.close();
         arenaManager.close();
@@ -191,6 +190,10 @@ public class ProxyCore extends Plugin {
 
     public ProxyChat getChat() {
         return chat;
+    }
+
+    public ChallengeManager getChallengeManager() {
+        return challengeManager;
     }
 
     public List<ServerInfo> getLobbyServers() {

@@ -77,6 +77,7 @@ public class DropletManager {
 
     }
 
+    private final Map<String, Droplet> DROPLET_BY_NAME = new HashMap<>();
     private final Map<DropletType, Set<Droplet>> ACTIVE_SERVERS_TYPED = new HashMap<>();
     private final Map<String, Set<Droplet>> ACTIVE_SERVERS = new HashMap<>();
     private final Set<Droplet> DROPLETS = new HashSet<>();
@@ -208,7 +209,7 @@ public class DropletManager {
         return enabled;
     }
 
-    private void updatePriorities() {
+    private void updateConfigPriorities() {
         List<String> priorities;
         if (ACTIVE_SERVERS_TYPED.get(DropletType.LOBBY).isEmpty()) {
             priorities = DROPLETS.stream().map(Droplet::getName).collect(Collectors.toList());
@@ -234,18 +235,20 @@ public class DropletManager {
     }
 
     private void onDropletDisconnect(Droplet droplet) {
+        DROPLET_BY_NAME.remove(droplet.getName());
         ACTIVE_SERVERS_TYPED.get(droplet.getType()).remove(droplet);
         ACTIVE_SERVERS.remove(droplet.getHost()).remove(droplet);
         DROPLETS.remove(droplet);
 
         configuration.set("servers." + droplet.getName(), null);
 
-        updatePriorities();
+        updateConfigPriorities();
 
         saveConfig();
     }
 
     private void onDropletConnect(Droplet droplet) {
+        DROPLET_BY_NAME.put(droplet.getName(), droplet);
         ACTIVE_SERVERS_TYPED.get(droplet.getType()).add(droplet);
         ACTIVE_SERVERS.get(droplet.getHost()).add(droplet);
         DROPLETS.add(droplet);
@@ -256,9 +259,13 @@ public class DropletManager {
         configuration.set("servers." + droplet.getName() + ".address", droplet.getHost() + ":" + droplet.getPort());
         configuration.set("servers." + droplet.getName() + ".restricted", droplet.getType().restricted);
 
-        updatePriorities();
+        updateConfigPriorities();
 
         saveConfig();
+    }
+
+    public Droplet getDropletByName(String name) {
+        return DROPLET_BY_NAME.get(name);
     }
 
     private void initReconnectHandler() {
@@ -274,17 +281,17 @@ public class DropletManager {
 
             @Override
             public void setServer(ProxiedPlayer proxiedPlayer) {
-
+                Thread.dumpStack();
             }
 
             @Override
             public void save() {
-
+                Thread.dumpStack();
             }
 
             @Override
             public void close() {
-
+                Thread.dumpStack();
             }
         });
     }
@@ -490,6 +497,9 @@ public class DropletManager {
         synchronized (ACTIVE_SERVERS_TYPED) {
             ACTIVE_SERVERS_TYPED.get(type).remove(toDrop);
         }
+        synchronized (DROPLET_BY_NAME) {
+            DROPLET_BY_NAME.remove(toDrop.getName());
+        }
     }
 
     public void openNext(DropletType type, int count) {
@@ -503,32 +513,5 @@ public class DropletManager {
             dropServer(type);
         }
     }
-
-    /*
-    private void addServer(DropletType type, ServerInfo serverInfo, String host, String port) {
-        Droplet droplet = new Droplet(host, Integer.parseInt(port), type, serverInfo);
-
-        if (!ACTIVE_SERVERS.containsKey(host)) {
-            ACTIVE_SERVERS.put(host, new HashSet<>());
-        }
-        ACTIVE_SERVERS.get(host).add(droplet);
-        ACTIVE_SERVERS_TYPED.get(type).add(droplet);
-    }
-
-    public void onPingReceive(DropletType type, SocketAddress socketAddress) {
-        ServerInfo serverInfo = ProxyCore.getInstance().getProxy().constructServerInfo(
-                type.name() + NEXT_DROPLET.get(type),
-                socketAddress,
-                "",
-                type.restricted);
-
-        String socketIp = socketAddress.toString();
-        String[] split = socketIp.split(":");
-        String host = split[0];
-        String port = split[1];
-
-        addServer(type, serverInfo, host, port);
-    }
-    */
 
 }

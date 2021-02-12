@@ -38,8 +38,10 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.BATTLE_END, new SpigotListenerBattleEnd());
         registeredListeners.put(PacketType.Spigot.BATTLE_SPECTATE, new SpigotListenerBattleSpectate());
         registeredListeners.put(PacketType.Spigot.BATTLE_CHALLENGE, new SpigotListenerBattleChallenge());
+        registeredListeners.put(PacketType.Spigot.BATTLE_CHALLENGE_CONFIRM, new SpigotListenerBattleChallengeConfirm());
         registeredListeners.put(PacketType.Spigot.BATTLE_FORCE_START, new SpigotListenerBattleForceStart());
         registeredListeners.put(PacketType.Spigot.BATTLE_PING, new SpigotListenerBattlePing());
+        registeredListeners.put(PacketType.Spigot.BATTLE_REJOIN, new SpigotListenerBattleRejoin());
         registeredListeners.put(PacketType.Spigot.CHAT_CHANNEL_JOIN, new SpigotListenerChatChannelJoin());
         registeredListeners.put(PacketType.Spigot.CHAT_CONSOLE, new SpigotListenerChatConsole());
         registeredListeners.put(PacketType.Spigot.CHAT_FRIEND, new SpigotListenerChatFriend());

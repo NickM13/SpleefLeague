@@ -231,8 +231,9 @@ public class ChatGroup {
      */
     public void setTeamDisplayNamePersonal(CorePlayer cp, String name, String displayName) {
         Team team = PersonalScoreboard.getScoreboard(cp.getUniqueId()).getScoreboard().getTeam(scores.get(name).name);
-        if (team != null)
+        if (team != null) {
             team.setPrefix(displayName);
+        }
     }
     
     /**
@@ -315,7 +316,9 @@ public class ChatGroup {
                 cp.getPlayer().setTotalExperience(0);
             }
             players.remove(cp);
-            PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
+            if (cp.getPlayer() != null) {
+                PersonalScoreboard.getScoreboard(cp.getUniqueId()).resetObjective();
+            }
         }
     }
     

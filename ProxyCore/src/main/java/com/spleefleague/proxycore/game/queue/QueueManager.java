@@ -3,6 +3,7 @@ package com.spleefleague.proxycore.game.queue;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.arena.Arena;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.utils.CoreUtils;
@@ -11,10 +12,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.bson.Document;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,6 +58,10 @@ public class QueueManager {
         queueContainerDynamicMap.put(identifier, new QueueContainerDynamic(identifier, displayName, teamStyle));
     }
 
+    public QueueContainerDynamic getQueue(String identifier) {
+        return queueContainerDynamicMap.get(identifier);
+    }
+
     public void forceStart(String mode, String query, List<UUID> players) {
         if (queueContainerDynamicMap.containsKey(mode)) {
             queueContainerDynamicMap.get(mode).startMatch(players, query);
@@ -76,7 +78,35 @@ public class QueueManager {
         return stringBuilder.toString();
     }
 
-    private String formatArenaQuery(String mode, String query) {
+    public boolean isSizeValid(int size, String mode, String query) {
+        for (SubQuery subQuery : SubQuery.splitQuery(query)) {
+            if (subQuery.type.equalsIgnoreCase("arena")) {
+                if (subQuery.hasStar) {
+                    List<Arena> arenas = new ArrayList<>();
+                    for (int i = 0; i < subQuery.values.size(); i++) {
+                        arenas.add(ProxyCore.getInstance().getArenaManager().getArena(mode, subQuery.values.get(i)));
+                    }
+                    Set<Arena> blacklist = new HashSet<>(arenas);
+                    for (Arena arena : ProxyCore.getInstance().getArenaManager().getArenas(mode)) {
+                        if (!blacklist.contains(arena)) {
+                            if (arena.getTeamSize() == size) {
+                                return true;
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < subQuery.values.size(); i++) {
+                        if (ProxyCore.getInstance().getArenaManager().getArena(mode, subQuery.values.get(i)).getTeamSize() == size) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public String formatArenaQuery(String mode, String query) {
         for (SubQuery subQuery : SubQuery.splitQuery(query)) {
             if (subQuery.type.equalsIgnoreCase("arena")) {
                 if (subQuery.hasStar) {
@@ -110,56 +140,69 @@ public class QueueManager {
         }
 
         if (party != null) {
-            if (queueContainerDynamic.isValidParty(party)) {
-                if (!party.getOwner().equals(uuid)) {
-                    ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("You are not the party leader"));
-                } else {
-                    int result = queueContainerDynamic.join(party, query);
-                    String displayName = queueContainerDynamic.getDisplayName();
-                    String arenaAffix = formatArenaQuery(mode, query);
+            if (!party.getOwner().equals(uuid)) {
+                ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("You are not the party leader"));
+            } else {
+                if (!party.isQueueReady()) {
+                    ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Someone from your party is currently unavailable"));
+                }
+                switch (queueContainerDynamic.isValidParty(party)) {
+                    case 0:
+                        int result = queueContainerDynamic.join(party, query);
+                        String displayName = queueContainerDynamic.getDisplayName();
+                        String arenaAffix = formatArenaQuery(mode, query);
 
-                    switch (result) {
-                        case -1:
-                            party.sendMessage(new TextComponent("Your party has left the queue for "
-                                    + displayName));
-                            break;
-                        case 0:
-                            party.sendMessage(new TextComponent("Your party has joined the queue for "
-                                    + displayName + arenaAffix));
-                            break;
-                        case 1:
-                            party.sendMessage(new TextComponent("Your party has rejoined the queue for "
-                                    + displayName + arenaAffix));
-                            break;
-                    }
+                        switch (result) {
+                            case -1:
+                                party.sendMessage(new TextComponent("Your party has left the queue for "
+                                        + displayName));
+                                break;
+                            case 0:
+                                party.sendMessage(new TextComponent("Your party has joined the queue for "
+                                        + displayName + arenaAffix));
+                                break;
+                            case 1:
+                                party.sendMessage(new TextComponent("Your party has rejoined the queue for "
+                                        + displayName + arenaAffix));
+                                break;
+                        }
+                        break;
+                    case 1:
+                        ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Your party is too big for that gamemode"));
+                        break;
+                    case 2:
+                        ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("TODO: Party size does not match any arenas"));
+                        break;
                 }
             }
-        } else if (!queueContainerDynamic.canQueueSolo()) {
-            ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                    "You aren't in a party!");
         } else {
-            String arenaAffix = formatArenaQuery(mode, query);
-            int result = queueContainerDynamic.join(pcp, query);
-            String displayName = queueContainerDynamic.getDisplayName();
+            if (!queueContainerDynamic.canQueueSolo()) {
+                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                        "You aren't in a party!");
+            } else {
+                String arenaAffix = formatArenaQuery(mode, query);
+                int result = queueContainerDynamic.join(pcp, query);
+                String displayName = queueContainerDynamic.getDisplayName();
 
-            switch (result) {
-                case -1:
-                    ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                            "You have left the queue for " +
-                                    displayName);
-                    break;
-                case 0:
-                    ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                            "You have joined the queue for " +
-                                    displayName +
-                                    arenaAffix);
-                    break;
-                case 1:
-                    ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                            "You have rejoined the queue for " +
-                                    displayName +
-                                    arenaAffix);
-                    break;
+                switch (result) {
+                    case -1:
+                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                                "You have left the queue for " +
+                                        displayName);
+                        break;
+                    case 0:
+                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                                "You have joined the queue for " +
+                                        displayName +
+                                        arenaAffix);
+                        break;
+                    case 1:
+                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                                "You have rejoined the queue for " +
+                                        displayName +
+                                        arenaAffix);
+                        break;
+                }
             }
         }
     }

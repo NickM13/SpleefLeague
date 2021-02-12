@@ -58,14 +58,14 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected org.bukkit.GameMode gameMode = org.bukkit.GameMode.ADVENTURE;
     protected GameWorld gameWorld;
     protected BattleMode battleMode;
-    
+
     protected ChatGroup chatGroup;
-    
+
     // Arena to play battle on
     protected final Arena arena;
 
     private final Class<BP> battlePlayerClass;
-    
+
     // Some values of Arena that can be modified without changing the arena
     protected List<Dimension> goals = new ArrayList<>();
     protected List<Dimension> borders = new ArrayList<>();
@@ -73,7 +73,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     private static final int GLOBAL_SPECTATOR_EXPAND = 40;
     protected List<Dimension> spectatorBorders = new ArrayList<>();
     protected List<Dimension> globalSpectatorBorders = new ArrayList<>();
-    
+
     protected List<Position> checkpoints = new ArrayList<>();
     protected List<Dimension> checkpointAreas = new ArrayList<>();
     protected List<Position> spawns = new ArrayList<>();
@@ -88,9 +88,9 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected final Set<BP> remainingPlayers = new HashSet<>();
     protected final Set<BP> deadBattlers = new HashSet<>();
     protected final Set<UUID> battlerUuids = new HashSet<>();
-    
+
     private final Map<String, BattleRequest> battleRequests = new HashMap<>();
-    
+
     // Ongoing battle stats
     protected boolean ongoing;
     protected boolean finished = false;
@@ -100,7 +100,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected long roundStartTime = 0;
     protected boolean frozen = false;
     protected boolean matchPointing = false;
-    
+
     // Round countdown
     protected int roundCountdown = 3;
     protected int countdown = 0;
@@ -158,7 +158,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     public final void waitForPlayers() {
         waiting = true;
     }
-    
+
     /**
      * Called in startBattle()<br>
      * Initializes all valid battle requests for a battle
@@ -170,7 +170,7 @@ public abstract class Battle<BP extends BattlePlayer> {
      * Initialize base battle settings such as GameWorld tools
      */
     protected abstract void setupBaseSettings();
-    
+
     /**
      * Called in startBattle()<br>
      * Initialize scoreboard
@@ -208,7 +208,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         updatePhysicalScoreboard();
         frozen = true;
     }
-    
+
     /**
      * Set the GameMode of a battle (TODO: Is this always Adventure?)
      * @param gameMode GameMode
@@ -334,15 +334,15 @@ public abstract class Battle<BP extends BattlePlayer> {
     public boolean isWaiting() {
         return waiting;
     }
-    
+
     public GameWorld getGameWorld() {
         return gameWorld;
     }
-    
+
     public List<Dimension> getGoals() {
         return goals;
     }
-    
+
     /**
      * @param cp Core Player
      * @return In Goal
@@ -358,7 +358,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return false;
     }
-    
+
     /**
      * Set goal dimensions
      *
@@ -367,7 +367,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     public void setGoals(List<Dimension> goals) {
         this.goals = goals;
     }
-    
+
     /**
      * Check if a player is within the bounding boxes of the arena
      *
@@ -401,7 +401,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return false;
     }
-    
+
     /**
      * Check if a player is within the global spectator bounding boxes,
      * used to see whether a player should be removed from a battle or
@@ -418,7 +418,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return false;
     }
-    
+
     public void setBorders(List<Dimension> borders) {
         this.borders = borders;
         this.spectatorBorders.clear();
@@ -593,7 +593,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             return spawns.get(id);
         return spawns.get(0);
     }
-    
+
     public void setCheckpoints(List<Position> checkpoints) {
         this.checkpoints = checkpoints;
         this.checkpointAreas.clear();
@@ -602,7 +602,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                 .map(checkpoint -> new Dimension(checkpoint.add(-0.5, 0, -0.5), checkpoint.add(0.5, 1, 0.5)))
                 .collect(Collectors.toList()));
     }
-    
+
     /**
      *
      * @param cp Core Player
@@ -619,7 +619,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             }
         }
     }
-    
+
     public Location getCheckpoint(int id) {
         return checkpoints.get(id).toLocation(arena.getWorld());
     }
@@ -632,7 +632,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         gameHistory.setEndReason(GameHistory.EndReason.CANCEL);
         destroy();
     }
-    
+
     /**
      * Returns the chat group of this battle
      *
@@ -683,14 +683,14 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return false;
     }
-    
+
     /**
      * End a round with a determined winner
      *
      * @param winner Winner
      */
     protected abstract void endRound(BP winner);
-    
+
     /**
      * End a battle with a determined winner
      *
@@ -745,7 +745,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             bp.getCorePlayer().sendMessage(requeueText);
         }
     }
-    
+
     /**
      * Ends a battle, removes all players, destroys game world
      */
@@ -785,18 +785,18 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param cp CorePlayer
      */
     protected abstract void winBattler(CorePlayer cp);
-    
+
     /**
      * Called when a player surrenders (/ff, /leave)
      *
      * @param cp CorePlayer
      */
     public abstract void surrender(CorePlayer cp);
-    
+
     protected void addBattleRequest(BattleRequest battleRequest) {
         battleRequests.put(battleRequest.getRequestName(), battleRequest);
     }
-    
+
     public Set<String> getAvailableRequests(CorePlayer cp) {
         Set<String> availableRequests = new HashSet<>();
         if (battlers.containsKey(cp)) {
@@ -810,7 +810,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         }
         return availableRequests;
     }
-    
+
     /**
      * @param cp Requesting Core Player
      * @param requestType BattleRequest Type Name
@@ -849,19 +849,19 @@ public abstract class Battle<BP extends BattlePlayer> {
             br.clear();
         }
     }
-    
+
     /**
      * Called when a Reset request passes
      */
     public abstract void reset();
-    
+
     /**
      * Called when a Play To request passes
      *
      * @param playTo Play To Value
      */
     public abstract void setPlayTo(int playTo);
-    
+
     /**
      * Called when a Pause request passes
      *
@@ -871,7 +871,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         countdown = pauseTime;
         frozen = true;
     }
-    
+
     /**
      * Reset all battlers
      */
@@ -907,7 +907,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             Core.getInstance().applyVisibilities(spectator);
         }
     }
-    
+
     /**
      * Adds a global spectator to the battle when they enter
      * the global spectator boundaries of the arena, which is
@@ -938,7 +938,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             Core.getInstance().applyVisibilities(cp);
         }
     }
-    
+
     public void removeGlobalSpectator(CorePlayer cp) {
         if (!spectators.contains(cp)) return;
         if (removePlayer(cp)) {
@@ -970,7 +970,7 @@ public abstract class Battle<BP extends BattlePlayer> {
                     removeSpectator(cp);
                     break;
                 case REFEREE:
-                    
+
                     break;
                 case SPECTATOR_GLOBAL:
                     removeGlobalSpectator(cp);
@@ -1062,7 +1062,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             bp.respawn();
         }
     }
-    
+
     public boolean isFrozen() {
         return frozen;
     }
@@ -1182,5 +1182,5 @@ public abstract class Battle<BP extends BattlePlayer> {
     public CorePlugin<?> getPlugin() {
         return plugin;
     }
-    
+
 }
