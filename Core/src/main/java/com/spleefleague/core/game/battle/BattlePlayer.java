@@ -16,8 +16,8 @@ import org.bukkit.entity.Player;
  */
 public abstract class BattlePlayer {
 
-    private final CorePlayer cp;
-    private final Player player;
+    private CorePlayer cp;
+    private Player player;
     private final Battle<?> battle;
     private Location spawn;
     private int checkpoint;
@@ -60,6 +60,11 @@ public abstract class BattlePlayer {
 
     public int getCheckpoint() {
         return checkpoint;
+    }
+
+    public void setCorePlayer(CorePlayer cp) {
+        this.cp = cp;
+        this.player = cp.getPlayer();
     }
 
     /**

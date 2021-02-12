@@ -114,8 +114,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
 
     @Override
     protected void onRejoin(BP bp) {
-        teamBattleTeamMap.get(bp).addPlayer(bp);
-        addBattlerGhost(bp.getCorePlayer());
+        teamBattleTeamMap.get(bp).rejoin(bp);
     }
 
     /**
@@ -183,6 +182,8 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     protected void leaveBattler(CorePlayer cp) {
         BP bp = battlers.get(cp);
         TeamBattleTeam<BP> tbt = teamBattleTeamMap.get(bp);
+        remainingPlayers.remove(bp);
+        removeBattler(cp);
         if (tbt.removePlayer(bp)) {
             if (tbt.getPlayers().isEmpty()) {
                 teams.remove(tbt);
@@ -198,7 +199,6 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                     }
                 }
             } else {
-                failBattler(cp);
                 // Pew!
             }
         }

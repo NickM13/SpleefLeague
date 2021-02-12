@@ -787,10 +787,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     public boolean updateBlock(BlockPosition pos) {
         FakeBlock fb = fakeBlocks.getOrDefault(pos, AIR);
         ChunkCoord chunkCoord = ChunkCoord.fromBlockPos(pos);
-        if (!chunkChanges.containsKey(chunkCoord)) {
-            chunkChanges.put(chunkCoord, new HashMap<>());
+        synchronized (chunkChanges) {
+            if (!chunkChanges.containsKey(chunkCoord)) {
+                chunkChanges.put(chunkCoord, new HashMap<>());
+            }
+            chunkChanges.get(chunkCoord).put((short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + ((pos.getY()))), fb);
         }
-        chunkChanges.get(chunkCoord).put((short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + ((pos.getY()))), fb);
         return fb != null;
     }
 
@@ -838,8 +840,6 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         }
     }
     */
-
-    private boolean pushing = false;
 
     public void pushChanges() {
         synchronized (chunkChanges) {

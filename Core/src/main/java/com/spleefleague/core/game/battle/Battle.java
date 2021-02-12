@@ -82,6 +82,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected final Set<CorePlayer> players = new HashSet<>();
     protected final Set<CorePlayer> spectators = new HashSet<>();
     protected final Map<CorePlayer, BP> battlers = new HashMap<>();
+    protected final Map<CorePlayer, BP> battlersOriginal = new HashMap<>();
     protected final List<BP> sortedBattlers = new ArrayList<>();
     protected final Set<BP> remainingPlayers = new HashSet<>();
     protected final Set<BP> deadBattlers = new HashSet<>();
@@ -135,6 +136,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             battleMode.addBattle(this);
             startedTime = System.currentTimeMillis();
             battlers.keySet().forEach(cp -> addPlayer(cp, BattleState.BATTLER));
+            battlers.entrySet().forEach(entry -> battlersOriginal.put(entry.getKey(), entry.getValue()));
             setupBattleRequests();
             setupBaseSettings();
             setupBattlers();
@@ -251,8 +253,16 @@ public abstract class Battle<BP extends BattlePlayer> {
     }
 
     public final void rejoinBattler(CorePlayer cp) {
-        if (battlers.containsKey(cp)) {
-            onRejoin(battlers.get(cp));
+        if (battlersOriginal.containsKey(cp)) {
+            BP bp = battlersOriginal.get(cp);
+            bp.setCorePlayer(cp);
+            cp.joinBattle(this, BattleState.BATTLER);
+            battlers.put(cp, bp);
+            battlerUuids.add(cp.getUniqueId());
+            onRejoin(bp);
+            gameWorld.addPlayer(cp);
+            chatGroup.addPlayer(cp);
+            addBattlerGhost(bp.getCorePlayer());
         }
     }
 
@@ -960,6 +970,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     public final void leavePlayer(CorePlayer cp) {
         if (players.contains(cp)) {
             chatGroup.removePlayer(cp);
+            gameWorld.removePlayer(cp);
             switch (cp.getBattleState()) {
                 case BATTLER:
                     leaveBattler(cp);
@@ -967,8 +978,31 @@ public abstract class Battle<BP extends BattlePlayer> {
                 case SPECTATOR:
                     removeSpectator(cp);
                     break;
-                case REFEREE:
+                case SPECTATOR_GLOBAL:
+                    removeGlobalSpectator(cp);
+                    break;
+                default:
+                    break;
+            }
+            Core.getInstance().returnToHub(cp);
+        }
+    }
 
+    /**
+     * Called when a player wants to leave (/leave)
+     *
+     * @param cp CorePlayer
+     */
+    public final void onDisconnect(CorePlayer cp) {
+        if (players.contains(cp)) {
+            chatGroup.removePlayer(cp);
+            gameWorld.removePlayer(cp);
+            switch (cp.getBattleState()) {
+                case BATTLER:
+                    leaveBattler(cp);
+                    break;
+                case SPECTATOR:
+                    removeSpectator(cp);
                     break;
                 case SPECTATOR_GLOBAL:
                     removeGlobalSpectator(cp);

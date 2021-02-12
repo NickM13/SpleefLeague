@@ -365,7 +365,7 @@ public class Core extends CorePlugin<CorePlayer> {
     }
 
     public void returnToHub(CorePlayer cp) {
-        if (cp == null) return;
+        if (cp == null || !cp.isOnline()) return;
         Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(cp)));
     }
 

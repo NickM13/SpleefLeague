@@ -52,11 +52,6 @@ public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
     }
 
     @Override
-    protected void setupBattleRequests() {
-        SpleefUtils.setupBaseSettings(this);
-    }
-    
-    @Override
     protected void setupScoreboard() {
         chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
         chatGroup.addTeam("time", "  00:00:00");
@@ -81,11 +76,6 @@ public class TeamSpleefBattle extends TeamBattle<TeamSpleefPlayer> {
 
     @Override
     protected void sendEndMessage(TeamBattleTeam<TeamSpleefPlayer> teamBattleTeam) {
-
-    }
-
-    @Override
-    protected void joinBattler(CorePlayer dbPlayer) {
 
     }
     

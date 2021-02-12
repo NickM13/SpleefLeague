@@ -66,7 +66,8 @@ public class QueueContainerDynamic extends QueueContainer {
             minPartySize = Math.min(minPartySize, size);
             maxPartySize = Math.max(maxPartySize, size);
         }
-        allowSolo = minPartySize == 1;
+        //allowSolo = minPartySize == 1;
+        allowSolo = true;
         allowPartySplit = maxPartySize == 1;
         if (teamStyle.allowPartySplit) {
             maxPartySize *= maxTeams;

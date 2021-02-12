@@ -369,13 +369,8 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
         P p = herePlayerListAll.remove(player.getUniqueId());
         herePlayerList.remove(player.getUniqueId());
         if (p != null) {
-            /*
-            if (!p.isPresaved()) {
-                save(p);
-            }
-            */
-            p.close();
             p.setOnline(DBPlayer.OnlineState.OTHER);
+            p.close();
         } else {
             if (onlinePlayerListAll.containsKey(player.getUniqueId())) {
                 onlinePlayerListAll.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);

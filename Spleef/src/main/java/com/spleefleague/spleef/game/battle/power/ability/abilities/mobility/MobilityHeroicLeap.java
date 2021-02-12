@@ -33,7 +33,7 @@ public class MobilityHeroicLeap extends AbilityMobility {
     public void update() {
         if (heroicLeaping >= 0D) {
             Vector dropDir = heroicDrop;
-            if (heroicLeaping < getUser().getBattle().getRoundTime() + 0.5 && FakeUtils.isOnGround(getUser().getCorePlayer())) {
+            if (heroicLeaping > getUser().getBattle().getRoundTime() + 0.25 && FakeUtils.isOnGround(getUser().getCorePlayer())) {
                 getPlayer().setVelocity(new Vector(0, 0, 0));
                 heroicLeaping = -1;
                 if (dropDir != null) {

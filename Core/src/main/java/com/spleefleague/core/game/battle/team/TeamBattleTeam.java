@@ -52,6 +52,12 @@ public class TeamBattleTeam<BP extends TeamBattlePlayer> {
         original.add(player.getCorePlayer().getUniqueId());
     }
 
+    public void rejoin(BP player) {
+        if (original.contains(player.getCorePlayer().getUniqueId())) {
+            players.add(player);
+        }
+    }
+
     public Set<BP> getPlayers() {
         return players;
     }

@@ -66,16 +66,6 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
         return spleggMenuItem;
     }
 
-    private int getCurrentlyPlaying() {
-        int playing = 0;
-        for (SpleggMode mode : SpleggMode.values()) {
-            for (Battle<?> battle : mode.getBattleMode().getOngoingBattles()) {
-                playing += battle.getBattlers().size();
-            }
-        }
-        return playing;
-    }
-
     public void initMenu() {
         spleggMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Splegg")

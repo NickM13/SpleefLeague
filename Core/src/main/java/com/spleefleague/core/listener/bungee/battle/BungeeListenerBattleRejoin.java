@@ -15,10 +15,10 @@ public class BungeeListenerBattleRejoin extends BungeeListener<PacketBungeeBattl
     protected void receive(Player sender, PacketBungeeBattleRejoin packet) {
         BattleMode battleMode = BattleMode.get(packet.mode);
         UUID battleId = packet.battleId;
-        Core.getInstance().getPlayers().addPlayerJoinAction(packet.sender, (cp) -> {
+        Core.getInstance().getPlayers().addPlayerJoinAction(packet.sender, cp -> {
             Battle<?> battle = battleMode.getOngoingBattles().get(battleId);
             if (battle.isOngoing()) {
-                battle.joinBattler(cp);
+                battle.rejoinBattler(cp);
             } else {
                 Core.getInstance().returnToHub(cp);
             }

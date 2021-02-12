@@ -85,16 +85,6 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
         return spleefMenuItem;
     }
 
-    private int getCurrentlyPlaying() {
-        int playing = 0;
-        for (SpleefMode mode : SpleefMode.values()) {
-            for (Battle<?> battle : mode.getBattleMode().getOngoingBattles()) {
-                playing += battle.getBattlers().size();
-            }
-        }
-        return playing;
-    }
-
     public void initMenu() {
         spleefMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GOLD + "" + ChatColor.BOLD + "Spleef")

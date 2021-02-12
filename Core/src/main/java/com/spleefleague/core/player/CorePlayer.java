@@ -248,8 +248,7 @@ public class CorePlayer extends DBPlayer {
     @Override
     public void close() {
         if (battle != null) {
-            System.out.println("We are here!");
-            battle.leavePlayer(this);
+            battle.onDisconnect(this);
         }
 
         List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
