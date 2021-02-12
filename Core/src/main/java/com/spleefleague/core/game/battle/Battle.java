@@ -984,7 +984,6 @@ public abstract class Battle<BP extends BattlePlayer> {
                 default:
                     break;
             }
-            Core.getInstance().returnToHub(cp);
         }
     }
 
