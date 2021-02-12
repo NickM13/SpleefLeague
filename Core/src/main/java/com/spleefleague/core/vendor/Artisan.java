@@ -23,12 +23,18 @@ import org.bukkit.entity.Entity;
  */
 public class Artisan extends DBEntity {
 
-    @DBField private String displayName = "";
-    @DBField(fieldName = "entity") private UUID entityUuid = null;
-    @DBField private CoreCurrency currency = CoreCurrency.COIN;
-    @DBField private String crate = "common";
-    @DBField private Integer backgroundCmd = 30000;
-    @DBField private Integer coinCost = 1;
+    @DBField
+    private String displayName = "";
+    @DBField(fieldName = "entity")
+    private UUID entityUuid = null;
+    @DBField
+    private CoreCurrency currency = CoreCurrency.COIN;
+    @DBField
+    private String crate = "common";
+    @DBField
+    private Integer backgroundCmd = 30000;
+    @DBField
+    private Integer coinCost = 1;
 
     private InventoryMenuOverlay overlay = InventoryMenuAPI.createOverlay();
 
@@ -213,6 +219,7 @@ public class Artisan extends DBEntity {
 
     /**
      * Get the display name of Vendor
+     *
      * @return Display Name
      */
     public String getDisplayName() {

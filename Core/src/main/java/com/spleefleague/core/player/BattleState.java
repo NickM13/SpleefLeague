@@ -16,5 +16,5 @@ public enum BattleState {
     SPECTATOR,
     REFEREE,
     SPECTATOR_GLOBAL
-    
+
 }

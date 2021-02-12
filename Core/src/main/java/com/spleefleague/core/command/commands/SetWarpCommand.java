@@ -24,7 +24,7 @@ public class SetWarpCommand extends CoreCommand {
         setDescription("Set a warp");
         setContainer("warp");
     }
-    
+
     @CommandAnnotation
     public void setwarp(CorePlayer sender, String warp) {
         if (Warp.getWarp(warp) == null) {

@@ -7,6 +7,7 @@
 package com.spleefleague.core.request;
 
 import com.spleefleague.core.player.CorePlayer;
+
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -14,11 +15,11 @@ import java.util.function.Consumer;
  * @author NickM13
  */
 public class PunchChallenge {
-    
+
     private Map<CorePlayer, Consumer<CorePlayer>> challenges;
-    
+
     public static void setPunchChallenge() {
-        
+
     }
-    
+
 }

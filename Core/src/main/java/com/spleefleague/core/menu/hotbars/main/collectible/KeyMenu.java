@@ -18,15 +18,15 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class KeyMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = CorePlayerCollectibles.createCollectibleContainer(Key.class,
                 InventoryMenuAPI.createItemDynamic()
-                .setName("Keys")
-                .setDisplayItem(Material.IRON_HELMET, 1)
-                .setDescription("Keys for opening doors!"));
+                        .setName("Keys")
+                        .setDisplayItem(Material.IRON_HELMET, 1)
+                        .setDescription("Keys for opening doors!"));
 
         InventoryMenuAPI.createItemHotbar(6, "Key")
                 .setName(cp -> cp.getCollectibles().getActiveName(Key.class))
@@ -35,7 +35,7 @@ public class KeyMenu {
                 .setAvailability(cp -> !cp.isBattler() && cp.getCollectibles().hasActive(Key.class) && cp.getCollectibles().isEnabled(Key.class))
                 .setAction(cp -> cp.getCollectibles().getActive(Key.class).onRightClick(cp));
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

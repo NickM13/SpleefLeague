@@ -104,6 +104,7 @@ public class InventoryMenuItemEmpty extends InventoryMenuItem {
         this.closeOnAction = closeOnAction;
         return this;
     }
+
     @Override
     public InventoryMenuItemEmpty setAction(Consumer<CorePlayer> action) {
         this.action = action;

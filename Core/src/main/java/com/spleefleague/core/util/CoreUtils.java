@@ -23,9 +23,10 @@ import java.util.*;
  * @author NickM13
  */
 public class CoreUtils {
-    
+
     /**
      * Number with suffix (st, nd, rd, th)
+     *
      * @param place Place
      * @return Formatted String
      */
@@ -35,25 +36,33 @@ public class CoreUtils {
             str += "th";
         } else {
             switch (place % 10) {
-                case 1: str += "st"; break;
-                case 2: str += "nd"; break;
-                case 3: str += "rd"; break;
-                default: str += "th"; break;
+                case 1:
+                    str += "st";
+                    break;
+                case 2:
+                    str += "nd";
+                    break;
+                case 3:
+                    str += "rd";
+                    break;
+                default:
+                    str += "th";
+                    break;
             }
         }
         return str;
     }
-    
+
     public static Set<String> enumToStrSet(Class<? extends Enum<?>> clazz, boolean forceLower) {
         return Sets.newHashSet(Arrays.stream(clazz.getEnumConstants()).map(e -> forceLower ? e.name().toLowerCase() : e.name()).toArray(String[]::new));
     }
-    
+
     /**
      * Get a private field from an object
      *
      * @param fieldName Field Name
-     * @param clazz Class
-     * @param object Object
+     * @param clazz     Class
+     * @param object    Object
      * @return Field Object
      */
     public static Object getPrivateField(String fieldName, Class<?> clazz, Object object) {
@@ -66,7 +75,7 @@ public class CoreUtils {
         }
         return null;
     }
-    
+
     public static TextComponent mergePlayerNames(Collection<CorePlayer> players) {
         TextComponent formatted = new TextComponent();
         Iterator<CorePlayer> cpit = players.iterator();
@@ -88,9 +97,9 @@ public class CoreUtils {
     }
 
     /**
-     * @deprecated Use StringUtils
      * @param stringCollection Strings
      * @return String
+     * @deprecated Use StringUtils
      */
     public static String mergeSetString(Collection<String> stringCollection) {
         System.out.println(stringCollection.size());
@@ -122,5 +131,5 @@ public class CoreUtils {
     public static void knockbackEntity(Entity entity, Vector direction, double power) {
         entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
     }
-    
+
 }

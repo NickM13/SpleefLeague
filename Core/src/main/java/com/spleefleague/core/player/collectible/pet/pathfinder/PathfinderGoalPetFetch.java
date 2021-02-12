@@ -10,28 +10,28 @@ import org.bukkit.Location;
  * @since 4/22/2020
  */
 public class PathfinderGoalPetFetch extends PathfinderGoal {
-    
+
     private double speed;
     private EntityPet entity;
     private NavigationAbstract navigation;
     private float minFollow;
-    
+
     public PathfinderGoalPetFetch(EntityPet entity, double speed) {
         this.entity = entity;
         this.speed = speed;
         this.navigation = entity.getNavigation();
     }
-    
+
     private double ownerDist() {
         Location loc = entity.getOwner().getPlayer().getLocation();
         return entity.getPositionVector().distanceSquared(new Vec3D(loc.getX(), loc.getY(), loc.getZ()));
     }
-    
+
     @Override
     public boolean a() {
         return entity.getOwner() != null && ownerDist() > (minFollow * minFollow);
     }
-    
+
     @Override
     public boolean b() {
         if (entity.getOwner() != null) {
@@ -39,7 +39,7 @@ public class PathfinderGoalPetFetch extends PathfinderGoal {
         }
         return false;
     }
-    
+
     @Override
     public void c() {
         if (entity.getOwner() != null) {
@@ -48,15 +48,15 @@ public class PathfinderGoalPetFetch extends PathfinderGoal {
             navigation.a(entityPath, speed);
         }
     }
-    
+
     @Override
     public void d() {
-    
+
     }
-    
+
     @Override
     public void e() {
-    
+
     }
-    
+
 }

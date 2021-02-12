@@ -12,6 +12,7 @@ import com.spleefleague.core.player.CorePlayer;
 
 import java.util.Map;
 import java.util.function.Consumer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,7 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class InventoryMenuEditor extends InventoryMenuContainerChest {
 
     protected Consumer<Map<Integer, InventoryMenuItem>> saveFun;
-    
+
     public InventoryMenuEditor() {
         super();
     }
@@ -38,12 +39,12 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
     public Consumer<Map<Integer, InventoryMenuItem>> getSaveFun() {
         return saveFun;
     }
-    
+
     public InventoryMenuEditor setSaveFun(Consumer<Map<Integer, InventoryMenuItem>> saveFun) {
         this.saveFun = saveFun;
         return this;
     }
-    
+
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
         if (e.getClickedInventory() != null && e.getClickedInventory().getType() == InventoryType.CHEST) {
             InventoryMenuContainerChest menu = (InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer();
@@ -57,9 +58,9 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
                 if (e.getCursor() != null && !e.getCursor().getType().equals(Material.AIR)) {
                     ItemMeta meta = e.getCursor().getItemMeta();
                     menu.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(meta != null ? meta.getDisplayName() : "")
-                            .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
-                            .setDisplayItem(e.getCursor()),
+                                    .setName(meta != null ? meta.getDisplayName() : "")
+                                    .setDescription(meta != null ? meta.getLore() : Lists.newArrayList())
+                                    .setDisplayItem(e.getCursor()),
                             cp.getMenu().getMenuTag("page", Integer.class) * pageBoundary.pageItemTotal + e.getSlot());
                 }
                 cp.getPlayer().setItemOnCursor(prevItem == null ? null : prevItem.createItem(cp));
@@ -81,5 +82,5 @@ public class InventoryMenuEditor extends InventoryMenuContainerChest {
             }
         }
     }
-    
+
 }

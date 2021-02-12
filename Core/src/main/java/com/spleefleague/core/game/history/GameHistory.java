@@ -46,14 +46,21 @@ public class GameHistory extends DBEntity {
         NORMAL
     }
 
-    @DBField private final String mode;
-    @DBField private final String arena;
-    @DBField private final Integer avgRating;
+    @DBField
+    private final String mode;
+    @DBField
+    private final String arena;
+    @DBField
+    private final Integer avgRating;
     private final Map<UUID, Integer> playerMap = new HashMap<>();
-    @DBField private final List<Player> players = new ArrayList<>();
-    @DBField private EndReason endReason = EndReason.NONE;
-    @DBField private final Long startTime;
-    @DBField private Long endTime;
+    @DBField
+    private final List<Player> players = new ArrayList<>();
+    @DBField
+    private EndReason endReason = EndReason.NONE;
+    @DBField
+    private final Long startTime;
+    @DBField
+    private Long endTime;
 
     public GameHistory(UUID battleId, List<UUID> players, String mode, String arena, int avgRating) {
         this.identifier = battleId.toString();

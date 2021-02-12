@@ -148,5 +148,5 @@ public class BattleListener implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
     }
-    
+
 }

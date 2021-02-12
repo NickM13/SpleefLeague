@@ -9,11 +9,11 @@ public enum Direction {
     EAST(270),
     SOUTH(0),
     WEST(90);
-    
+
     public static Direction fromYaw(int yaw) {
         yaw = (yaw % 360);
         if (yaw < 0) yaw += 360;
-        
+
         if (yaw > 135 && yaw <= 225) {
             return NORTH;
         }

@@ -9,6 +9,7 @@ package com.spleefleague.core.request;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.player.CorePlayer;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,16 +23,16 @@ import org.bukkit.entity.Player;
  * @author NickM13
  */
 public class RequestManager {
-    
+
     // Receiver, <Sender, Request>
     protected static Map<String, Map<UUID, Request>> requests = new HashMap<>();
-    
+
     protected static void validatePlayer(CorePlayer receiver) {
         if (!requests.containsKey(receiver.getName())) {
             requests.put(receiver.getName(), new HashMap<>());
         }
     }
-    
+
     public static void checkTimeouts() {
         CorePlayer receiver;
         for (Map.Entry<String, Map<UUID, Request>> r : requests.entrySet()) {
@@ -46,7 +47,7 @@ public class RequestManager {
             }
         }
     }
-    
+
     public static boolean acceptRequest(CorePlayer receiver, UUID uuid) {
         validatePlayer(receiver);
         if (requests.get(receiver.getName()).containsKey(uuid)) {
@@ -58,7 +59,7 @@ public class RequestManager {
             return false;
         }
     }
-    
+
     public static boolean declineRequest(CorePlayer receiver, UUID uuid) {
         validatePlayer(receiver);
         if (requests.get(receiver.getName()).containsKey(uuid)) {
@@ -79,7 +80,7 @@ public class RequestManager {
         ConsoleRequest request = new ConsoleRequest(action, receiver, tag, target);
         sendRequest(tag, receiver, target, request, messages);
     }
-    
+
     public static void sendRequest(BaseComponent tag, CorePlayer receiver, String target, Request request, BaseComponent... message) {
         validatePlayer(receiver);
         UUID uuid = UUID.randomUUID();
@@ -95,5 +96,5 @@ public class RequestManager {
         receiver.sendMessage(new ComponentBuilder().append(tag).append(" ").append(message).create());
         receiver.sendMessage(tag, accept, new TextComponent(" "), decline);
     }
-    
+
 }

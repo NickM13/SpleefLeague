@@ -15,12 +15,12 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class AfkCommand extends CoreCommand {
-    
+
     public AfkCommand() {
         super("afk", CoreRank.DEFAULT);
         setUsage("/afk");
     }
-    
+
     @CommandAnnotation
     public void afk(CorePlayer sender) {
         sender.setAfk(!sender.isAfk());

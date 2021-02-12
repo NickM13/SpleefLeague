@@ -16,13 +16,13 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class CancelCommand extends CoreCommand {
-    
+
     public CancelCommand() {
         super("cancel", CoreRank.SENIOR_MODERATOR);
         setUsage("/cancel <player>");
         setDescription("Cancel a player's match");
     }
-    
+
     @CommandAnnotation
     public void cancel(CorePlayer sender) {
         if (sender.isInBattle()) {
@@ -32,10 +32,10 @@ public class CancelCommand extends CoreCommand {
             error(sender, CoreError.NOT_INGAME);
         }
     }
-    
+
     @CommandAnnotation
     public void cancel(CorePlayer sender,
-            CorePlayer target) {
+                       CorePlayer target) {
         if (target.isInBattle()) {
             target.getBattle().cancel();
             success(sender, "Match cancelled");

@@ -22,9 +22,9 @@ import org.bukkit.potion.PotionType;
  * @author NickM13
  */
 public class StaffToolsMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -39,25 +39,25 @@ public class StaffToolsMenu {
                     .setDescription("A variety of tools useful for the maintenance and quality of SpleefLeague.")
                     .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD))
                     .createLinkedContainer("Staff Tools");
-            
+
             menuItem.getLinkedChest()
                     .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Clear Effects")
                             .setDisplayItem(Material.MILK_BUCKET)
                             .setAction(cp -> {
-                                    for (PotionEffect pe : cp.getPlayer().getActivePotionEffects()) {
-                                        cp.getPlayer().removePotionEffect(pe.getType());
-                                    }
-                                    })
+                                for (PotionEffect pe : cp.getPlayer().getActivePotionEffects()) {
+                                    cp.getPlayer().removePotionEffect(pe.getType());
+                                }
+                            })
                             .setCloseOnAction(false), 0, 3);
-            
+
             menuItem.getLinkedChest()
                     .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Night Vision")
                             .setDisplayItem(InventoryMenuUtils.createCustomPotion(PotionType.NIGHT_VISION))
                             .setAction(cp -> cp.getPlayer().addPotionEffect(PotionEffectType.NIGHT_VISION.createEffect(Integer.MAX_VALUE, 0)))
                             .setCloseOnAction(false), 1, 3);
-            
+
             menuItem.getLinkedChest()
                     .addMenuItem(InventoryMenuAPI.createItemDynamic()
                             .setName("Command Block")
@@ -71,7 +71,7 @@ public class StaffToolsMenu {
                             .setDisplayItem(Material.BARRIER)
                             .setAction(cp -> cp.getPlayer().getInventory().addItem(new ItemStack(Material.BARRIER)))
                             .setCloseOnAction(false), 3, 3);
-            
+
             menuItem.getLinkedChest()
                     .addMenuItem(ArenaMenu.getItem());
         }

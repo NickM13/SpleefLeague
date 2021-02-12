@@ -40,8 +40,8 @@ public class FriendCommand extends CoreCommand {
 
     @CommandAnnotation(hidden = true)
     public void friendDecline(CorePlayer sender,
-                             @LiteralArg("decline") String l,
-                             String username) {
+                              @LiteralArg("decline") String l,
+                              String username) {
         sender.getFriends().sendFriendDecline(Core.getInstance().getPlayers().getOffline(username));
     }
 

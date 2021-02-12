@@ -34,8 +34,8 @@ public class ChallengeCommand extends CoreCommand {
 
     @CommandAnnotation
     public void challengeDecline(CorePlayer sender,
-                                @LiteralArg("decline") String l,
-                                CorePlayer target) {
+                                 @LiteralArg("decline") String l,
+                                 CorePlayer target) {
         Core.getInstance().sendPacket(new PacketSpigotBattleChallengeConfirm(
                 sender.getUniqueId(), target.getUniqueId(),
                 PacketSpigotBattleChallengeConfirm.Confirmation.DECLINE));

@@ -14,20 +14,20 @@ import org.bukkit.Location;
  * @author NickM13
  */
 public class Checkpoint extends DBVariable<Document> {
-    
+
     protected String warp;
-    
+
     // Expiration time in seconds
     protected Integer expireTime;
-    
+
     public Checkpoint(String warp, int seconds) {
         this.warp = warp;
         if (seconds == 0)
             this.expireTime = 0;
         else
-            this.expireTime = (int)(System.currentTimeMillis() / 1000) + seconds;
+            this.expireTime = (int) (System.currentTimeMillis() / 1000) + seconds;
     }
-    
+
     public Location getLocation() {
         Warp w = Warp.getWarp(warp);
         if (w != null) return w.getLocation();
@@ -48,5 +48,5 @@ public class Checkpoint extends DBVariable<Document> {
     public Document save() {
         return new Document("warp", warp).append("duration", expireTime);
     }
-    
+
 }

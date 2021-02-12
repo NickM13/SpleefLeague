@@ -16,20 +16,21 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class PauseCommand extends CoreCommand {
-    
+
     public PauseCommand() {
         super("pause", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void pause(CorePlayer sender, Integer time) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
         sender.getBattle().onRequest(sender, "pause", time.toString());
     }
+
     @CommandAnnotation
     public void pause(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
         sender.getBattle().onRequest(sender, "pause", null);
     }
-    
+
 }

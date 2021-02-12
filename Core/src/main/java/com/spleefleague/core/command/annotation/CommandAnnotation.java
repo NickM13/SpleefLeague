@@ -19,9 +19,14 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface CommandAnnotation {
     boolean hidden() default false;
+
     boolean disabled() default false;
+
     boolean confirmation() default false;
+
     String minRank() default "DEFAULT";
+
     String additionalRanks() default "";
+
     String description() default "";
 }

@@ -124,6 +124,7 @@ public class InventoryMenuItemStatic extends InventoryMenuItem {
         this.closeOnAction = closeOnAction;
         return this;
     }
+
     @Override
     public InventoryMenuItem setAction(Consumer<CorePlayer> action) {
         this.action = action;

@@ -19,7 +19,7 @@ import com.spleefleague.core.plugin.CorePlugin;
  * @author NickM13
  */
 public class SpectateCommand extends CoreCommand {
-    
+
     public SpectateCommand() {
         super("spectate", CoreRank.DEFAULT);
         setUsage("/spectate <player>");
@@ -35,7 +35,7 @@ public class SpectateCommand extends CoreCommand {
             error(sender, CoreError.SETUP);
         }
     }
-    
+
     @CommandAnnotation
     public void spectate(CorePlayer sender,
                          @CorePlayerArg(allowSelf = false, allowCrossServer = true) CorePlayer target) {

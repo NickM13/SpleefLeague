@@ -17,9 +17,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class SocialMediaMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Social Media")
@@ -57,7 +57,7 @@ public class SocialMediaMenu {
 
         menuItem.getLinkedChest().addStaticItem(StaffMenu.getItem(), 1, 4);
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

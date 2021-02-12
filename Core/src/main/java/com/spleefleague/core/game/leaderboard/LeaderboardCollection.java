@@ -32,7 +32,7 @@ public class LeaderboardCollection {
         activeLeaderboard = new ActiveLeaderboard(name, 0);
         leaderboards.put(0, activeLeaderboard);
     }
-    
+
     public ArchivedLeaderboard startNewSeason() {
         ArchivedLeaderboard archivedLeaderboard = new ArchivedLeaderboard(activeLeaderboard);
         leaderboards.put(activeLeaderboard.getSeason(), archivedLeaderboard);
@@ -40,26 +40,26 @@ public class LeaderboardCollection {
         leaderboards.put(activeLeaderboard.getSeason(), activeLeaderboard);
         return archivedLeaderboard;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void addLeaderboard(Leaderboard leaderboard) {
         if (leaderboard.isActive()) {
             activeLeaderboard = (ActiveLeaderboard) leaderboard;
         }
         leaderboards.put(leaderboard.getSeason(), leaderboard);
     }
-    
+
     public ActiveLeaderboard getActive() {
         return activeLeaderboard;
     }
-    
+
     public Map<Integer, Leaderboard> getLeaderboards() {
         return leaderboards;
     }
-    
+
     public int findPage(CorePlayer cp, int pageSize) {
         int place = leaderboards.get(activeLeaderboard.getSeason()).getPlayerRank(cp.getUniqueId());
         if (place != -1) return place / pageSize;
@@ -67,7 +67,7 @@ public class LeaderboardCollection {
     }
 
     private InventoryMenuContainerChest menuContainer = null;
-    
+
     public InventoryMenuContainerChest createMenuContainer() {
         if (menuContainer != null) {
             return menuContainer;
@@ -101,9 +101,9 @@ public class LeaderboardCollection {
                 });
 
         menuContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
-                .setName(ChatColor.AQUA + "" + ChatColor.BOLD + "Search for Player")
-                .setDescription("")
-                .setDisplayItem(Material.NAME_TAG, 1),
+                        .setName(ChatColor.AQUA + "" + ChatColor.BOLD + "Search for Player")
+                        .setDescription("")
+                        .setDisplayItem(Material.NAME_TAG, 1),
                 2, 0)
                 .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                         .setTitle("Search for Player")
@@ -130,7 +130,7 @@ public class LeaderboardCollection {
                         + ChatColor.GRAY + "Win Rate: " + cp.getRatings().getWinPercent(name, activeLeaderboard.getSeason()))
                 .setDisplayItem(cp -> InventoryMenuUtils.createCustomSkullOrDefault(cp.getUniqueId()))
                 .setCloseOnAction(false), 6, 2);
-        
+
         return menuContainer;
     }
 

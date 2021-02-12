@@ -18,12 +18,24 @@ public class BungeeListenerFriend extends BungeeListener<PacketBungeeFriend> {
             return;
         }
         switch (packet.type) {
-            case ADD:               cpSender.getFriends().syncAdd(cpReceiver);              break;
-            case REMOVE:            cpSender.getFriends().syncRemove(cpReceiver);           break;
-            case DECLINE_INCOMING:  cpSender.getFriends().syncDeclineIncoming(cpReceiver);  break;
-            case DECLINE_OUTGOING:  cpSender.getFriends().syncDeclineOutgoing(cpReceiver);  break;
-            case INCOMING:          cpSender.getFriends().syncIncoming(cpReceiver);         break;
-            case OUTGOING:          cpSender.getFriends().syncOutgoing(cpReceiver);         break;
+            case ADD:
+                cpSender.getFriends().syncAdd(cpReceiver);
+                break;
+            case REMOVE:
+                cpSender.getFriends().syncRemove(cpReceiver);
+                break;
+            case DECLINE_INCOMING:
+                cpSender.getFriends().syncDeclineIncoming(cpReceiver);
+                break;
+            case DECLINE_OUTGOING:
+                cpSender.getFriends().syncDeclineOutgoing(cpReceiver);
+                break;
+            case INCOMING:
+                cpSender.getFriends().syncIncoming(cpReceiver);
+                break;
+            case OUTGOING:
+                cpSender.getFriends().syncOutgoing(cpReceiver);
+                break;
         }
     }
 

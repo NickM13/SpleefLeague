@@ -20,14 +20,15 @@ import java.util.stream.Collectors;
  * @since 4/27/2020
  */
 public class Leaderboards {
-    
+
     private final Map<String, LeaderboardCollection> LEADERBOARDS = new HashMap<>();
-    
+
     private MongoCollection<Document> leaderboardCol;
-    
+
     private BukkitTask decayTask;
 
-    public Leaderboards() { }
+    public Leaderboards() {
+    }
 
     public void init() {
         leaderboardCol = Core.getInstance().getPluginDB().getCollection("Leaderboards");
@@ -72,12 +73,12 @@ public class Leaderboards {
     public void close() {
 
     }
-    
+
     public LeaderboardCollection get(String name) {
         if (!LEADERBOARDS.containsKey(name)) {
             LEADERBOARDS.put(name, new LeaderboardCollection(name));
         }
         return LEADERBOARDS.get(name);
     }
-    
+
 }

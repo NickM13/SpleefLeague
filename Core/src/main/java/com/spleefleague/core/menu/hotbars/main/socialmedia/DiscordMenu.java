@@ -19,16 +19,16 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class DiscordMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Discord")
                 .setDisplayItem(Material.WRITABLE_BOOK, 4)
                 .setDescription(Settings.getDiscord().getUrl());
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

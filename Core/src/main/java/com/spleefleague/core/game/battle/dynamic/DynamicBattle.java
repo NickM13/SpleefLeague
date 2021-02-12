@@ -25,7 +25,7 @@ import java.util.UUID;
  * @since 4/24/2020
  */
 public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> {
-    
+
     protected static final int MAX_SHOWN = 5;
     protected int playToPoints = 1;
     protected int initBattlerCount;
@@ -35,7 +35,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
         roundCountdown = 10;
     }
-    
+
     /**
      * Initialize battle requests (/request)
      */
@@ -44,7 +44,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         addBattleRequest(new EndGameRequest(this));
         addBattleRequest(new PauseRequest(this));
     }
-    
+
     /**
      * Initialize base battle settings such as GameWorld tools and Scoreboard values
      */
@@ -52,7 +52,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void setupBaseSettings() {
 
     }
-    
+
     /**
      * Initialize the players, called in startBattle()
      */
@@ -67,12 +67,12 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         }
         avgBattlerRating /= battlers.size();
     }
-    
+
     @Override
     protected void setupScoreboard() {
 
     }
-    
+
     /**
      * Send a message on the start of a battle
      */
@@ -98,9 +98,9 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
 
     @Override
     protected void fillField() {
-    
+
     }
-    
+
     /**
      * Called when a battler joins mid-game (if available)
      *
@@ -108,9 +108,9 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void joinBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Save the battlers stats
      * Called when a battler is being removed from the battle
@@ -121,7 +121,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void saveBattlerStats(BP bp) {
 
     }
-    
+
     /**
      * End a round with a determined winner
      *
@@ -157,9 +157,8 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
                 ChatColor.GREEN + (initialElo + eloChange) +
                 ChatColor.GRAY + ")");
     }
-    
+
     /**
-     *
      * @param winner Battle Player
      */
     protected void applyEloChange(@Nonnull BP winner) {
@@ -186,7 +185,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     }
 
     protected abstract void sendEndMessage(BP winner);
-    
+
     /**
      * Called when a battler leaves boundaries
      *
@@ -206,7 +205,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             chatGroup.sendMessage(cp.getDisplayName() + " has been eliminated, " + remainingPlayers.size() + " remaining");
         }
     }
-    
+
     /**
      * Called when a battler enters a goal area
      *
@@ -216,7 +215,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected void winBattler(CorePlayer cp) {
 
     }
-    
+
     /**
      * Called when a player surrenders (/ff, /leave)
      *
@@ -226,7 +225,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     public void surrender(CorePlayer cp) {
         leaveBattler(cp);
     }
-    
+
     /**
      * Called when a Play To request passes
      *
@@ -236,7 +235,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     public void setPlayTo(int playToPoints) {
         this.playToPoints = playToPoints;
     }
-    
+
     /**
      * Called when a battler wants to leave (/leave, /ff)
      *
@@ -266,7 +265,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             }
         }
     }
-    
+
     /**
      * Called every 1 second or on score updates
      * Updates the player scoreboards
@@ -275,7 +274,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     public void updateScoreboard() {
         chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString());
     }
-    
+
     /**
      * Called every 1/10 second
      * Updates the field on occasion for events such as
@@ -283,15 +282,15 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void updateField() {
-    
+
     }
-    
+
     /**
      * Updates the experience bar of players in the game
      */
     @Override
     public void updateExperience() {
-    
+
     }
-    
+
 }

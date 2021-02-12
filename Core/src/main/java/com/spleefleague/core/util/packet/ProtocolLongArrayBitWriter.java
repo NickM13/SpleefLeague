@@ -1,7 +1,6 @@
 package com.spleefleague.core.util.packet;
 
 /**
- *
  * @author Jonas
  */
 public class ProtocolLongArrayBitWriter {
@@ -14,30 +13,29 @@ public class ProtocolLongArrayBitWriter {
     }
 
     public void writeLong(long l, int bits) {
-        while(bits > 0) {
+        while (bits > 0) {
             int toWrite = Math.min(8, bits);
             bits -= toWrite;
             short ff = 0xFF;
-            if(toWrite == 8) {
-                writeByte((byte)(l & ff), toWrite);
-            }
-            else {
+            if (toWrite == 8) {
+                writeByte((byte) (l & ff), toWrite);
+            } else {
                 ff >>>= 8 - toWrite;
-                writeByte((byte)(l & ff), toWrite);
+                writeByte((byte) (l & ff), toWrite);
             }
             l >>>= 8;
         }
     }
 
     public void writeShort(short s, int bits) {
-        while(bits > 0) {
+        while (bits > 0) {
             int toWrite = Math.min(8, bits);
             bits -= toWrite;
             short ff = 0xFF;
-            if(toWrite != 8) {
+            if (toWrite != 8) {
                 ff >>>= 8 - toWrite;
             }
-            writeByte((byte)(s & ff), toWrite);
+            writeByte((byte) (s & ff), toWrite);
             s >>>= 8;
         }
     }
@@ -51,33 +49,31 @@ public class ProtocolLongArrayBitWriter {
     }
 
     public void writeInt(int i, int bits) {
-        while(bits > 0) {
+        while (bits > 0) {
             int toWrite = Math.min(8, bits);
             bits -= toWrite;
             short ff = 0xFF;
-            if(toWrite == 8) {
-                writeByte((byte)(i & ff), toWrite);
-            }
-            else {
+            if (toWrite == 8) {
+                writeByte((byte) (i & ff), toWrite);
+            } else {
                 ff >>>= 8 - toWrite;
-                writeByte((byte)(i & ff), toWrite);
+                writeByte((byte) (i & ff), toWrite);
             }
             i >>>= 8;
         }
     }
 
     public void writeByte(byte b, int bits) {
-        if(bits == 0) return;
+        if (bits == 0) return;
         int p = offset / 8, o = offset % 8;
         p = 7 - p % 8 + (p / 8) * 8;
         int space = 8 - o;
-        if(space >= bits) {
+        if (space >= bits) {
             short ff = 0xFF;
             ff >>>= (8 - bits);
             data[p] |= (b & ff) << o;
             offset += bits;
-        }
-        else {
+        } else {
             offset += space;
             bits -= space;
             short ff = 0xFF;

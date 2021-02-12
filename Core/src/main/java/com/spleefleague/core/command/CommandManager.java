@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 
@@ -21,20 +22,20 @@ import org.bukkit.command.CommandMap;
 public class CommandManager {
 
     private CommandMap commandMap = null;
-    
+
     public CommandManager() {
         try {
             final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            
+
             bukkitCommandMap.setAccessible(true);
             commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public void addCommand(CoreCommand command) {
         commandMap.register(command.getContainer(), command);
     }
-    
+
 }

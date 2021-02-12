@@ -15,19 +15,19 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class MenuCommand extends CoreCommand {
-    
+
     public MenuCommand() {
         super("menu", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void menu(CorePlayer sender) {
         sender.refreshHotbar();
     }
-    
-    @CommandAnnotation(minRank="MODERATOR")
+
+    @CommandAnnotation(minRank = "MODERATOR")
     public void menu(CorePlayer sender, CorePlayer cp) {
         cp.refreshHotbar();
     }
-    
+
 }

@@ -124,17 +124,17 @@ public class CoreRankManager extends RankManager<CoreRank> {
 
     @Override
     protected void reloadRanks() {
-        CoreRank.DEFAULT =           getRankOrDefault("DEFAULT");
-        CoreRank.ADMIN =             getRankOrDefault("ADMIN");
-        CoreRank.DEVELOPER =         getRankOrDefault("DEVELOPER");
-        CoreRank.TEMP_MOD =         getRankOrDefault("MODERATOR");
-        CoreRank.SENIOR_MODERATOR =  getRankOrDefault("SENIOR_MODERATOR");
-        CoreRank.BUILDER =           getRankOrDefault("BUILDER");
-        CoreRank.ORGANIZER =         getRankOrDefault("ORGANIZER");
-        CoreRank.VIP =               getRankOrDefault("VIP");
-        CoreRank.DONOR_1 =           getRankOrDefault("DONOR_1");
-        CoreRank.DONOR_2 =           getRankOrDefault("DONOR_2");
-        CoreRank.DONOR_3 =           getRankOrDefault("DONOR_3");
+        CoreRank.DEFAULT = getRankOrDefault("DEFAULT");
+        CoreRank.ADMIN = getRankOrDefault("ADMIN");
+        CoreRank.DEVELOPER = getRankOrDefault("DEVELOPER");
+        CoreRank.TEMP_MOD = getRankOrDefault("MODERATOR");
+        CoreRank.SENIOR_MODERATOR = getRankOrDefault("SENIOR_MODERATOR");
+        CoreRank.BUILDER = getRankOrDefault("BUILDER");
+        CoreRank.ORGANIZER = getRankOrDefault("ORGANIZER");
+        CoreRank.VIP = getRankOrDefault("VIP");
+        CoreRank.DONOR_1 = getRankOrDefault("DONOR_1");
+        CoreRank.DONOR_2 = getRankOrDefault("DONOR_2");
+        CoreRank.DONOR_3 = getRankOrDefault("DONOR_3");
     }
 
     public void initScoreboard(Scoreboard scoreboard) {

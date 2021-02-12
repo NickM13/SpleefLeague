@@ -11,8 +11,10 @@ import org.bukkit.inventory.ItemStack;
 public class CollectibleSkin extends DBEntity {
 
     private final Collectible parent;
-    @DBField private Integer cmd;
-    @DBField private String displayName;
+    @DBField
+    private Integer cmd;
+    @DBField
+    private String displayName;
 
     private ItemStack displayItem;
 

@@ -17,7 +17,7 @@ public class Hat extends Collectible {
      */
     public static void init() {
         Vendorable.registerParentType(Hat.class);
-    
+
         InventoryMenuAPI.createItemHotbar(39, "Hat")
                 .setName(cp -> cp.getCollectibles().getActiveName(Hat.class))
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Hat.class))
@@ -26,11 +26,11 @@ public class Hat extends Collectible {
     }
 
     public static void close() {
-    
+
     }
 
     private static final Material DEFAULT_HAT_MAT = Material.BARRIER;
-    
+
     public Hat() {
         super();
     }
@@ -41,7 +41,7 @@ public class Hat extends Collectible {
         this.name = name;
         this.material = DEFAULT_HAT_MAT;
     }
-    
+
     /**
      * Called when a player clicks on this collectible on
      * their collections menu
@@ -50,9 +50,9 @@ public class Hat extends Collectible {
      */
     @Override
     public void onEnable(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when another collectible of the same type has
      * been enabled
@@ -61,9 +61,9 @@ public class Hat extends Collectible {
      */
     @Override
     public void onDisable(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements

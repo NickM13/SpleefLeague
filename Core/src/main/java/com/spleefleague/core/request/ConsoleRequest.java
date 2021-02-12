@@ -19,13 +19,13 @@ public class ConsoleRequest extends Request {
 
     protected BiConsumer<CorePlayer, String> action;
     protected String name;
-    
+
     public ConsoleRequest(BiConsumer<CorePlayer, String> action, CorePlayer receiver, BaseComponent tag, String name) {
         super(receiver, tag);
         this.name = name;
         this.action = action;
     }
-    
+
     @Override
     public void accept() {
         if (isExpired()) {
@@ -34,15 +34,15 @@ public class ConsoleRequest extends Request {
             action.accept(receiver, name);
         }
     }
-    
+
     @Override
     public void decline() {
         receiver.sendMessage(tag, new TextComponent("You have declined " + name + " request"));
     }
-    
+
     @Override
     public void timeout() {
         receiver.sendMessage(tag + "Request from " + name + " has timed out");
     }
-    
+
 }

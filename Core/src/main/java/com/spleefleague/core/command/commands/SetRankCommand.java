@@ -22,13 +22,13 @@ import com.spleefleague.core.command.annotation.OptionArg;
  * @author NickM13
  */
 public class SetRankCommand extends CoreCommand {
-    
+
     public SetRankCommand() {
         super("setrank", CoreRank.DEVELOPER);
         setUsage("/setrank [name] <rank>");
         setOptions("rankList", (cp) -> Core.getInstance().getRankManager().getRankNames());
     }
-    
+
     private boolean sr(CorePlayer sender, CorePlayer cp, CoreRank rank) {
         if (cp == null) {
             error(sender, CoreError.PLAYER);
@@ -45,7 +45,7 @@ public class SetRankCommand extends CoreCommand {
         cp.setRank(rank);
         return true;
     }
-    
+
     private boolean sr(CommandSender sender, @CorePlayerArg(allowOffline = true) CorePlayer cp, CoreRank rank) {
         if (cp == null) {
             error(sender, "Player does not exist");
@@ -60,19 +60,19 @@ public class SetRankCommand extends CoreCommand {
         cp.setRank(rank);
         return true;
     }
-    
+
     @CommandAnnotation
     public void setrankPlayer(CorePlayer sender,
                               @CorePlayerArg(allowOffline = true) CorePlayer cp,
-                              @OptionArg(listName="rankList") String rank) {
+                              @OptionArg(listName = "rankList") String rank) {
         sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
-    
+
     @CommandAnnotation
     public void setrankConsole(CommandSender sender,
                                @CorePlayerArg(allowOffline = true) CorePlayer cp,
-                               @OptionArg(listName="rankList") String rank) {
+                               @OptionArg(listName = "rankList") String rank) {
         sr(sender, cp, Core.getInstance().getRankManager().getRank(rank));
     }
-    
+
 }

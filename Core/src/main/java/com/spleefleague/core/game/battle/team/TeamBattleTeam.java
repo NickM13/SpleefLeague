@@ -46,7 +46,7 @@ public class TeamBattleTeam<BP extends TeamBattlePlayer> {
     public TeamInfo getTeamInfo() {
         return teamName;
     }
-    
+
     public void addPlayer(BP player) {
         players.add(player);
         original.add(player.getCorePlayer().getUniqueId());

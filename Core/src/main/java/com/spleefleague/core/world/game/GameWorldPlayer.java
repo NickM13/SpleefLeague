@@ -32,5 +32,5 @@ public class GameWorldPlayer extends ProjectileWorldPlayer {
         }
         return false;
     }
-    
+
 }

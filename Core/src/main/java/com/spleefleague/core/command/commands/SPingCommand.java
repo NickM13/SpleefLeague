@@ -17,23 +17,24 @@ import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.Comparator;
 import java.util.List;
+
 import net.md_5.bungee.api.ChatColor;
 
 /**
  * @author NickM13
  */
 public class SPingCommand extends CoreCommand {
-    
+
     public SPingCommand() {
         super("sping", CoreRank.DEFAULT);
         setDescription("Get all player pings");
     }
-    
+
     @CommandAnnotation
     public void sping(CorePlayer sender) {
         List<CorePlayer> players = Lists.newArrayList(Core.getInstance().getPlayers().getAllHere());
         players.sort(Comparator.comparingInt(CorePlayer::getPing));
-        
+
         sender.sendMessage(ChatUtils.centerChat(ChatColor.AQUA + "[" + ChatColor.GOLD + " Everyone's Ping " + ChatColor.AQUA + "]"));
         int maxDisplay = 8;
         for (CorePlayer cp : players) {

@@ -37,6 +37,7 @@ public class BattleUtils {
 
     /**
      * Returns a random "defeat" synonym
+     *
      * @return Defeat Synonym
      */
     public static String randomDefeatSynonym() {
@@ -97,15 +98,15 @@ public class BattleUtils {
     private static List<BlockPosition> getDomeBlocks(Location loc) {
         BlockPosition origin = new BlockPosition(loc.toVector());
         List<BlockPosition> blockPositions = new ArrayList<>();
-        blockPositions.add(origin.add(new BlockPosition(-1, 0,  0)));
-        blockPositions.add(origin.add(new BlockPosition( 1, 0,  0)));
-        blockPositions.add(origin.add(new BlockPosition( 0, 0, -1)));
-        blockPositions.add(origin.add(new BlockPosition( 0, 0,  1)));
-        blockPositions.add(origin.add(new BlockPosition(-1, 1,  0)));
-        blockPositions.add(origin.add(new BlockPosition( 1, 1,  0)));
-        blockPositions.add(origin.add(new BlockPosition( 0, 1, -1)));
-        blockPositions.add(origin.add(new BlockPosition( 0, 1,  1)));
-        blockPositions.add(origin.add(new BlockPosition( 0, 2,  0)));
+        blockPositions.add(origin.add(new BlockPosition(-1, 0, 0)));
+        blockPositions.add(origin.add(new BlockPosition(1, 0, 0)));
+        blockPositions.add(origin.add(new BlockPosition(0, 0, -1)));
+        blockPositions.add(origin.add(new BlockPosition(0, 0, 1)));
+        blockPositions.add(origin.add(new BlockPosition(-1, 1, 0)));
+        blockPositions.add(origin.add(new BlockPosition(1, 1, 0)));
+        blockPositions.add(origin.add(new BlockPosition(0, 1, -1)));
+        blockPositions.add(origin.add(new BlockPosition(0, 1, 1)));
+        blockPositions.add(origin.add(new BlockPosition(0, 2, 0)));
         return blockPositions;
     }
 
@@ -113,7 +114,7 @@ public class BattleUtils {
      * Fill an area around a list of locations
      *
      * @param gameWorld Game World
-     * @param material Material
+     * @param material  Material
      * @param positions Positions
      */
     public static void fillDome(GameWorld gameWorld, Material material, List<Position> positions) {

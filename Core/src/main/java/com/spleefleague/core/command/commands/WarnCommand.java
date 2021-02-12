@@ -18,26 +18,29 @@ import org.bukkit.command.CommandSender;
  * @author NickM13
  */
 public class WarnCommand extends CoreCommand {
-    
+
     public WarnCommand() {
         super("warn", CoreRank.TEMP_MOD);
     }
-    
+
     @CommandAnnotation
     public void warn(CorePlayer sender, OfflinePlayer op, String reason) {
         Infractions.warn(sender, op, reason);
     }
+
     @CommandAnnotation
     public void warn(CorePlayer sender, OfflinePlayer op) {
         Infractions.warn(sender, op, "");
     }
+
     @CommandAnnotation
     public void warn(CommandSender sender, OfflinePlayer op, String reason) {
         Infractions.warn(null, op, reason);
     }
+
     @CommandAnnotation
     public void warn(CommandSender sender, OfflinePlayer op) {
         Infractions.warn(null, op, "");
     }
-    
+
 }

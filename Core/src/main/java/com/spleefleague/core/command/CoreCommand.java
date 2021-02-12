@@ -114,7 +114,7 @@ public class CoreCommand extends Command {
     }
 
     private final Map<String, Function<PriorInfo, Set<String>>> optionsMap;
-    
+
     private final static Set<String> allPermissions = new HashSet<>();
     private String container;
 
@@ -125,7 +125,7 @@ public class CoreCommand extends Command {
     public static Set<String> getAllPermissions() {
         return allPermissions;
     }
-    
+
     protected CoreCommand(String name, CoreRank requiredRank, CoreRank... additionalRanks) {
         super(name);
         this.optionsMap = new HashMap<>();
@@ -168,7 +168,7 @@ public class CoreCommand extends Command {
 
     @CommandAnnotation(hidden = true)
     public void commandHelp(CorePlayer sender,
-                               @LiteralArg("help") String l) {
+                            @LiteralArg("help") String l) {
         usage(sender, ChatColor.DARK_GRAY + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "------------------------");
 
         TextComponent component;
@@ -244,11 +244,11 @@ public class CoreCommand extends Command {
 
         usage(sender, ChatColor.DARK_GRAY + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "------------------------");
     }
-    
+
     protected void setContainer(String container) {
         this.container = container;
     }
-    
+
     public String getContainer() {
         return container;
     }
@@ -256,18 +256,19 @@ public class CoreCommand extends Command {
     protected void setOptions(String name, Function<PriorInfo, Set<String>> options) {
         optionsMap.put(name, options);
     }
-    
+
     protected TreeSet<String> getOptions(String name, CorePlayer cp, List<String> args) {
         return Sets.newTreeSet(optionsMap.get(name).apply(new PriorInfo(cp, args)));
     }
-    
+
     private Integer toInt(String str) {
         try {
             return Integer.parseInt(str);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return null;
         }
     }
+
     private Double toDouble(String str) {
         try {
             return Double.parseDouble(str);
@@ -275,8 +276,8 @@ public class CoreCommand extends Command {
             return null;
         }
     }
-    
-    private boolean strEquals(String arg, String ... com) {
+
+    private boolean strEquals(String arg, String... com) {
         for (String com1 : com) {
             if (arg.equalsIgnoreCase(com1)) {
                 return true;
@@ -284,14 +285,14 @@ public class CoreCommand extends Command {
         }
         return false;
     }
-    
+
     private static class Boundary {
         double min = 0, max = -1;
     }
-    
+
     private Boundary getBounds(String str) {
         Boundary b = new Boundary();
-        
+
         if (str.contains("..")) {
             if (str.startsWith("..")) {
                 b.max = Double.parseDouble(str.substring(2));
@@ -306,18 +307,24 @@ public class CoreCommand extends Command {
             b.min = 0;
             b.max = Double.parseDouble(str);
         }
-        
+
         return b;
     }
-    
+
     private Vector modifyLocation(Vector loc, String c, String arg) {
         Vector location = loc.clone();
         switch (arg.charAt(0)) {
             case '~':
                 switch (c) {
-                    case "x": location.add(new Vector(Double.parseDouble(arg.substring(1)), 0D, 0D)); break;
-                    case "y": location.add(new Vector(0D, Double.parseDouble(arg.substring(1)), 0D)); break;
-                    case "z": location.add(new Vector(0D, 0D, Double.parseDouble(arg.substring(1)))); break;
+                    case "x":
+                        location.add(new Vector(Double.parseDouble(arg.substring(1)), 0D, 0D));
+                        break;
+                    case "y":
+                        location.add(new Vector(0D, Double.parseDouble(arg.substring(1)), 0D));
+                        break;
+                    case "z":
+                        location.add(new Vector(0D, 0D, Double.parseDouble(arg.substring(1))));
+                        break;
                 }
                 break;
             case '^':
@@ -328,25 +335,37 @@ public class CoreCommand extends Command {
                 break;
             default:
                 switch (c) {
-                    case "x": location.setX(Double.parseDouble(arg)); break;
-                    case "y": location.setY(Double.parseDouble(arg)); break;
-                    case "z": location.setZ(Double.parseDouble(arg)); break;
+                    case "x":
+                        location.setX(Double.parseDouble(arg));
+                        break;
+                    case "y":
+                        location.setY(Double.parseDouble(arg));
+                        break;
+                    case "z":
+                        location.setZ(Double.parseDouble(arg));
+                        break;
                 }
                 break;
         }
         return location;
     }
-    
+
     private Vector modifyDLocation(Vector loc, String c, String arg) {
         Vector location = loc.clone();
         switch (c) {
-            case "dx": location.setX(Double.parseDouble(arg)); break;
-            case "dy": location.setY(Double.parseDouble(arg)); break;
-            case "dz": location.setZ(Double.parseDouble(arg)); break;
+            case "dx":
+                location.setX(Double.parseDouble(arg));
+                break;
+            case "dy":
+                location.setY(Double.parseDouble(arg));
+                break;
+            case "dz":
+                location.setZ(Double.parseDouble(arg));
+                break;
         }
         return location;
     }
-    
+
     private boolean isValidCorePlayer(CommandSender cs, CorePlayer sender, CorePlayer cp, CorePlayerArg cpa) {
         if (cp == null) return false;
         if (cpa == null) return true;
@@ -357,7 +376,7 @@ public class CoreCommand extends Command {
         }
         return true;
     }
-    
+
     private boolean isNumInbounds(CommandSender cs, Double num, NumberArg na) {
         if (num == null) return false;
         if (na == null) return true;
@@ -367,31 +386,31 @@ public class CoreCommand extends Command {
         }
         return true;
     }
-    
+
     private enum SortType {
         NEAREST,
         FURTHEST,
         RANDOM,
         ARBITRARY
     }
-    
+
     private List<Entity> getEntitiesByArgs(CommandSender sender, Location loc, List<Entity> entities, String selectorArgs) {
         if (selectorArgs.equals("")) return entities;
-        
+
         Vector vec = loc.toVector();
         Vector dvec = vec.clone();
-        
+
         Integer limit = null;
         SortType sort = SortType.ARBITRARY;
 
         HashSet<Entity> entitySet = new HashSet<>(entities);
-        
+
         if (selectorArgs.charAt(0) == '[' &&
                 selectorArgs.charAt(selectorArgs.length() - 1) == ']') {
             selectorArgs = selectorArgs.substring(1, selectorArgs.length() - 1).trim();
             String[] args = selectorArgs.split(","), arg;
             String argument, value;
-            
+
             for (String arg1 : args) {
                 arg = arg1.split("=");
                 argument = arg[0];
@@ -412,7 +431,7 @@ public class CoreCommand extends Command {
                     vec = modifyLocation(vec, argument, value);
                 } else if (strEquals(argument, "dx", "dy", "dz")) {
                     dvec = modifyDLocation(dvec, argument, value);
-                    
+
                     if (strEquals(argument, "dz")) {
                         Iterator<Entity> it = entitySet.iterator();
                         while (it.hasNext()) {
@@ -461,22 +480,29 @@ public class CoreCommand extends Command {
                     else
                         gmStr = value;
                     switch (gmStr.toLowerCase()) {
-                        case "0": case "s": case "survival":
+                        case "0":
+                        case "s":
+                        case "survival":
                             gm = GameMode.SURVIVAL;
                             break;
-                        case "1": case "c": case "creative":
+                        case "1":
+                        case "c":
+                        case "creative":
                             gm = GameMode.CREATIVE;
                             break;
-                        case "2": case "a": case "adventure":
+                        case "2":
+                        case "a":
+                        case "adventure":
                             gm = GameMode.ADVENTURE;
                             break;
-                        case "3": case "spectator":
+                        case "3":
+                        case "spectator":
                             gm = GameMode.SPECTATOR;
                             break;
                     }
                     if (gm == null) continue;
                     Iterator<Entity> it = entitySet.iterator();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         Entity e = it.next();
                         Player p = null;
                         if (e instanceof Player) {
@@ -492,7 +518,7 @@ public class CoreCommand extends Command {
                     }
                 } else if (strEquals(argument, "name")) {
                     Iterator<Entity> it = entitySet.iterator();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         Entity e = it.next();
                         if ((value.charAt(0) == '!' && e.getName().equalsIgnoreCase(value.substring(1))) ||
                                 (value.charAt(0) != '!' && !e.getName().equalsIgnoreCase(value))) {
@@ -516,17 +542,17 @@ public class CoreCommand extends Command {
         } else {
             return new ArrayList<>();
         }
-        
+
         class EntityDistanced {
             final Entity entity;
             final Integer distance;
-            
+
             public EntityDistanced(Entity entity, Integer distance) {
                 this.entity = entity;
                 this.distance = distance;
             }
         }
-        
+
         ArrayList<EntityDistanced> entityDistancedList = new ArrayList<>();
         for (Entity e : entitySet) {
             entityDistancedList.add(new EntityDistanced(e, (int) vec.distance(e.getLocation().toVector())));
@@ -538,27 +564,28 @@ public class CoreCommand extends Command {
                     entityDistancedList.sort(Comparator.comparingInt(e -> e.distance));
                     break;
                 case FURTHEST:
-                    entityDistancedList.sort((e1, e2) -> e2.distance-e1.distance);
+                    entityDistancedList.sort((e1, e2) -> e2.distance - e1.distance);
                     break;
                 case RANDOM:
                     Random random = new Random();
                     entityDistancedList.sort((e1, e2) -> random.nextInt());
                     break;
-                default: break;
+                default:
+                    break;
             }
         }
         List<Entity> entityList = new ArrayList<>();
         for (EntityDistanced ed : entityDistancedList) {
             entityList.add(ed.entity);
         }
-        
+
         if (limit != null) {
             entityList = entityList.subList(0, Math.min(limit, entityList.size()));
         }
-        
+
         return entityList;
     }
-    
+
     @SuppressWarnings("deprecation")
     @Override
     public boolean execute(CommandSender cs, String command, String[] args) {
@@ -889,7 +916,7 @@ public class CoreCommand extends Command {
             }
             if (!success) {
                 if (cp != null) usage(cp, this.getUsage());
-                else            usage(cs, this.getUsage());
+                else usage(cs, this.getUsage());
             }
         } else {
             error(cp, CoreError.UNABLE);
@@ -900,7 +927,7 @@ public class CoreCommand extends Command {
         }
         return true;
     }
-    
+
     @SuppressWarnings("deprecation")
     @Override
     public List<String> tabComplete(CommandSender cs, String alias, String[] args) {
@@ -1169,12 +1196,12 @@ public class CoreCommand extends Command {
                 }
             }
         }
-        
+
         return options;
     }
-    
+
     private boolean optionSelected;
-    
+
     private void addOption(List<String> options, String option, String arg) {
         if (option.equalsIgnoreCase(arg)
                 || (option.contains(":") && option.split(":")[1].equalsIgnoreCase(arg))) {
@@ -1191,13 +1218,15 @@ public class CoreCommand extends Command {
         aliases.add(alias);
         this.setAliases(aliases);
     }
-    
+
     protected void success(CommandSender cs, String msg) {
         Core.getInstance().sendMessage(cs, msg);
     }
+
     protected void success(CorePlayer cp, String msg) {
         Core.getInstance().sendMessage(cp, msg);
     }
+
     protected void success(CorePlayer cp, TextComponent msg) {
         Core.getInstance().sendMessage(cp, msg);
     }
@@ -1205,22 +1234,27 @@ public class CoreCommand extends Command {
     protected void error(CommandSender cs, String msg) {
         Core.getInstance().sendMessage(cs, Chat.ERROR + msg);
     }
+
     protected void error(CorePlayer cp, String msg) {
         Core.getInstance().sendMessage(cp, Chat.ERROR + msg);
     }
+
     protected void error(CommandSender cs, CoreError error) {
         Core.getInstance().sendMessage(cs, Chat.ERROR + error.getMessage());
     }
+
     protected void error(CorePlayer cp, CoreError error) {
         Core.getInstance().sendMessage(cp, Chat.ERROR + error.getMessage());
     }
-    
+
     protected void usage(CommandSender cs, String msg) {
         Core.getInstance().sendMessage(cs, msg);
     }
+
     protected void usage(CorePlayer cp, String msg) {
         Core.getInstance().sendMessage(cp, msg);
     }
+
     protected void usage(CorePlayer cp, TextComponent msg) {
         Core.getInstance().sendMessage(cp, msg);
     }

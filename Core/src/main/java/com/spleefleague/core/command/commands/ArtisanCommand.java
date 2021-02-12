@@ -89,10 +89,10 @@ public class ArtisanCommand extends CoreCommand {
 
     @CommandAnnotation
     public void artisanSetCoins(CorePlayer sender,
-                                     @LiteralArg(value = "set") String l1,
-                                     @LiteralArg(value = "coinCost") String l2,
-                                     @OptionArg(listName = "artisans") String artisan,
-                                     @NumberArg Integer coinCost) {
+                                @LiteralArg(value = "set") String l1,
+                                @LiteralArg(value = "coinCost") String l2,
+                                @OptionArg(listName = "artisans") String artisan,
+                                @NumberArg Integer coinCost) {
         Artisans.setCoinCost(artisan, coinCost);
         success(sender, artisan + " coin cost set to " + coinCost);
     }
@@ -145,8 +145,8 @@ public class ArtisanCommand extends CoreCommand {
 
     @CommandAnnotation
     public void artisanDestroy(CorePlayer sender,
-                              @LiteralArg(value = "destroy") String l,
-                              @OptionArg(listName = "artisans") String name) {
+                               @LiteralArg(value = "destroy") String l,
+                               @OptionArg(listName = "artisans") String name) {
         if (Artisans.deleteArtisan(Artisans.getVendor(name))) {
             success(sender, "Deleted artisan " + name);
         } else {

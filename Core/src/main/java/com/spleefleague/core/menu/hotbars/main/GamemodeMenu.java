@@ -10,9 +10,9 @@ import org.bukkit.Material;
  * @since 4/18/2020
  */
 public class GamemodeMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Games")
@@ -21,7 +21,7 @@ public class GamemodeMenu {
                 .setSelectedItem(Material.NETHER_STAR, 3)
                 .createLinkedContainer("Games");
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -32,5 +32,5 @@ public class GamemodeMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

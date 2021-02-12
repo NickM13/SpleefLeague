@@ -11,14 +11,14 @@ import javax.annotation.Nullable;
  * @since 5/1/2020
  */
 public class PauseRequest extends BattleRequest {
-    
+
     // Time in seconds
     private int pauseTime;
-    
+
     public PauseRequest(Battle<?> battle) {
         super(battle, true, "pause");
     }
-    
+
     @Override
     protected boolean attemptStartRequest(CorePlayer cp, int total, @Nullable String requestValue) {
         if (requestValue != null) {
@@ -40,7 +40,7 @@ public class PauseRequest extends BattleRequest {
         battle.getPlugin().sendMessage(cp, Chat.ERROR + "That's not a number!");
         return false;
     }
-    
+
     /**
      * Called when enough players are requesting this
      */
@@ -48,5 +48,5 @@ public class PauseRequest extends BattleRequest {
     protected void meetsRequirement() {
         battle.pause(pauseTime);
     }
-    
+
 }

@@ -7,6 +7,7 @@
 package com.spleefleague.core.util.variable;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,32 +26,37 @@ import org.bukkit.util.Vector;
 public class Point extends DBVariable<List<Double>> {
 
     public double x, y, z;
-    
+
     public Point() {
         this.x = 0;
         this.y = 0;
         this.z = 0;
     }
+
     public Point(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
+
     public Point(Vec3D vec) {
         this.x = vec.getX();
         this.y = vec.getY();
         this.z = vec.getZ();
     }
+
     public Point(Location loc) {
         this.x = loc.getX();
         this.y = loc.getY();
         this.z = loc.getZ();
     }
+
     public Point(Vector vec) {
         this.x = vec.getX();
         this.y = vec.getY();
         this.z = vec.getZ();
     }
+
     public Point(List<Double> list) {
         super(list);
     }
@@ -66,11 +72,11 @@ public class Point extends DBVariable<List<Double>> {
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
     }
-    
+
     public Vector toVector() {
         return new Vector(x, y, z);
     }
-    
+
     public Point add(double x, double y, double z) {
         this.x += x;
         this.y += y;
@@ -110,7 +116,7 @@ public class Point extends DBVariable<List<Double>> {
         results.sort((l, r) -> (int) (l.getDistance() * 1000 - r.getDistance() * 1000));
         return results;
     }
-    
+
     public List<BlockRaycastResult> castBlocks(Vector direction, double maxDist) {
         direction = direction.normalize();
         double px = x < 0 ? x + -Math.floor(x) : x;
@@ -119,22 +125,22 @@ public class Point extends DBVariable<List<Double>> {
         double distX = direction.getX() > 0 ? (1 - (px % 1)) : (px % 1);
         double distY = direction.getY() > 0 ? (1 - (py % 1)) : (py % 1);
         double distZ = direction.getZ() > 0 ? (1 - (pz % 1)) : (pz % 1);
-        
+
         double requiredX = Math.abs(direction.getX()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getX());
         double requiredY = Math.abs(direction.getY()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getY());
         double requiredZ = Math.abs(direction.getZ()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getZ());
-        
+
         double remainX = distX * requiredX;
         double remainY = distY * requiredY;
         double remainZ = distZ * requiredZ;
-        
+
         List<BlockRaycastResult> result = new ArrayList<>();
-        
-        BlockPosition cPos = new BlockPosition((int)Math.floor(x), (int)Math.floor(y), (int)Math.floor(z));
+
+        BlockPosition cPos = new BlockPosition((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
         double cDist = 0;
         int axis = 0;
         BlockFace face = BlockFace.SELF;
-        
+
         // Distance to faces for initial axis
         // Closer to 0 is closer to face
         double fx = 1.0 - (Math.abs(Math.abs(x) - 0.5) * 2);
@@ -153,9 +159,9 @@ public class Point extends DBVariable<List<Double>> {
                 axis = 3;
             }
         }
-        
+
         double minRemain = 0;
-        while(maxDist > 0) {
+        while (maxDist > 0) {
             BlockRaycastResult rr = new BlockRaycastResult(cPos, cDist, (new Vector(x, y, z).add(direction.clone().multiply(cDist))), axis, face);
             result.add(rr);
             if (remainX < remainY) {
@@ -207,9 +213,9 @@ public class Point extends DBVariable<List<Double>> {
             remainY -= minRemain;
             remainZ -= minRemain;
         }
-        
+
         List<BlockRaycastResult> resultSorted = new ArrayList<>();
-        
+
         boolean inserted = false;
         for (BlockRaycastResult rr1 : result) {
             for (int i = 0; i < resultSorted.size(); i++) {
@@ -224,17 +230,17 @@ public class Point extends DBVariable<List<Double>> {
                 resultSorted.add(rr1);
             }
         }
-        
+
         return resultSorted;
     }
-    
+
     @Override
     public void load(List<Double> list) {
         x = list.get(0);
         y = list.get(1);
         z = list.get(2);
     }
-    
+
     @Override
     public List<Double> save() {
         List<Double> list = new ArrayList<>();

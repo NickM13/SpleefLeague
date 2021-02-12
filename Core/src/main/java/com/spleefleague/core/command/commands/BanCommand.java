@@ -11,7 +11,9 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.infraction.Infractions;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
+
 import javax.annotation.Nullable;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -19,25 +21,25 @@ import org.bukkit.command.CommandSender;
  * @author NickM13
  */
 public class BanCommand extends CoreCommand {
-    
+
     public BanCommand() {
         super("ban", CoreRank.MODERATOR);
         setUsage("/ban <player> [reason]");
         setDescription("Ban a player from the server");
     }
-    
+
     @CommandAnnotation
     public void ban(CorePlayer sender,
-            OfflinePlayer op,
-            @Nullable String reason) {
+                    OfflinePlayer op,
+                    @Nullable String reason) {
         Infractions.ban(sender, op, reason == null ? "" : reason);
     }
 
     @CommandAnnotation
     public void ban(CommandSender sender,
-            OfflinePlayer op,
-            @Nullable String reason) {
+                    OfflinePlayer op,
+                    @Nullable String reason) {
         Infractions.ban(null, op, reason == null ? "" : reason);
     }
-    
+
 }

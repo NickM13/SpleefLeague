@@ -27,8 +27,10 @@ public class GearHookshot extends Gear {
 
     private static final Map<CorePlayer, HookshotPlayer> playerFiredMap = new HashMap<>();
 
-    @DBField protected int customModelData = 0;
-    @DBField protected double fireRange;
+    @DBField
+    protected int customModelData = 0;
+    @DBField
+    protected double fireRange;
 
     protected static final ProjectileStats projectileStats = new ProjectileStats();
 

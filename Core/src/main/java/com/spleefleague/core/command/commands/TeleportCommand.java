@@ -17,12 +17,12 @@ import org.bukkit.command.CommandSender;
  * @author NickM13
  */
 public class TeleportCommand extends CoreCommand {
-    
+
     public TeleportCommand() {
         super("tp", CoreRank.TEMP_MOD, CoreRank.BUILDER);
         setUsage("/tp <player> [player2]");
     }
-    
+
     @CommandAnnotation
     public void tp(CorePlayer sender, CorePlayer cp) {
         sender.teleport(cp.getLocation());

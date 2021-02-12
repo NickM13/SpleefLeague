@@ -20,17 +20,17 @@ import java.util.Set;
  * @author NickM13
  */
 public class CancelAllCommand extends CoreCommand {
-    
+
     public CancelAllCommand() {
         super("cancelall", CoreRank.SENIOR_MODERATOR);
         setUsage("/cancelall");
         setDescription("Cancel all ongoing matches");
     }
-    
+
     /**
      * Moderatively cancels all battles
      * TODO: Find better way to do this
-     * 
+     *
      * @param sender Core Player
      */
     @CommandAnnotation

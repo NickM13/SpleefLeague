@@ -92,13 +92,16 @@ public class PortalPair {
 
         if (portal1.getBlockFace().equals(portal2.getBlockFace())) {
             switch (portal1.getBlockFace()) {
-                case UP: case DOWN:
+                case UP:
+                case DOWN:
                     origVel.multiply(new Vector(1, -1, 1));
                     break;
-                case NORTH: case SOUTH:
+                case NORTH:
+                case SOUTH:
                     origVel.multiply(new Vector(1, 1, -1));
                     break;
-                case EAST: case WEST:
+                case EAST:
+                case WEST:
                     origVel.multiply(new Vector(-1, 1, 1));
                     break;
             }
@@ -114,13 +117,16 @@ public class PortalPair {
 
         if (portal1.getBlockFace().equals(portal2.getBlockFace())) {
             switch (portal1.getBlockFace()) {
-                case UP: case DOWN:
+                case UP:
+                case DOWN:
                     origVel.multiply(new Vector(1, -1, 1));
                     break;
-                case NORTH: case SOUTH:
+                case NORTH:
+                case SOUTH:
                     origVel.multiply(new Vector(1, 1, -1));
                     break;
-                case EAST: case WEST:
+                case EAST:
+                case WEST:
                     origVel.multiply(new Vector(-1, 1, 1));
                     break;
             }
@@ -138,13 +144,16 @@ public class PortalPair {
 
         if (portal1.getBlockFace().equals(portal2.getBlockFace())) {
             switch (portal1.getBlockFace()) {
-                case UP: case DOWN:
+                case UP:
+                case DOWN:
                     origVel.multiply(new Vector(1, -1, 1));
                     break;
-                case NORTH: case SOUTH:
+                case NORTH:
+                case SOUTH:
                     origVel.multiply(new Vector(1, 1, -1));
                     break;
-                case EAST: case WEST:
+                case EAST:
+                case WEST:
                     origVel.multiply(new Vector(-1, 1, 1));
                     break;
             }
@@ -167,13 +176,16 @@ public class PortalPair {
 
         if (portal1.getBlockFace().equals(portal2.getBlockFace())) {
             switch (portal1.getBlockFace()) {
-                case UP: case DOWN:
+                case UP:
+                case DOWN:
                     origVel.multiply(new Vector(1, -1, 1));
                     break;
-                case NORTH: case SOUTH:
+                case NORTH:
+                case SOUTH:
                     origVel.multiply(new Vector(1, 1, -1));
                     break;
-                case EAST: case WEST:
+                case EAST:
+                case WEST:
                     origVel.multiply(new Vector(-1, 1, 1));
                     break;
             }

@@ -20,7 +20,8 @@ public class VictoryMessage extends Collectible {
 
     }
 
-    @DBField private String message = "";
+    @DBField
+    private String message = "";
 
     public void setMessage(String message) {
         this.message = message;

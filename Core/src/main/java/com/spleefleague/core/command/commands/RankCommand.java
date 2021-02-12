@@ -57,10 +57,10 @@ public class RankCommand extends CoreCommand {
 
     @CommandAnnotation
     public void rankEditMaxFriends(CorePlayer sender,
-                               @LiteralArg("edit") String l1,
-                               @OptionArg(listName = "ranks") String rank,
-                               @LiteralArg("maxfriends") String l2,
-                               @HelperArg("maxfriends") @NumberArg(minValue = -1, maxValue = 10000) Integer maxFriends) {
+                                   @LiteralArg("edit") String l1,
+                                   @OptionArg(listName = "ranks") String rank,
+                                   @LiteralArg("maxfriends") String l2,
+                                   @HelperArg("maxfriends") @NumberArg(minValue = -1, maxValue = 10000) Integer maxFriends) {
         Core.getInstance().getRankManager().setRankMaxFriends(rank, maxFriends);
         success(sender, "Rank maxfriends set to " + maxFriends);
     }

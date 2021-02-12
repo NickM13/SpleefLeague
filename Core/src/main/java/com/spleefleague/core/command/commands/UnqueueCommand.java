@@ -22,7 +22,7 @@ public class UnqueueCommand extends CoreCommand {
     public UnqueueCommand() {
         super("unqueue", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void unqueue(CorePlayer sender) {
         if (Core.getInstance().unqueuePlayerGlobally(sender)) {
@@ -33,5 +33,5 @@ public class UnqueueCommand extends CoreCommand {
             sender.getPlayer().sendPluginMessage(Core.getInstance(), "queue:leaveall", output.toByteArray());
         }
     }
-    
+
 }

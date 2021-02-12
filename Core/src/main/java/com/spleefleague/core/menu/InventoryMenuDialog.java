@@ -22,36 +22,36 @@ public class InventoryMenuDialog {
 
     private class Dialog {
         String tagName;
-        
+
         public Dialog(String tagName) {
             this.tagName = tagName;
         }
     }
-    
+
     private class DialogText extends Dialog {
-    
+
         Function<String, Boolean> successFun;
-        
+
         public DialogText(String tagName, Function<String, Boolean> successFun) {
             super(tagName);
             this.successFun = successFun;
         }
-        
+
     }
-    
+
     private InventoryMenuContainerChest parentContainer = null;
     private List<Dialog> dialogs = new ArrayList<>();
-    
+
     public InventoryMenuDialog setParentContainer(InventoryMenuContainerChest inventoryMenuContainer) {
         parentContainer = inventoryMenuContainer;
         return this;
     }
-    
+
     public InventoryMenuDialog addTextDialog(String tagName, Function<String, Boolean> successFun) {
         dialogs.add(new DialogText(tagName, successFun));
         return this;
     }
-    
+
     public boolean openNextContainer(CorePlayer cp, int id) {
         if (id < dialogs.size()) {
             Dialog dialog = dialogs.get(id);
@@ -85,9 +85,9 @@ public class InventoryMenuDialog {
             }
             return true;
         } else {
-            
+
             return false;
         }
     }
-    
+
 }

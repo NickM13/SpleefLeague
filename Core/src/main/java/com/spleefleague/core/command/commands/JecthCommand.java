@@ -25,7 +25,7 @@ public class JecthCommand extends CoreCommand {
     public JecthCommand() {
         super("jecth", CoreRank.DEVELOPER);
     }
-    
+
     @CommandAnnotation
     public void jecth(CorePlayer sender,
                       @EnumArg Material material,

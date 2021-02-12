@@ -1,7 +1,6 @@
 package com.spleefleague.core.util.packet;
 
 /**
- *
  * @author Jonas
  */
 public class ChunkData {

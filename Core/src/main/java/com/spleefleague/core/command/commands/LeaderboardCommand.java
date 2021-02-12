@@ -17,17 +17,17 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class LeaderboardCommand extends CoreCommand {
-    
+
     public LeaderboardCommand() {
         super("leaderboard", CoreRank.DEVELOPER);
         //setOptions("leaderboards", cp -> Leaderboards.getLeaderboardNames());
     }
-    
+
     @CommandAnnotation
     public void leaderboardReset(CorePlayer sender,
-            @LiteralArg(value="reset") String l,
-            String name) {
+                                 @LiteralArg(value = "reset") String l,
+                                 String name) {
         error(sender, CoreError.SETUP);
     }
-    
+
 }

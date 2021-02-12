@@ -8,7 +8,7 @@ import com.spleefleague.coreapi.database.annotation.DBField;
  * @since 4/19/2020
  */
 public abstract class Holdable extends Collectible {
-    
+
     public Holdable() {
         super();
     }
@@ -21,9 +21,9 @@ public abstract class Holdable extends Collectible {
      */
     @Override
     public void onEnable(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when another collectible of the same type has
      * been enabled
@@ -32,9 +32,9 @@ public abstract class Holdable extends Collectible {
      */
     @Override
     public void onDisable(CorePlayer cp) {
-    
+
     }
 
     public abstract void onRightClick(CorePlayer cp);
-    
+
 }

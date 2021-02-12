@@ -43,7 +43,7 @@ import java.util.*;
  * @author NickM13
  */
 public class EnvironmentListener implements Listener {
-    
+
     /**
      * Converts lines 1, 2, and 3 to doubles
      *
@@ -75,7 +75,7 @@ public class EnvironmentListener implements Listener {
         }
         return blocks;
     }
-    
+
     private void stopHorizontalMovement(PlayerMoveEvent event) {
         if (event.getTo() != null) {
             Location newLoc = event.getTo().clone();
@@ -86,7 +86,7 @@ public class EnvironmentListener implements Listener {
     }
 
     private final Map<UUID, Long> jumpCooldowns = new HashMap<>();
-    
+
     /**
      * Perform some actions if a player walks into or above a sign
      * with specific text on it
@@ -173,7 +173,7 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-    
+
     private static final List<String> WISHES = Lists.newArrayList(
             "I wish I would grow up, it feels like I've been 10 for years.",
             "I wish to know how you survived my wrath, little fountain.",
@@ -190,6 +190,7 @@ public class EnvironmentListener implements Listener {
             "Grom, may you rest well, old friend.",
             "It is my wish that my dear Taelan will grow strong enough to defend the people he cares for.",
             "Young Arthas must learn patience to temper his power.  I will pray that he one day learns how to lead with care rather than force.");
+
     /**
      * Prevent non building players from dropping blocks
      *
@@ -250,7 +251,7 @@ public class EnvironmentListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             //if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
-                event.setCancelled(true);
+            event.setCancelled(true);
             //}
         }
     }
@@ -278,7 +279,7 @@ public class EnvironmentListener implements Listener {
                 }
             }
         } else if (event.getDamager() instanceof Player) {
-            if (!Core.getInstance().getPlayers().get((Player)event.getDamager()).canBuild()) {
+            if (!Core.getInstance().getPlayers().get((Player) event.getDamager()).canBuild()) {
                 if (!damageableMobs.contains(event.getEntityType()))
                     event.setCancelled(true);
             } else {
@@ -371,7 +372,7 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-    
+
     /**
      * Prevent players from picking up arrows (since we use them for launch pads)
      *
@@ -500,7 +501,7 @@ public class EnvironmentListener implements Listener {
             }
         }
     }
-    
+
     /**
      * Prevents campfires from cooking food
      *
@@ -540,9 +541,9 @@ public class EnvironmentListener implements Listener {
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     if (!interactables.contains(event.getClickedBlock().getType())
                             || GlobalLock.isLocked(new BlockPosition(
-                                    event.getClickedBlock().getX(),
-                                    event.getClickedBlock().getY(),
-                                    event.getClickedBlock().getZ()))) {
+                            event.getClickedBlock().getX(),
+                            event.getClickedBlock().getY(),
+                            event.getClickedBlock().getZ()))) {
                         event.setCancelled(true);
                     }
                 }

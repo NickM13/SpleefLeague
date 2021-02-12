@@ -20,9 +20,9 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  */
 public class LeaderboardMenu {
-    
+
     protected static InventoryMenuItem menuItem = null;
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist already then initialize it
      *

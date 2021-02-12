@@ -157,7 +157,7 @@ public class ZoneCommand extends CoreCommand {
 
     @CommandAnnotation
     public void zoneScanner(CorePlayer sender,
-                             @LiteralArg("scanner") String l1) {
+                            @LiteralArg("scanner") String l1) {
         if (GlobalZones.toggleScanner(sender)) {
             success(sender, "You've been given a zone scanner, right click to place a fragment at current location and shift-right click to remove");
         } else {
@@ -189,9 +189,9 @@ public class ZoneCommand extends CoreCommand {
 
     @CommandAnnotation
     public void zoneRemoveBorder(CorePlayer sender,
-                              @LiteralArg("remove") String l1,
-                              @LiteralArg("border") String l2,
-                              @OptionArg(listName = "zoneNames") String zoneName) {
+                                 @LiteralArg("remove") String l1,
+                                 @LiteralArg("border") String l2,
+                                 @OptionArg(listName = "zoneNames") String zoneName) {
         GlobalZone zone = GlobalZones.getZone(zoneName);
         for (Dimension border : zone.getBorders()) {
             if (border.isContained(new Point(sender.getLocation()))) {

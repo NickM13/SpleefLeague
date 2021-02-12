@@ -42,7 +42,7 @@ public class ZoneLeaf extends DBVariable<Document> {
         return new Document("id", this.id)
                 .append("pos", Lists.newArrayList(this.pos.x, this.pos.y, this.pos.z));
     }
-    
+
     public int getId() {
         return id;
     }

@@ -18,27 +18,27 @@ import java.util.Set;
  * @since 4/29/2020
  */
 public class SeasonCommand extends CoreCommand {
-    
+
     public SeasonCommand() {
         super("season", CoreRank.DEVELOPER);
         setUsage("See Developer!");
         setDescription("Seasons Command for Resetting");
     }
-    
+
     @CommandAnnotation
     public void season(CorePlayer sender) {
         sender.sendMessage("/season reset: Archives all leaderboards and begins a new ranked season");
     }
-    
+
     private static Set<String> testPlayers = Sets.newHashSet("PxlPanda", "CommunityMC", "SynHD", "worldcom", "Sylent", "JakeDaaBud", "mike601",
             "NESQUEK", "tjommie", "kaskada99", "Withur", "Herocky", "TorWolf", "Taytale", "AmyTheMudkip", "arstan", "Biscut",
             "flameboy101", "BernieSander", "ChiLynn", "MCVisuals", "Rewind", "Spotifi", "Quack", "PJoke1", "tom396",
             "Hoopless", "minifreddusch", "gamerboy80", "AmEeEr0", "Ketthe", "Hashito", "NoSDaemon", "kongkid05", "MonsterGG",
             "leLitzpaNDA", "Toyless");
-    
+
     @CommandAnnotation
     public void seasonDebug(CorePlayer sender,
-            @LiteralArg("debug") String l) {
+                            @LiteralArg("debug") String l) {
         Random rand = new Random();
         /*
         for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
@@ -50,10 +50,10 @@ public class SeasonCommand extends CoreCommand {
             //Leaderboards.debug(cp, rand.nextInt(3000));
         }
     }
-    
+
     @CommandAnnotation
     public void seasonReset(CorePlayer sender,
-            @LiteralArg("reset") String l) {
+                            @LiteralArg("reset") String l) {
         Chat.sendRequest(sender,
                 "SeasonReset",
                 (cp, s) -> {
@@ -66,5 +66,5 @@ public class SeasonCommand extends CoreCommand {
                             }, "Are you REALLY sure you want to do this?");
                 }, "Are you sure you want to start a new season?");
     }
-    
+
 }

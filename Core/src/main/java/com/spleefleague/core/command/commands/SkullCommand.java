@@ -21,18 +21,18 @@ import org.bukkit.inventory.meta.SkullMeta;
  * @author NickM13
  */
 public class SkullCommand extends CoreCommand {
-    
+
     public SkullCommand() {
         super("skull", CoreRank.SENIOR_MODERATOR);
         setUsage("/skull <player>");
         setDescription("Get head of a player");
     }
-    
+
     @CommandAnnotation
     public void skull(CorePlayer cp, OfflinePlayer op) {
         PlayerInventory inventory = cp.getPlayer().getInventory();
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullmeta = (SkullMeta)skull.getItemMeta();
+        SkullMeta skullmeta = (SkullMeta) skull.getItemMeta();
         skullmeta.setOwningPlayer(op);
         skull.setItemMeta(skullmeta);
         //inventory.addItem(skull);

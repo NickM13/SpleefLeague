@@ -10,24 +10,26 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
+
 import java.util.List;
+
 import org.bukkit.Bukkit;
 
 /**
  * @author NickM13
  */
 public class SudoCommand extends CoreCommand {
-    
+
     public SudoCommand() {
         super("sudo", CoreRank.DEVELOPER);
     }
-    
+
     @CommandAnnotation
     public void sudo(CorePlayer sender, CorePlayer receiver, String command) {
         Bukkit.dispatchCommand(receiver.getPlayer(), command);
         success(sender, "Command run for " + receiver.getDisplayName() + ": /" + command);
     }
-    
+
     @CommandAnnotation
     public void sudo(CorePlayer sender, List<CorePlayer> receivers, String command) {
         for (CorePlayer cp : receivers) {
@@ -35,5 +37,5 @@ public class SudoCommand extends CoreCommand {
         }
         success(sender, "Sudoed all : /" + command);
     }
-    
+
 }

@@ -55,5 +55,5 @@ public class GearCommand extends HoldableCommand {
             success(sender, "Created new " + gearType.name().toLowerCase() + " (" + identifier + ": " + displayName + Chat.DEFAULT + ")");
         }
     }
-    
+
 }

@@ -23,25 +23,25 @@ import org.bukkit.event.player.*;
  * @author NickM13
  */
 public class AfkListener implements Listener {
-    
+
     protected boolean setLastAction(String name) {
         return setLastAction(Core.getInstance().getPlayers().get(name));
     }
-    
+
     protected boolean setLastAction(Player p) {
         return setLastAction(Core.getInstance().getPlayers().get(p));
     }
-    
+
     protected boolean setLastAction(CorePlayer cp) {
         return cp.setLastAction();
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncPlayerChatEvent e) {
         setLastAction(e.getPlayer());
     }
 
-    @EventHandler(priority=EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onCommandSend(PlayerCommandPreprocessEvent e) {
         if (e.getMessage().trim().equalsIgnoreCase("/afk")) {
             e.setCancelled(setLastAction(e.getPlayer()));
@@ -49,60 +49,60 @@ public class AfkListener implements Listener {
             setLastAction(e.getPlayer());
         }
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onDropItem(PlayerDropItemEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onSlotChange(PlayerItemHeldEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityInteractEntity(PlayerInteractEntityEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(BlockBreakEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(BlockPlaceEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerMove(PlayerMoveEvent e) {
         setLastAction(e.getPlayer());
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInteract(PlayerInteractEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onSwapHandItems(PlayerSwapHandItemsEvent e) {
         e.setCancelled(setLastAction(e.getPlayer()));
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClose(InventoryCloseEvent e) {
         setLastAction(e.getPlayer().getName());
     }
-    
-    @EventHandler(priority=EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryDrag(InventoryDragEvent e) {
         e.setCancelled(setLastAction(e.getWhoClicked().getName()));
     }
 
-    @EventHandler(priority=EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryInteract(InventoryClickEvent e) {
         e.setCancelled(setLastAction(e.getWhoClicked().getName()));
     }
-    
+
 }

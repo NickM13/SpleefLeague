@@ -44,11 +44,12 @@ public class CorePlayerMenu {
     }
 
     private int invSwap = 0;
+
     /**
      * Set player's current InventoryMenuContainer
      *
      * @param inventoryMenuChest InventoryMenuContainer
-     * @param initialize Should Call OpenFunction
+     * @param initialize         Should Call OpenFunction
      */
     public void setInventoryMenuChest(InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
         if (inventoryMenuChest != null) {
@@ -172,8 +173,8 @@ public class CorePlayerMenu {
     }
 
     /**
-     * @param <T> ? extends Collectible
-     * @param name Menu Tag Identifier
+     * @param <T>   ? extends Collectible
+     * @param name  Menu Tag Identifier
      * @param clazz Class of T
      * @return Current Menu Tags
      */
@@ -201,8 +202,7 @@ public class CorePlayerMenu {
         if (e.getClickedInventory() == null
                 || e.getClickedInventory().getType() == InventoryType.PLAYER) {
             e.setCancelled(true);
-        }
-        else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
+        } else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
             InventoryMenuContainer screen = inventoryMenuContainer;
             if (screen instanceof InventoryMenuContainerChest) {
                 InventoryMenuItem clicked = null;

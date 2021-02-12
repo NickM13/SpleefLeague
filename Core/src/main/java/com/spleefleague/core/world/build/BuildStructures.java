@@ -14,11 +14,11 @@ import java.util.*;
  * @since 4/26/2020
  */
 public class BuildStructures {
-    
+
     private static final SortedMap<String, BuildStructure> STRUCTURES = new TreeMap<>();
     private static MongoCollection<Document> fieldCol;
     private static final BuildStructure EMPTY_STRUCTURE = new BuildStructure();
-    
+
     public static void init() {
         fieldCol = Core.getInstance().getPluginDB().getCollection("Structures");
         for (Document document : fieldCol.find()) {
@@ -29,18 +29,18 @@ public class BuildStructures {
         }
         System.out.println("Loaded " + STRUCTURES.size() + " structures.");
     }
-    
+
     public static boolean create(CorePlayer sender, String structureName) {
         if (STRUCTURES.containsKey(structureName)) return false;
         BuildStructure structure = new BuildStructure(structureName,
                 new BlockPosition(
-                sender.getLocation().getBlockX(),
-                sender.getLocation().getBlockY(),
-                sender.getLocation().getBlockZ()));
+                        sender.getLocation().getBlockX(),
+                        sender.getLocation().getBlockY(),
+                        sender.getLocation().getBlockZ()));
         STRUCTURES.put(structureName, structure);
         return true;
     }
-    
+
     public static void save(BuildStructure structure) {
         if (structure != null) {
             if (fieldCol.find(new Document("name", structure.getName())).first() != null) {
@@ -49,7 +49,7 @@ public class BuildStructures {
             fieldCol.insertOne(structure.toDocument());
         }
     }
-    
+
     public static int edit(CorePlayer player, String structureName) {
         BuildStructure structure = STRUCTURES.get(structureName);
         if (structure == null) {
@@ -63,7 +63,7 @@ public class BuildStructures {
         }
         return BuildWorld.createBuildWorld(player, structure) ? 0 : 4;
     }
-    
+
     public static boolean destroy(String structureName) {
         BuildStructure field = STRUCTURES.get(structureName);
         if (field != null && !field.isUnderConstruction()) {
@@ -75,7 +75,7 @@ public class BuildStructures {
         }
         return false;
     }
-    
+
     public static BuildStructure get(String structureName) {
         if (STRUCTURES.containsKey(structureName))
             return STRUCTURES.get(structureName);
@@ -102,5 +102,5 @@ public class BuildStructures {
     public static Set<String> getNames() {
         return STRUCTURES.keySet();
     }
-    
+
 }

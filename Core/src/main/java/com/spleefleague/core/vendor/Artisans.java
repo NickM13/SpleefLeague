@@ -21,12 +21,12 @@ import java.util.*;
  * @since 4/18/2020
  */
 public class Artisans {
-    
+
     private static MongoCollection<Document> artisanCollection;
     private static final Map<String, Artisan> artisans = new HashMap<>();
     private static final Map<UUID, Artisan> entityVendorMap = new HashMap<>();
     private static final Map<CorePlayer, Artisan> playerSetVendorMap = new HashMap<>();
-    
+
     /**
      * Load all vendors from database
      */
@@ -39,14 +39,14 @@ public class Artisans {
             artisans.put(vendor.getIdentifier(), vendor);
         });
     }
-    
+
     /**
      * Clear the database and save all vendors
      */
     public static void close() {
 
     }
-    
+
     /**
      * For command use
      * Get a vendor by its name
@@ -92,7 +92,7 @@ public class Artisans {
         artisan.setCoinCost(coin);
         save(artisan);
     }
-    
+
     /**
      * Get the map of all vendors
      *
@@ -101,11 +101,11 @@ public class Artisans {
     public static Map<String, Artisan> getArtisans() {
         return artisans;
     }
-    
+
     /**
      * Create a new vendor
      *
-     * @param identifier Name
+     * @param identifier  Name
      * @param displayName Display Name
      */
     public static boolean createArtisan(String identifier, String displayName) {
@@ -115,7 +115,7 @@ public class Artisans {
         save(artisan);
         return true;
     }
-    
+
     /**
      * Clear all entities from a vendor and delete it from the database
      *
@@ -133,7 +133,7 @@ public class Artisans {
         artisans.remove(artisan.getDisplayName());
         return true;
     }
-    
+
     /**
      * Save a single vendor object to the db, overwrites other with same name
      *
@@ -142,12 +142,12 @@ public class Artisans {
     public static void save(Artisan artisan) {
         artisan.save(artisanCollection);
     }
-    
+
     /**
      * The next entity the player punches will become this vendor
      *
      * @param player Player
-     * @param name Vendor Name
+     * @param name   Vendor Name
      * @return Success
      */
     public static boolean setPlayerVendor(CorePlayer player, String name) {
@@ -158,7 +158,7 @@ public class Artisans {
         }
         return false;
     }
-    
+
     /**
      * The next entity the player punches if not a vendor will
      * no long be a vendor
@@ -168,7 +168,7 @@ public class Artisans {
     public static void unsetPlayerVendor(CorePlayer player) {
         playerSetVendorMap.put(player, null);
     }
-    
+
     public static void interactEvent(PlayerInteractEntityEvent event) {
         Player p = event.getPlayer();
         CorePlayer cp = Core.getInstance().getPlayers().get(p);
@@ -177,10 +177,10 @@ public class Artisans {
             entityVendorMap.get(entity.getUniqueId()).openShop(cp);
         }
     }
-    
+
     /**
      * Called when a player punches an entity
-     * 
+     *
      * @param event Event
      */
     public static void punchEvent(EntityDamageByEntityEvent event) {
@@ -198,12 +198,12 @@ public class Artisans {
             event.setCancelled(true);
         }
     }
-    
+
     /**
      * Sets an entity to being a vendor entity
      *
      * @param artisan Vendor
-     * @param entity Entity
+     * @param entity  Entity
      */
     public static void setupEntityVendor(Artisan artisan, Entity entity) {
         if (artisan == null) return;
@@ -234,7 +234,7 @@ public class Artisans {
         entity.setInvulnerable(true);
         save(artisan);
     }
-    
+
     /**
      * Restores an entity to being a regular entity
      *
@@ -251,5 +251,5 @@ public class Artisans {
             entity.setInvulnerable(false);
         }
     }
-    
+
 }

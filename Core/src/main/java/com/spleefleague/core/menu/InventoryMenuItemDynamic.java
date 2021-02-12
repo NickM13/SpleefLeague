@@ -65,6 +65,7 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
         this.descriptionFun = descriptionFun;
         return this;
     }
+
     @Override
     public InventoryMenuItemDynamic setDescription(List<String> lore) {
         this.descriptionFun = cp -> {
@@ -89,11 +90,13 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
         this.displayItemFun = (cp) -> new ItemStack(material);
         return this;
     }
+
     @Override
     public InventoryMenuItemDynamic setDisplayItem(Material material, int customModelData) {
         this.displayItemFun = (cp) -> InventoryMenuUtils.createCustomItem(material, customModelData);
         return this;
     }
+
     @Override
     public InventoryMenuItemDynamic setDisplayItem(ItemStack displayItem) {
         this.displayItemFun = (cp) -> displayItem;
@@ -123,7 +126,7 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
     }
 
     public InventoryMenuItemDynamic setVisibility(Function<CorePlayer, Boolean> visibilityFun) {
-        this.visibilityFun =  visibilityFun;
+        this.visibilityFun = visibilityFun;
         return this;
     }
 
@@ -133,10 +136,12 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
         }
         return visibilityFun == null || visibilityFun.apply(cp);
     }
+
     public InventoryMenuItemDynamic setAvailability(Function<CorePlayer, Boolean> availableFun) {
         this.availableFun = availableFun;
         return this;
     }
+
     public boolean isAvailable(CorePlayer cp) {
         return availableFun == null || availableFun.apply(cp);
     }

@@ -15,21 +15,21 @@ import com.spleefleague.core.player.rank.CoreRank;
 
 /**
  * Legacy command
- * 
+ *
  * @author NickM13
  */
 public class StaffChatCommand extends CoreCommand {
-    
+
     public StaffChatCommand() {
         super("staffchat", CoreRank.TEMP_MOD);
         addAlias("sc");
         setUsage("/staffchat <message>");
     }
-    
+
     @CommandAnnotation
     public void staffchat(CorePlayer sender,
-            String message) {
+                          String message) {
         Chat.sendMessage(sender, ChatChannel.STAFF, message);
     }
-    
+
 }

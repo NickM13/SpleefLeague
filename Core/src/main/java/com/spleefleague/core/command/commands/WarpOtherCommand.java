@@ -12,14 +12,16 @@ import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
+
 import java.util.List;
+
 import org.bukkit.command.CommandSender;
 
 /**
  * @author NickM13
  */
 public class WarpOtherCommand extends CoreCommand {
-    
+
     public WarpOtherCommand() {
         super("warpother", CoreRank.TEMP_MOD, CoreRank.BUILDER);
         setUsage("/warpother <player> <warp>");
@@ -30,7 +32,7 @@ public class WarpOtherCommand extends CoreCommand {
     @CommandAnnotation
     public void warpOther(CorePlayer cs,
                           CorePlayer cp,
-                          @OptionArg(listName="warpList") String warpName) {
+                          @OptionArg(listName = "warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
         if (warp != null) {
             if (cp.warp(warp)) {
@@ -45,7 +47,7 @@ public class WarpOtherCommand extends CoreCommand {
     @CommandAnnotation
     public void warpOther(CommandSender cs,
                           CorePlayer cp,
-                          @OptionArg(listName="warpList") String warpName) {
+                          @OptionArg(listName = "warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
         if (warp != null) {
             if (cp.warp(warp)) {
@@ -56,11 +58,11 @@ public class WarpOtherCommand extends CoreCommand {
             }
         }
     }
-    
+
     @CommandAnnotation
     public void warpOther(CommandSender cs,
-            List<CorePlayer> cps,
-            @OptionArg(listName="warpList") String warpName) {
+                          List<CorePlayer> cps,
+                          @OptionArg(listName = "warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
         if (warp != null) {
             for (CorePlayer cp : cps) {
@@ -71,5 +73,5 @@ public class WarpOtherCommand extends CoreCommand {
             success(cs, "Warped others to " + warp.getIdentifier());
         }
     }
-    
+
 }

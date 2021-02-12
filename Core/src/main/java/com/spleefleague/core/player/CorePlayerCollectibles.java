@@ -21,7 +21,7 @@ import java.util.*;
  * @since 4/19/2020
  */
 public class CorePlayerCollectibles extends PlayerCollectibles {
-    
+
     private final CorePlayer owner;
 
     public CorePlayerCollectibles(CorePlayer owner) {
@@ -124,7 +124,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                                 owner.getUniqueId(),
                                 collectible.getParentType(),
                                 collectible.getIdentifier(),
-                                skin != null  ? skin : "",
+                                skin != null ? skin : "",
                                 CollectibleAction.LOCK,
                                 ""));
                         return true;
@@ -138,9 +138,8 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
     }
 
     /**
-     *
      * @param collectible Collectible
-     * @param skin Skin ID
+     * @param skin        Skin ID
      * @return 1 for no collectible, 2 for already have, 3 for null
      */
     public int addSkin(Collectible collectible, String skin) {
@@ -158,7 +157,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                         owner.getUniqueId(),
                         collectible.getParentType(),
                         collectible.getIdentifier(),
-                        skin != null  ? skin : "",
+                        skin != null ? skin : "",
                         CollectibleAction.UNLOCK,
                         ""));
                 return 0;
@@ -168,21 +167,21 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         }
         return 3;
     }
-    
+
     public boolean contains(Collectible collectible) {
         if (collectibleMap.containsKey(collectible.getParentType())) {
             return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()) != null;
         }
         return false;
     }
-    
+
     public CollectibleInfo getInfo(Collectible collectible) {
         if (!contains(collectible)) {
             add(collectible);
         }
         return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier());
     }
-    
+
     public boolean remove(Collectible collectible) {
         if (collectible != null && collectibleMap.containsKey(collectible.getParentType())) {
             collectibleMap.get(collectible.getParentType()).remove(collectible.getIdentifier());
@@ -201,7 +200,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
     /**
      * Returns the current active collectibleMap item of a type, or null if there is none
      *
-     * @param <T> ? extends Collectible
+     * @param <T>   ? extends Collectible
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
@@ -213,15 +212,16 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
     /**
      * Returns the current active collectibleMap item of a type, or null if there is none
      *
-     * @param <T> ? extends Collectible
+     * @param <T>   ? extends Collectible
      * @param clazz Collectible Class
      * @return Nullable Collectible
      */
     public <T extends Collectible> T getActive(Class<T> clazz, String affix) {
-        if (!activeMap.containsKey(Vendorable.getParentTypeName(clazz) + affix)) return Vendorables.get(clazz, "default");
+        if (!activeMap.containsKey(Vendorable.getParentTypeName(clazz) + affix))
+            return Vendorables.get(clazz, "default");
         return Vendorables.get(clazz, activeMap.get(Vendorable.getParentTypeName(clazz) + affix));
     }
-    
+
     public boolean hasActive(Class<? extends Collectible> clazz) {
         String typeName = Vendorable.getParentTypeName(clazz);
         String activeName = activeMap.get(typeName);
@@ -292,10 +292,10 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         owner.getOptions().setBoolean("Collectibles:" + Vendorable.getParentTypeName(clazz), state);
         owner.refreshHotbar();
     }
-    
+
     public <T extends Collectible> List<T> getAll(Class<T> clazz) {
         List<T> collectibleList = new ArrayList<>();
-    
+
         Map<String, CollectibleInfo> collectibleMap = this.collectibleMap.get(Vendorable.getParentTypeName(clazz));
         if (collectibleMap != null) {
             for (Map.Entry<String, CollectibleInfo> entry : collectibleMap.entrySet()) {
@@ -305,7 +305,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 }
             }
         }
-        
+
         return collectibleList;
     }
 
@@ -394,7 +394,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                     affix));
         }
     }
-    
+
     /**
      * Deactivates a collectible
      *
@@ -565,5 +565,5 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
 
         return menuItem;
     }
-    
+
 }

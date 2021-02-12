@@ -21,21 +21,21 @@ import org.bukkit.scoreboard.Team;
  * @author NickM13
  */
 public class ChatGroup {
-    
+
     private static class SimpleScore {
         public String name, displayName;
         public int score;
-        
+
         public SimpleScore(String name, int score) {
             this.name = name;
             this.displayName = "";
             this.score = score;
         }
     }
-    
+
     private final Set<CorePlayer> players = new HashSet<>();
     private final BaseComponent chatTag;
-    
+
     private String scoreboardName = "empty";
     private final Map<String, SimpleScore> scores = new HashMap<>();
     private final List<String> sortedScores = new ArrayList<>();
@@ -66,7 +66,7 @@ public class ChatGroup {
             ps.getSideBar().setDisplayName(name);
         }
     }
-    
+
     /**
      * Sets the number of pixels to the right second text is shown
      *
@@ -75,47 +75,80 @@ public class ChatGroup {
     public void setRightSideBuffer(int buffer) {
         rightSideBuffer = buffer;
     }
-    
+
     /**
      * Scoreboard identifier names ChatColor strings to prevent them
      * from showing up in the scoreboards
-     * 
+     * <p>
      * <Name, Colorized>
      */
     private int nextNameIndex = 0;
     private final Map<String, String> nameIdHash = new HashMap<>();
+
     private String idToStr(int id) {
         StringBuilder str = new StringBuilder();
         while (id >= 0) {
             switch (id % 16) {
-                case 0: str.append(ChatColor.AQUA);          break;
-                case 1: str.append(ChatColor.BLACK);         break;
-                case 2: str.append(ChatColor.BLUE);          break;
-                case 3: str.append(ChatColor.DARK_AQUA);     break;
-                case 4: str.append(ChatColor.DARK_BLUE);     break;
-                case 5: str.append(ChatColor.DARK_GRAY);     break;
-                case 6: str.append(ChatColor.DARK_GREEN);    break;
-                case 7: str.append(ChatColor.DARK_PURPLE);   break;
-                case 8: str.append(ChatColor.DARK_RED);      break;
-                case 9: str.append(ChatColor.GOLD);          break;
-                case 10: str.append(ChatColor.GRAY);         break;
-                case 11: str.append(ChatColor.GREEN);        break;
-                case 12: str.append(ChatColor.LIGHT_PURPLE); break;
-                case 13: str.append(ChatColor.RED);          break;
-                case 14: str.append(ChatColor.WHITE);        break;
-                case 15: str.append(ChatColor.YELLOW);       break;
+                case 0:
+                    str.append(ChatColor.AQUA);
+                    break;
+                case 1:
+                    str.append(ChatColor.BLACK);
+                    break;
+                case 2:
+                    str.append(ChatColor.BLUE);
+                    break;
+                case 3:
+                    str.append(ChatColor.DARK_AQUA);
+                    break;
+                case 4:
+                    str.append(ChatColor.DARK_BLUE);
+                    break;
+                case 5:
+                    str.append(ChatColor.DARK_GRAY);
+                    break;
+                case 6:
+                    str.append(ChatColor.DARK_GREEN);
+                    break;
+                case 7:
+                    str.append(ChatColor.DARK_PURPLE);
+                    break;
+                case 8:
+                    str.append(ChatColor.DARK_RED);
+                    break;
+                case 9:
+                    str.append(ChatColor.GOLD);
+                    break;
+                case 10:
+                    str.append(ChatColor.GRAY);
+                    break;
+                case 11:
+                    str.append(ChatColor.GREEN);
+                    break;
+                case 12:
+                    str.append(ChatColor.LIGHT_PURPLE);
+                    break;
+                case 13:
+                    str.append(ChatColor.RED);
+                    break;
+                case 14:
+                    str.append(ChatColor.WHITE);
+                    break;
+                case 15:
+                    str.append(ChatColor.YELLOW);
+                    break;
             }
             id -= 16;
         }
         return str.toString();
     }
-    
+
     /**
      * Adds a line at the bottom of the scoreboard, name is used to refer
      * to the team but is converted to an unreadable string of ChatColors
      * to prevent it from showing up on the board
-     * 
-     * @param name Name
+     *
+     * @param name        Name
      * @param displayName Display Name
      */
     public void addTeam(String name, String displayName) {
@@ -126,13 +159,13 @@ public class ChatGroup {
         ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
         scores.put(name, ss);
         sortedScores.add(name);
-        
+
         int i = sortedScores.size() - 1;
         for (String sscore : sortedScores) {
             scores.get(sscore).score = i;
             i--;
         }
-        
+
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             Team team = ps.getScoreboard().getTeam(ss.name);
@@ -149,12 +182,12 @@ public class ChatGroup {
             }
         }
     }
-    
+
     public void removeTeam(String name) {
         String str = nameIdHash.remove(name);
         if (str == null) return;
         scores.remove(name);
-    
+
         int i = scores.size() - 1;
         Iterator<String> ssit = sortedScores.iterator();
         while (ssit.hasNext()) {
@@ -166,7 +199,7 @@ public class ChatGroup {
             }
             i--;
         }
-        
+
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
             Team team = ps.getScoreboard().getTeam(str);
@@ -179,12 +212,12 @@ public class ChatGroup {
             }
         }
     }
-    
+
     /**
      * Sets the displayed name of a team, sent to all
      * players in the ChatGroup
      *
-     * @param name Name
+     * @param name        Name
      * @param displayName Display Name
      */
     public void setTeamDisplayName(String name, String displayName) {
@@ -192,19 +225,19 @@ public class ChatGroup {
         ss.displayName = Chat.SCOREBOARD_DEFAULT + displayName;
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
-            
+
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
             if (team == null || ss.displayName.length() > 63) continue;
             team.setPrefix(ss.displayName);
         }
     }
-    
+
     /**
      * Sets the displayed name of a team, sent to all
      * players in the ChatGroup
      *
-     * @param name Name
-     * @param displayLeft Shown text on Left
+     * @param name         Name
+     * @param displayLeft  Shown text on Left
      * @param displayRight Shown text on Right
      */
     public void setTeamDisplayName(String name, String displayLeft, String displayRight) {
@@ -215,18 +248,18 @@ public class ChatGroup {
         ss.displayName = displayName.toString();
         for (CorePlayer cp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
-            
+
             Team team = cp.getPlayer().getScoreboard().getTeam(ss.name);
             if (team == null || ss.displayName.length() > 63) continue;
             team.setPrefix(ss.displayName);
         }
     }
-    
+
     /**
      * Does not store name locally, only sent to specified player
-     * 
-     * @param cp CorePlayer
-     * @param name Identifier
+     *
+     * @param cp          CorePlayer
+     * @param name        Identifier
      * @param displayName Display Name
      */
     public void setTeamDisplayNamePersonal(CorePlayer cp, String name, String displayName) {
@@ -235,13 +268,13 @@ public class ChatGroup {
             team.setPrefix(displayName);
         }
     }
-    
+
     /**
      * Moving away from using team scores for points,
      * instead use a display name with the score included
      * because scores are used for sorting lines
-     * 
-     * @param name Identifier
+     *
+     * @param name  Identifier
      * @param score Score
      * @deprecated
      */
@@ -251,16 +284,16 @@ public class ChatGroup {
         ss.score = score;
         for (CorePlayer dbp : players) {
             PersonalScoreboard ps = PersonalScoreboard.getScoreboard(dbp.getUniqueId());
-            
+
             ps.getSideBar().getScore(ss.name).setScore(ss.score);
         }
     }
-    
+
     /**
      * Sets the experience level and progress of every player in the ChatGroup
-     * 
+     *
      * @param progress Progress 0 to 1
-     * @param level Level
+     * @param level    Level
      */
     @Deprecated
     public void setExperience(float progress, int level) {
@@ -268,16 +301,16 @@ public class ChatGroup {
             cp.getPlayer().sendExperienceChange(progress, level);
         }
     }
-    
+
     /**
      * Adds a player to the ChatGroup and updates their scoreboard to match
      * the default version (no personal scores filled)
-     * 
+     *
      * @param cp Core Player
      */
     public void addPlayer(CorePlayer cp) {
         players.add(cp);
-        
+
         PersonalScoreboard ps = PersonalScoreboard.getScoreboard(cp.getUniqueId());
         ps.resetObjective();
         ps.getSideBar().setDisplayName(scoreboardName);
@@ -302,11 +335,11 @@ public class ChatGroup {
             }
         }
     }
-    
+
     /**
      * Removes a player from the ChatGroup and resets their
      * SideBar scoreboard
-     * 
+     *
      * @param cp Core Player
      */
     public void removePlayer(CorePlayer cp) {
@@ -321,10 +354,10 @@ public class ChatGroup {
             }
         }
     }
-    
+
     /**
      * Sends a chat message to all players in the ChatGroup
-     * 
+     *
      * @param msg Message
      */
     public void sendMessage(String msg) {
@@ -340,20 +373,20 @@ public class ChatGroup {
             Chat.sendMessageToPlayer(cp, message);
         }
     }
-    
+
     /**
      * Sends a title to all players in the ChatGroup
-     * 
-     * @param title Title
+     *
+     * @param title    Title
      * @param subtitle Sub Title
-     * @param fadeIn Ticks
-     * @param stay Ticks
-     * @param fadeOut Ticks
+     * @param fadeIn   Ticks
+     * @param stay     Ticks
+     * @param fadeOut  Ticks
      */
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         for (CorePlayer cp : players) {
             Bukkit.getPlayer(cp.getUniqueId()).sendTitle(title, subtitle, fadeIn, stay, fadeOut);
         }
     }
-    
+
 }

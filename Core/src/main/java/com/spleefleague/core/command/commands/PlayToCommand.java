@@ -16,20 +16,21 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class PlayToCommand extends CoreCommand {
-    
+
     public PlayToCommand() {
         super("playto", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void playto(CorePlayer sender, Integer points) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
         sender.getBattle().onRequest(sender, "playto", points.toString());
     }
+
     @CommandAnnotation
     public void playto(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);
         sender.getBattle().onRequest(sender, "playto", null);
     }
-    
+
 }

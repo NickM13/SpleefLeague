@@ -10,15 +10,15 @@ import java.util.List;
  * @since 4/22/2020
  */
 public class PetUtils {
-    
+
     public static void clearListField(String fieldName, Class<?> clazz, Object object) {
         List<?> list = (List<?>) CoreUtils.getPrivateField(fieldName, clazz, object);
         if (list != null) list.clear();
     }
-    
+
     public static void clearPathfinderGoals(PathfinderGoalSelector pathfinder) {
         PetUtils.clearListField("b", PathfinderGoalSelector.class, pathfinder);
         PetUtils.clearListField("c", PathfinderGoalSelector.class, pathfinder);
     }
-    
+
 }

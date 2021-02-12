@@ -21,7 +21,7 @@ public class BackCommand extends CoreCommand {
         setUsage("/back");
         setDescription("Return to a previous location");
     }
-    
+
     @CommandAnnotation
     public void back(CorePlayer cp) {
         if (cp.getLastLocation() == null) {
@@ -31,5 +31,5 @@ public class BackCommand extends CoreCommand {
             success(cp, "Teleported to your last location");
         }
     }
-    
+
 }

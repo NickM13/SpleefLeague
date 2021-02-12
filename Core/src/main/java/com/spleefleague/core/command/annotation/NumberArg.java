@@ -18,6 +18,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface NumberArg {
     double minValue() default Double.MIN_VALUE;
+
     double maxValue() default Double.MAX_VALUE;
+
     double defaultValue() default Double.MIN_VALUE;
 }

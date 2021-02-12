@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.plugin;
 
-import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
@@ -33,7 +32,6 @@ import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleCha
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleForceStart;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpectate;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.bukkit.command.CommandSender;
@@ -45,25 +43,25 @@ import org.bukkit.plugin.java.JavaPlugin;
  * all plugins that use this are stored in a plugins master list
  * allowing for synced battle states
  *
- * @author NickM13
  * @param <P> extends DBPlayer
+ * @author NickM13
  */
 public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
-    
+
     private static final Set<CorePlugin<?>> plugins = new HashSet<>();
 
     protected static Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
 
     // For quick referencing in tab command auto completes
     protected static Set<String> ingamePlayerNames = new HashSet<>();
-    
+
     private static MongoClient mongoClient;
     private MongoDatabase pluginDb;
 
     // Map of all players in the database and their UUIDs (loaded as they connect)
     protected PlayerManager<P> playerManager;
 
-    
+
     protected boolean running = false;
 
     /**
@@ -79,8 +77,9 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         running = true;
         plugins.add(this);
     }
+
     protected abstract void init();
-    
+
     /**
      * Connect to the Mongo database based on the mongo.cfg file
      * that should be in the server's folder
@@ -93,10 +92,10 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             String mongoPath = System.getProperty("user.dir") + "\\..\\..\\mongo.cfg";
             System.out.println("MONGO PATH " + mongoPath);
             FileInputStream file = new FileInputStream(mongoPath);
-            
+
             mongoProps.load(file);
             file.close();
-            
+
             String mongoPrefix = mongoProps.getProperty("prefix", "mongodb://");
             String credentials = mongoProps.getProperty("credentials", "");
             System.out.println(credentials);
@@ -124,6 +123,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         plugins.remove(this);
         close();
     }
+
     protected abstract void close();
 
     public void reloadCollectibles() {
@@ -137,7 +137,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public void reloadArenas() {
 
     }
-    
+
     /**
      * Add a battle manager to the registry
      *
@@ -146,7 +146,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public final void addBattleManager(BattleMode mode) {
         battleManagers.put(mode, BattleManager.createManager(mode));
     }
-    
+
     /**
      * Get the battle manager for an arena mode from the registry
      *
@@ -165,17 +165,17 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * Queue a player for a battle
      *
      * @param mode Arena Mode
-     * @param cp Core Player
+     * @param cp   Core Player
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp) {
         Core.getInstance().sendPacket(new PacketSpigotQueueJoin(cp.getUniqueId(), mode.getName(), "arena:*"));
     }
-    
+
     /**
      * Queue a player for a specific arena
      *
-     * @param mode Arena Mode
-     * @param cp Core Player
+     * @param mode  Arena Mode
+     * @param cp    Core Player
      * @param arena Arena
      */
     public final void queuePlayer(BattleMode mode, CorePlayer cp, Arena arena) {
@@ -185,7 +185,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         }
         Core.getInstance().sendPacket(new PacketSpigotQueueJoin(cp.getUniqueId(), mode.getName(), "arena:" + arena.getIdentifierNoTag()));
     }
-    
+
     /**
      * Sets the main database used by this plugin
      * mongoClient must be initialized before calling
@@ -195,7 +195,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     protected final void setPluginDB(String databaseName) {
         pluginDb = mongoClient.getDatabase(databaseName);
     }
-    
+
     /**
      * Gets the main database used by this plugin
      *
@@ -227,7 +227,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public static void addIngamePlayerName(CorePlayer cp) {
         ingamePlayerNames.add(cp.getName());
     }
-    
+
     /**
      * Removes a player name from the quick ingame player name
      * refrences  list
@@ -237,7 +237,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public static void removeIngamePlayerName(CorePlayer cp) {
         ingamePlayerNames.remove(cp.getName());
     }
-    
+
     /**
      * Returns a set of the names of all ingame players
      * for quick autocompletion
@@ -247,7 +247,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public static Set<String> getIngamePlayerNames() {
         return ingamePlayerNames;
     }
-    
+
     /**
      * Returns a set of all plugins that use CorePlugin and
      * are enabled
@@ -257,7 +257,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
     public static Set<CorePlugin<?>> getAllPlugins() {
         return plugins;
     }
-    
+
     /**
      * Remove a spectator from a battle
      *
@@ -269,13 +269,13 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             battle.removeSpectator(spectator);
         }
     }
-    
+
     /**
      * Find a player's battle and put the spectator into it, fails
      * if the target player isn't in a battle
      *
      * @param spectator Spectator DBPlayer
-     * @param target Target DBPlayer
+     * @param target    Target DBPlayer
      * @return Success
      */
     public static boolean spectatePlayerGlobal(CorePlayer spectator, CorePlayer target) {
@@ -298,7 +298,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         }
         return false;
     }
-    
+
     /**
      * Disconnect the Mongo database, catches an error
      * if a jar file was forcibly changed while in use
@@ -312,7 +312,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
             System.out.println("Jar files updated, unable to close MongoDB");
         }
     }
-    
+
     public abstract TextComponent getChatPrefix();
 
     public void challengePlayer(CorePlayer sender, CorePlayer target, BattleMode battleMode, String arenaName) {
@@ -378,11 +378,11 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         textComponent.addExtra(msg);
         Chat.sendMessage(ChatChannel.GLOBAL, textComponent, blacklist);
     }
-    
+
     /**
      * Send a message to a specific player
      *
-     * @param cp Core Player
+     * @param cp  Core Player
      * @param msg Message
      */
     public final void sendMessage(CorePlayer cp, String msg) {
@@ -396,11 +396,11 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         message.addExtra(text);
         Chat.sendMessageToPlayer(cp, message);
     }
-    
+
     /**
      * Send a message to a CommandSender (Block, Console, etc)
      *
-     * @param cs CommandSender
+     * @param cs  CommandSender
      * @param msg Message
      */
     public final void sendMessage(CommandSender cs, String msg) {
@@ -413,7 +413,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * Doesn't use default chat prefix
      * <br>Send message to a ChatChannel
      *
-     * @param cc Chat Channel
+     * @param cc  Chat Channel
      * @param msg Message
      */
     public final void sendMessage(ChatChannel cc, String msg) {
@@ -426,8 +426,8 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      * Doesn't use default chat prefix
      * <br>Send message to a ChatChannel with a list of players that can't receive it
      *
-     * @param cc Chat Channel
-     * @param msg Message
+     * @param cc        Chat Channel
+     * @param msg       Message
      * @param blacklist Blacklist of Players
      */
     public final void sendMessageBlacklisted(ChatChannel cc, String msg, Set<UUID> blacklist) {
@@ -435,5 +435,5 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         textComponent.addExtra(Chat.colorize(msg));
         Chat.sendMessage(cc, textComponent, blacklist);
     }
-    
+
 }

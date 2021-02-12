@@ -172,12 +172,12 @@ public class FakeUtils {
         Set<BlockPosition> blocks = new HashSet<>();
         double dx, dy, dz;
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1) {
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1) {
                         blocks.add(new BlockPosition(x, y, z));
                     }
                 }
@@ -229,12 +229,12 @@ public class FakeUtils {
         Set<BlockPosition> blocks = new HashSet<>();
         double dx, dy, dz;
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1) {
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1) {
                         Vector p = new Vector(x, y, z).normalize();
                         double dist = p.dot(facing);
                         if (dist >= (dist / distance) * radius) {

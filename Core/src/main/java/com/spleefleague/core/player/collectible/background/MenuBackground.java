@@ -21,7 +21,8 @@ public class MenuBackground extends Collectible {
 
     }
 
-    @DBField private String background;
+    @DBField
+    private String background;
 
     @Override
     public void onEnable(CorePlayer cp) {

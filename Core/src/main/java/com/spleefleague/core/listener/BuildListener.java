@@ -15,19 +15,19 @@ import org.bukkit.event.block.BlockPlaceEvent;
  * @since 4/16/2020
  */
 public class BuildListener implements Listener {
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockBreak(BlockBreakEvent event) {
         if (BuildWorld.isBuilder(event.getPlayer())) {
             event.setCancelled(true);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockPlace(BlockPlaceEvent event) {
         if (BuildWorld.isBuilder(event.getPlayer()) || InventoryMenuAPI.isHotbarItem(event.getItemInHand())) {
             event.setCancelled(true);
         }
     }
-    
+
 }

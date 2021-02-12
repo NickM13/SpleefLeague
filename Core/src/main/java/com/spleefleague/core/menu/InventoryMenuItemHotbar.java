@@ -26,7 +26,7 @@ import java.util.Set;
  * @author NickM13
  */
 public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
-    
+
     // <"hotbar" NBT, Item>
     private static final Map<String, InventoryMenuItemHotbar> HOTBAR_ITEMS = new HashMap<>();
 
@@ -37,7 +37,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     private static void replaceCreative() {
 
     }
-    
+
     /**
      * Fills a player's hotbar with hotbar items if the item is
      * currently available to them
@@ -82,7 +82,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
                 }
             }
         }
-        
+
         for (InventoryMenuItemHotbar hotbarItem : HOTBAR_ITEMS.values()) {
             if (hotbarItem.isAvailable(cp) && !currentHotbarItems.contains(hotbarItem.getHotbarTag())) {
                 cp.getPlayer().getInventory().setItem(hotbarItem.getSlot(), hotbarItem.createItem(cp));
@@ -99,7 +99,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     public static boolean isHotbarItem(ItemStack item) {
         return item != null && getHotbarTag(item) != null;
     }
-    
+
     /**
      * Returns a full map of every hotbar item that has
      * been created (stored in constructors)
@@ -109,7 +109,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     public static Map<String, InventoryMenuItemHotbar> getHotbarItems() {
         return HOTBAR_ITEMS;
     }
-    
+
     /**
      * Returns the hotbar item associated with the hotbar tag
      *
@@ -120,7 +120,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
         if (hotbarTag == null) return null;
         return HOTBAR_ITEMS.get(hotbarTag);
     }
-    
+
     /**
      * Returns the hotbar item associated with the hotbar tag of the
      * item passed
@@ -131,7 +131,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     public static InventoryMenuItemHotbar getHotbarItem(ItemStack item) {
         return getHotbarItem(InventoryMenuItemHotbar.getHotbarTag(item));
     }
-    
+
     /**
      * Returns the String in the "hotbar" NBT String
      *
@@ -143,15 +143,15 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
         if (itemMeta == null) return null;
         return itemMeta.getPersistentDataContainer().get(new NamespacedKey(Core.getInstance(), "hotbar"), PersistentDataType.STRING);
     }
-    
+
     protected final int slot;
     protected final String hotbarTag;
-    
+
     /**
      * Constructor for Hotbar Items, adds them to the
      * HOTBAR_ITEMS master list on creation
      *
-     * @param slot Slot Number
+     * @param slot      Slot Number
      * @param hotbarTag "hotbar" NBT String
      */
     public InventoryMenuItemHotbar(int slot, String hotbarTag) {
@@ -160,7 +160,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
         this.hotbarTag = hotbarTag;
         HOTBAR_ITEMS.put(hotbarTag, this);
     }
-    
+
     /**
      * Slot that the hotbar item should be displayed on, can be
      * overridden without issues
@@ -170,7 +170,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     public int getSlot() {
         return slot;
     }
-    
+
     /**
      * String that is stored in the "hotbar" NBT String of a
      * created Hotbar item
@@ -180,7 +180,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     public String getHotbarTag() {
         return hotbarTag;
     }
-    
+
     /**
      * Creates an item that can be held and clicked by the player
      *
@@ -197,7 +197,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
         item.setItemMeta(meta);
         return item;
     }
-    
+
     @Override
     public void callAction(CorePlayer cp) {
         if (getLinkedChest() != null) {
@@ -205,5 +205,5 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
         }
         super.callAction(cp);
     }
-    
+
 }

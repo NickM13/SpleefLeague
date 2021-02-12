@@ -3,7 +3,6 @@ package com.spleefleague.core.util.packet;
 import java.nio.ByteBuffer;
 
 /**
- *
  * @author Jonas
  */
 public class ProtocolLongArrayBitReader {
@@ -17,7 +16,7 @@ public class ProtocolLongArrayBitReader {
 
     public ProtocolLongArrayBitReader(short[] data) {
         ByteBuffer buffer = ByteBuffer.allocate(data.length * Short.SIZE / Byte.SIZE);
-        for(short s : data) {
+        for (short s : data) {
             buffer.putShort(s);
         }
         this.data = buffer.array();
@@ -25,7 +24,7 @@ public class ProtocolLongArrayBitReader {
 
     public ProtocolLongArrayBitReader(int[] data) {
         ByteBuffer buffer = ByteBuffer.allocate(data.length * Integer.SIZE / Byte.SIZE);
-        for(int i : data) {
+        for (int i : data) {
             buffer.putInt(i);
         }
         this.data = buffer.array();
@@ -34,7 +33,7 @@ public class ProtocolLongArrayBitReader {
 
     public ProtocolLongArrayBitReader(long[] data) {
         ByteBuffer buffer = ByteBuffer.allocate(data.length * Long.SIZE / Byte.SIZE);
-        for(long l : data) {
+        for (long l : data) {
             buffer.putLong(l);
         }
         this.data = buffer.array();
@@ -43,7 +42,7 @@ public class ProtocolLongArrayBitReader {
     public long readLong(int bits) {
         long value = 0;
         int read = 0;
-        while(bits > 0) {
+        while (bits > 0) {
             int toRead = Math.min(8, bits);
             int b = Byte.toUnsignedInt(readByte(toRead));
             b <<= read;
@@ -57,7 +56,7 @@ public class ProtocolLongArrayBitReader {
     public short readShort(int bits) {
         short value = 0;
         int read = 0;
-        while(bits > 0) {
+        while (bits > 0) {
             int toRead = Math.min(8, bits);
             int b = Byte.toUnsignedInt(readByte(toRead));
             b <<= read;
@@ -71,7 +70,7 @@ public class ProtocolLongArrayBitReader {
     public int readInt(int bits) {
         int value = 0;
         int read = 0;
-        while(bits > 0) {
+        while (bits > 0) {
             int toRead = Math.min(8, bits);
             int b = Byte.toUnsignedInt(readByte(toRead));
             b <<= read;
@@ -85,9 +84,9 @@ public class ProtocolLongArrayBitReader {
     public byte readByte(int bits) {
         int p = offset / 8, o = offset % 8;
         p = 7 - p % 8 + (p / 8) * 8;
-        byte b =  (byte)(Byte.toUnsignedInt(data[p]) >>> o);
+        byte b = (byte) (Byte.toUnsignedInt(data[p]) >>> o);
         int read = 8 - o;
-        if(read > bits) {
+        if (read > bits) {
             short ff = 0xFF;
             ff >>>= (8 - bits);
             b &= ff;
@@ -96,7 +95,7 @@ public class ProtocolLongArrayBitReader {
         }
         offset += read;
         bits -= read;
-        if(bits > 0) {
+        if (bits > 0) {
             byte c = readByte(bits);
             b |= (c << read);
         }

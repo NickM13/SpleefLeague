@@ -37,11 +37,11 @@ public class InventoryMenuUtils {
         STORE(createCustomItem(Material.EMERALD, 1));
 
         ItemStack iconItem;
-        
+
         MenuIcon(ItemStack iconItem) {
             this.iconItem = iconItem;
         }
-        
+
         public ItemStack getIconItem() {
             return iconItem;
         }
@@ -51,7 +51,7 @@ public class InventoryMenuUtils {
             itemStack.setAmount(amount);
             return itemStack;
         }
-        
+
     }
 
     private static InventoryMenuItem BACK_BUTTON = InventoryMenuAPI.createItemStatic()
@@ -63,15 +63,16 @@ public class InventoryMenuUtils {
     public static InventoryMenuItem getBackButton() {
         return BACK_BUTTON;
     }
-    
+
     /**
      * Creates a "locked" menu item with the display name of "Locked"
+     *
      * @return Locked InventoryMenuItem
      */
     public static InventoryMenuItem createLockedMenuItem() {
         return createLockedMenuItem("Locked");
     }
-    
+
     /**
      * Creates a "locked" menu item
      *
@@ -84,7 +85,7 @@ public class InventoryMenuUtils {
                 .setDisplayItem(MenuIcon.LOCKED.getIconItem())
                 .setCloseOnAction(false);
     }
-    
+
     /**
      * Creates an unbreakable item with all flags hidden
      *
@@ -94,23 +95,23 @@ public class InventoryMenuUtils {
     public static ItemStack createCustomItem(Material displayItem) {
         return createCustomItemAmount(displayItem, 1);
     }
-    
+
     /**
      * Creates an unbreaking item with all flags hidden and a custom model data value
      *
-     * @param displayItem Display Item
+     * @param displayItem     Display Item
      * @param customModelData Custom Model Data tag
      * @return Item Stack
      */
     public static ItemStack createCustomItem(Material displayItem, int customModelData) {
         return createCustomItemAmount(displayItem, customModelData, 1);
     }
-    
+
     /**
      * Creates an unbreaking item with all flags hidden and a custom model data value
      *
-     * @param displayName Display Name
-     * @param displayItem Display Item
+     * @param displayName     Display Name
+     * @param displayItem     Display Item
      * @param customModelData Custom Model Data tag
      * @return Item Stack
      */
@@ -121,7 +122,7 @@ public class InventoryMenuUtils {
         }
         return item;
     }
-    
+
     public static ItemStack createCustomItemAmount(Material displayItem, int amount) {
         ItemStack itemStack = new ItemStack(displayItem, amount);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -132,7 +133,7 @@ public class InventoryMenuUtils {
         }
         return itemStack;
     }
-    
+
     public static ItemStack createCustomItemAmount(Material displayItem, int customModelData, int amount) {
         ItemStack itemStack = new ItemStack(displayItem, amount);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -144,7 +145,7 @@ public class InventoryMenuUtils {
         }
         return itemStack;
     }
-    
+
     public static ItemStack createCustomPotion(PotionType pt) {
         ItemStack item = new ItemStack(Material.POTION);
         PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
@@ -153,16 +154,16 @@ public class InventoryMenuUtils {
         item.setItemMeta(potionMeta);
         return item;
     }
-    
+
     public static ItemStack createCustomSkull(String playerName) {
         OfflinePlayer op = Bukkit.getOfflinePlayer(playerName);
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta)skull.getItemMeta();
+        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
         if (skullMeta != null) skullMeta.setOwningPlayer(op);
         skull.setItemMeta(skullMeta);
         return skull;
     }
-    
+
     public static ItemStack createCustomSkull(UUID uuid) {
         if (uuid == null) return InventoryMenuSkullManager.getDefaultSkull();
         OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
@@ -179,5 +180,5 @@ public class InventoryMenuUtils {
     public static ItemStack createCustomSkullOrDefault(UUID uuid) {
         return InventoryMenuSkullManager.getPlayerSkull(uuid);
     }
-    
+
 }

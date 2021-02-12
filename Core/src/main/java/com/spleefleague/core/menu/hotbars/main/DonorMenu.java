@@ -15,9 +15,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class DonorMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "SpleefLeague Store")
@@ -26,7 +26,7 @@ public class DonorMenu {
                 .setDescription("")
                 .createLinkedContainer("SpleefLeague Store");
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -37,5 +37,5 @@ public class DonorMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

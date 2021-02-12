@@ -10,16 +10,17 @@ package com.spleefleague.core.util;
  * @author NickM13
  */
 public class TimeUtils {
-    
+
     private static long times[] = {60, 60, 24, 7, 3, 12};
     private static String names[] = {"sec", "min", "hour", "day", "week", "month", "year"};
-    
+
     /**
      * Greatest common denom time to string
      * Takes milliseconds
+     *
      * @param age Age in millis
      * @return Formatted String
-    */
+     */
     public static String gcdTimeToString(long age) {
         String timeStr = "";
         long seconds = Math.abs(age) / 1000L;
@@ -34,15 +35,15 @@ public class TimeUtils {
             }
             time *= times[i];
         }
-        
+
         return timeStr;
     }
-    
+
     // Time to string
     public static String timeToString(long age) {
         StringBuilder timeStr = new StringBuilder();
         long seconds = Math.abs(age / 1000L);
-        
+
         long time = 1;
         for (int i = 0; i < times.length; i++) {
             if (time > seconds) break;
@@ -50,10 +51,10 @@ public class TimeUtils {
             timeStr.insert(0, res + " " + names[i] + (res > 1 ? "s" : "") + (timeStr.length() > 0 ? ", " : " "));
             time *= times[i];
         }
-        
+
         return timeStr.toString();
     }
-    
+
     public static Long toMillis(String time) {
         double multiplier;
         long total = 0;
@@ -99,5 +100,5 @@ public class TimeUtils {
         if (builder.length() <= 0) return total;
         return total + Long.parseLong(builder.toString()) * 1000;
     }
-    
+
 }

@@ -10,9 +10,9 @@ import org.bukkit.Material;
  * @since 4/18/2020
  */
 public class ParticlesMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Particles")
@@ -21,7 +21,7 @@ public class ParticlesMenu {
                 .setSelectedItem(Material.WHEAT_SEEDS, 2)
                 .createLinkedContainer("Particles");
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -32,5 +32,5 @@ public class ParticlesMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

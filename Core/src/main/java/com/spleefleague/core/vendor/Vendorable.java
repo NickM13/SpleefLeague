@@ -86,11 +86,11 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * Registers a vendorable type class, any vendorables created will
      * use the key assigned with each class based on which one they
      * are an instance of, or "Invalid" if none apply.
-     *
+     * <p>
      * If any vendorables use the type "Invalid", they have not been
      * set up correctly and their base class should call this function
      * in their static init
-     * 
+     *
      * @param clazz Class of ? extends Vendorable
      */
     protected static void registerParentType(Class<? extends Vendorable> clazz) {
@@ -101,7 +101,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     protected static void registerExactType(Class<? extends Vendorable> clazz) {
         REGISTERED_EXACT_TYPES.put(clazz.getSimpleName(), clazz);
     }
-    
+
     /**
      * Checks against the classes in REGISTERED_TYPES to see if the
      * class passed is a sub-class of any, returning the simple class
@@ -118,7 +118,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         }
         return "Invalid";
     }
-    
+
     public static Set<String> getParentTypeNames() {
         return REGISTERED_PARENT_TYPES.keySet();
     }
@@ -155,24 +155,34 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
             return REGISTERED_PARENT_TYPES.get(type);
         }
     }
-    
+
     public static final String typeNbt = "ventype";
     public static final String identifierNbt = "vendintifier";
-    
-    @DBField protected String type;
-    @DBField protected String parentType;
-    @DBField protected UnlockType unlockType = UnlockType.HIDDEN;
-    @DBField protected Rarity rarity = Rarity.COMMON;
-    @DBField protected String name = "";
-    @DBField protected String description = "";
-    @DBField protected Material material;
-    @DBField protected Integer coinCost = 0;
-    @DBField protected UUID skullOwner = null;
-    @DBField protected Integer customModelData = 0;
-    
+
+    @DBField
+    protected String type;
+    @DBField
+    protected String parentType;
+    @DBField
+    protected UnlockType unlockType = UnlockType.HIDDEN;
+    @DBField
+    protected Rarity rarity = Rarity.COMMON;
+    @DBField
+    protected String name = "";
+    @DBField
+    protected String description = "";
+    @DBField
+    protected Material material;
+    @DBField
+    protected Integer coinCost = 0;
+    @DBField
+    protected UUID skullOwner = null;
+    @DBField
+    protected Integer customModelData = 0;
+
     private final InventoryMenuItem vendorMenuItem;
     private ItemStack displayItem;
-    
+
     /**
      * Constructor for Vendorable items
      */
@@ -183,7 +193,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         vendorMenuItem = InventoryMenuAPI.createItemDynamic()
                 .setAction(this::attemptPurchase);
     }
-    
+
     @Override
     public void afterLoad() {
         Vendorables.register(this);
@@ -207,7 +217,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
 
         updateDisplayItem();
     }
-    
+
     /**
      * Gets the type declared by the extending class, such
      * as Pet, Consumable, Shovel, E T C
@@ -221,7 +231,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final String getParentType() {
         return parentType;
     }
-    
+
     /**
      * Get the String found on the vendorable NBT tag
      *
@@ -230,7 +240,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final String getIdentifier() {
         return identifier;
     }
-    
+
     /**
      * Sets the identifying String of this vendorable<br>
      * Should only be used when cloning
@@ -242,7 +252,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         updateDisplayItem();
         saveChanges();
     }
-    
+
     /**
      * Get the display name of this vendorable's item
      *
@@ -266,7 +276,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         updateDisplayItem();
         saveChanges();
     }
-    
+
     /**
      * Get the Description string for this item
      *
@@ -275,7 +285,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * Set the Description string for this item
      *
@@ -286,7 +296,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         updateDisplayItem();
         saveChanges();
     }
-    
+
     /**
      * Gets the Vendor Description of this item, including
      * the cost and any additional attributes through override
@@ -344,7 +354,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         updateDisplayItem();
         saveChanges();
     }
-    
+
     /**
      * Get the coin cost of an item, used for vendor inventories
      *
@@ -353,7 +363,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final int getCoinCost() {
         return coinCost;
     }
-    
+
     /**
      * Sets the coin cost for this vendorable item
      *
@@ -372,7 +382,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public abstract void saveChanges();
 
     public abstract void unsave();
-    
+
     /**
      * Make sure to call this whenever a change has been made
      * to the vendorable that would change it's appearance
@@ -384,7 +394,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
                 .setDisplayItem(displayItem)
                 .setDescription(getDescriptionVendor());
     }
-    
+
     /**
      * Called when a player clicks on the vendorable item
      *
@@ -395,7 +405,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
             purchase(cp);
         }
     }
-    
+
     /**
      * Whether an item can be purchased, does not
      * refer to the coin cost of an item, that always
@@ -407,7 +417,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final boolean canPurchase(CorePlayer cp) {
         return cp.getPurse().getCurrency(CoreCurrency.COIN.name()) >= getCoinCost() && isAvailableToPurchase(cp);
     }
-    
+
     /**
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
@@ -416,14 +426,14 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      * @return Availability
      */
     public abstract boolean isAvailableToPurchase(CorePlayer cp);
-    
+
     /**
      * Called when a player successfully purchases this item from the vendor
      *
      * @param cp Core Player
      */
     public abstract void purchase(CorePlayer cp);
-    
+
     /**
      * Get the InventoryMenuItem vendor item
      *
@@ -432,7 +442,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final InventoryMenuItem getVendorMenuItem() {
         return vendorMenuItem;
     }
-    
+
     /**
      * Get the Display ItemStack for this item
      *
@@ -441,7 +451,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public final ItemStack getDisplayItem() {
         return displayItem;
     }
-    
+
     protected final ItemStack createItem() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -466,7 +476,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         }
         return itemStack;
     }
-    
+
     /**
      * Returns whether the passed Vendorable has the same type
      * and identifier as this
@@ -477,5 +487,5 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     public boolean equalsSoft(Vendorable vendorable) {
         return vendorable.getType().equalsIgnoreCase(getType()) && vendorable.getIdentifier().equalsIgnoreCase(getIdentifier());
     }
-    
+
 }

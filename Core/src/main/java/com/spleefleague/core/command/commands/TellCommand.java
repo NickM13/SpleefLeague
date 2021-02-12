@@ -17,18 +17,18 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class TellCommand extends CoreCommand {
-    
+
     public TellCommand() {
         super("tell", CoreRank.DEFAULT);
         addAlias("msg");
         addAlias("whisper");
     }
-    
+
     @CommandAnnotation
     public void tell(CorePlayer sender,
-            @CorePlayerArg(allowCrossServer = true) CorePlayer target,
-            String msg) {
+                     @CorePlayerArg(allowCrossServer = true) CorePlayer target,
+                     String msg) {
         Chat.sendTell(sender, target, msg);
     }
-    
+
 }

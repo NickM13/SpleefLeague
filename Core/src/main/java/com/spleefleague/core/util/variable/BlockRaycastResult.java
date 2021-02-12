@@ -21,12 +21,24 @@ public class BlockRaycastResult extends RaycastResult {
         this.axis = axis;
         this.face = face;
         switch (face) {
-            case UP: this.relative = blockPos.add(new BlockPosition(0, 1, 0)); break;
-            case DOWN: this.relative = blockPos.add(new BlockPosition(0, -1, 0)); break;
-            case EAST: this.relative = blockPos.add(new BlockPosition(1, 0, 0)); break;
-            case WEST: this.relative = blockPos.add(new BlockPosition(-1, 0, 0)); break;
-            case NORTH: this.relative = blockPos.add(new BlockPosition(0, 0, 1)); break;
-            case SOUTH: this.relative = blockPos.add(new BlockPosition(0, 0, -1)); break;
+            case UP:
+                this.relative = blockPos.add(new BlockPosition(0, 1, 0));
+                break;
+            case DOWN:
+                this.relative = blockPos.add(new BlockPosition(0, -1, 0));
+                break;
+            case EAST:
+                this.relative = blockPos.add(new BlockPosition(1, 0, 0));
+                break;
+            case WEST:
+                this.relative = blockPos.add(new BlockPosition(-1, 0, 0));
+                break;
+            case NORTH:
+                this.relative = blockPos.add(new BlockPosition(0, 0, 1));
+                break;
+            case SOUTH:
+                this.relative = blockPos.add(new BlockPosition(0, 0, -1));
+                break;
         }
     }
 

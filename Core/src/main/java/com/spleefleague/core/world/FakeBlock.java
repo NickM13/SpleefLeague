@@ -22,10 +22,10 @@ import java.util.Map;
  * @author NickM13
  */
 public class FakeBlock {
-    
+
     private static final Map<Material, Sound> breakSoundMap = new HashMap<>();
     private static final Map<Material, Sound> placeSoundMap = new HashMap<>();
-    
+
     private static List<Sound> getSounds(Material material) {
         try {
             BlockData blockData = material.createBlockData();
@@ -35,13 +35,13 @@ public class FakeBlock {
             net.minecraft.server.v1_15_R1.SoundEffect nmsBreakSound = nmsSoundEffectType.d();
 
             net.minecraft.server.v1_15_R1.SoundEffect nmsPlaceSound = nmsSoundEffectType.e();
-        
+
             Field keyField = net.minecraft.server.v1_15_R1.SoundEffect.class.getDeclaredField("a");
             keyField.setAccessible(true);
-    
+
             net.minecraft.server.v1_15_R1.MinecraftKey nmsBreakString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsBreakSound);
             net.minecraft.server.v1_15_R1.MinecraftKey nmsPlaceString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsPlaceSound);
-        
+
             return Lists.newArrayList(Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()),
                     Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()));
         } catch (IllegalArgumentException | NoSuchFieldException | IllegalAccessException e) {
@@ -49,7 +49,7 @@ public class FakeBlock {
         }
         return null;
     }
-    
+
     public static void init() {
         for (Material material : Material.values()) {
             if (material.isBlock()) {
@@ -63,7 +63,7 @@ public class FakeBlock {
     }
 
     private final BlockData blockData;
-    
+
     public FakeBlock(BlockData blockData) {
         this.blockData = blockData;
     }
@@ -71,13 +71,13 @@ public class FakeBlock {
     public BlockData getBlockData() {
         return blockData;
     }
-    
+
     public Sound getBreakSound() {
         return breakSoundMap.get(blockData.getMaterial());
     }
-    
+
     public Sound getPlaceSound() {
         return placeSoundMap.get(blockData.getMaterial());
     }
-    
+
 }

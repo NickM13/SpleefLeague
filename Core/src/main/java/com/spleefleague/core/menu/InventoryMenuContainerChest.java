@@ -14,6 +14,7 @@ import com.spleefleague.core.player.CorePlayer;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,23 +26,23 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  */
 public class InventoryMenuContainerChest extends InventoryMenuContainer {
-    
+
     // Entire menu size
     public static final int MENU_ROWS = 6, MENU_COLUMNS = 9, MENU_SIZE = MENU_ROWS * MENU_COLUMNS;
-    
+
     protected static class InventoryMenuControl {
         int slot;
         InventoryMenuItem menuItem;
-        
+
         InventoryMenuControl(int slot, InventoryMenuItem menuItem) {
             this.slot = slot;
             this.menuItem = menuItem;
         }
     }
-    
+
     protected BiConsumer<InventoryMenuContainerChest, CorePlayer> openAction;
     protected BiConsumer<InventoryMenuContainerChest, CorePlayer> refreshAction;
-    
+
     protected Function<CorePlayer, String> titleFun;
     protected List<InventoryMenuItem> unsortedItems;
     protected SortedMap<Integer, InventoryMenuItem> sortedItems;
@@ -71,7 +72,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     protected int forcedPageStart = 0;
 
     protected int itemBuffer = 1;
-    
+
     public InventoryMenuContainerChest() {
         this.openAction = null;
         this.refreshAction = null;
@@ -81,7 +82,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         this.controlItems = new ArrayList<>();
         this.deadSpaces = new HashSet<>();
         this.uuid = UUID.randomUUID();
-        
+
         setPageBoundaries(1, 5, 0, 5);
     }
 
@@ -128,7 +129,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     public Set<Integer> getDeadSpaces() {
         return deadSpaces;
     }
-    
+
     /**
      * Set the bounding area of pages
      *
@@ -151,11 +152,11 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
     public PageBoundary getPageBoundary() {
         return pageBoundary;
     }
-    
+
     public int getPageItemTotal() {
         return pageBoundary.pageItemTotal;
     }
-    
+
     /**
      * Set the action to occur on the opening of a container, to have a dynamic flow of options
      *
@@ -166,7 +167,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         this.openAction = openAction;
         return this;
     }
-    
+
     public InventoryMenuContainerChest setRefreshAction(BiConsumer<InventoryMenuContainerChest, CorePlayer> refreshAction) {
         this.refreshAction = refreshAction;
         return this;
@@ -186,10 +187,10 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         unsortedItems.clear();
     }
 
-    public void clearSorted () {
+    public void clearSorted() {
         sortedItems.clear();
     }
-    
+
     public void clearUnsorted() {
         unsortedItems.clear();
     }
@@ -207,36 +208,42 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         this.titleFun = (cp) -> Chat.colorize(title);
         return this;
     }
+
     public InventoryMenuContainerChest setTitle(Function<CorePlayer, String> titleFun) {
         this.titleFun = titleFun;
         return this;
     }
-    
+
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int slot) {
         sortedItems.put(slot, menuItem);
         menuItem.setParent(this);
         return menuItem;
     }
+
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int x, int y) {
         addMenuItem(menuItem, (x) + (y * (pageBoundary.colLast - pageBoundary.colFirst + 1)));
         menuItem.setParent(this);
         return menuItem;
     }
+
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem, int x, int y, int page) {
         addMenuItem(menuItem, (x) + (y * (pageBoundary.colLast - pageBoundary.colFirst + 1)) + (page * pageBoundary.pageItemTotal));
         menuItem.setParent(this);
         return menuItem;
     }
+
     public InventoryMenuItem addMenuItem(InventoryMenuItem menuItem) {
         unsortedItems.add(menuItem);
         menuItem.setParent(this);
         return menuItem;
     }
+
     public InventoryMenuItem addStaticItem(InventoryMenuItem menuItem, int slot) {
         controlItems.add(new InventoryMenuControl(slot, menuItem));
         menuItem.setParent(this);
         return menuItem;
     }
+
     public InventoryMenuItem addStaticItem(InventoryMenuItem menuItem, int x, int y) {
         controlItems.add(new InventoryMenuControl(x + y * 9, menuItem));
         menuItem.setParent(this);
@@ -247,16 +254,16 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         deadSpaces.add(x + y * (pageBoundary.colLast - pageBoundary.colFirst + 1));
         return this;
     }
-    
+
     public void removeMenuItem(int page, int slot) {
         sortedItems.remove((page * pageBoundary.pageItemTotal) + slot);
     }
-    
+
     public Inventory refreshInventory(CorePlayer cp) {
         ItemStack[] contents = new ItemStack[MENU_SIZE];
 
         if (refreshAction != null) refreshAction.accept(this, cp);
-        
+
         int pageCount = this.getPageCount(cp);
         String title = titleFun != null ? titleFun.apply(cp) : "";
         if (pageCount > 1) {
@@ -265,7 +272,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
 
         int toSkip = pageBoundary.pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
-    
+
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
                 int slotNum = item.getKey() - toSkip;
@@ -278,7 +285,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
                 }
             }
         }
-    
+
         int i = 0;
         for (InventoryMenuItem item : unsortedItems) {
             if (!item.isVisible(cp)) continue;
@@ -298,7 +305,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
             i += itemBuffer;
         }
-    
+
         for (InventoryMenuControl control : controlItems) {
             if (control.menuItem.isVisible(cp) &&
                     contents[control.slot] == null) {
@@ -311,7 +318,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         inv.setContents(contents);
         return inv;
     }
-    
+
     @Override
     public Inventory open(CorePlayer cp) {
         if (openAction != null) openAction.accept(this, cp);
@@ -335,13 +342,13 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             return forcedPageCount;
         }
         int pageCount = 1;
-        
+
         for (Map.Entry<Integer, InventoryMenuItem> item : sortedItems.entrySet()) {
             if (item.getValue().isVisible(cp)) {
                 pageCount = Math.max(pageCount, item.getKey() / pageBoundary.pageItemTotal + 1);
             }
         }
-        
+
         int i = forcedPageStart;
         for (InventoryMenuItem item : unsortedItems) {
             if (!item.isVisible(cp)) continue;
@@ -352,10 +359,10 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             pageCount = Math.max(pageCount, i / pageBoundary.pageItemTotal + 1);
             i += itemBuffer;
         }
-        
+
         return pageCount;
     }
-    
+
     public InventoryMenuItem getMenuItem(CorePlayer cp, int slot) {
         int toSkip = pageBoundary.pageItemTotal * cp.getMenu().getPage();
 
@@ -396,23 +403,22 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
             i += itemBuffer;
         }
-        
+
         for (InventoryMenuControl control : controlItems) {
             if (control.slot == slot &&
                     control.menuItem.isVisible(cp)) {
                 return control.menuItem;
             }
         }
-    
+
         return null;
     }
-    
+
     public void onInventoryInteract(InventoryClickEvent e, CorePlayer cp) {
         if (e.getClickedInventory() == null
                 || e.getClickedInventory().getType() == InventoryType.PLAYER) {
             e.setCancelled(true);
-        }
-        else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
+        } else if (e.getClickedInventory().getType() == InventoryType.CHEST) {
             InventoryMenuContainer screen = cp.getMenu().getInventoryMenuContainer();
             if (screen instanceof InventoryMenuContainerChest) {
                 InventoryMenuContainerChest container = (InventoryMenuContainerChest) screen;

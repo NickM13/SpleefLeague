@@ -30,5 +30,5 @@ public class RaycastResult {
     public Vector getIntersection() {
         return intersection;
     }
-    
+
 }

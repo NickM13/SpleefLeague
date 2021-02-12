@@ -27,7 +27,7 @@ public abstract class InventoryMenuItem {
     protected InventoryMenuContainer linkedContainer;
     protected InventoryMenuContainerChest parentContainer;
     protected int descriptionBuffer = 1;
-    
+
     public InventoryMenuItem() {
         minRank = CoreRank.DEFAULT;
 
@@ -45,28 +45,34 @@ public abstract class InventoryMenuItem {
     }
 
     public abstract InventoryMenuItem setDescription(String description);
+
     public abstract InventoryMenuItem setDescription(List<String> lore);
 
     public abstract InventoryMenuItem setDisplayItem(Material material);
+
     public abstract InventoryMenuItem setDisplayItem(Material material, int customModelData);
+
     public abstract InventoryMenuItem setDisplayItem(ItemStack displayItem);
 
     public abstract InventoryMenuItem setSelectedItem(Material material, int customModelData);
 
     public abstract InventoryMenuItem setCloseOnAction(boolean closeOnAction);
+
     public abstract InventoryMenuItem setAction(Consumer<CorePlayer> action);
-    
+
     public boolean hasLinkedContainer() {
         return linkedContainer != null;
     }
 
     /**
      * Returns currently linked container
+     *
      * @return Menu Container
      */
     public InventoryMenuContainerChest getLinkedChest() {
         return (InventoryMenuContainerChest) linkedContainer;
     }
+
     public InventoryMenuItem setLinkedContainer(InventoryMenuContainer container) {
         linkedContainer = container;
         if (parentContainer != null) {
@@ -76,12 +82,13 @@ public abstract class InventoryMenuItem {
         }
         return this;
     }
+
     public InventoryMenuItem createLinkedContainer(String title) {
         setLinkedContainer(InventoryMenuAPI.createContainer()
                 .setTitle(title));
         return this;
     }
-    
+
     public InventoryMenuItem setParent(InventoryMenuContainerChest container) {
         //if (parentContainer != null) return this;
         parentContainer = container;
@@ -96,11 +103,12 @@ public abstract class InventoryMenuItem {
     public abstract boolean isVisible(CorePlayer cp);
 
     public abstract boolean isAvailable(CorePlayer cp);
-    
+
     public InventoryMenuItem setMinRank(CoreRank minRank) {
         this.minRank = minRank;
         return this;
     }
+
     public CoreRank getMinRank() {
         return minRank;
     }
@@ -110,10 +118,11 @@ public abstract class InventoryMenuItem {
     }
 
     public abstract ItemStack createItem(CorePlayer cp, boolean selected);
-    
+
     public boolean shouldCloseOnAction() {
         return closeOnAction;
     }
+
     public void callAction(CorePlayer cp) {
         if (action != null && isAvailable(cp)) action.accept(cp);
     }

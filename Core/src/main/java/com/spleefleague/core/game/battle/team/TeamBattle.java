@@ -13,15 +13,12 @@ import com.spleefleague.core.game.request.ResetRequest;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.CoreUtils;
-import com.spleefleague.coreapi.utils.packet.shared.NumAction;
-import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -91,7 +88,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
             tbt.reset();
         }
     }
-    
+
     /**
      * Send a message on the start of a battle
      */
@@ -99,12 +96,12 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     protected void sendStartMessage() {
 
     }
-    
+
     @Override
     protected void fillField() {
-    
+
     }
-    
+
     /**
      * Called when a battler joins mid-game (if available)
      *
@@ -120,7 +117,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
         teamBattleTeamMap.get(bp).addPlayer(bp);
         addBattlerGhost(bp.getCorePlayer());
     }
-    
+
     /**
      * Called when a battler leaves boundaries
      *
@@ -146,7 +143,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
             }
         }
     }
-    
+
     /**
      * Called when a battler enters a goal area
      *
@@ -154,9 +151,9 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      */
     @Override
     protected void winBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when a player surrenders (/ff, /leave)
      *
@@ -176,7 +173,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     public void setPlayTo(int playToPoints) {
         this.playToPoints = playToPoints;
     }
-    
+
     /**
      * Called when a battler wants to leave (/leave, /ff)
      *
@@ -210,16 +207,16 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     public TeamBattleTeam<BP> getTeam(CorePlayer cp) {
         return teamBattleTeamMap.get(battlers.get(cp));
     }
-    
+
     /**
      * Called every 1 second or on score updates
      * Updates the player scoreboards
      */
     @Override
     public void updateScoreboard() {
-    
+
     }
-    
+
     /**
      * Called every 1/10 second
      * Updates the field on occasion for events such as
@@ -227,15 +224,15 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
      */
     @Override
     public void updateField() {
-    
+
     }
-    
+
     /**
      * Updates the experience bar of players in the game
      */
     @Override
     public void updateExperience() {
-    
+
     }
 
     public void endRoundTeam(TeamBattleTeam<BP> winner) {
@@ -367,5 +364,5 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     public void endBattle(BP tbp) {
         Thread.dumpStack();
     }
-    
+
 }

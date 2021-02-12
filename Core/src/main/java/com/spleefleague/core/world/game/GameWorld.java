@@ -108,6 +108,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     protected final Map<BlockPosition, SortedSet<FutureBlock>> futureBlocks;
 
     protected BukkitTask burningTask;
+
     protected class BurningBlock {
         int life;
         int fuel;
@@ -122,6 +123,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
             fuel--;
         }
     }
+
     protected final Map<BlockPosition, BurningBlock> burningBlocks;
 
     protected final Map<BlockPosition, FakeBlock> baseBlocks;
@@ -204,7 +206,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
      * and the block is a breakable block, if fails send a fake packet
      * to the player to make sure the block doesn't disappear for them
      *
-     * @param cp Core Player
+     * @param cp  Core Player
      * @param pos Block Position
      */
     @Override
@@ -247,7 +249,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Corrodes blocks in a radius
      *
-     * @param pos Origin
+     * @param pos    Origin
      * @param radius Radius
      * @return Number of Successes
      */
@@ -256,12 +258,12 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         int corroded = 0;
         Random random = new Random();
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1
                             && random.nextDouble() <= percent) {
                         corroded += corrodeBlock(pos.add(new BlockPosition(x, y, z))) ? 1 : 0;
                     }
@@ -300,7 +302,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Burns blocks in a radius
      *
-     * @param pos Origin
+     * @param pos    Origin
      * @param radius Radius
      * @return Number of Successes
      */
@@ -309,12 +311,12 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         int burnt = 0;
         Random random = new Random();
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1
                             && random.nextDouble() <= percent) {
                         burnt += burnBlock(pos.add(new BlockPosition(x, y, z)), BURN_TIME) ? 1 : 0;
                     }
@@ -355,7 +357,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Burns blocks in a radius
      *
-     * @param pos Origin
+     * @param pos    Origin
      * @param radius Radius
      * @return Number of Successes
      */
@@ -440,7 +442,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Burns blocks in a radius
      *
-     * @param pos Origin
+     * @param pos    Origin
      * @param radius Radius
      * @return Number of Successes
      */
@@ -449,12 +451,12 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         int broken = 0;
         Random random = new Random();
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1
                             && random.nextDouble() <= percent) {
                         broken += breakRegenBlock(pos.add(new BlockPosition(x, y, z))) ? 1 : 0;
                     }
@@ -493,7 +495,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * On player item use
      *
-     * @param cp Core Player
+     * @param cp            Core Player
      * @param blockPosition Click Block
      * @param blockRelative Placed Block
      * @return Cancel Event
@@ -623,6 +625,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     private class AttemptBurnObj {
         BlockPosition pos;
         int fuel;
+
         public AttemptBurnObj(BlockPosition pos, int fuel) {
             this.pos = pos;
             this.fuel = fuel;
@@ -716,21 +719,21 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         }
         playerPortals.get(shooter.getUniqueId()).pushPortal(getWorld(), pos, face);
     }
-    
+
     public void doFailBlast(CorePlayer cp) {
         playerBlasts.add(new PlayerBlast(cp.getPlayer().getLocation(), 20));
         getPlayerMap().values().forEach(gwp ->
                 gwp.getPlayer().playSound(gwp.getPlayer().getLocation(), Sound.ENTITY_DOLPHIN_DEATH, 15, 1));
     }
-    
+
     public void addBreakTool(Material tool) {
         breakTools.add(tool);
     }
-    
+
     public void addBreakableBlock(Material material) {
         breakables.add(material);
     }
-    
+
     public void setEditable(boolean editable) {
         this.editable = editable;
     }
@@ -762,10 +765,10 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
      * Sets a block to spawn after a delay based on its distance
      * from the positions
      *
-     * @param blockPos Block Position
-     * @param blockData Block Data
+     * @param blockPos        Block Position
+     * @param blockData       Block Data
      * @param secondsPerBlock Seconds per block distance from locations
-     * @param positions Positions
+     * @param positions       Positions
      */
     public void setBlockDelayed(BlockPosition blockPos, BlockData blockData, double secondsPerBlock, List<Position> positions) {
         if (futureBlocks.containsKey(blockPos)) return;
@@ -790,8 +793,8 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Sets a block to spawn after a delay
      *
-     * @param blockPos Block Position
-     * @param blockData Block Data
+     * @param blockPos   Block Position
+     * @param blockData  Block Data
      * @param delayTicks Ticks to delay by
      */
     public void setBlockDelayed(BlockPosition blockPos, BlockData blockData, long delayTicks) {
@@ -806,8 +809,8 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     /**
      * Adds a block to the blockPos list spawn after a delay
      *
-     * @param blockPos Block Position
-     * @param blockData Block Data
+     * @param blockPos   Block Position
+     * @param blockData  Block Data
      * @param delayTicks Ticks to delay by
      */
     public void addBlockDelayed(BlockPosition blockPos, BlockData blockData, long delayTicks) {
@@ -840,12 +843,12 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     public void regenerateBlocks(BlockPosition pos, double radius) {
         double dx, dy, dz;
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    dz = ((double) z) / radius;
+                    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     if (dist < 1) {
                         BlockPosition pos2 = pos.add(new BlockPosition(x, y, z));
                         FakeBlock fb = baseBlocks.get(pos2);
@@ -870,7 +873,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
      * Times should be in ticks
      *
      * @param startDelay Ticks
-     * @param duration Ticks
+     * @param duration   Ticks
      */
     public void enableDecay(long startDelay, long duration) {
         decayDelayStart = Math.max(0, startDelay) / 2;

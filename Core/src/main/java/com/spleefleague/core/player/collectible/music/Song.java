@@ -21,7 +21,8 @@ public class Song extends Collectible {
 
     }
 
-    @DBField private String fileName;
+    @DBField
+    private String fileName;
 
     @Override
     public void onEnable(CorePlayer cp) {

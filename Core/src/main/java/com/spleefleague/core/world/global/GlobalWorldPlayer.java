@@ -9,9 +9,9 @@ import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
  * @since 4/21/2020
  */
 public class GlobalWorldPlayer extends ProjectileWorldPlayer {
-    
+
     public GlobalWorldPlayer(CorePlayer cp) {
         super(cp);
     }
-    
+
 }

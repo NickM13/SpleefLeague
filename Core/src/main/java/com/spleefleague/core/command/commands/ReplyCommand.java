@@ -19,13 +19,13 @@ import org.bukkit.entity.Player;
  * @author NickM13
  */
 public class ReplyCommand extends CoreCommand {
-    
+
     public ReplyCommand() {
         super("reply", CoreRank.DEFAULT);
         addAlias("r");
         setUsage("/reply <message>");
     }
-    
+
     @CommandAnnotation
     public void reply(CorePlayer sender, String message) {
         Player player = sender.getReply();

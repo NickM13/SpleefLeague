@@ -43,15 +43,15 @@ public class FriendsMenu {
                 2, 0);
 
         container.addStaticItem(InventoryMenuAPI.createItemStatic()
-                .setName("Add Friend")
-                .setDisplayItem(Material.FEATHER, 1)
-                .setDescription("Send a new friend request to a specific player.")
-                .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
-                        .setTitle("Add Friend")
-                        .setSuccessFunc(str -> Core.getInstance().getPlayers().get(str) != null)
-                        .setAction((cp2, str) -> cp2.getFriends().sendFriendRequest(Core.getInstance().getPlayers().get(str)))
-                        .setFailText("Invalid Player!")))
-                .setCloseOnAction(false),
+                        .setName("Add Friend")
+                        .setDisplayItem(Material.FEATHER, 1)
+                        .setDescription("Send a new friend request to a specific player.")
+                        .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
+                                .setTitle("Add Friend")
+                                .setSuccessFunc(str -> Core.getInstance().getPlayers().get(str) != null)
+                                .setAction((cp2, str) -> cp2.getFriends().sendFriendRequest(Core.getInstance().getPlayers().get(str)))
+                                .setFailText("Invalid Player!")))
+                        .setCloseOnAction(false),
                 6, 2);
 
         container.addStaticItem(FriendPendingMenu.getItem(), 6, 0);
@@ -77,7 +77,7 @@ public class FriendsMenu {
                 container2.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("You have no friends yet! :(")
                                 .setDescription("")
-                        // UUID is for MrWired
+                                // UUID is for MrWired
                                 .setAction(cp2 -> friends.sendFriendRemove(Core.getInstance().getPlayers().getOffline(UUID.fromString("62d31d56-c863-4b17-a7b2-eae837e77e1a")))),
                         2, 2);
             } else {
@@ -129,7 +129,7 @@ public class FriendsMenu {
         description.append(ChatColor.GRAY + "Friends since: ").append(ChatColor.GOLD + zonedDateTime.format(DateTimeFormatter.ofPattern("MMMM d, uuuu")));
 
         return (InventoryMenuItemStatic) InventoryMenuAPI.createItemStatic()
-                .setName((info.favorite ? favoriteStar : "") +  friend.getRank().getColor() + "" + ChatColor.BOLD + friend.getName() + ChatColor.YELLOW + " ▹ Click for options ◃")
+                .setName((info.favorite ? favoriteStar : "") + friend.getRank().getColor() + "" + ChatColor.BOLD + friend.getName() + ChatColor.YELLOW + " ▹ Click for options ◃")
                 .setDisplayItem(InventoryMenuSkullManager.getPlayerSkull(info.uuid))
                 .setDescription(description.toString())
                 .setDescriptionBuffer(0)

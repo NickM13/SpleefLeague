@@ -11,10 +11,9 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.arena.ArenaBuilder;
 import com.spleefleague.core.game.arena.Arenas;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
+import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +26,7 @@ import java.util.*;
  * @author NickM13
  */
 public class BattleMode {
-    
+
     public enum TeamStyle {
         SOLO,
         TEAM,
@@ -35,7 +34,7 @@ public class BattleMode {
         DYNAMIC,
         BONANZA
     }
-    
+
     protected static Map<String, BattleMode> battleGameModes = new HashMap<>();
 
     private static final ItemStack DEFAULT_ITEM = new ItemStack(Material.BARRIER);
@@ -61,15 +60,15 @@ public class BattleMode {
         battleGameModes.put(name, battleMode);
         return battleMode;
     }
-    
+
     public static BattleMode get(String name) {
         return battleGameModes.get(name);
     }
-    
+
     public static Set<String> getAllNames() {
         return battleGameModes.keySet();
     }
-    
+
     public static Collection<BattleMode> getAllModes() {
         return battleGameModes.values();
     }
@@ -146,36 +145,38 @@ public class BattleMode {
     public Map<UUID, Battle<?>> getOngoingBattles() {
         return ongoingBattles;
     }
-    
+
     public void addBattle(Battle<?> battle) {
         this.ongoingBattles.put(battle.getBattleId(), battle);
     }
-    
+
     public void removeBattle(Battle<?> battle) {
         this.ongoingBattles.remove(battle);
     }
-    
+
     public TeamStyle getTeamStyle() {
         return teamStyle;
     }
-    
+
     public int getRequiredTeams() {
         return requiredTeams;
     }
-    
+
     public int getMaximumTeams() {
         return maximumTeams;
     }
-    
+
     public void addRequiredTeamSize(int requiredTeamSize) {
         if (requiredTeamSize != 0) {
             requiredTeamSizes.add(requiredTeamSize);
         }
     }
+
     public Set<Integer> getRequiredTeamSizes() {
         if (requiredTeamSizes.isEmpty()) return Sets.newHashSet(1);
         return requiredTeamSizes;
     }
+
     public String getRequiredTeamSizesString() {
         String formatted = "";
         for (Integer size : requiredTeamSizes) {
@@ -183,11 +184,11 @@ public class BattleMode {
         }
         return formatted;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
@@ -203,19 +204,19 @@ public class BattleMode {
     public boolean isForceRandom() {
         return forceRandom;
     }
-    
+
     public String getChatTag() {
         return Chat.TAG_BRACE + "[" + displayName + "]";
     }
-    
+
     public Class<? extends Battle<?>> getBattleClass() {
         return battleClass;
     }
-    
+
     public int getSeason() {
         return Core.getInstance().getLeaderboards().get(name).getActive().getSeason();
     }
-    
+
     public InventoryMenuContainerChest createEditMenu() {
         return InventoryMenuAPI.createContainer()
                 .setTitle(getDisplayName())
@@ -229,5 +230,5 @@ public class BattleMode {
                     }
                 });
     }
-    
+
 }

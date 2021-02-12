@@ -31,7 +31,7 @@ public class MenuListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        
+
         if ((event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
                 && event.getItem() != null) {
             InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getItem());
@@ -41,7 +41,7 @@ public class MenuListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
@@ -49,7 +49,7 @@ public class MenuListener implements Listener {
             event.setCancelled(true);
         }
     }
-    
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer().getName());
@@ -57,21 +57,22 @@ public class MenuListener implements Listener {
             cp.getMenu().setInventoryMenuChest(null, true);
         }
     }
-    
+
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
-        
+
         if (cp.getMenu().getInventoryMenuContainer() != null) {
             event.setCancelled(true);
         }
     }
-    
+
     @EventHandler
     public void onInventoryInteract(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null || (event.getCurrentItem() == null && event.getCursor().getType().isAir())) return;
+        if (event.getClickedInventory() == null || (event.getCurrentItem() == null && event.getCursor().getType().isAir()))
+            return;
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
-        
+
         if (cp.getMenu().getInventoryMenuContainer() instanceof InventoryMenuContainerChest
                 && event.getClickedInventory().getType() == InventoryType.CHEST) {
             cp.getMenu().onInventoryInteract(event);
@@ -83,5 +84,5 @@ public class MenuListener implements Listener {
             event.setCancelled(true);
         }
     }
-    
+
 }

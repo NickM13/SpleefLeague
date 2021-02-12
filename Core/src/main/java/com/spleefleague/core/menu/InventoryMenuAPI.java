@@ -7,6 +7,7 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.player.CorePlayer;
+
 import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -35,7 +36,7 @@ public class InventoryMenuAPI {
     public static InventoryMenuContainerChest createContainer() {
         return new InventoryMenuContainerChest();
     }
-    
+
     /**
      * Creates an InventoryMenuEditor
      *
@@ -44,7 +45,7 @@ public class InventoryMenuAPI {
     public static InventoryMenuEditor createEditor() {
         return new InventoryMenuEditor();
     }
-    
+
     /**
      * Creates a base InventoryMenuItemDynamic
      *
@@ -83,13 +84,13 @@ public class InventoryMenuAPI {
     public static InventoryMenuContainerAnvil createAnvil() {
         return new InventoryMenuContainerAnvil();
     }
-    
+
     /**
      * Creates and registers a new Hotbar item with a permanent slot TODO: should it be permanent?
      * and an identifier which is stored in the "hotbar" nbt
      * accessed by InventoryMenuItemHotbar::getHotbarTag
      *
-     * @param slot Slot Number
+     * @param slot      Slot Number
      * @param hotbarTag "hotbar" NBT String
      * @return New InventoryMenuItemHotbar
      */
@@ -101,12 +102,12 @@ public class InventoryMenuAPI {
     public static InventoryMenuDialog createDialog() {
         return new InventoryMenuDialog();
     }
-    
+
     public static InventoryMenuItemOption createItemOption(Function<CorePlayer, Integer> selectedFun) {
         return new InventoryMenuItemOption()
                 .setSelected(selectedFun);
     }
-    
+
     /**
      * Returns a collection of all hotbar items
      *
@@ -115,7 +116,7 @@ public class InventoryMenuAPI {
     public static Collection<InventoryMenuItemHotbar> getHotbarItems() {
         return InventoryMenuItemHotbar.getHotbarItems().values();
     }
-    
+
     /**
      * @param item ItemStack
      * @return Whether item is a registered Hotbar Item
@@ -124,7 +125,7 @@ public class InventoryMenuAPI {
         if (item == null) return false;
         return InventoryMenuItemHotbar.isHotbarItem(item);
     }
-    
+
     /**
      * Returns the Hotbar menu item by the hotbar nbt tag, or
      * null if it isn't a Hotbar item
@@ -135,5 +136,5 @@ public class InventoryMenuAPI {
     public static InventoryMenuItemHotbar getHotbarItem(ItemStack item) {
         return InventoryMenuItemHotbar.getHotbarItem(item);
     }
-    
+
 }

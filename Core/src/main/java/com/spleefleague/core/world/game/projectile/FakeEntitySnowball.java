@@ -299,7 +299,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
     /**
      * Called when the entity collides with a solid block
      *
-     * @param craftEntity Self Craft Entity
+     * @param craftEntity        Self Craft Entity
      * @param blockRaycastResult Raycast Result
      * @return Should ignore next raycast results
      */

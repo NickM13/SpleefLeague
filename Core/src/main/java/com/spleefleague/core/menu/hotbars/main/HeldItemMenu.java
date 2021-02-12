@@ -24,9 +24,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class HeldItemMenu {
-    
+
     protected static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Cosmetics")
@@ -53,7 +53,7 @@ public class HeldItemMenu {
         //container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Pet.class), 4, 1);
         //container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Pet.class), 4, 2);
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

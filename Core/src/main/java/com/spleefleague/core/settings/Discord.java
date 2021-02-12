@@ -10,7 +10,8 @@ import org.bson.Document;
  */
 public class Discord extends DBEntity {
 
-    @DBField private String url = "";
+    @DBField
+    private String url = "";
 
     public Discord() {
         identifier = "discord";

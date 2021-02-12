@@ -13,33 +13,33 @@ import java.util.Set;
  * @since 4/27/2020
  */
 public abstract class BattleRequest {
-    
+
     private static final double REQUIRED = 0.65D;
-    
+
     protected final Battle<?> battle;
     protected String chatName, scoreboardName;
     protected final boolean battlerRequest;
     protected final String requestName;
     protected final Set<CorePlayer> requestingPlayers = new HashSet<>();
-    
+
     protected BattleRequest(Battle<?> battle, boolean isBattlerRequest, String requestName) {
         this.battle = battle;
         this.battlerRequest = isBattlerRequest;
         this.requestName = requestName;
     }
-    
+
     public final String getRequestName() {
         return requestName;
     }
-    
+
     public final String getChatName() {
         return chatName;
     }
-    
+
     public final String getScoreboardName() {
         return scoreboardName;
     }
-    
+
     /**
      * Whether this request requires the player to be a battler or in the battle
      *
@@ -48,11 +48,11 @@ public abstract class BattleRequest {
     public boolean isBattlerRequest() {
         return battlerRequest;
     }
-    
+
     public boolean isOngoing() {
         return !requestingPlayers.isEmpty();
     }
-    
+
     public void startRequest(CorePlayer cp, int total, @Nullable String requestValue) {
         if (attemptStartRequest(cp, total, requestValue)) {
             if (total == 1) {
@@ -66,8 +66,9 @@ public abstract class BattleRequest {
             battle.getPlugin().sendMessage(cp, "Not a valid requested value!");
         }
     }
+
     protected abstract boolean attemptStartRequest(CorePlayer cp, int total, @Nullable String requestValue);
-    
+
     protected void startRequestMessage(CorePlayer cp) {
         TextComponent text = new TextComponent("Request to ");
         text.addExtra(getChatName());
@@ -75,20 +76,20 @@ public abstract class BattleRequest {
         text.addExtra(cp.getChatName());
         battle.getChatGroup().sendMessage(text);
     }
-    
+
     /**
      * Add a requesting player, returns false if player was already a requester
      *
-     * @param cp Battle Player
+     * @param cp    Battle Player
      * @param total Total Possible Request Players
      */
     public void addRequester(CorePlayer cp, int total) {
         battle.getPlugin().sendMessage(cp, "You requested to " + getChatName());
         requestingPlayers.add(cp);
-        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": " + (int)(getPercent(total) * 100) + "%");
+        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": " + (int) (getPercent(total) * 100) + "%");
         checkRequired(total);
     }
-    
+
     /**
      * Removes a player from the requesting set, returns false if they weren't a requester
      *
@@ -101,7 +102,7 @@ public abstract class BattleRequest {
             battle.getChatGroup().removeTeam(requestName);
         }
     }
-    
+
     /**
      * Returns whether or not a player is currently requesting this
      *
@@ -111,7 +112,7 @@ public abstract class BattleRequest {
     public boolean isRequesting(CorePlayer cp) {
         return requestingPlayers.contains(cp);
     }
-    
+
     /**
      * Remove all requesting players from the set
      */
@@ -119,7 +120,7 @@ public abstract class BattleRequest {
         requestingPlayers.clear();
         battle.getChatGroup().removeTeam(requestName);
     }
-    
+
     /**
      * Get percent of players that are currently requesting vs total players in game
      *
@@ -129,7 +130,7 @@ public abstract class BattleRequest {
     public double getPercent(int total) {
         return (double) requestingPlayers.size() / total;
     }
-    
+
     /**
      * Check whether enough players are requesting for the action to be called
      *
@@ -145,10 +146,10 @@ public abstract class BattleRequest {
         }
         return false;
     }
-    
+
     /**
      * Called when enough players are requesting this
      */
     protected abstract void meetsRequirement();
-    
+
 }

@@ -15,13 +15,13 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class CheckpointCommand extends CoreCommand {
-    
+
     public CheckpointCommand() {
         super("checkpoint", CoreRank.DEFAULT);
         setUsage("/checkpoint");
         setDescription("Teleport to your checkpoint");
     }
-    
+
     @CommandAnnotation
     public void checkpoint(CorePlayer sender) {
         sender.checkpoint();

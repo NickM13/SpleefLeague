@@ -12,7 +12,6 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -22,19 +21,19 @@ import java.util.List;
  * BattleManagerTeam is a BattleManager that manages battles of
  * any number of players, and once it has begun players can't
  * enter the battle but if a player leaves it does not stop
- * 
+ *
  * @author NickM13
  */
 public class BattleManagerDynamic extends BattleManager {
-    
+
     protected static Long DELAY_START_TIME = 1000L;
-    
+
     protected Long delayedStart = null;
-    
+
     public BattleManagerDynamic(BattleMode mode) {
         super(mode);
     }
-    
+
     @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);

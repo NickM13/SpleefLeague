@@ -33,7 +33,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
     protected BiConsumer<CorePlayer, String> action;
     protected InventoryMenuContainerChest parentContainer;
     protected String failText = "Invalid";
-    
+
     public InventoryMenuContainerAnvil() {
         this.parentContainer = null;
     }
@@ -62,7 +62,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
     public String getFailText() {
         return failText;
     }
-    
+
     public InventoryMenuContainerAnvil setTitle(String title) {
         this.titleFunc = cp -> title;
         return this;
@@ -72,17 +72,17 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
         this.titleFunc = titleFunc;
         return this;
     }
-    
+
     public InventoryMenuContainerAnvil setSuccessFunc(Function<String, Boolean> successFunc) {
         this.successFunc = successFunc;
         return this;
     }
-    
+
     public InventoryMenuContainerAnvil setAction(BiConsumer<CorePlayer, String> action) {
         this.action = action;
         return this;
     }
-    
+
     public InventoryMenuContainerAnvil setFailText(String text) {
         this.failText = text;
         return this;

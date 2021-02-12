@@ -11,9 +11,9 @@ import org.bukkit.Material;
  * @since 4/18/2020
  */
 public class CollectiblesMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Collectibles")
@@ -21,7 +21,7 @@ public class CollectiblesMenu {
                 .setDisplayItem(Material.ITEM_FRAME, 1)
                 .setSelectedItem(Material.ITEM_FRAME, 2)
                 .createLinkedContainer("Collectibles Menu");
-    
+
         menuItem.getLinkedChest()
                 .addStaticItem(GearMenu.getItem(), 5, 2);
 
@@ -34,7 +34,7 @@ public class CollectiblesMenu {
         menuItem.getLinkedChest()
                 .addStaticItem(OreMenu.getItem(), 2, 2);
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -45,5 +45,5 @@ public class CollectiblesMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

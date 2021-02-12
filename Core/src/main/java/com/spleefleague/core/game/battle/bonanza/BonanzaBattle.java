@@ -15,40 +15,40 @@ import java.util.UUID;
  * @since 4/24/2020
  */
 public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> {
-    
+
     public BonanzaBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
-    
+
     /**
      * Initialize base battle settings such as GameWorld tools and Scoreboard values
      */
     @Override
     protected void setupBaseSettings() {
-    
+
     }
-    
+
     /**
      * Initialize the players, called in startBattle()
      */
     @Override
     protected void setupBattlers() {
-    
+
     }
-    
+
     /**
      * Send a message on the start of a battle
      */
     @Override
     protected void sendStartMessage() {
-    
+
     }
-    
+
     @Override
     protected void fillField() {
-    
+
     }
-    
+
     /**
      * Called when a battler joins mid-game (if available)
      *
@@ -56,9 +56,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void joinBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * End a round with a determined winner
      *
@@ -66,9 +66,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void endRound(BP winner) {
-    
+
     }
-    
+
     /**
      * End a battle with a determined winner
      *
@@ -76,9 +76,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void endBattle(BP winner) {
-    
+
     }
-    
+
     /**
      * Called when a battler leaves boundaries
      *
@@ -86,9 +86,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void failBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when a battler enters a goal area
      *
@@ -96,9 +96,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void winBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when a player surrenders (/ff, /leave)
      *
@@ -106,9 +106,9 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void surrender(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called when a battler wants to leave (/leave, /ff)
      *
@@ -116,18 +116,18 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Called every 1 second or on score updates
      * Updates the player scoreboards
      */
     @Override
     public void updateScoreboard() {
-    
+
     }
-    
+
     /**
      * Called every 1/10 second
      * Updates the field on occasion for events such as
@@ -135,15 +135,15 @@ public abstract class BonanzaBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void updateField() {
-    
+
     }
-    
+
     /**
      * Updates the experience bar of players in the game
      */
     @Override
     public void updateExperience() {
-    
+
     }
 
 }

@@ -17,9 +17,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class FragmentMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Fragments")
@@ -27,7 +27,7 @@ public class FragmentMenu {
                 .setDescription("View the fragments you have collected")
                 .createLinkedContainer("Fragments");
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

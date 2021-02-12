@@ -26,10 +26,10 @@ import java.util.*;
  * @since 4/16/2020
  */
 public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
-    
+
     private static final Set<BuildWorld> BUILD_WORLDS = new HashSet<>();
     private static final Map<UUID, BuildWorld> PLAYER_BUILD_WORLDS = new HashMap<>();
-    
+
     /**
      * Initialize structures and build tools
      */
@@ -37,7 +37,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         BuildStructures.init();
         //SelectTool.init();
     }
-    
+
     public static boolean createBuildWorld(CorePlayer corePlayer, BuildStructure structure) {
         BuildWorld buildWorld = new BuildWorld(corePlayer.getLocation().getWorld(), corePlayer, structure);
         if (buildWorld.didLoadFail()) {
@@ -46,7 +46,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         BUILD_WORLDS.add(buildWorld);
         return true;
     }
-    
+
     /**
      * Get the build world that a CorePlayer is a part of
      *
@@ -56,7 +56,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     public static BuildWorld getPlayerBuildWorld(CorePlayer cp) {
         return PLAYER_BUILD_WORLDS.get(cp.getUniqueId());
     }
-    
+
     /**
      * Returns whether a player is in a build world
      *
@@ -66,14 +66,14 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     public static boolean isBuilder(Player player) {
         return PLAYER_BUILD_WORLDS.containsKey(player.getUniqueId());
     }
-    
+
     /**
      * Close all build worlds
      */
     public static void close() {
         BUILD_WORLDS.forEach(BuildWorld::closeBuildWorld);
     }
-    
+
     /**
      * Remove all players from a build world and destroy it
      *
@@ -83,7 +83,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         buildWorld.getPlayerMap().keySet().forEach(PLAYER_BUILD_WORLDS::remove);
         buildWorld.destroy();
     }
-    
+
     public static boolean removePlayerGlobal(CorePlayer cp) {
         if (PLAYER_BUILD_WORLDS.containsKey(cp.getUniqueId())) {
             BuildWorld buildWorld = PLAYER_BUILD_WORLDS.get(cp.getUniqueId());
@@ -93,13 +93,13 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         }
         return false;
     }
-    
+
     private final CorePlayer owner;
     private final BuildStructure structure;
     private BlockPosition origin;
     private BlockPosition lowest, highest;
     private boolean loadFail = false;
-    
+
     private BuildWorld(World world, CorePlayer owner, BuildStructure structure) {
         super(2, world, BuildWorldPlayer.class);
         this.owner = owner;
@@ -145,15 +145,15 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         super.destroy();
         BUILD_WORLDS.remove(this);
     }
-    
+
     public final CorePlayer getOwner() {
         return owner;
     }
-    
+
     /**
      * Check block break event
      *
-     * @param cp CorePlayer
+     * @param cp  CorePlayer
      * @param pos Block Position
      * @return Cancel Event
      */
@@ -161,7 +161,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
         return breakBlock(pos, cp);
     }
-    
+
     /**
      * Check item usage event (both place block and right click from distance)
      *
@@ -173,7 +173,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (heldItem.getType().isBlock()) {
             if (cp.getPlayer().isSneaking()) {
-            
+
             }
             placeBlock(blockRelative, heldItem.getType(), cp);
         } else {
@@ -182,7 +182,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         }
         return true;
     }
-    
+
     /**
      * Add Player to build world and map their uuid
      *
@@ -200,7 +200,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
             cp.getPlayer().teleport(origin.toLocation(getWorld()).add(0.5D, 0D, 0.5D));
         }
     }
-    
+
     /**
      * Remove a player from the build world, if it's the owner of the
      * build world then destroy the build world
@@ -241,7 +241,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         }
         BuildStructures.save(structure);
     }
-    
+
     public BuildStructure getStructure() {
         return structure;
     }
@@ -256,7 +256,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         Map<BlockPosition, FakeBlock> shiftedBlocks = FakeUtils.translateBlocks(new HashMap<>(fakeBlocks), shift);
         overwriteBlocks(shiftedBlocks);
     }
-    
+
     public void fill(Dimension fillBox, Material material) {
         FakeBlock fb = new FakeBlock(material.createBlockData());
         Map<BlockPosition, FakeBlock> fillBlocks = new HashMap<>();

@@ -32,12 +32,12 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class Warp extends DBEntity {
-    
+
     private static final SortedMap<String, Warp> warps = new TreeMap<>();
     private static MongoCollection<Document> warpCollection;
     private static final SortedMap<String, SortedSet<String>> folders = new TreeMap<>();
     private static final String DEFAULT_FOLDER = ".";
-    
+
     /**
      * Loads all warps from the Warps collection
      */
@@ -95,7 +95,7 @@ public class Warp extends DBEntity {
     public static void close() {
 
     }
-    
+
     /**
      * Returns all warps available to a player, used for command tab completes
      *
@@ -111,7 +111,7 @@ public class Warp extends DBEntity {
         }
         return warpNames;
     }
-    
+
     /**
      * Return all warp names, used in command tab completes
      *
@@ -120,7 +120,7 @@ public class Warp extends DBEntity {
     public static Set<Warp> getWarps(String folderName) {
         return folders.get(folderName).stream().map(warps::get).collect(Collectors.toCollection(TreeSet::new));
     }
-    
+
     /**
      * Returns all warps in TextComponent format to allow
      * clicking on links names to warp instead of having to type the warp name
@@ -130,12 +130,12 @@ public class Warp extends DBEntity {
     public static TextComponent getWarpsFormatted() {
         TextComponent message = new TextComponent("");
         TextComponent warpstr;
-        
+
         Iterator<HashMap.Entry<String, Warp>> wit = warps.entrySet().iterator();
-        
+
         boolean first = true;
         while (wit.hasNext()) {
-        Warp warp = wit.next().getValue();
+            Warp warp = wit.next().getValue();
             if (!first) {
                 message.addExtra(new TextComponent(", "));
             } else first = false;
@@ -145,10 +145,10 @@ public class Warp extends DBEntity {
             warpstr.setColor(ChatColor.valueOf(Chat.getColor("DEFAULT").name()).asBungee());
             message.addExtra(warpstr);
         }
-        
+
         return message;
     }
-    
+
     /**
      * Gets a warp by name
      *
@@ -158,12 +158,12 @@ public class Warp extends DBEntity {
     public static Warp getWarp(String name) {
         return warps.get(name);
     }
-    
+
     /**
      * Creates a warp by a name at a location
      *
      * @param identifier Warp Name
-     * @param loc Location
+     * @param loc        Location
      */
     public static int setWarp(String identifier, Location loc) {
         if (identifier.contains(":")) {
@@ -181,7 +181,7 @@ public class Warp extends DBEntity {
         warp.save(warpCollection);
         return 0;
     }
-    
+
     /**
      * Deletes a warp by name
      *
@@ -204,7 +204,7 @@ public class Warp extends DBEntity {
     public CoreLocation location;
     protected String warpName;
     protected String folderName = null;
-    
+
     public Warp() {
 
     }
@@ -214,7 +214,7 @@ public class Warp extends DBEntity {
         this.location = new CoreLocation(location);
         initFolder();
     }
-    
+
     @Override
     public void afterLoad() {
         initFolder();
@@ -249,6 +249,7 @@ public class Warp extends DBEntity {
     public Location getLocation() {
         return location.toLocation();
     }
+
     public boolean isAvailable(CorePlayer cp) {
         CoreRank rank = Core.getInstance().getRankManager().getRank(folderName);
         if (rank == null) {

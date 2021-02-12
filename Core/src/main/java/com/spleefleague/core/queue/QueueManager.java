@@ -13,24 +13,26 @@ import java.util.ArrayList;
  */
 public class QueueManager {
     private ArrayList<PlayerQueue> queues;
-    
-    public QueueManager() {}
-    
+
+    public QueueManager() {
+    }
+
     public void initialize() {
         queues = new ArrayList<>();
     }
+
     public void terminate() {
         queues.clear();
     }
-    
+
     public void addQueue(PlayerQueue queue) {
         queues.add(queue);
     }
-    
+
     public void removeQueue(PlayerQueue queue) {
         queues.remove(queue);
     }
-    
+
     public ArrayList<PlayerQueue> getQueues() {
         return queues;
     }

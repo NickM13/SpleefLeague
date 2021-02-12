@@ -30,7 +30,7 @@ import java.util.*;
  * @since 4/16/2020
  */
 public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
-    
+
     private final static Map<UUID, Set<ChunkCoord>> loadedChunks = new HashMap<>();
     private static GlobalWorld globalFakeWorld;
     private final static Set<FakeWorld<?>> FAKE_WORLDS = new HashSet<>();
@@ -48,7 +48,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 }
             });
         }, 10, 2));
-    
+
         Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.BLOCK_DIG) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
@@ -129,7 +129,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                             PacketContainer fakeBlockPacket = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
                             fakeBlockPacket.getBlockPositionModifier().write(0, blockRelative);
                             fakeBlockPacket.getBlockData().write(0, wbd);
-                                Core.sendPacket(cp, fakeBlockPacket);
+                            Core.sendPacket(cp, fakeBlockPacket);
                         }
                         break;
                     }
@@ -191,21 +191,21 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
 
         globalFakeWorld = new GlobalWorld(Core.DEFAULT_WORLD);
     }
-    
+
     public static void close() {
 
     }
-    
+
     public static void onPlayerJoin(Player player) {
         loadedChunks.put(player.getUniqueId(), new HashSet<>());
     }
-    
+
     public static void onReload() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-        
+
         }
     }
-    
+
     public static GlobalWorld getGlobalFakeWorld() {
         return globalFakeWorld;
     }
@@ -283,7 +283,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     public final World getWorld() {
         return world;
     }
-    
+
     public final Map<BlockPosition, FakeBlock> getFakeBlocks() {
         return fakeBlocks;
     }
@@ -291,13 +291,13 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     public final Set<BlockPosition> getFakeChunk(ChunkCoord chunkCoord) {
         return fakeChunks.get(chunkCoord);
     }
-    
+
     protected abstract boolean onBlockPunch(CorePlayer cp, BlockPosition pos);
-    
+
     /**
      * On player item use.
      *
-     * @param cp Core Player
+     * @param cp            Core Player
      * @param blockPosition Click Block
      * @param blockRelative Placed Block
      * @return Cancel Event
@@ -391,9 +391,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * Plays a sound effect at the target location for all fake world players.
      *
      * @param location Location
-     * @param sound Sound
-     * @param volume Volume
-     * @param pitch Pitch
+     * @param sound    Sound
+     * @param volume   Volume
+     * @param pitch    Pitch
      */
     public void playSound(Location location, Sound sound, float volume, float pitch) {
         for (FWP fwp : playerMap.values()) {
@@ -407,10 +407,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * offset parameters on each axis.
      *
      * @param particle Particle
-     * @param x X position
-     * @param y Y position
-     * @param z Z position
-     * @param count Number of particles
+     * @param x        X position
+     * @param y        Y position
+     * @param z        Z position
+     * @param count    Number of particles
      */
     public void spawnParticles(Particle particle, double x, double y, double z, int count) {
         for (FWP fwp : playerMap.values()) {
@@ -424,13 +424,13 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * offset parameters on each axis.
      *
      * @param particle Particle
-     * @param x X position
-     * @param y Y position
-     * @param z Z position
-     * @param count Number of particles
-     * @param offsetX Random offset on X axis
-     * @param offsetY Random offset on Y axis
-     * @param offsetZ Random offset on Z axis
+     * @param x        X position
+     * @param y        Y position
+     * @param z        Z position
+     * @param count    Number of particles
+     * @param offsetX  Random offset on X axis
+     * @param offsetY  Random offset on Y axis
+     * @param offsetZ  Random offset on Z axis
      */
     public void spawnParticles(Particle particle, double x, double y, double z, int count,
                                double offsetX, double offsetY, double offsetZ) {
@@ -445,14 +445,14 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * offset parameters on each axis.
      *
      * @param particle Particle
-     * @param x X position
-     * @param y Y position
-     * @param z Z position
-     * @param count Number of particles
-     * @param offsetX Random offset on X axis
-     * @param offsetY Random offset on Y axis
-     * @param offsetZ Random offset on Z axis
-     * @param extra Extra data (normally speed)
+     * @param x        X position
+     * @param y        Y position
+     * @param z        Z position
+     * @param count    Number of particles
+     * @param offsetX  Random offset on X axis
+     * @param offsetY  Random offset on Y axis
+     * @param offsetZ  Random offset on Z axis
+     * @param extra    Extra data (normally speed)
      */
     public void spawnParticles(Particle particle, double x, double y, double z, int count,
                                double offsetX, double offsetY, double offsetZ, double extra) {
@@ -467,15 +467,15 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * offset parameters on each axis.
      *
      * @param particle Particle
-     * @param x X position
-     * @param y Y position
-     * @param z Z position
-     * @param count Number of particles
-     * @param offsetX Random offset on X axis
-     * @param offsetY Random offset on Y axis
-     * @param offsetZ Random offset on Z axis
-     * @param extra Extra data (normally speed)
-     * @param options Particle Options
+     * @param x        X position
+     * @param y        Y position
+     * @param z        Z position
+     * @param count    Number of particles
+     * @param offsetX  Random offset on X axis
+     * @param offsetY  Random offset on Y axis
+     * @param offsetZ  Random offset on Z axis
+     * @param extra    Extra data (normally speed)
+     * @param options  Particle Options
      */
     public void spawnParticles(Particle particle, double x, double y, double z, int count,
                                double offsetX, double offsetY, double offsetZ, double extra,
@@ -504,7 +504,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * Sets a fake block status in the world with the option to
      * instantly update and display or not
      *
-     * @param pos Block Position
+     * @param pos       Block Position
      * @param blockData Block Data
      */
     public boolean setBlock(BlockPosition pos, BlockData blockData) {
@@ -528,7 +528,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * Sets a fake block status in the world with the option to
      * instantly update and display or not
      *
-     * @param pos Block Position
+     * @param pos       Block Position
      * @param blockData Block Data
      */
     public boolean setBlockForced(BlockPosition pos, BlockData blockData) {
@@ -661,7 +661,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     /**
      * Break blocks in a radius
      *
-     * @param pos Origin
+     * @param pos    Origin
      * @param radius Radius
      * @return Number of Successes
      */
@@ -670,12 +670,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         int broken = 0;
         Random random = new Random();
         for (int x = -(int) Math.ceil(radius); x <= (int) Math.ceil(radius); x++) {
-            dx = ((double)x) / radius;
+            dx = ((double) x) / radius;
             for (int y = -(int) Math.ceil(radius); y <= (int) Math.ceil(radius); y++) {
-                dy = ((double)y) / radius;
+                dy = ((double) y) / radius;
                 for (int z = -(int) Math.ceil(radius); z <= (int) Math.ceil(radius); z++) {
-                    dz = ((double)z) / radius;
-                    if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 1
+                    dz = ((double) z) / radius;
+                    if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 1
                             && random.nextDouble() <= percent) {
                         broken += breakBlock(pos.add(new BlockPosition(x, y, z)), null) ? 1 : 0;
                     }
@@ -689,7 +689,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     /**
      * Break blocks in a radius
      *
-     * @param pos Origin
+     * @param pos       Origin
      * @param minRadius Minimum Radius
      * @param maxRadius Maximum Radius
      * @return Number of Successes
@@ -699,12 +699,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         int broken = 0;
         Random random = new Random();
         for (int x = -(int) Math.ceil(maxRadius); x <= (int) Math.ceil(maxRadius); x++) {
-            dx = ((double)x) / maxRadius;
+            dx = ((double) x) / maxRadius;
             for (int y = -(int) Math.ceil(maxRadius); y <= (int) Math.ceil(maxRadius); y++) {
-                dy = ((double)y) / maxRadius;
+                dy = ((double) y) / maxRadius;
                 for (int z = -(int) Math.ceil(maxRadius); z <= (int) Math.ceil(maxRadius); z++) {
-                    dz = ((double)z) / maxRadius;
-                    double dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    dz = ((double) z) / maxRadius;
+                    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     if (dist < 1 && dist > minRadius / maxRadius
                             && random.nextDouble() <= percent) {
                         broken += breakBlock(pos.add(new BlockPosition(x, y, z)), null) ? 1 : 0;
@@ -733,7 +733,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      * Breaks a block and plays breaking block sound
      *
      * @param pos Block Position
-     * @param cp Core Player
+     * @param cp  Core Player
      * @return Success
      */
     public boolean breakBlock(BlockPosition pos, CorePlayer cp) {
@@ -751,13 +751,13 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         }
         return false;
     }
-    
+
     /**
      * Place a block in the fake world if the block is air
      *
-     * @param pos Block Position
+     * @param pos      Block Position
      * @param material Material
-     * @param cp Placer
+     * @param cp       Placer
      * @return Success
      */
     public boolean placeBlock(BlockPosition pos, Material material, CorePlayer cp) {
@@ -793,12 +793,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         chunkChanges.get(chunkCoord).put((short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + ((pos.getY()))), fb);
         return fb != null;
     }
-    
+
     /**
      * Returns the highest priority FakeBlock for a player
      *
      * @param pos Block Position
-     * @param cp Core Player
+     * @param cp  Core Player
      * @return Highest Priority Fake Block
      */
     public static BlockData getHighestBlock(BlockPosition pos, CorePlayer cp) {

@@ -44,13 +44,19 @@ import java.util.stream.Collectors;
  */
 public class GlobalZone extends DBEntity {
 
-    @DBField private String name;
-    @DBField private String description = "";
-    @DBField private Integer priority = 0;
+    @DBField
+    private String name;
+    @DBField
+    private String description = "";
+    @DBField
+    private Integer priority = 0;
 
-    @DBField private Point drainPos = new Point();
-    @DBField private String monumentPrefix = "";
-    @DBField private Position monumentPos = new Position();
+    @DBField
+    private Point drainPos = new Point();
+    @DBField
+    private String monumentPrefix = "";
+    @DBField
+    private Position monumentPos = new Position();
 
     private final Set<Dimension> borders = new HashSet<>();
     private final Map<String, ZoneLeaf> leafIds = new HashMap<>();
@@ -79,7 +85,7 @@ public class GlobalZone extends DBEntity {
         }, 20L);
     }
 
-    @DBSave(fieldName="borders")
+    @DBSave(fieldName = "borders")
     private List<Document> saveBorders() {
         return borders
                 .stream()
@@ -87,7 +93,7 @@ public class GlobalZone extends DBEntity {
                 .collect(Collectors.toList());
     }
 
-    @DBLoad(fieldName ="borders")
+    @DBLoad(fieldName = "borders")
     private void loadBorders(List<Document> docs) {
         docs.forEach(doc -> borders.add(new Dimension(doc)));
     }

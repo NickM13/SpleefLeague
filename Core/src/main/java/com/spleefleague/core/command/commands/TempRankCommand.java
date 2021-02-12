@@ -23,19 +23,19 @@ import org.bukkit.command.CommandSender;
  * @author NickM13
  */
 public class TempRankCommand extends CoreCommand {
-    
+
     public TempRankCommand() {
         super("temprank", CoreRank.DEVELOPER);
         setDescription("Give a temporary rank to a player");
         setOptions("rankList", (cp) -> Core.getInstance().getRankManager().getRankNames());
     }
-    
+
     @CommandAnnotation
     public void temprankAdd(CommandSender sender,
-            @LiteralArg(value="add") String l,
-            CorePlayer cp,
-            @OptionArg(listName="rankList") String rank,
-            @HelperArg(value="time") String time) {
+                            @LiteralArg(value = "add") String l,
+                            CorePlayer cp,
+                            @OptionArg(listName = "rankList") String rank,
+                            @HelperArg(value = "time") String time) {
         Long millis = TimeUtils.toMillis(time);
         if (millis == null) {
             error(sender, "Time not valid");
@@ -47,11 +47,11 @@ public class TempRankCommand extends CoreCommand {
             error(sender, "Rank not found");
         }
     }
-    
+
     @CommandAnnotation
     public void temprankClear(CommandSender sender,
-            @LiteralArg(value="clear") String l,
-            CorePlayer cp) {
+                              @LiteralArg(value = "clear") String l,
+                              CorePlayer cp) {
         cp.clearTempRank();
     }
 

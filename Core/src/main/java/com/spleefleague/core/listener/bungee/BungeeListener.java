@@ -3,7 +3,7 @@ package com.spleefleague.core.listener.bungee;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
 import org.bukkit.entity.Player;
 
-public abstract class BungeeListener <P extends PacketBungee> {
+public abstract class BungeeListener<P extends PacketBungee> {
 
     public void receivePacket(Player sender, PacketBungee packet) {
         if (packet != null) {

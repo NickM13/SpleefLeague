@@ -34,10 +34,10 @@ import org.bukkit.scheduler.BukkitTask;
 /**
  * Manager for custom DBPlayer objects based on Player UUIDs
  *
- * @author NickM13
  * @param <P> extends DBPlayer
+ * @author NickM13
  */
-public class PlayerManager <P extends DBPlayer> implements Listener {
+public class PlayerManager<P extends DBPlayer> implements Listener {
 
     // Players on this server (non-vanished)
     protected final Map<UUID, P> herePlayerList;
@@ -265,7 +265,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
      * Load a DBPlayer's information in from the database
      * Called on player log in
      *
-     * @param uuid Player UUID
+     * @param uuid     Player UUID
      * @param username Player Username
      * @return DBPlayer
      */
@@ -427,7 +427,7 @@ public class PlayerManager <P extends DBPlayer> implements Listener {
             joinActions.get(uuid).add(action);
         }
     }
-    
+
     /**
      * Test Function
      *

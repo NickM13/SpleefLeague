@@ -48,10 +48,10 @@ public class CrateCommand extends CoreCommand {
 
     @CommandAnnotation
     public void crateSetPriority(CorePlayer sender,
-                              @LiteralArg("set") String l1,
-                              @LiteralArg("priority") String l2,
-                              @OptionArg(listName = "crates") String identifier,
-                              @NumberArg(minValue = -1000, maxValue = 1000) Integer priority) {
+                                 @LiteralArg("set") String l1,
+                                 @LiteralArg("priority") String l2,
+                                 @OptionArg(listName = "crates") String identifier,
+                                 @NumberArg(minValue = -1000, maxValue = 1000) Integer priority) {
         Core.getInstance().getCrateManager().setPriority(identifier, priority);
         success(sender, "Crate " + identifier + " priority set to " + priority);
     }
@@ -148,12 +148,12 @@ public class CrateCommand extends CoreCommand {
 
     @CommandAnnotation
     public void crateSetWeightCollectible(CorePlayer sender,
-                               @LiteralArg("set") String l1,
-                               @LiteralArg("weight") String l2,
-                               @LiteralArg("collectible") String l3,
-                               @OptionArg(listName = "crates") String identifier,
-                               @EnumArg Vendorable.Rarity rarity,
-                               @NumberArg(minValue = 0) Double weight) {
+                                          @LiteralArg("set") String l1,
+                                          @LiteralArg("weight") String l2,
+                                          @LiteralArg("collectible") String l3,
+                                          @OptionArg(listName = "crates") String identifier,
+                                          @EnumArg Vendorable.Rarity rarity,
+                                          @NumberArg(minValue = 0) Double weight) {
         Core.getInstance().getCrateManager().setCollectibleWeight(identifier, rarity, weight);
         success(sender, "Set Crate " + identifier + " weight of Rarity " + rarity.name() + " to " + weight);
     }

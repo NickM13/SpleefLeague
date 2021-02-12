@@ -31,14 +31,19 @@ public class GameModeCommand extends CoreCommand {
         setUsage("/gm <0-3> [player]");
         setDescription("Set a player's GameMode");
     }
-    
+
     private GameMode getGameMode(int gm) {
         switch (gm) {
-            case 0: return GameMode.SURVIVAL;
-            case 1: return GameMode.CREATIVE;
-            case 2: return GameMode.ADVENTURE;
-            case 3: return GameMode.SPECTATOR;
-            default: return null;
+            case 0:
+                return GameMode.SURVIVAL;
+            case 1:
+                return GameMode.CREATIVE;
+            case 2:
+                return GameMode.ADVENTURE;
+            case 3:
+                return GameMode.SPECTATOR;
+            default:
+                return null;
         }
     }
 

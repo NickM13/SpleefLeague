@@ -17,13 +17,13 @@ import com.spleefleague.core.plugin.CorePlugin;
  * @author NickM13
  */
 public class UnspectateCommand extends CoreCommand {
-    
+
     public UnspectateCommand() {
         super("unspectate", CoreRank.DEFAULT);
         setUsage("/unspectate");
         setDescription("Stop spectating a match");
     }
-    
+
     @CommandAnnotation
     public void unspectate(CorePlayer sender) {
         if (sender.getBattleState().equals(BattleState.SPECTATOR)) {

@@ -26,15 +26,15 @@ public class DelWarpCommand extends CoreCommand {
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");
     }
-    
+
     @CommandAnnotation
     public void delwarp(CorePlayer sender,
-                        @OptionArg(listName="warpList") String warpName) {
+                        @OptionArg(listName = "warpList") String warpName) {
         if (Warp.delWarp(warpName)) {
             success(sender, "You have deleted a warp: " + Chat.INFO + warpName);
         } else {
             error(sender, "Warp does not exist, try /warps");
         }
     }
-    
+
 }

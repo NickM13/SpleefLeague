@@ -14,7 +14,7 @@ import org.bukkit.Material;
  * @since 5/1/2020
  */
 public class ArenaBuilder {
-    
+
     public static InventoryMenuItem createNewItem(String modeName) {
         return InventoryMenuAPI.createItemDynamic()
                 .setName("New Arena")
@@ -30,7 +30,7 @@ public class ArenaBuilder {
                         })))
                 .setCloseOnAction(false);
     }
-    
+
     public static InventoryMenuItem createExistingItem(String modeName) {
         return InventoryMenuAPI.createItemDynamic()
                 .setName("Add Existing Arena")
@@ -53,14 +53,14 @@ public class ArenaBuilder {
                         .setParent((InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer())))
                 .setCloseOnAction(false);
     }
-    
+
     public static InventoryMenuItem createEditItem(Arena arena) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(arena.getName() + " (" + arena.getName() + ")")
                 .setDescription("Click to Edit")
                 .setDisplayItem(Material.DIAMOND)
                 .createLinkedContainer("Editing: " + arena.getName());
-        
+
         menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("Rename")
                 .setDescription("Click to Rename Arena")
@@ -73,7 +73,7 @@ public class ArenaBuilder {
                             Arenas.renameArena(arena.getName(), str);
                         })))
                 .setCloseOnAction(false));
-    
+
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Borders")
@@ -97,7 +97,7 @@ public class ArenaBuilder {
                                 })
                                 .setParent(menuItem.getLinkedChest()), true))
                         .setCloseOnAction(false));
-    
+
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Goals")
@@ -121,7 +121,7 @@ public class ArenaBuilder {
                                 })
                                 .setParent(menuItem.getLinkedChest()), true))
                         .setCloseOnAction(false));
-    
+
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Checkpoints")
@@ -145,7 +145,7 @@ public class ArenaBuilder {
                                 })
                                 .setParent(menuItem.getLinkedChest()), true))
                         .setCloseOnAction(false));
-    
+
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Structures")
@@ -166,7 +166,7 @@ public class ArenaBuilder {
                                 })
                                 .setParent(menuItem.getLinkedChest()), true))
                         .setCloseOnAction(false));
-    
+
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemDynamic()
                         .setName("Remove Spawns")
@@ -190,8 +190,8 @@ public class ArenaBuilder {
                                 })
                                 .setParent(menuItem.getLinkedChest()), true))
                         .setCloseOnAction(false));
-        
+
         return menuItem;
     }
-    
+
 }

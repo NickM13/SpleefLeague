@@ -12,9 +12,9 @@ import org.bukkit.Material;
  * @since 4/18/2020
  */
 public class AfkHotbar {
-    
+
     private static InventoryMenuItemHotbar menuItem = null;
-    
+
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(40, "afkitem")
                 .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "AFK")
@@ -22,7 +22,7 @@ public class AfkHotbar {
                 .setDisplayItem(Material.BARRIER, 5400)
                 .setAvailability(CorePlayer::isAfk);
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

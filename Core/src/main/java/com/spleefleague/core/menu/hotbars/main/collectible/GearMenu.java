@@ -18,9 +18,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class GearMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = CorePlayerCollectibles.createCollectibleContainer(Gear.class,
                 InventoryMenuAPI.createItemDynamic()
@@ -29,7 +29,7 @@ public class GearMenu {
                         .setDescription("Pick some gear to adventure with!")
                         .createLinkedContainer("Adventure Gear"));
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

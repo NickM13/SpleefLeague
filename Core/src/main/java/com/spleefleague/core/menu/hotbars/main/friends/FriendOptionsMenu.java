@@ -10,10 +10,10 @@ public class FriendOptionsMenu {
 
     public static void init() {
         menuItem = InventoryMenuAPI.createItemStatic()
-                        .setName("Friend Settings")
-                        .setDisplayItem(Material.REDSTONE, 1)
-                        .setDescription("Manage your preferences on all things related to your friends!")
-                        .createLinkedContainer("Friend Settings");
+                .setName("Friend Settings")
+                .setDisplayItem(Material.REDSTONE, 1)
+                .setDescription("Manage your preferences on all things related to your friends!")
+                .createLinkedContainer("Friend Settings");
 
         menuItem.getLinkedChest()
                 .addMenuItem(InventoryMenuAPI.createItemStatic()

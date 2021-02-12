@@ -79,7 +79,7 @@ public class Core extends CorePlugin<CorePlayer> {
     private QueueManager queueManager;
     private final Leaderboards leaderboards = new Leaderboards();
     private final CommandManager commandManager = new CommandManager();
-    
+
     // For packet managing
     private static ProtocolManager protocolManager;
 
@@ -102,7 +102,7 @@ public class Core extends CorePlugin<CorePlayer> {
 
         DEFAULT_WORLD = Bukkit.getWorlds().get(0);
         protocolManager = ProtocolLibrary.getProtocolManager();
-    
+
         CorePlugin.initMongo();
         initConfig();
         setPluginDB("SpleefLeague");
@@ -152,7 +152,7 @@ public class Core extends CorePlugin<CorePlayer> {
             RequestManager.checkTimeouts();
         }, 0L, 100L);
     }
-    
+
     /**
      * Called when the plugin is disabling
      */
@@ -233,7 +233,7 @@ public class Core extends CorePlugin<CorePlayer> {
     public void addTask(BukkitTask task) {
         taskList.add(task);
     }
-    
+
     /**
      * Initialize Bukkit event listener objects
      */
@@ -250,11 +250,11 @@ public class Core extends CorePlugin<CorePlayer> {
 
         getServer().getMessenger().registerIncomingPluginChannel(this, "slcore:bungee", new BungeePluginListener());
     }
-    
+
     /**
      * Initialize commands, uses a reflection library in Core to copy
      * all commands from the commands package
-     *
+     * <p>
      * Does not work with sub-plugins
      */
     private void initCommands() {
@@ -286,6 +286,7 @@ public class Core extends CorePlugin<CorePlayer> {
         LOBBY,
         MINIGAME
     }
+
     private ServerType serverType = ServerType.MINIGAME;
 
     /**
@@ -352,9 +353,9 @@ public class Core extends CorePlugin<CorePlayer> {
                 if (cp.getBattle() == cp2.getBattle() &&
                         cp.getBuildWorld() == cp2.getBuildWorld()) {
                     if (!cp2.isGhosting()) cp.getPlayer().showPlayer(this, cp2.getPlayer());
-                    else                   cp.getPlayer().hidePlayer(this, cp2.getPlayer());
+                    else cp.getPlayer().hidePlayer(this, cp2.getPlayer());
                     if (!cp.isVanished() && !cp.isGhosting()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
-                    else                                      cp2.getPlayer().hidePlayer(this, cp.getPlayer());
+                    else cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
                     cp.getPlayer().hidePlayer(this, cp2.getPlayer());
                     cp2.getPlayer().hidePlayer(this, cp.getPlayer());
@@ -411,7 +412,7 @@ public class Core extends CorePlugin<CorePlayer> {
                                 packet.getPlayerInfoDataLists().write(0, newData);
                             }
                         }
-                            break;
+                        break;
                         case REMOVE_PLAYER: {
                             List<PlayerInfoData> newData = new ArrayList<>();
                             for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
@@ -426,8 +427,9 @@ public class Core extends CorePlugin<CorePlayer> {
                                 packet.getPlayerInfoDataLists().write(0, newData);
                             }
                         }
+                        break;
+                        default:
                             break;
-                        default: break;
                     }
                 }
             }
@@ -437,11 +439,11 @@ public class Core extends CorePlugin<CorePlayer> {
     public static void addProtocolPacketAdapter(PacketAdapter packetAdapter) {
         protocolManager.addPacketListener(packetAdapter);
     }
-    
+
     /**
      * Sends a packet to a single player
      *
-     * @param p Player
+     * @param p      Player
      * @param packet Packet Container
      */
     public static void sendPacket(@Nonnull Player p, PacketContainer packet) {
@@ -454,11 +456,11 @@ public class Core extends CorePlugin<CorePlayer> {
             }
         }, 1L);
     }
-    
+
     /**
      * Sends a packet to a single player
      *
-     * @param cp Core Player
+     * @param cp     Core Player
      * @param packet Packet Container
      */
     public static void sendPacket(CorePlayer cp, PacketContainer packet) {
@@ -489,6 +491,7 @@ public class Core extends CorePlugin<CorePlayer> {
     public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet) {
         sendPacketSilently(p, packet, 1L);
     }
+
     public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet, long delay) {
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
@@ -561,7 +564,7 @@ public class Core extends CorePlugin<CorePlayer> {
      * Returns list of players that are less than maxDist
      * and further than minDist from location
      *
-     * @param loc Location
+     * @param loc     Location
      * @param minDist Minimum Distance
      * @param maxDist Maximum Distance
      * @return Player List
@@ -588,7 +591,7 @@ public class Core extends CorePlugin<CorePlayer> {
                 }
             }
         }
-        
+
         return cpList;
     }
 

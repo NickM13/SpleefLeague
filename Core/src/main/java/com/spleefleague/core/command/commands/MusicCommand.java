@@ -46,7 +46,7 @@ public class MusicCommand extends CoreCommand {
 
     @CommandAnnotation
     public void musicPause(CorePlayer sender,
-                          @LiteralArg("pause") String l) {
+                           @LiteralArg("pause") String l) {
         if (NoteBlockMusic.pauseSong(sender)) {
             success(sender, "Song paused");
         } else {

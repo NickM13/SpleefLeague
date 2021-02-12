@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 /**
- *
  * @author Jonas
  */
 public class ByteBufferReader {

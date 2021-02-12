@@ -62,21 +62,21 @@ public class SLMainOverlay {
                 .setAction(cp -> cp.getMenu().onBackButton()), 7, 0);
 
         overlay.addItem(InventoryMenuAPI.createItemDynamic()
-                .setName("Previous Page")
-                .setDescription("")
-                .setDisplayItem(cp -> cp.getMenu().hasPagePrevious() ? InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem() : InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenu().hasPages())
-                .setAction(cp -> cp.getMenu().onPagePrevious()),
+                        .setName("Previous Page")
+                        .setDescription("")
+                        .setDisplayItem(cp -> cp.getMenu().hasPagePrevious() ? InventoryMenuUtils.MenuIcon.PREVIOUS.getIconItem() : InventoryMenuUtils.MenuIcon.PREVIOUS_GRAY.getIconItem())
+                        .setCloseOnAction(false)
+                        .setVisibility(cp -> cp.getMenu().hasPages())
+                        .setAction(cp -> cp.getMenu().onPagePrevious()),
                 0, 0);
 
         overlay.addItem(InventoryMenuAPI.createItemDynamic()
-                .setName("Next Page")
-                .setDescription("")
-                .setDisplayItem(cp -> cp.getMenu().hasPageNext() ? InventoryMenuUtils.MenuIcon.NEXT.getIconItem() : InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
-                .setCloseOnAction(false)
-                .setVisibility(cp -> cp.getMenu().hasPages())
-                .setAction(cp -> cp.getMenu().onPageNext()),
+                        .setName("Next Page")
+                        .setDescription("")
+                        .setDisplayItem(cp -> cp.getMenu().hasPageNext() ? InventoryMenuUtils.MenuIcon.NEXT.getIconItem() : InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
+                        .setCloseOnAction(false)
+                        .setVisibility(cp -> cp.getMenu().hasPages())
+                        .setAction(cp -> cp.getMenu().onPageNext()),
                 4, 0);
     }
 

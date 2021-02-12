@@ -11,9 +11,9 @@ import org.bukkit.Material;
  * @since 5/1/2020
  */
 public class ArenaMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Arena Setup")
@@ -21,7 +21,7 @@ public class ArenaMenu {
                 .setDescription("For editing arena values of all gamemodes")
                 .setAvailability(cp -> cp.getRank().hasPermission(CoreRank.DEVELOPER))
                 .createLinkedContainer("Arenas");
-        
+
         menuItem.getLinkedChest()
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
@@ -34,7 +34,7 @@ public class ArenaMenu {
                     }
                 });
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -45,5 +45,5 @@ public class ArenaMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

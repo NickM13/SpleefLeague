@@ -16,11 +16,11 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class ResetCommand extends CoreCommand {
-    
+
     public ResetCommand() {
         super("reset", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void reset(CorePlayer sender) {
         if (!sender.isInBattle()) error(sender, CoreError.NOT_INGAME);

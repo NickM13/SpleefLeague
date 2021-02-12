@@ -13,6 +13,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,7 +28,7 @@ import org.bukkit.OfflinePlayer;
  * @author NickM13
  */
 public class InfractionsCommand extends CoreCommand {
-    
+
     public InfractionsCommand() {
         super("infractions", CoreRank.TEMP_MOD);
         setUsage("/infractions <player> [page]");
@@ -74,7 +75,7 @@ public class InfractionsCommand extends CoreCommand {
                     ChatColor.GRAY + TimeUtils.gcdTimeToString(System.currentTimeMillis() - infraction.getTime()) + " ago");
         }
     }
-    
+
     @CommandAnnotation
     public void infractions(CorePlayer sender, OfflinePlayer op) {
         infractions(sender, op, 1);

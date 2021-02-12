@@ -17,17 +17,17 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class HatMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = CorePlayerCollectibles.createCollectibleContainer(Hat.class,
                 InventoryMenuAPI.createItemDynamic()
-                .setName("Hats")
-                .setDisplayItem(Material.IRON_HELMET, 1)
-                .setDescription("Pick a hat, any hat!"));
+                        .setName("Hats")
+                        .setDisplayItem(Material.IRON_HELMET, 1)
+                        .setDescription("Pick a hat, any hat!"));
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

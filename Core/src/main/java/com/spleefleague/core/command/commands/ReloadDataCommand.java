@@ -23,11 +23,11 @@ import com.spleefleague.core.settings.Settings;
  * @author NickM13
  */
 public class ReloadDataCommand extends CoreCommand {
-    
+
     public ReloadDataCommand() {
         super("reloaddata", CoreRank.DEVELOPER);
     }
-    
+
     @CommandAnnotation
     public void reloaddata(CorePlayer sender) {
         error(sender, CoreError.SETUP);
@@ -42,7 +42,7 @@ public class ReloadDataCommand extends CoreCommand {
 
     @CommandAnnotation
     public void reloaddataCrates(CorePlayer sender,
-                                   @LiteralArg("crates") String l) {
+                                 @LiteralArg("crates") String l) {
         Core.getInstance().getCrateManager().init();
         success(sender, "Reloaded crates from database");
     }
@@ -56,7 +56,7 @@ public class ReloadDataCommand extends CoreCommand {
 
     @CommandAnnotation
     public void reloaddataCollectibles(CorePlayer sender,
-                                 @LiteralArg("collectibles") String l) {
+                                       @LiteralArg("collectibles") String l) {
         Collectible.clear();
         for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
             plugin.reloadCollectibles();

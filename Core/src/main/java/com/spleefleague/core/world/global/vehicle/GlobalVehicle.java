@@ -17,9 +17,9 @@ import java.util.Map;
  * @since 5/3/2020
  */
 public abstract class GlobalVehicle {
-    
+
     protected static Map<Integer, LivingEntity> entityMap = new HashMap<>();
-    
+
     public static void init() {
         Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.SPAWN_ENTITY) {
             @Override
@@ -41,5 +41,5 @@ public abstract class GlobalVehicle {
     public static LivingEntity remove(int entityId) {
         return entityMap.remove(entityId);
     }
-    
+
 }

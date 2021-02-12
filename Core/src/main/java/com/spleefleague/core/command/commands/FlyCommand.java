@@ -16,26 +16,27 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class FlyCommand extends CoreCommand {
-    
+
     public FlyCommand() {
         super("fly", CoreRank.TEMP_MOD, CoreRank.BUILDER);
         setUsage("/fly [player]");
         setDescription("Toggle player's flight");
     }
-    
+
     @CommandAnnotation
     public void fly(CorePlayer sender) {
         fly(sender, sender);
     }
-    
-    @CommandAnnotation(minRank="SENIOR_MODERATOR")
+
+    @CommandAnnotation(minRank = "SENIOR_MODERATOR")
     public void fly(CorePlayer sender, CorePlayer cp) {
         cp.getPlayer().setAllowFlight(!cp.getPlayer().getAllowFlight());
         if (cp.getPlayer().getAllowFlight()) {
-            if (!sender.equals(cp)) Core.getInstance().sendMessage(sender, cp.getDisplayName()  + " is now able to fly");
+            if (!sender.equals(cp)) Core.getInstance().sendMessage(sender, cp.getDisplayName() + " is now able to fly");
             Core.getInstance().sendMessage(cp, "You are now able to fly");
         } else {
-            if (!sender.equals(cp)) Core.getInstance().sendMessage(sender, cp.getDisplayName() + " is no longer able to fly");
+            if (!sender.equals(cp))
+                Core.getInstance().sendMessage(sender, cp.getDisplayName() + " is no longer able to fly");
             Core.getInstance().sendMessage(cp, "You are no longer able to fly");
         }
     }

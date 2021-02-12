@@ -18,11 +18,11 @@ import java.util.List;
 
 /**
  * BattleManager contains a queue system, list of ongoing battles
- * 
+ *
  * @author NickM13
  */
 public abstract class BattleManager {
-    
+
     /**
      * Returns a new battle manager based on the team style of the passed ArenaMode
      *
@@ -32,16 +32,26 @@ public abstract class BattleManager {
     public static BattleManager createManager(BattleMode mode) {
         BattleManager bm = null;
         switch (mode.getTeamStyle()) {
-            case SOLO:      bm = new BattleManagerSolo(mode);       break;
-            case TEAM:      bm = new BattleManagerTeam(mode);       break;
-            case DYNAMIC:   bm = new BattleManagerDynamic(mode);    break;
-            case VERSUS:    bm = new BattleManagerVersus(mode);     break;
-            case BONANZA:   bm = new BattleManagerBonanza(mode);    break;
+            case SOLO:
+                bm = new BattleManagerSolo(mode);
+                break;
+            case TEAM:
+                bm = new BattleManagerTeam(mode);
+                break;
+            case DYNAMIC:
+                bm = new BattleManagerDynamic(mode);
+                break;
+            case VERSUS:
+                bm = new BattleManagerVersus(mode);
+                break;
+            case BONANZA:
+                bm = new BattleManagerBonanza(mode);
+                break;
         }
         bm.init();
         return bm;
     }
-    
+
     protected final String name;
     protected final String displayName;
     protected final BattleMode mode;
@@ -57,7 +67,7 @@ public abstract class BattleManager {
 
         this.battles = new ArrayList<>();
     }
-    
+
     /**
      * Initializes task timers to update battles, removing ones
      * that are marked for removal, updating scores and countdown,
@@ -115,7 +125,7 @@ public abstract class BattleManager {
             }
         }, 0L, 1L);
     }
-    
+
     /**
      * Terminates battles
      */
@@ -125,7 +135,7 @@ public abstract class BattleManager {
         }
         battles.clear();
     }
-    
+
     /**
      * Returns the number of battles currently contained by this manager
      *
@@ -134,7 +144,7 @@ public abstract class BattleManager {
     public int getOngoingBattles() {
         return battles.size();
     }
-    
+
     /**
      * Returns the number of players currently in all of the battles in
      * this manager including spectators
@@ -158,5 +168,5 @@ public abstract class BattleManager {
     public void endMatch(Battle<?> battle) {
         battles.remove(battle);
     }
-    
+
 }

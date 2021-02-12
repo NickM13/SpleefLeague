@@ -18,9 +18,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class OreMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName("Ores")
@@ -58,7 +58,7 @@ public class OreMenu {
                 .setDescription(cp -> "You Have: " + cp.getPurse().getCurrency(CoreCurrency.COIN))
                 .setCloseOnAction(false));
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

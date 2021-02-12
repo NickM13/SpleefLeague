@@ -3,11 +3,11 @@ package com.spleefleague.core.util.packet;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 
 /**
- *
  * @author Jonas
  */
 public class ChunkSection {
@@ -20,19 +20,18 @@ public class ChunkSection {
 
     /**
      * @param blockdata Block data array described as in http://wiki.vg/Chunk_Format
-     * @param palette Block palette object
+     * @param palette   Block palette object
      */
     public ChunkSection(byte[] blockdata, short nonAirCount, BlockPalette palette) {
         this.blocks = palette.decode(blockdata);
         this.nonAirCount = nonAirCount;
         paletteBlocks = palette.getBlocks();//Null for the global palette
-        if(paletteBlocks != null) {
+        if (paletteBlocks != null) {
             paletteBlockSet = new HashSet<>();
-            for(BlockData data : paletteBlocks) {
+            for (BlockData data : paletteBlocks) {
                 paletteBlockSet.add(data);
             }
-        }
-        else {
+        } else {
             paletteBlockSet = null;
         }
     }
@@ -63,8 +62,8 @@ public class ChunkSection {
     public void setBlockRelative(BlockData data, int x, int y, int z) {
         blocks[x + z * 16 + y * 256] = data;
         modified = true;
-        if(paletteBlockSet != null) {
-            if(!paletteBlockSet.add(data)) {
+        if (paletteBlockSet != null) {
+            if (!paletteBlockSet.add(data)) {
                 paletteBlocks = null;//Invalidate if new element was inserted
             }
         }
@@ -79,8 +78,8 @@ public class ChunkSection {
     }
 
     public BlockData[] getContainedBlocks() {
-        if(paletteBlocks == null) {
-            if(paletteBlockSet == null) {
+        if (paletteBlocks == null) {
+            if (paletteBlockSet == null) {
                 return null;
             }
             paletteBlocks = paletteBlockSet.toArray(new BlockData[0]);

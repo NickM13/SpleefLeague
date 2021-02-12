@@ -76,7 +76,7 @@ public class PacketUtils {
         }
         return null;
     }
-    
+
     public static PacketContainer createMultiBlockChangePacket(ChunkCoord chunkCoord, Map<Short, FakeBlock> fakeChunkBlocks) {
         PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
 
@@ -148,7 +148,7 @@ public class PacketUtils {
         baos.write((nonAirCount >> 8) & 0xFF);
         baos.write(nonAirCount & 0xFF);
         baos.write(bpb);
-        if(palette.includePaletteLength()) {
+        if (palette.includePaletteLength()) {
             ByteBufferReader.writeVarIntToByteArrayOutputStream(paletteLength, baos);
         }
         for (int p : paletteInfo) {
@@ -168,13 +168,12 @@ public class PacketUtils {
                 int relZ = block.getKey().getZ() & 15; //Can be replaced with ((block.getZ() % 16) + 16) % 16
                 boolean previouslyAir = section.getBlockRelative(relX, block.getKey().getY() % 16, relZ).getMaterial() == Material.AIR;
                 section.setBlockRelative(block.getValue().getBlockData(), relX, block.getKey().getY() % 16, relZ);
-                if(previouslyAir) {
-                    if(block.getValue().getBlockData().getMaterial() != Material.AIR) {
+                if (previouslyAir) {
+                    if (block.getValue().getBlockData().getMaterial() != Material.AIR) {
                         section.setNonAirCount((short) (section.getNonAirCount() + 1));
                     }
-                }
-                else {
-                    if(block.getValue().getBlockData().getMaterial() == Material.AIR) {
+                } else {
+                    if (block.getValue().getBlockData().getMaterial() == Material.AIR) {
                         section.setNonAirCount((short) (section.getNonAirCount() - 1));
                     }
                 }
@@ -192,7 +191,7 @@ public class PacketUtils {
                     short nonAirCount = buffer.getShort();
                     short bpb = (short) Byte.toUnsignedInt(buffer.get());
                     BlockPalette palette;
-                    if(bpb <= 8) {
+                    if (bpb <= 8) {
                         int paletteLength = bbr.readVarInt();
                         int[] paletteData = new int[paletteLength];
                         for (int j = 0; j < paletteLength; j++) {
@@ -207,8 +206,7 @@ public class PacketUtils {
                     byte[] blockData = new byte[dataLength * 8];
                     buffer.get(blockData);
                     sections[i] = new ChunkSection(blockData, nonAirCount, palette);
-                }
-                else {
+                } else {
                     sections[i] = new ChunkSection(isOverworld);
                 }
             }

@@ -15,9 +15,9 @@ import org.bukkit.Material;
  * @since 4/19/2020
  */
 public class PetMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = CorePlayerCollectibles.createCollectibleContainer(Pet.class,
                 InventoryMenuAPI.createItemDynamic()
@@ -25,7 +25,7 @@ public class PetMenu {
                         .setDisplayItem(Material.BONE, 1)
                         .setDescription("Collection of Pets!"));
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -36,5 +36,5 @@ public class PetMenu {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

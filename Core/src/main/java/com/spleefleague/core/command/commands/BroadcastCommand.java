@@ -17,24 +17,24 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class BroadcastCommand extends CoreCommand {
-    
+
     public BroadcastCommand() {
         super("broadcast", CoreRank.DEVELOPER);
         setUsage("/broadcast <message>");
         setDescription("Send a message through the broadcast channel");
     }
-    
+
     @CommandAnnotation
-    public void broadcast(CorePlayer sender, @HelperArg(value="<title/subtitle>") String message) {
+    public void broadcast(CorePlayer sender, @HelperArg(value = "<title/subtitle>") String message) {
         Chat.broadcast(message);
     }
-    
+
     @CommandAnnotation
     public void broadcast(CorePlayer sender,
-            @HelperArg(value="<fadeIn>") Integer fadeIn,
-            @HelperArg(value="<stay>") Integer stay,
-            @HelperArg(value="<fadeOut>") Integer fadeOut,
-            @HelperArg(value="<title/subtitle>") String message) {
+                          @HelperArg(value = "<fadeIn>") Integer fadeIn,
+                          @HelperArg(value = "<stay>") Integer stay,
+                          @HelperArg(value = "<fadeOut>") Integer fadeOut,
+                          @HelperArg(value = "<title/subtitle>") String message) {
         Chat.broadcast(message);
     }
 

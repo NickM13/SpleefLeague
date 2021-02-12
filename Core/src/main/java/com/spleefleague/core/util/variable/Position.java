@@ -21,26 +21,27 @@ import org.bukkit.World;
  * @author NickM13
  */
 public class Position extends DBVariable<List<?>> {
-    
+
     /**
      * For database usage, requires list of 5 numbers
-    */
+     */
 
     public double x;
     public double y;
     public double z;
     public long yaw;
     public long pitch;
-    
-    public Position() { }
-    
+
+    public Position() {
+    }
+
     public Position(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.yaw = this.pitch = 0;
     }
-    
+
     public Position(double x, double y, double z, long yaw, long pitch) {
         this.x = x;
         this.y = y;
@@ -48,7 +49,7 @@ public class Position extends DBVariable<List<?>> {
         this.yaw = yaw;
         this.pitch = pitch;
     }
-    
+
     public Position(Location loc) {
         x = Math.round(loc.getX() * 4) / 4D;
         y = Math.round(loc.getY() * 4) / 4D;
@@ -64,62 +65,62 @@ public class Position extends DBVariable<List<?>> {
         yaw = (long) (Math.round(loc.getYaw() / (90 / roundDivisor)) * (90 / roundDivisor));
         pitch = (long) (Math.round(loc.getPitch() / (90 / roundDivisor)) * (90 / roundDivisor));
     }
-    
+
     public Position(List<?> list) {
         super(list);
     }
-    
+
     public double getX() {
         return x;
     }
-    
+
     public double getY() {
         return y;
     }
-    
+
     public double getZ() {
         return z;
     }
-    
+
     public Position add(double x, double y, double z) {
         return new Position(this.x + x, this.y + y, this.z + z, yaw, pitch);
     }
-    
+
     public BlockPosition toBlockPosition() {
         return new BlockPosition((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
-    
+
     public double getYaw() {
         return yaw;
     }
-    
+
     public double getPitch() {
         return pitch;
     }
-    
+
     private double doublefy(List<?> list, int i) {
         double num = -1;
         if (list != null && i < list.size()) {
             Object o = list.get(i);
             if (o instanceof Double) {
-                num = ((Double)o);
+                num = ((Double) o);
             } else if (o instanceof Float) {
-                num = ((Float)o).doubleValue();
+                num = ((Float) o).doubleValue();
             } else if (o instanceof Integer) {
-                num = ((Integer)o).doubleValue();
+                num = ((Integer) o).doubleValue();
             } else if (o instanceof Long) {
-                num = ((Long)o).doubleValue();
+                num = ((Long) o).doubleValue();
             } else if (o instanceof Short) {
-                num = ((Short)o).doubleValue();
+                num = ((Short) o).doubleValue();
             }
         }
         return num;
     }
-    
+
     public double distance(Position pos) {
         return Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2) + Math.pow(z - pos.z, 2));
     }
-    
+
     @Override
     public void load(List<?> doc) {
         if (doc.size() >= 3) {
@@ -132,27 +133,27 @@ public class Position extends DBVariable<List<?>> {
             CoreLogger.logError(null, new IndexOutOfBoundsException("" + doc.size()));
         }
     }
-    
+
     @Override
     public List<?> save() {
         List<Double> list = new ArrayList<>();
-        
+
         list.add(x);
         list.add(y);
         list.add(z);
         list.add((double) yaw);
         list.add((double) pitch);
-        
+
         return list;
     }
-    
+
     public Location toLocation(World world) {
-        return new Location(world, x, y, z, (float)yaw, (float)pitch);
+        return new Location(world, x, y, z, (float) yaw, (float) pitch);
     }
-    
+
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ", Y:" + yaw + ", P:" + pitch + ")";
     }
-    
+
 }

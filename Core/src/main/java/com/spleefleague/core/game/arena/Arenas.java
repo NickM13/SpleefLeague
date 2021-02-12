@@ -30,12 +30,12 @@ public class Arenas {
     private static final SortedMap<String, Arena> arenaMap = new TreeMap<>();
     private static final Map<String, SortedMap<String, Arena>> modeArenaMap = new HashMap<>();
     private static final Set<Arena> globalArenas = new HashSet<>();
-    
+
     public static void init() {
         arenaMap.clear();
         modeArenaMap.clear();
         globalArenas.clear();
-        
+
         arenaCol = Core.getInstance().getPluginDB().getCollection("Arenas");
         MongoCursor<Document> arenaDocs = arenaCol.find().cursor();
         Map<String, Integer> successMap = new HashMap<>();
@@ -68,7 +68,7 @@ public class Arenas {
     public static void unsaveArenaDB(Arena arena) {
         arena.unsave(arenaCol);
     }
-    
+
     public static Arena createArena(String identifier, String arenaName) {
         identifier = ChatColor.stripColor(identifier.replaceAll("\\s", "").toLowerCase());
         if (!arenaMap.containsKey(identifier)) {
@@ -103,7 +103,7 @@ public class Arenas {
         }
         return false;
     }
-    
+
     public static boolean renameArena(String identifier, String arenaName) {
         Arena arena = arenaMap.get(identifier);
         if (arena != null) {
@@ -114,7 +114,7 @@ public class Arenas {
             return false;
         }
     }
-    
+
     public static boolean addArenaMode(String arenaName, BattleMode mode) {
         Arena arena = arenaMap.get(arenaName);
         if (arena != null && arena.addMode(mode.getName())) {
@@ -127,7 +127,7 @@ public class Arenas {
         }
         return false;
     }
-    
+
     public static boolean removeArenaMode(String arenaName, BattleMode mode) {
         Arena arena = arenaMap.get(arenaName);
         if (arena != null && arena.removeMode(mode.getName())) {
@@ -137,11 +137,11 @@ public class Arenas {
         }
         return false;
     }
-    
+
     public static Set<Arena> getGlobal() {
         return globalArenas;
     }
-    
+
     /**
      * Get all arenas for a specific mode that are available
      *
@@ -153,13 +153,13 @@ public class Arenas {
             return new HashMap<>();
         }
         Map<String, Arena> arenas = new TreeMap<>();
-        
+
         for (Map.Entry<String, Arena> entry : modeArenaMap.get(mode.getName()).entrySet()) {
             if (entry.getValue().isAvailable()) {
                 arenas.put(entry.getValue().getIdentifierNoTag(), entry.getValue());
             }
         }
-        
+
         return arenas;
     }
 
@@ -186,7 +186,7 @@ public class Arenas {
         }
         return null;
     }
-    
+
     /**
      * Get all arenas for a specific mode
      *
@@ -199,11 +199,11 @@ public class Arenas {
         }
         return modeArenaMap.get(mode.getName());
     }
-    
+
     public static SortedMap<String, Arena> getAll() {
         return arenaMap;
     }
-    
+
     /**
      * Returns a random arena of a mode
      *
@@ -213,14 +213,14 @@ public class Arenas {
     public static Arena getRandom(BattleMode mode) {
         Map<String, Arena> arenas = getUnpaused(mode);
         if (arenas.isEmpty()) return null;
-        return (Arena)(arenas.values().toArray()[new Random().nextInt(arenas.values().size())]);
+        return (Arena) (arenas.values().toArray()[new Random().nextInt(arenas.values().size())]);
     }
-    
+
     /**
      * Returns an arena by name and mode
      *
      * @param arenaName Arena Name
-     * @param mode Battle Mode
+     * @param mode      Battle Mode
      * @return Arena
      */
     public static Arena get(String arenaName, BattleMode mode) {
@@ -235,7 +235,7 @@ public class Arenas {
         }
         return null;
     }
-    
+
     public static Arena get(String name) {
         return arenaMap.get(name);
     }
@@ -272,5 +272,5 @@ public class Arenas {
 
         Arenas.getAll(mode).values().forEach(arena -> container.addMenuItem(arena.createMenu((cp -> plugin.queuePlayer(mode, cp, arena)))));
     }
-    
+
 }

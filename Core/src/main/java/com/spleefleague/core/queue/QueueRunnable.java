@@ -15,19 +15,19 @@ public class QueueRunnable implements Runnable {
 
     private boolean stop = false;
     private long delayTicks = 1 * 20L;
-    
+
     public synchronized void close() {
         this.stop = true;
     }
-    
+
     public synchronized boolean running() {
         return !this.stop;
     }
-    
+
     public synchronized long getDelayTicks() {
         return delayTicks;
     }
-    
+
     @Override
     public void run() {
         for (PlayerQueue pq : Core.getInstance().getQueueManager().getQueues()) {

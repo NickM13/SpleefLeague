@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  * @author NickM13
  */
 public class DebugCommand extends CoreCommand {
-    
+
     public DebugCommand() {
         super("debug", CoreRank.DEVELOPER);
         setUsage("/debug " + ChatColor.MAGIC + "[hope u no read]");
@@ -38,17 +38,17 @@ public class DebugCommand extends CoreCommand {
 
     @CommandAnnotation
     public void debugChest(CorePlayer sender,
-                       @LiteralArg("chest") String l,
-                       @HelperArg("<title>") String title) {
-        Inventory inventory = Bukkit.createInventory(null, 9*6, Chat.colorize(title));
+                           @LiteralArg("chest") String l,
+                           @HelperArg("<title>") String title) {
+        Inventory inventory = Bukkit.createInventory(null, 9 * 6, Chat.colorize(title));
         sender.getPlayer().openInventory(inventory);
     }
-    
+
     @CommandAnnotation
     public void debugSound(CorePlayer sender,
-                      @LiteralArg("sound") String l,
-                      @HelperArg("<pitch>") Double pitch,
-                      @Nullable @OptionArg(listName = "sounds", force=false) String startsWith) {
+                           @LiteralArg("sound") String l,
+                           @HelperArg("<pitch>") Double pitch,
+                           @Nullable @OptionArg(listName = "sounds", force = false) String startsWith) {
         TextComponent message = new TextComponent("");
         TextComponent soundStr;
 
@@ -79,9 +79,9 @@ public class DebugCommand extends CoreCommand {
 
     @CommandAnnotation(hidden = true)
     public void debugPlay(CorePlayer sender,
-                      @LiteralArg("play") String l,
-                      Double pitch,
-                      String name) {
+                          @LiteralArg("play") String l,
+                          Double pitch,
+                          String name) {
         Bukkit.getOnlinePlayers().forEach(p -> p.playSound(sender.getPlayer().getLocation(), Sound.valueOf(name), 1, pitch.floatValue()));
     }
 

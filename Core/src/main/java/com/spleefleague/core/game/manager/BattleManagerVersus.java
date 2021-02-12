@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * BattleManagerMultiStatic is a BattleManager that manages battles of
  * static sized games.  If a player leaves, the battle ends.  Used for 1v1s
- * 
+ *
  * @author NickM13
  */
 public class BattleManagerVersus extends BattleManager {
@@ -29,7 +29,7 @@ public class BattleManagerVersus extends BattleManager {
     public BattleManagerVersus(BattleMode mode) {
         super(mode);
     }
-    
+
     @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);

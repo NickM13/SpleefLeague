@@ -12,7 +12,7 @@ import org.bukkit.Material;
  * @since 4/16/2020
  */
 public class SelectTool {
-    
+
     public static void init() {
         InventoryMenuItemHotbar hotbarItem = (InventoryMenuItemHotbar) InventoryMenuAPI
                 .createItemHotbar(8, "BUILD_TOOL_PLACEABLES")
@@ -28,5 +28,5 @@ public class SelectTool {
                     BuildWorldPlayer bwp = buildWorld.getPlayerMap().get(cp.getUniqueId());
                 });
     }
-    
+
 }

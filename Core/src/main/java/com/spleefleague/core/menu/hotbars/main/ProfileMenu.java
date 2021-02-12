@@ -16,9 +16,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class ProfileMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

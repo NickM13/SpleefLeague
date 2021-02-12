@@ -22,30 +22,26 @@ import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
-import com.spleefleague.coreapi.utils.packet.shared.NumAction;
-import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleEnd;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author NickM13
  * @since 4/24/2020
  */
 public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
-    
+
     protected int playToPoints = 5;
-    
+
     public VersusBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
-    
+
     /**
      * Initialize battle requests (/request)
      */
@@ -55,7 +51,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         addBattleRequest(new PlayToRequest(this));
         addBattleRequest(new PauseRequest(this));
     }
-    
+
     /**
      * Initialize the players, called in startBattle()
      */
@@ -63,7 +59,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     protected void setupBattlers() {
 
     }
-    
+
     /**
      * Called in startBattle()<br>
      * Initialize scoreboard
@@ -77,7 +73,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
         updateScoreboard();
     }
-    
+
     /**
      * Send a message on the start of a battle
      */
@@ -93,12 +89,12 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
         sendNotification(text);
     }
-    
+
     @Override
     protected void fillField() {
-    
+
     }
-    
+
     /**
      * Called when a battler joins mid-game (if available)
      *
@@ -106,9 +102,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void joinBattler(CorePlayer cp) {
-    
+
     }
-    
+
     /**
      * Save the battlers stats
      * Called when a battler is being removed from the battle
@@ -119,7 +115,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     protected void saveBattlerStats(BP bp) {
         //Core.getInstance().getPlayers().save(bp.getCorePlayer());
     }
-    
+
     /**
      * Called every 0.1 second or on score updates
      * Updates the player scoreboards
@@ -131,7 +127,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             chatGroup.setTeamDisplayName("p" + i + "score", BattleUtils.toScoreSquares(sortedBattlers.get(i), playToPoints));
         }
     }
-    
+
     /**
      * Called every 1/10 second
      * Updates the field on occasion for events such as
@@ -139,9 +135,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
      */
     @Override
     public void updateField() {
-    
+
     }
-    
+
     /**
      * Updates the experience bar of players in the game
      */
@@ -180,7 +176,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         chatGroup.sendMessage(text);
         updatePhysicalScoreboard();
     }
-    
+
     /**
      * End a round with a determined winner
      *
@@ -207,7 +203,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             endBattle(winner);
         }
     }
-    
+
     protected int applyEloChange(BP winner) {
         int avgRating = 0;
         int winnerRating = winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
@@ -326,7 +322,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             endRound(remainingPlayers.iterator().next());
         }
     }
-    
+
     /**
      * Called when a battler enters a goal area
      *
@@ -336,7 +332,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     protected void winBattler(CorePlayer cp) {
         endRound(battlers.get(cp));
     }
-    
+
     /**
      * Called when a player surrenders (/ff, /leave)
      *
@@ -346,7 +342,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void surrender(CorePlayer cp) {
         leaveBattler(cp);
     }
-    
+
     /**
      * Called when a Play To request passes
      *
@@ -356,7 +352,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void setPlayTo(int playToPoints) {
         this.playToPoints = playToPoints;
     }
-    
+
     /**
      * Called when a battler wants to leave (/leave, /ff)
      *
@@ -372,5 +368,5 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             endBattle(remainingPlayers.iterator().next());
         }
     }
-    
+
 }

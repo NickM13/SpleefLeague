@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * @since 4/19/2020
  */
 public class Vendorables {
-    
+
     // <<Type, <Identifier, Vendorable>>
     private static final Map<String, Map<String, Vendorable>> VENDORABLE_MAP = new TreeMap<>();
     private static final Map<Vendorable.Rarity, Set<String>> RARITY_MAP = new HashMap<>();
@@ -43,7 +43,7 @@ public class Vendorables {
         }
         return "";
     }
-    
+
     /**
      * Get the nbt tag under vendentifier
      *
@@ -80,7 +80,7 @@ public class Vendorables {
             }
         }
     }
-    
+
     public static void unregister(String type, String identifier) {
         VENDORABLE_MAP.get(type).remove(identifier);
     }
@@ -124,7 +124,7 @@ public class Vendorables {
     public static Map<String, Vendorable> getAll(String type) {
         return VENDORABLE_MAP.get(type);
     }
-    
+
     public static <T extends Vendorable> Map<String, T> getAll(Class<T> clazz) {
         return (Map<String, T>) VENDORABLE_MAP.getOrDefault(Vendorable.getParentTypeName(clazz), new HashMap<>());
     }
@@ -137,7 +137,7 @@ public class Vendorables {
         }
         return null;
     }
-    
+
     public static Vendorable get(String type, String identifier) {
         if (VENDORABLE_MAP.containsKey(type)) {
             return VENDORABLE_MAP.get(type).get(identifier);
@@ -162,18 +162,18 @@ public class Vendorables {
         }
         return null;
     }
-    
+
     public static <T extends Vendorable> boolean contains(Class<T> clazz, String identifier) {
         return get(clazz, identifier) != null;
     }
-    
+
     /**
      * Removes a vendorable from the global map and returns the vendorable
      * <p>Used for renaming identifier names</p>
      *
-     * @param clazz Class extending Vendorable
+     * @param clazz      Class extending Vendorable
      * @param identifier Identifier
-     * @param <T> Object extending Vendorable
+     * @param <T>        Object extending Vendorable
      * @return Vendorable
      */
     public static <T extends Vendorable> T pop(Class<T> clazz, String identifier) {
@@ -183,5 +183,5 @@ public class Vendorables {
         }
         return vendorable;
     }
-    
+
 }

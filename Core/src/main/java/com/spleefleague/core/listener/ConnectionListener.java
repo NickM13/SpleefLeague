@@ -24,12 +24,12 @@ import org.bukkit.event.player.PlayerResourcePackStatusEvent;
  * @author NickM13
  */
 public class ConnectionListener implements Listener {
-    
+
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event) {
-        
+
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
@@ -38,7 +38,7 @@ public class ConnectionListener implements Listener {
         Core.getInstance().applyVisibilities(cp);
         Core.getInstance().getPartyManager().onConnect(cp);
     }
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
@@ -46,7 +46,7 @@ public class ConnectionListener implements Listener {
         GlobalZones.onPlayerLeave(cp);
         Core.getInstance().getPartyManager().onDisconnect(cp);
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onResourcePackStatus(PlayerResourcePackStatusEvent event) {
         if (event == null) {
@@ -65,5 +65,5 @@ public class ConnectionListener implements Listener {
             }
         }
     }
-    
+
 }

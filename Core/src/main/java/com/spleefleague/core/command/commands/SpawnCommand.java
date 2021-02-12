@@ -22,7 +22,7 @@ public class SpawnCommand extends CoreCommand {
         super("spawn", CoreRank.DEFAULT);
         setDescription("Teleport to spawn");
     }
-    
+
     @CommandAnnotation
     public void spawn(CorePlayer sender) {
         if (!sender.isInBattle() || sender.getBattleState() == BattleState.SPECTATOR_GLOBAL) {

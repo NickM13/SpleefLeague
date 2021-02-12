@@ -15,11 +15,11 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class UrlCommand extends CoreCommand {
-    
+
     public UrlCommand() {
         super("url", CoreRank.TEMP_MOD);
     }
-    
+
     @CommandAnnotation(disabled = true)
     public void url(CorePlayer sender, CorePlayer cp) {
         cp.allowUrl();

@@ -15,13 +15,13 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class InvSeeCommand extends CoreCommand {
-    
+
     public InvSeeCommand() {
         super("invsee", CoreRank.TEMP_MOD);
         setUsage("/invsee <player>");
         setDescription("See the inventory of a player");
     }
-    
+
     @CommandAnnotation
     public void invsee(CorePlayer sender, CorePlayer cp) {
         sender.invsee(cp);

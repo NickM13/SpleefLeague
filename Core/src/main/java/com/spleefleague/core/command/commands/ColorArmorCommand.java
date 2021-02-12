@@ -18,13 +18,13 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
  * @author NickM13
  */
 public class ColorArmorCommand extends CoreCommand {
-    
+
     public ColorArmorCommand() {
         super("colorarmor", CoreRank.SENIOR_MODERATOR);
         setUsage("/colorarmor <r=0-255> <g=0-255> <b=0-255>");
         setDescription("¯\\_(ツ)_/¯");
     }
-    
+
     @CommandAnnotation
     public void colorarmor(CorePlayer sender, Integer r, Integer g, Integer b) {
         ItemStack itemStack = sender.getPlayer().getInventory().getItemInMainHand();

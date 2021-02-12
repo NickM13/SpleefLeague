@@ -9,15 +9,15 @@ import net.minecraft.server.v1_15_R1.*;
  * @since 4/22/2020
  */
 public class EntityPetOwl extends EntityPet {
-    
+
     public EntityPetOwl(EntityTypes<Entity> entityTypes, World world) {
         super(EntityTypes.COW, world);
     }
-    
+
     public EntityPetOwl(PetOwner owner) {
         super(EntityTypes.COW, owner);
     }
-    
+
     @Override
     protected void initPathfinder() {
         /*
@@ -37,9 +37,9 @@ public class EntityPetOwl extends EntityPet {
         this.getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(20);
     }
      */
-    
+
     public PetOwner getOwner() {
         return owner;
     }
-    
+
 }

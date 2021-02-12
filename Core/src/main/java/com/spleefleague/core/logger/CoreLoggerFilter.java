@@ -11,7 +11,7 @@ public class CoreLoggerFilter implements Filter {
 
     public Result filter(LogEvent record) {
         try {
-            if(record != null && record.getMessage() != null) {
+            if (record != null && record.getMessage() != null) {
                 String npe = record.getMessage().getFormattedMessage().toLowerCase();
                 if (npe.contains("org.mongo.driver")) {
                     return Result.DENY;
@@ -81,7 +81,7 @@ public class CoreLoggerFilter implements Filter {
 
     public Result filter(Logger arg0, Level arg1, Marker arg2, Object message, Throwable arg4) {
         try {
-            if(message == null) {
+            if (message == null) {
                 return Result.NEUTRAL;
             } else {
                 String npe = message.toString().toLowerCase();
@@ -97,7 +97,7 @@ public class CoreLoggerFilter implements Filter {
 
     public Result filter(Logger arg0, Level arg1, Marker arg2, Message message, Throwable arg4) {
         try {
-            if(message == null) {
+            if (message == null) {
                 return Result.NEUTRAL;
             } else {
                 String npe = message.getFormattedMessage().toLowerCase();

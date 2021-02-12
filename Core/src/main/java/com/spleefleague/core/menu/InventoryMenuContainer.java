@@ -8,15 +8,15 @@ import org.bukkit.inventory.Inventory;
  * @since 4/29/2020
  */
 public abstract class InventoryMenuContainer {
-    
+
     public InventoryMenuContainer() {
-    
+
     }
 
     public InventoryMenuContainer(InventoryMenuContainer container) {
 
     }
-    
+
     public abstract Inventory open(CorePlayer cp);
 
 }

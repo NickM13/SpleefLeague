@@ -41,6 +41,7 @@ public class ArenaCommand extends CoreCommand {
     }
 
     private static Set<String> materialNameSet;
+
     private static Set<String> getMaterialNames() {
         if (materialNameSet == null) {
             materialNameSet = new HashSet<>();
@@ -86,9 +87,9 @@ public class ArenaCommand extends CoreCommand {
 
     @CommandAnnotation
     public void arenaClone(CorePlayer sender,
-                             @LiteralArg("clone") String l1,
-                             @OptionArg(listName = "arenas") String arenaName,
-                             @HelperArg("<identifier>") String newIdentifier) {
+                           @LiteralArg("clone") String l1,
+                           @OptionArg(listName = "arenas") String arenaName,
+                           @HelperArg("<identifier>") String newIdentifier) {
         Arena newArena = Arenas.cloneArena(arenaName, newIdentifier);
         if (newArena == null) {
             error(sender, "Name already in use!");
@@ -112,10 +113,10 @@ public class ArenaCommand extends CoreCommand {
 
     @CommandAnnotation
     public void arenaSetDescription(CorePlayer sender,
-                             @LiteralArg("set") String l1,
-                             @LiteralArg("description") String l2,
-                             @OptionArg(listName = "arenas") String arenaName,
-                             @HelperArg("<description>") String newDescription) {
+                                    @LiteralArg("set") String l1,
+                                    @LiteralArg("description") String l2,
+                                    @OptionArg(listName = "arenas") String arenaName,
+                                    @HelperArg("<description>") String newDescription) {
         Arena arena = Arenas.get(arenaName);
         arena.setDescription(newDescription);
         success(sender, "Set description of " + arenaName + " to:\n" + newDescription);
@@ -242,18 +243,18 @@ public class ArenaCommand extends CoreCommand {
 
     @CommandAnnotation
     public void arenaClearScoreboard(CorePlayer sender,
-                                   @LiteralArg("clear") String l1,
-                                   @LiteralArg("scoreboards") String l2,
-                                   @OptionArg(listName = "arenas") String arenaName) {
+                                     @LiteralArg("clear") String l1,
+                                     @LiteralArg("scoreboards") String l2,
+                                     @OptionArg(listName = "arenas") String arenaName) {
         Arenas.get(arenaName).clearScoreboards();
         success(sender, "Scoreboards cleared");
     }
 
     @CommandAnnotation
     public void arenaGetOrigin(CorePlayer sender,
-                                   @LiteralArg("get") String l1,
-                                   @LiteralArg("origin") String l2,
-                                   @OptionArg(listName = "arenas") String arenaName) {
+                               @LiteralArg("get") String l1,
+                               @LiteralArg("origin") String l2,
+                               @OptionArg(listName = "arenas") String arenaName) {
         Position pos = Arenas.get(arenaName).getOrigin();
         success(sender, "Origin is " + pos);
     }
@@ -341,10 +342,10 @@ public class ArenaCommand extends CoreCommand {
 
     @CommandAnnotation
     public void arenaSetTeamCount(CorePlayer sender,
-                                 @LiteralArg("set") String l,
-                                 @LiteralArg("teamcount") String l2,
-                                 @OptionArg(listName = "arenas") String arenaName,
-                                 Integer teamCount) {
+                                  @LiteralArg("set") String l,
+                                  @LiteralArg("teamcount") String l2,
+                                  @OptionArg(listName = "arenas") String arenaName,
+                                  Integer teamCount) {
         Arenas.get(arenaName).setTeamCount(teamCount);
         success(sender, "Team count set to " + teamCount);
     }

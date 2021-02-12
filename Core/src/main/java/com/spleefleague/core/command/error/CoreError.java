@@ -20,13 +20,13 @@ public enum CoreError {
     NOT_INGAME("You aren't in a game!"),
     PARTY_OWNER("You aren't the party owner!"),
     PARTY_NONE("You aren't in a party!");
-    
+
     String message;
-    
+
     CoreError(String message) {
         this.message = message;
     }
-    
+
     public String getMessage() {
         return message;
     }

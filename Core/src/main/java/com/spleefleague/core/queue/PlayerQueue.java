@@ -23,28 +23,29 @@ import java.util.ListIterator;
 public class PlayerQueue {
     private String name;
     private QueueContainer owner;
-    
+
     private static class QueuePlayer {
         CorePlayer cp;
         Arena arena;
         long joinTime;
-        
+
         public QueuePlayer(CorePlayer dbp, Arena arena) {
             this.cp = dbp;
             this.arena = arena;
             this.joinTime = System.currentTimeMillis();
         }
-        
+
         public boolean equals(CorePlayer dbp) {
             return this.cp.equals(dbp);
         }
     }
-    
+
     private boolean teamQueue;
     private List<QueuePlayer> players;
-    
-    public PlayerQueue() {}
-    
+
+    public PlayerQueue() {
+    }
+
     public void initialize(String name, QueueContainer qc, boolean teamQueue) {
         this.name = name;
         owner = qc;
@@ -52,24 +53,27 @@ public class PlayerQueue {
         this.teamQueue = teamQueue;
         Core.getInstance().addQueue(this);
     }
+
     public void terminate() {
         players.clear();
     }
-    
+
     public boolean isTeamQueue() {
         return teamQueue;
     }
+
     public void checkQueue() {
         owner.checkQueue();
     }
-    
+
     public String getQueueName() {
         return name;
     }
+
     public int getQueueSize() {
         return players.size();
     }
-    
+
     private int findPlayer(CorePlayer cp) {
         // TODO: Probably rework this at some point?
         for (int i = 0; i < players.size(); i++) {
@@ -79,6 +83,7 @@ public class PlayerQueue {
         }
         return -1;
     }
+
     public boolean queuePlayer(CorePlayer cp) {
         if (cp.isInBattle()) {
             Core.getInstance().sendMessage(cp, "Please leave your current game to queue");
@@ -97,6 +102,7 @@ public class PlayerQueue {
         checkQueue();
         return true;
     }
+
     public boolean queuePlayer(CorePlayer cp, Arena arena) {
         if (arena == null) {
             return queuePlayer(cp);
@@ -136,7 +142,7 @@ public class PlayerQueue {
         checkQueue();
         return true;
     }
-    
+
     public boolean unqueuePlayer(CorePlayer cp) {
         int id;
         if ((id = findPlayer(cp)) != -1) {
@@ -149,20 +155,24 @@ public class PlayerQueue {
         }
         return false;
     }
+
     public void unqueuePlayers(List<CorePlayer> cps) {
         Iterator<CorePlayer> pit = cps.iterator();
         while (pit.hasNext()) {
             unqueuePlayer(pit.next());
         }
     }
-    
+
     private String lastParam = "";
+
     public String getLastArenaName() {
         return lastParam;
     }
+
     public CorePlayer getPlayerFirst() {
         return players.get(0).cp;
     }
+
     private boolean matchAfter(int partySize, StringBuilder arenaName, int start, int remaining, List<QueuePlayer> list) {
         if (remaining <= 0) {
             return true;
@@ -181,7 +191,7 @@ public class PlayerQueue {
                 if (qp.arena != null) {
                     StringBuilder _arena = new StringBuilder(qp.arena.getName());
                     list.add(qp);
-                    if (matchAfter(partySize, _arena, pit.nextIndex(), remaining-1, list)) {
+                    if (matchAfter(partySize, _arena, pit.nextIndex(), remaining - 1, list)) {
                         arenaName.delete(0, arenaName.length());
                         arenaName.append(_arena);
                         return true;
@@ -189,22 +199,23 @@ public class PlayerQueue {
                     return false;
                 } else {
                     list.add(qp);
-                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining-1, list);
+                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining - 1, list);
                 }
             } else {
                 if (arenaName.toString().equalsIgnoreCase(qp.arena.getName())) {
                     list.add(qp);
-                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining-1, list);
+                    return matchAfter(partySize, arenaName, pit.nextIndex(), remaining - 1, list);
                 }
             }
         }
         return false;
     }
+
     public List<CorePlayer> getMatchedPlayers(int count, int teamSize) {
         List<CorePlayer> cps = new ArrayList<>();
         List<QueuePlayer> queuePlayers = new ArrayList<>();
         ListIterator<QueuePlayer> pit = this.players.listIterator();
-        
+
         while (pit.hasNext()) {
             QueuePlayer qp = pit.next();
             queuePlayers.clear();
@@ -213,13 +224,13 @@ public class PlayerQueue {
             CorePlayer cp1 = qp.cp;
             CoreParty party = cp1.getParty();
             if (teamQueue && party != null && party.getPlayerSet().size() == teamSize) {
-                if (matchAfter(teamSize, arenaName, pit.nextIndex(), count-1, queuePlayers)) {
+                if (matchAfter(teamSize, arenaName, pit.nextIndex(), count - 1, queuePlayers)) {
                     queuePlayers.forEach(qp2 -> cps.add(qp2.cp));
                     lastParam = arenaName.toString();
                     return cps;
                 }
             } else {
-                if (matchAfter(0, arenaName, pit.nextIndex(), count-1, queuePlayers)) {
+                if (matchAfter(0, arenaName, pit.nextIndex(), count - 1, queuePlayers)) {
                     queuePlayers.forEach(qp2 -> cps.add(qp2.cp));
                     lastParam = arenaName.toString();
                     return cps;
@@ -228,8 +239,9 @@ public class PlayerQueue {
         }
         return null;
     }
+
     public List<QueuePlayer> getPlayers() {
         return players;
     }
-    
+
 }

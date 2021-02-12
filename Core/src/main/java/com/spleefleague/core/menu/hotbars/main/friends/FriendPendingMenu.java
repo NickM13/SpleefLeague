@@ -15,16 +15,16 @@ public class FriendPendingMenu {
 
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
-                        .setName("Pending Friend Requests")
-                        .setDisplayItem(cp -> {
-                            if (cp.getFriends().getIncoming().size() > 0) {
-                                return InventoryMenuUtils.createCustomItem(Material.FEATHER, 6);
-                            } else {
-                                return InventoryMenuUtils.createCustomItem(Material.FEATHER, 7);
-                            }
-                        })
-                        .setDescription("")
-                        .createLinkedContainer("Pending Friend Requests");
+                .setName("Pending Friend Requests")
+                .setDisplayItem(cp -> {
+                    if (cp.getFriends().getIncoming().size() > 0) {
+                        return InventoryMenuUtils.createCustomItem(Material.FEATHER, 6);
+                    } else {
+                        return InventoryMenuUtils.createCustomItem(Material.FEATHER, 7);
+                    }
+                })
+                .setDescription("")
+                .createLinkedContainer("Pending Friend Requests");
 
         menuItem.getLinkedChest()
                 .setPageBoundaries(1, 5, 1, 3)

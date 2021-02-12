@@ -23,13 +23,13 @@ import org.bukkit.Bukkit;
  * @author NickM13
  */
 public class DatabaseUtils {
-    
+
     public static void findAndRun(MongoCollection<Document> collection, Document query, Consumer<FindIterable<Document>> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
             consumer.accept(collection.find(query));
         });
     }
-    
+
     public static void saferead(Object o1, Object o2) {
         if (o2 != null) {
             o1 = o2;
@@ -46,5 +46,5 @@ public class DatabaseUtils {
         }
         return null;
     }
-    
+
 }

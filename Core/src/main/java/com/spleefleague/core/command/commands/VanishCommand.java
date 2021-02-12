@@ -23,11 +23,11 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class VanishCommand extends CoreCommand {
-    
+
     public VanishCommand() {
         super("vanish", CoreRank.DEVELOPER);
     }
-    
+
     @CommandAnnotation
     public void vanish(CorePlayer sender) {
         sender.setVanished(!sender.isVanished());
@@ -54,5 +54,5 @@ public class VanishCommand extends CoreCommand {
         }
         Core.getInstance().applyVisibilities(sender);
     }
-    
+
 }

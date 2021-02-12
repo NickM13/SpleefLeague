@@ -21,15 +21,16 @@ import java.util.Set;
  * @since 4/26/2020
  */
 public class BuildCommand extends CoreCommand {
-    
+
     public BuildCommand() {
         super("build", CoreRank.DEVELOPER);
         setDescription("For building structures used in fake worlds");
         setOptions("structures", cp -> BuildStructures.getNames());
         setOptions("materials", (cp) -> getMaterialNames());
     }
-    
+
     private static Set<String> materialNameSet;
+
     private static Set<String> getMaterialNames() {
         if (materialNameSet == null) {
             materialNameSet = new HashSet<>();
@@ -39,11 +40,11 @@ public class BuildCommand extends CoreCommand {
         }
         return materialNameSet;
     }
-    
+
     @CommandAnnotation
     public void buildCreate(CorePlayer sender,
-            @LiteralArg("create") String l,
-            @HelperArg(value="<structureName>") String structureName) {
+                            @LiteralArg("create") String l,
+                            @HelperArg(value = "<structureName>") String structureName) {
         if (BuildStructures.create(sender, structureName)) {
             BuildStructures.edit(sender, structureName);
             success(sender, "Structure " + structureName + " created and build world entered!");
@@ -51,11 +52,11 @@ public class BuildCommand extends CoreCommand {
             error(sender, "Structure already exists!");
         }
     }
-    
+
     @CommandAnnotation
     public void buildInvite(CorePlayer sender,
-            @LiteralArg("invite") String l,
-            @CorePlayerArg(allowSelf = false) CorePlayer target) {
+                            @LiteralArg("invite") String l,
+                            @CorePlayerArg(allowSelf = false) CorePlayer target) {
         if (sender.isInBuildWorld()) {
             Chat.sendRequest(target,
                     sender,
@@ -75,11 +76,11 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation
     public void buildJoin(CorePlayer sender,
-            @LiteralArg("join") String l,
-            @CorePlayerArg(allowSelf = false) CorePlayer target) {
+                          @LiteralArg("join") String l,
+                          @CorePlayerArg(allowSelf = false) CorePlayer target) {
         if (!sender.isInGlobal()) {
             error(sender, "You're already in a fake world!");
         } else if (!target.isInBuildWorld()) {
@@ -89,23 +90,33 @@ public class BuildCommand extends CoreCommand {
             success(sender, "Joined " + target.getDisplayNamePossessive() + " world");
         }
     }
-    
+
     @CommandAnnotation
     public void buildEdit(CorePlayer sender,
-            @LiteralArg("edit") String l,
-            @OptionArg(listName="structures") String structureName) {
+                          @LiteralArg("edit") String l,
+                          @OptionArg(listName = "structures") String structureName) {
         switch (BuildStructures.edit(sender, structureName)) {
-            case 0: success(sender, "Editing structure " + structureName);  break;
-            case 1: error(sender, "Structure does not exist!");             break;
-            case 2: error(sender, "Structure is under construction!");      break;
-            case 3: error(sender, "You're already in a fake world!");       break;
-            case 4: error(sender, "Structure would overlap with an existing block!"); break;
+            case 0:
+                success(sender, "Editing structure " + structureName);
+                break;
+            case 1:
+                error(sender, "Structure does not exist!");
+                break;
+            case 2:
+                error(sender, "Structure is under construction!");
+                break;
+            case 3:
+                error(sender, "You're already in a fake world!");
+                break;
+            case 4:
+                error(sender, "Structure would overlap with an existing block!");
+                break;
         }
     }
-    
+
     @CommandAnnotation
     public void buildSave(CorePlayer sender,
-            @LiteralArg("save") String l) {
+                          @LiteralArg("save") String l) {
         BuildWorld buildWorld = sender.getBuildWorld();
         if (buildWorld != null) {
             buildWorld.saveToStructure();
@@ -114,11 +125,11 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation(confirmation = true)
     public void buildDestroy(CorePlayer sender,
-            @LiteralArg("destroy") String l,
-            @OptionArg(listName="structures") String structureName) {
+                             @LiteralArg("destroy") String l,
+                             @OptionArg(listName = "structures") String structureName) {
         if (BuildStructures.get(structureName) != null) {
             if (BuildStructures.destroy(structureName)) {
                 success(sender, "Structure destroyed");
@@ -129,12 +140,12 @@ public class BuildCommand extends CoreCommand {
             error(sender, "Structure does not exist!");
         }
     }
-    
+
     @CommandAnnotation
     public void buildClone(CorePlayer sender,
-            @LiteralArg("clone") String l,
-            @OptionArg(listName="structures") String structureName,
-            @HelperArg("<structureName>") String newName) {
+                           @LiteralArg("clone") String l,
+                           @OptionArg(listName = "structures") String structureName,
+                           @HelperArg("<structureName>") String newName) {
         BuildStructure structure = BuildStructures.get(structureName);
         if (!structure.isUnderConstruction()) {
             if (BuildStructures.create(sender, newName)) {
@@ -149,11 +160,11 @@ public class BuildCommand extends CoreCommand {
             error(sender, "Structure is under construction!");
         }
     }
-    
+
     @CommandAnnotation(confirmation = true)
     public void buildSetOrigin(CorePlayer sender,
-            @LiteralArg("set") String l,
-            @LiteralArg("origin") String o) {
+                               @LiteralArg("set") String l,
+                               @LiteralArg("origin") String o) {
         if (sender.isInBuildWorld()) {
             BlockPosition origin = new BlockPosition(
                     sender.getLocation().getBlockX(),
@@ -165,13 +176,13 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation(confirmation = true)
     public void buildShift(CorePlayer sender,
-            @LiteralArg("shift") String l,
-            @HelperArg("<x>") Integer x,
-            @HelperArg("<y>") Integer y,
-            @HelperArg("<z>") Integer z) {
+                           @LiteralArg("shift") String l,
+                           @HelperArg("<x>") Integer x,
+                           @HelperArg("<y>") Integer y,
+                           @HelperArg("<z>") Integer z) {
         if (sender.isInBuildWorld()) {
             sender.getBuildWorld().shift(new BlockPosition(x, y, z));
             success(sender, "Structure has been moved");
@@ -179,10 +190,10 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation
     public void buildPos1(CorePlayer sender,
-            @LiteralArg("pos1") String l) {
+                          @LiteralArg("pos1") String l) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
             BlockPosition pos = new BlockPosition(
@@ -195,10 +206,10 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation
     public void buildPos2(CorePlayer sender,
-            @LiteralArg("pos2") String l) {
+                          @LiteralArg("pos2") String l) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
             BlockPosition pos = new BlockPosition(
@@ -211,11 +222,11 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
     @CommandAnnotation(confirmation = true)
     public void buildFill(CorePlayer sender,
-            @LiteralArg("fill") String l,
-            @OptionArg(listName="materials") String materialName) {
+                          @LiteralArg("fill") String l,
+                          @OptionArg(listName = "materials") String materialName) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
             sender.getBuildWorld().fill(bwp.getPosBox(), Material.valueOf(materialName.toUpperCase()));
@@ -227,7 +238,7 @@ public class BuildCommand extends CoreCommand {
 
     @CommandAnnotation
     public void buildWorldify(CorePlayer sender,
-                           @LiteralArg("worldify") String l) {
+                              @LiteralArg("worldify") String l) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
             Chat.sendRequest(sender,
@@ -244,7 +255,7 @@ public class BuildCommand extends CoreCommand {
 
     @CommandAnnotation
     public void buildBuildify(CorePlayer sender,
-                          @LiteralArg("buildify") String l) {
+                              @LiteralArg("buildify") String l) {
         if (sender.isInBuildWorld()) {
             BuildWorldPlayer bwp = sender.getBuildWorld().getPlayerMap().get(sender.getUniqueId());
             Chat.sendRequest(sender,
@@ -258,5 +269,5 @@ public class BuildCommand extends CoreCommand {
             error(sender, "You aren't in a build world!");
         }
     }
-    
+
 }

@@ -26,10 +26,10 @@ public class WarpCommand extends CoreCommand {
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");
     }
-    
+
     @CommandAnnotation
     public void warp(CorePlayer cp,
-                     @OptionArg(listName="warpList") String warpName) {
+                     @OptionArg(listName = "warpList") String warpName) {
         Warp warp;
         if ((warp = Warp.getWarp(warpName)) != null) {
             if (!Bukkit.getServer().getWorlds().contains(warp.getLocation().getWorld())) {
@@ -42,7 +42,7 @@ public class WarpCommand extends CoreCommand {
             error(cp, "Warp does not exist!");
         }
     }
-    
+
     @CommandAnnotation
     public void warp(CorePlayer sender) {
         sender.getMenu().setInventoryMenuChest(Warp.createMenuContainer(null), true);

@@ -226,14 +226,14 @@ public class CollectibleCommand extends CoreCommand {
      *
      * @param sender     Sender
      * @param l          add
-     * @param targets     Targets
+     * @param targets    Targets
      * @param identifier Collectible Identifier
      */
     @CommandAnnotation
     public void collectibleAdds(CommandSender sender,
-                               @LiteralArg("add") String l,
-                               List<CorePlayer> targets,
-                               @OptionArg(listName = "collectibles") String identifier) {
+                                @LiteralArg("add") String l,
+                                List<CorePlayer> targets,
+                                @OptionArg(listName = "collectibles") String identifier) {
         for (CorePlayer target : targets) {
             if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
                 sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
@@ -286,10 +286,10 @@ public class CollectibleCommand extends CoreCommand {
 
     @CommandAnnotation
     public void collectibleSkinDestroy(CorePlayer sender,
-                                      @LiteralArg("skin") String l1,
-                                      @LiteralArg("destroy") String l2,
-                                      @OptionArg(listName = "collectibles") String parent,
-                                      @OptionArg(listName = "skins") String identifier) {
+                                       @LiteralArg("skin") String l1,
+                                       @LiteralArg("destroy") String l2,
+                                       @OptionArg(listName = "collectibles") String parent,
+                                       @OptionArg(listName = "skins") String identifier) {
         Collectible collectible = Vendorables.get(collectibleClass, parent);
         if (collectible == null) {
             error(sender, "Collectible not found");
@@ -324,11 +324,11 @@ public class CollectibleCommand extends CoreCommand {
 
     @CommandAnnotation
     public void collectibleSkinRemove(CommandSender sender,
-                                   @LiteralArg("skin") String l1,
-                                   @LiteralArg("remove") String l2,
-                                   CorePlayer target,
-                                   @OptionArg(listName = "collectibles") String parent,
-                                   @OptionArg(listName = "skins") String identifier) {
+                                      @LiteralArg("skin") String l1,
+                                      @LiteralArg("remove") String l2,
+                                      CorePlayer target,
+                                      @OptionArg(listName = "collectibles") String parent,
+                                      @OptionArg(listName = "skins") String identifier) {
         if (target.getCollectibles().removeSkin(Vendorables.get(collectibleClass, parent), identifier)) {
             success(sender, "Removed collectible " + parent + ":" + identifier + " from " + target.getDisplayNamePossessive() + " collection");
         } else {
@@ -360,12 +360,12 @@ public class CollectibleCommand extends CoreCommand {
 
     @CommandAnnotation
     public void collectibleSkinSetCmd(CorePlayer sender,
-                                       @LiteralArg("skin") String l1,
-                                       @LiteralArg("set") String l2,
-                                       @LiteralArg("model") String l3,
-                                       @OptionArg(listName = "collectibles") String parent,
-                                       @OptionArg(listName = "skins") String identifier,
-                                       @NumberArg @HelperArg("cmd") Integer cmd) {
+                                      @LiteralArg("skin") String l1,
+                                      @LiteralArg("set") String l2,
+                                      @LiteralArg("model") String l3,
+                                      @OptionArg(listName = "collectibles") String parent,
+                                      @OptionArg(listName = "skins") String identifier,
+                                      @NumberArg @HelperArg("cmd") Integer cmd) {
         Collectible collectible = Vendorables.get(collectibleClass, parent);
         if (collectible == null) {
             error(sender, "Collectible not found");

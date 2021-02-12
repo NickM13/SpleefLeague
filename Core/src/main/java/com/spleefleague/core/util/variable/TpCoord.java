@@ -16,7 +16,7 @@ public class TpCoord {
     protected enum TpOrigin {
         NONE, RELATIVE, DIRECTIONAL
     }
-    
+
     public TpOrigin origin = TpOrigin.NONE;
     public Double value;
 
@@ -24,7 +24,7 @@ public class TpCoord {
         this.origin = origin;
         this.value = value;
     }
-    
+
     public static TpCoord create(String str) {
         TpOrigin origin = (str.charAt(0) == '~' ? TpOrigin.RELATIVE : (str.charAt(0) == '^' ? TpOrigin.DIRECTIONAL : TpOrigin.NONE));
         Double value = null;
@@ -39,7 +39,7 @@ public class TpCoord {
         }
         return new TpCoord(origin, value);
     }
-    
+
     public static void apply(Location loc, TpCoord x, TpCoord y, TpCoord z) {
         switch (x.origin) {
             case NONE:

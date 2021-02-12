@@ -27,9 +27,9 @@ public class CoreRank extends Rank {
             DONOR_1,
             DONOR_2,
             DONOR_3;
-    
+
     private String priority = "000";
-    
+
     public CoreRank() {
 
     }

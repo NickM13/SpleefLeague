@@ -97,7 +97,7 @@ public class GlobalZones {
                 .setDisplayItem(Material.HONEYCOMB)
                 .setDescription(cp -> {
                     GlobalZone zone = getZone(new Point(cp.getLocation()));
-                    return  Chat.DEFAULT + "Id: " + zone.getIdentifier() + "\n" +
+                    return Chat.DEFAULT + "Id: " + zone.getIdentifier() + "\n" +
                             Chat.DEFAULT + "Name: " + zone.getName() + "\n" +
                             Chat.DEFAULT + "Leaves: " + zone.getLeaves().size();
                 })

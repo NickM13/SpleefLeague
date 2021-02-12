@@ -15,12 +15,12 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class RulesCommand extends CoreCommand {
-    
+
     public RulesCommand() {
         super("rules", CoreRank.DEFAULT);
         setDescription("Read the rules of the server");
     }
-    
+
     @CommandAnnotation
     public void rules(CorePlayer sender) {
         //error(sender, CoreError.SETUP);

@@ -36,10 +36,12 @@ public class BuildStructure extends DBEntity {
 
     private static final int STRUCTURES_VERSION = 3;
     private static final RegistryBlockID<IBlockData> REGISTRY = Block.REGISTRY_ID;
-    
-    @DBField private String name;
+
+    @DBField
+    private String name;
     private final Map<BlockPosition, FakeBlock> fakeBlocks = new HashMap<>();
-    @DBField private Integer version;
+    @DBField
+    private Integer version;
     private BuildWorld constructor = null;
     private BlockPosition low, high;
 
@@ -221,9 +223,11 @@ public class BuildStructure extends DBEntity {
     public boolean isUnderConstruction() {
         return constructor != null;
     }
+
     public void setUnderConstruction(BuildWorld buildWorld) {
         constructor = buildWorld;
     }
+
     public BuildWorld getConstructor() {
         return constructor;
     }

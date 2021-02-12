@@ -22,15 +22,15 @@ import java.util.List;
 /**
  * BattleManagerTeam is a BattleManager that manages battles of static sized teams
  * Uses lead player of parties for queue id and parties for comparisons
- * 
+ *
  * @author NickM13
  */
 public class BattleManagerTeam extends BattleManager {
-    
+
     public BattleManagerTeam(BattleMode mode) {
         super(mode);
     }
-    
+
     @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);
@@ -76,5 +76,5 @@ public class BattleManagerTeam extends BattleManager {
             e.printStackTrace();
         }
     }
-    
+
 }

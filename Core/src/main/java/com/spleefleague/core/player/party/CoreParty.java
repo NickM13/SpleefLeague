@@ -48,7 +48,7 @@ public class CoreParty extends Party {
 
     private final Set<CorePlayer> playerSet = new HashSet<>();
     private final Set<CorePlayer> localPlayers = new HashSet<>();
-     
+
     public CoreParty(UUID owner, List<UUID> players) {
         super(owner);
         for (UUID uuid : players) {
@@ -64,7 +64,7 @@ public class CoreParty extends Party {
     public boolean isOwner(CorePlayer cp) {
         return owner.equals(cp.getUniqueId());
     }
-    
+
     public Set<CorePlayer> getPlayerSet() {
         return playerSet;
     }
@@ -72,10 +72,10 @@ public class CoreParty extends Party {
     public Set<CorePlayer> getLocalPlayers() {
         return localPlayers;
     }
-    
+
     public TextComponent getPlayersFormatted() {
         TextComponent message = new TextComponent("");
-        
+
         Iterator<CorePlayer> cpit = playerSet.iterator();
         while (cpit.hasNext()) {
             CorePlayer cp = cpit.next();
@@ -84,7 +84,7 @@ public class CoreParty extends Party {
                 message.addExtra(new TextComponent(", "));
             }
         }
-        
+
         return message;
     }
 
@@ -129,7 +129,7 @@ public class CoreParty extends Party {
         localPlayers.remove(cp);
         return super.removePlayer(uuid);
     }
-    
+
     public void openPartyList(CorePlayer cp) {
         InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
                 .setTitle("Party List");
@@ -153,5 +153,5 @@ public class CoreParty extends Party {
             }
         }
     }
-    
+
 }

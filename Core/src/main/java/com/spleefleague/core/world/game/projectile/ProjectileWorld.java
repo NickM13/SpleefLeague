@@ -110,10 +110,10 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
     }
 
     protected net.minecraft.server.v1_15_R1.Entity shoot(List<Entity> entities,
-                                                       CorePlayer shooter,
-                                                       Location location,
-                                                       ProjectileStats projectileStats,
-                                                       double charge)
+                                                         CorePlayer shooter,
+                                                         Location location,
+                                                         ProjectileStats projectileStats,
+                                                         double charge)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         net.minecraft.server.v1_15_R1.Entity entity = projectileStats.entityClass
                 .getDeclaredConstructor(ProjectileWorld.class, CorePlayer.class, Location.class, ProjectileStats.class, Double.class)
@@ -125,9 +125,9 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
     }
 
     protected List<net.minecraft.server.v1_15_R1.Entity> shoot(CorePlayer shooter,
-                                                             Location location,
-                                                             ProjectileStats projectileStats,
-                                                             double charge) {
+                                                               Location location,
+                                                               ProjectileStats projectileStats,
+                                                               double charge) {
         List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
         try {
             for (ProjectileWorldPlayer pwp : playerMap.values()) {

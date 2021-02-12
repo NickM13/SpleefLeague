@@ -85,26 +85,40 @@ public class CorePlayer extends DBPlayer {
     private CoreLocation lastLocation;
     private Checkpoint checkpoint;
 
-    @DBField private String nickname = null;
-    @DBField private UUID disguise = null;
+    @DBField
+    private String nickname = null;
+    @DBField
+    private UUID disguise = null;
 
-    @DBField private CorePermanentRank permRank = new CorePermanentRank();
-    @DBField private List<CoreTempRank> tempRanks = new ArrayList<>();
+    @DBField
+    private CorePermanentRank permRank = new CorePermanentRank();
+    @DBField
+    private List<CoreTempRank> tempRanks = new ArrayList<>();
 
-    @DBField private Boolean vanished;
+    @DBField
+    private Boolean vanished;
     private Boolean ghosting = false;
 
-    @DBField private String gameMode = "ADVENTURE";
-    @DBField private final CorePlayerOptions options = new CorePlayerOptions(this);
-    @DBField private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles(this);
-    @DBField private final PlayerRatings ratings = new PlayerRatings();
-    @DBField private Long lastOnline = -1L;
-    @DBField private CorePlayerPurse purse = new CorePlayerPurse(this);
-    @DBField private CorePlayerCrates crates = new CorePlayerCrates(this);
+    @DBField
+    private String gameMode = "ADVENTURE";
+    @DBField
+    private final CorePlayerOptions options = new CorePlayerOptions(this);
+    @DBField
+    private final CorePlayerCollectibles collectibles = new CorePlayerCollectibles(this);
+    @DBField
+    private final PlayerRatings ratings = new PlayerRatings();
+    @DBField
+    private Long lastOnline = -1L;
+    @DBField
+    private CorePlayerPurse purse = new CorePlayerPurse(this);
+    @DBField
+    private CorePlayerCrates crates = new CorePlayerCrates(this);
 
-    @DBField private CorePlayerStatistics statistics = new CorePlayerStatistics();
+    @DBField
+    private CorePlayerStatistics statistics = new CorePlayerStatistics();
 
-    @DBField private CorePlayerFriends friends = new CorePlayerFriends(this);
+    @DBField
+    private CorePlayerFriends friends = new CorePlayerFriends(this);
 
     /**
      * Non-database variables
@@ -115,8 +129,9 @@ public class CorePlayer extends DBPlayer {
     private long urlTime;
 
     // Current selected chat channel to send messages in
-    @DBField private ChatChannel chatChannel;
-    
+    @DBField
+    private ChatChannel chatChannel;
+
     // 5 min, sets player to afk
     private static final long AFK_WARNING = 1000L * 60 * 4 + 30;
     private static final long AFK_TIMEOUT = 1000L * 60 * 5;
@@ -124,11 +139,11 @@ public class CorePlayer extends DBPlayer {
     private long lastAction;
     private boolean afk;
     private boolean afkWarned;
-    
+
     private Player replyPlayer = null;
 
     private PermissionAttachment permissions;
-    
+
     private final Set<FakeWorld<?>> fakeWorlds = new TreeSet<>((left, right) -> right.getPriority() - left.getPriority());
     private Battle<?> battle;
     private BattleState battleState;
@@ -157,14 +172,14 @@ public class CorePlayer extends DBPlayer {
         this.battleState = BattleState.NONE;
         this.globalZone = GlobalZones.getWilderness();
     }
-    
+
     public CorePlayer(Player player) {
         super();
         this.uuid = player.getUniqueId();
         this.username = player.getName();
         this.battleState = BattleState.NONE;
     }
-    
+
     /**
      * Runs when a player who has never joined before logs in
      * This function always calls before init()
@@ -201,7 +216,7 @@ public class CorePlayer extends DBPlayer {
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
         GlobalZones.onPlayerJoin(this);
     }
-    
+
     @Override
     public void initOffline() {
         if (nickname == null) nickname = username;
@@ -218,7 +233,7 @@ public class CorePlayer extends DBPlayer {
 
         super.initOffline();
     }
-    
+
     /**
      * Called after loading data from the database DBEntity::load
      */
@@ -226,7 +241,7 @@ public class CorePlayer extends DBPlayer {
     public void afterLoad() {
         super.afterLoad();
     }
-    
+
     /**
      * Called on player quit
      */
@@ -244,7 +259,7 @@ public class CorePlayer extends DBPlayer {
         Core.getInstance().unqueuePlayerGlobally(this);
 
         NoteBlockMusic.stopSong(this);
-        
+
         Team team = getPlayer().getScoreboard().getEntryTeam(getPlayer().getName());
         if (team != null) team.removeEntry(getPlayer().getName());
 
@@ -335,7 +350,7 @@ public class CorePlayer extends DBPlayer {
 
     /**
      * Sets the gamemode of a player
-     *
+     * <p>
      * This is an override of the default setGameMode because there
      * were issues with MultiVerse plugin resetting GameModes on world tps
      *
@@ -345,7 +360,7 @@ public class CorePlayer extends DBPlayer {
         this.gameMode = gameMode.name();
         getPlayer().setGameMode(gameMode);
     }
-    
+
     /**
      * Get the collectibles object owned by the player
      *
@@ -354,7 +369,7 @@ public class CorePlayer extends DBPlayer {
     public CorePlayerCollectibles getCollectibles() {
         return collectibles;
     }
-    
+
     /**
      * Get the options object that CorePlayer options are stored in,
      * accessed ingame via the MainMenu Options menu
@@ -364,7 +379,7 @@ public class CorePlayer extends DBPlayer {
     public CorePlayerOptions getOptions() {
         return options;
     }
-    
+
     /**
      * Gets the current gamemode of a player, used for preventing gamemode change on world hopping
      *
@@ -424,6 +439,7 @@ public class CorePlayer extends DBPlayer {
             refreshHotbar();
         }
     }
+
     public boolean isAfk() {
         return afk;
     }
@@ -467,7 +483,7 @@ public class CorePlayer extends DBPlayer {
     public CoreParty getParty() {
         return Core.getInstance().getPartyManager().getParty(this);
     }
-    
+
     /**
      * @return In Party
      */
@@ -653,7 +669,7 @@ public class CorePlayer extends DBPlayer {
             }
             permissions.setPermission(p, has);
         }
-        
+
         getPlayer().updateCommands();
     }
 
@@ -706,6 +722,7 @@ public class CorePlayer extends DBPlayer {
         updateRank();
         Core.getInstance().sendPacket(new PacketSpigotPlayerRank(getUniqueId(), "", 0));
     }
+
     public CoreRank getPermanentRank() {
         return permRank.getRank();
     }
@@ -750,7 +767,7 @@ public class CorePlayer extends DBPlayer {
         }
          */
     }
-    
+
     /**
      * Returns player's location, or if they're offline their lastLocation (/back)
      * Not really that useful for offline players atm
@@ -781,6 +798,7 @@ public class CorePlayer extends DBPlayer {
     public void saveLastLocation() {
         lastLocation = new CoreLocation(getPlayer().getLocation());
     }
+
     /**
      * Teleports player to a warp location if they have permissions
      *
@@ -816,7 +834,7 @@ public class CorePlayer extends DBPlayer {
 
     /**
      * Teleports player to a position using player's world
-     * 
+     *
      * @param x Double
      * @param y Double
      * @param z Double
@@ -829,11 +847,11 @@ public class CorePlayer extends DBPlayer {
     /**
      * Teleports a player using TpCoords (allows for relative/directional coordinates)
      *
-     * @param x TpCoord
-     * @param y TpCoord
-     * @param z TpCoord
+     * @param x     TpCoord
+     * @param y     TpCoord
+     * @param z     TpCoord
      * @param pitch Double
-     * @param yaw Double
+     * @param yaw   Double
      */
     public void teleport(TpCoord x, TpCoord y, TpCoord z, @Nullable Double pitch, @Nullable Double yaw) {
         Location loc = getPlayer().getLocation().clone();
@@ -841,7 +859,7 @@ public class CorePlayer extends DBPlayer {
         TpCoord.apply(loc, x, y, z);
         if (pitch != null) loc.setPitch(pitch.floatValue());
         if (yaw != null) loc.setYaw(yaw.floatValue());
-        
+
         teleport(loc);
     }
 
@@ -883,7 +901,7 @@ public class CorePlayer extends DBPlayer {
     /**
      * Sets a player's checkpoint for a certain duration of seconds, or 0 for no expire time
      *
-     * @param warp WarpName
+     * @param warp     WarpName
      * @param duration Seconds (0=no expire)
      */
     public void setCheckpoint(String warp, int duration) {
@@ -996,11 +1014,11 @@ public class CorePlayer extends DBPlayer {
     /**
      * Send a title to player (Large text in middle of screen)
      *
-     * @param title Title
+     * @param title    Title
      * @param subtitle Subtitle
-     * @param fadeIn Ticks
-     * @param stay Ticks
-     * @param fadeOut Ticks
+     * @param fadeIn   Ticks
+     * @param stay     Ticks
+     * @param fadeOut  Ticks
      */
     public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
@@ -1047,12 +1065,12 @@ public class CorePlayer extends DBPlayer {
     public String getPingFormatted() {
         int ping = getPing();
         String str = "";
-        
-        if (ping <= 30)          str += ChatColor.GREEN;
-        else if (ping <= 100)    str += ChatColor.DARK_GREEN;
-        else if (ping <= 250)    str += ChatColor.GOLD;
-        else                    str += ChatColor.RED;
-        
+
+        if (ping <= 30) str += ChatColor.GREEN;
+        else if (ping <= 100) str += ChatColor.DARK_GREEN;
+        else if (ping <= 250) str += ChatColor.GOLD;
+        else str += ChatColor.RED;
+
         str += ping + "ms";
         return str;
     }
@@ -1067,7 +1085,7 @@ public class CorePlayer extends DBPlayer {
     public final boolean isAvailable() {
         return !isInGlobal() && !isAfk();
     }
-    
+
     /**
      * Whether a player is in a fake world or not
      * Main purpose is to keep hotbar items from disappearing upon afk
@@ -1075,7 +1093,7 @@ public class CorePlayer extends DBPlayer {
      * @return In Global World
      */
     public final boolean isInGlobal() {
-       return !isInBattle() && !isInBuildWorld();
+        return !isInBattle() && !isInBuildWorld();
     }
 
     public final boolean canJoinBattle() {
@@ -1085,7 +1103,7 @@ public class CorePlayer extends DBPlayer {
     public final boolean isMenuAvailable() {
         return (!isInBattle() || getBattleState() != BattleState.BATTLER);
     }
-    
+
     /**
      * Returns a reversed list of the FakeWorlds for prioritizing interactions
      *
@@ -1094,19 +1112,19 @@ public class CorePlayer extends DBPlayer {
     public final Iterator<FakeWorld<?>> getFakeWorlds() {
         return fakeWorlds.iterator();
     }
-    
+
     public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.add(fakeWorld);
     }
-    
+
     public final void leaveFakeWorld(FakeWorld<?> fakeWorld) {
         fakeWorlds.remove(fakeWorld);
     }
-    
+
     /**
      * Sets the current battle of a Core Player for quick referencing later
      *
-     * @param battle Battle
+     * @param battle      Battle
      * @param battleState Battle State
      */
     public final void joinBattle(Battle<?> battle, BattleState battleState) {
@@ -1114,7 +1132,7 @@ public class CorePlayer extends DBPlayer {
         this.battleState = battleState;
         CorePlugin.addIngamePlayerName(this);
     }
-    
+
     /**
      * Removes player from CorePlugins global player battles
      *
@@ -1126,7 +1144,7 @@ public class CorePlayer extends DBPlayer {
         this.battleState = BattleState.NONE;
         CorePlugin.removeIngamePlayerName(this);
     }
-    
+
     /**
      * Checks if a player is in a battle
      *
@@ -1135,7 +1153,7 @@ public class CorePlayer extends DBPlayer {
     public final boolean isInBattle() {
         return battle != null;
     }
-    
+
     /**
      * Returns current battle the player is in, or null if not
      * in a battle
@@ -1145,7 +1163,7 @@ public class CorePlayer extends DBPlayer {
     public final Battle<?> getBattle() {
         return battle;
     }
-    
+
     /**
      * @return Battle State
      */
@@ -1156,7 +1174,7 @@ public class CorePlayer extends DBPlayer {
     public final boolean isBattler() {
         return battle != null && battleState == BattleState.BATTLER;
     }
-    
+
     /**
      * Returns whether player is in a Build World or not
      *
@@ -1165,7 +1183,7 @@ public class CorePlayer extends DBPlayer {
     public final boolean isInBuildWorld() {
         return BuildWorld.getPlayerBuildWorld(this) != null;
     }
-    
+
     /**
      * Returns a player's Build World if they are in one
      *
@@ -1214,7 +1232,7 @@ public class CorePlayer extends DBPlayer {
 
     /**
      * Sets an item the player's main hand
-     * 
+     *
      * @param itemStack Held Item
      */
     public final void setHeldItem(ItemStack itemStack) {

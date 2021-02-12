@@ -21,20 +21,20 @@ import java.util.List;
  * BattleManagerBonanza is a BattleManager that maintains
  * a single battle with an un-capped amount of players
  * Battle is started on server start and never stops
- * 
+ *
  * @author NickM13
  */
 public class BattleManagerBonanza extends BattleManager {
-    
+
     public BattleManagerBonanza(BattleMode mode) {
         super(mode);
     }
-    
+
     public Battle<?> getMainBattle() {
         if (battles.isEmpty()) return null;
         return battles.get(0);
     }
-    
+
     /**
      * Starts a battle on a random arena
      */
@@ -47,14 +47,14 @@ public class BattleManagerBonanza extends BattleManager {
 
     /**
      * @param battle Battle
-     * @param cp CorePlayer
+     * @param cp     CorePlayer
      */
     private void addBattlePlayer(Battle<?> battle, CorePlayer cp) {
         battle.addSpectator(cp, null);
     }
 
     /**
-     * @param players Empty Player List
+     * @param players   Empty Player List
      * @param arenaName Arena Name
      */
     @Override
@@ -79,5 +79,5 @@ public class BattleManagerBonanza extends BattleManager {
             CoreLogger.logError("Unable to create battle", exception);
         }
     }
-    
+
 }

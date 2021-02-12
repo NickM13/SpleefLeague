@@ -17,12 +17,12 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class SurrenderCommand extends CoreCommand {
-    
+
     public SurrenderCommand() {
         super("surrender", CoreRank.DEFAULT);
         this.addAlias("ff");
     }
-    
+
     @CommandAnnotation
     public void surrender(CorePlayer sender) {
         if (!sender.isInBattle() || sender.getBattleState() != BattleState.BATTLER) {
@@ -31,5 +31,5 @@ public class SurrenderCommand extends CoreCommand {
         }
         sender.getBattle().surrender(sender);
     }
-    
+
 }

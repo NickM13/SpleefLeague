@@ -16,11 +16,11 @@ import com.spleefleague.core.player.rank.CoreRank;
  * @author NickM13
  */
 public class EndGameCommand extends CoreCommand {
-    
+
     public EndGameCommand() {
         super("endgame", CoreRank.DEFAULT);
     }
-    
+
     @CommandAnnotation
     public void endgame(CorePlayer sender) {
         if (!sender.isInBattle()) {

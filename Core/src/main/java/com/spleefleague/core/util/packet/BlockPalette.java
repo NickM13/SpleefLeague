@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author Jonas
  */
 public abstract class BlockPalette {
@@ -19,15 +18,21 @@ public abstract class BlockPalette {
     private static final RegistryBlockID<IBlockData> REGISTRY_ID = Block.REGISTRY_ID;
 
     public abstract BlockData[] decode(byte[] data);
+
     public abstract BlockData[] getBlocks();
+
     public abstract int getBitsPerBlock();
+
     public abstract int getLength();
+
     public abstract int[] getPaletteData();
+
     public abstract byte[] encode(BlockData[] data);
+
     public abstract boolean includePaletteLength();
 
     public static int blockDataToId(BlockData data) {
-        return REGISTRY_ID.getId(((CraftBlockData)data).getState());
+        return REGISTRY_ID.getId(((CraftBlockData) data).getState());
     }
 
     public static BlockData blockDataFromId(int id) {
@@ -41,10 +46,9 @@ public abstract class BlockPalette {
 
     public static BlockPalette createPalette(BlockData[] data) {
         int bitsPerBlock = Math.max(32 - Integer.numberOfLeadingZeros(data.length - 1), 4);
-        if(bitsPerBlock <= 8) {
+        if (bitsPerBlock <= 8) {
             return new EncodedBlockPalette(data, bitsPerBlock);
-        }
-        else {
+        } else {
             return GLOBAL;
         }
     }
@@ -85,7 +89,7 @@ public abstract class BlockPalette {
         public byte[] encode(BlockData[] data) {
             byte[] array = new byte[512 * getBitsPerBlock()];
             ProtocolLongArrayBitWriter writer = new ProtocolLongArrayBitWriter(array);
-            for(BlockData block : data) {
+            for (BlockData block : data) {
                 writer.writeInt(blockDataToId(block), 14);
             }
             return array;
@@ -126,7 +130,7 @@ public abstract class BlockPalette {
 
         private BlockData[] createLookupTable(int[] data) {
             BlockData[] lookupTable = new BlockData[data.length];
-            for(int i = 0; i < data.length; i++) {
+            for (int i = 0; i < data.length; i++) {
                 lookupTable[i] = blockDataFromId(data[i]);
             }
             return lookupTable;
@@ -162,13 +166,13 @@ public abstract class BlockPalette {
             byte[] array = new byte[512 * bitsPerBlock];//16^3 / 8
             ProtocolLongArrayBitWriter writer = new ProtocolLongArrayBitWriter(array);
             Map<BlockData, Integer> lookup = new HashMap<>();
-            for(int i = 0; i < idToBlock.length; i++) {
+            for (int i = 0; i < idToBlock.length; i++) {
                 lookup.put(idToBlock[i], i);
             }
-            for(BlockData block : data) {
+            for (BlockData block : data) {
                 try {
                     writer.writeInt(lookup.get(block), bitsPerBlock);
-                } catch(NullPointerException e) {
+                } catch (NullPointerException e) {
                     System.out.println("Error encoding data: " + block.getAsString());
                     throw e;
                 }
@@ -179,7 +183,7 @@ public abstract class BlockPalette {
         @Override
         public int[] getPaletteData() {
             int[] data = new int[idToBlock.length];
-            for(int i = 0; i < data.length; i++) {
+            for (int i = 0; i < data.length; i++) {
                 data[i] = blockDataToId(idToBlock[i]);
             }
             return data;

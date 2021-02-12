@@ -43,53 +43,64 @@ import org.bukkit.World;
  * <br>
  * Arena Document:<br>
  * {<br>
- *     identifier:      <i>required</i>, Identifier name for commands<br>
- *     name:            <i>required</i>, Display name
- *     description:     <i>optional</i>, Description for arena<br>
- *     teamCount:       <i>optional</i>, Used for dynamically sized modes, number of teams (if team size is 1 this is number of players)<br>
- *     rated:           <i>optional</i>, Default true, Whether arena will apply an elo rating or not afterward<br>
- *     queued:          <i>optional</i>, Default true, If false, this arena can only be entered through challenges<br>
- *     paused:          <i>optional</i>, Default false, If true, arena cannot be played on<br>
- *     borders:         <i>optional</i>, List of dimensions that the arena is contained in<br>
- *     goals:           <i>optional</i>, List of dimensions that the arena defines as end points (SuperJump)<br>
- *     spectatorSpawn:  <i>optional</i>, Spawn location of spectators<br>
- *     modes:           <i>required</i>, List of mode names<br>
- *     spawns:          <i>optional</i>, List of spawn positions for battlers<br>
- *     checkpoints:     <i>optional</i>, List of checkpoint positions<br>
- *     structures:      <i>optional</i>, List of build structure names<br>
+ * identifier:      <i>required</i>, Identifier name for commands<br>
+ * name:            <i>required</i>, Display name
+ * description:     <i>optional</i>, Description for arena<br>
+ * teamCount:       <i>optional</i>, Used for dynamically sized modes, number of teams (if team size is 1 this is number of players)<br>
+ * rated:           <i>optional</i>, Default true, Whether arena will apply an elo rating or not afterward<br>
+ * queued:          <i>optional</i>, Default true, If false, this arena can only be entered through challenges<br>
+ * paused:          <i>optional</i>, Default false, If true, arena cannot be played on<br>
+ * borders:         <i>optional</i>, List of dimensions that the arena is contained in<br>
+ * goals:           <i>optional</i>, List of dimensions that the arena defines as end points (SuperJump)<br>
+ * spectatorSpawn:  <i>optional</i>, Spawn location of spectators<br>
+ * modes:           <i>required</i>, List of mode names<br>
+ * spawns:          <i>optional</i>, List of spawn positions for battlers<br>
+ * checkpoints:     <i>optional</i>, List of checkpoint positions<br>
+ * structures:      <i>optional</i>, List of build structure names<br>
  * }
  *
  * @author NickM13
  */
 public class Arena extends DBEntity {
 
-    @DBField protected String name;
-    @DBField protected String description = "";
+    @DBField
+    protected String name;
+    @DBField
+    protected String description = "";
 
-    @DBField protected Set<String> modes;
+    @DBField
+    protected Set<String> modes;
 
-    @DBField protected Boolean paused = false;
+    @DBField
+    protected Boolean paused = false;
 
     protected World world = Core.DEFAULT_WORLD;
 
-    @DBField protected Integer teamCount = 1;
-    @DBField protected Integer teamSize = 1;
+    @DBField
+    protected Integer teamCount = 1;
+    @DBField
+    protected Integer teamSize = 1;
 
     protected List<Position> spawns = new ArrayList<>();
     protected List<Position> checkpoints = new ArrayList<>();
-    @DBField protected Position spectatorSpawn = null;
+    @DBField
+    protected Position spectatorSpawn = null;
 
     protected List<Position> scoreboards = new ArrayList<>();
 
-    @DBField protected Material displayItem = Material.MAP;
-    @DBField protected Integer displayCmd = 0;
+    @DBField
+    protected Material displayItem = Material.MAP;
+    @DBField
+    protected Integer displayCmd = 0;
 
     protected List<Dimension> borders = new ArrayList<>();
 
     protected List<Dimension> goals = new ArrayList<>();
 
-    @DBField protected Set<String> structures;
-    @DBField protected Position origin = new Position();
+    @DBField
+    protected Set<String> structures;
+    @DBField
+    protected Position origin = new Position();
 
     protected int ongoingMatches = 0;
     protected int ongoingQueues = 0;
@@ -124,7 +135,7 @@ public class Arena extends DBEntity {
         this.origin = from.getOrigin();
     }
 
-    @DBSave(fieldName="borders")
+    @DBSave(fieldName = "borders")
     private List<Document> saveBorders() {
         return borders
                 .stream()
@@ -132,12 +143,12 @@ public class Arena extends DBEntity {
                 .collect(Collectors.toList());
     }
 
-    @DBLoad(fieldName ="borders")
+    @DBLoad(fieldName = "borders")
     private void loadBorders(List<Document> docs) {
         docs.forEach(doc -> borders.add(new Dimension(doc)));
     }
 
-    @DBSave(fieldName="goals")
+    @DBSave(fieldName = "goals")
     private List<Document> saveGoals() {
         return goals
                 .stream()
@@ -145,19 +156,19 @@ public class Arena extends DBEntity {
                 .collect(Collectors.toList());
     }
 
-    @DBLoad(fieldName ="goals")
+    @DBLoad(fieldName = "goals")
     private void loadGoals(List<Document> docs) {
         docs.forEach(doc -> goals.add(new Dimension(doc)));
     }
 
-    @DBLoad(fieldName ="spawns")
+    @DBLoad(fieldName = "spawns")
     private void loadSpawns(List<List<?>> spawnLists) {
         for (List<?> spawnList : spawnLists) {
             spawns.add(new Position(spawnList));
         }
     }
 
-    @DBSave(fieldName ="spawns")
+    @DBSave(fieldName = "spawns")
     private List<List<?>> saveSpawns() {
         List<List<?>> spawnLists = new ArrayList<>();
         for (Position spawn : spawns) {
@@ -166,14 +177,14 @@ public class Arena extends DBEntity {
         return spawnLists;
     }
 
-    @DBLoad(fieldName ="scoreboards")
+    @DBLoad(fieldName = "scoreboards")
     private void loadScoreboards(List<List<?>> scoreboardLists) {
         for (List<?> scoreboardList : scoreboardLists) {
             scoreboards.add(new Position(scoreboardList));
         }
     }
 
-    @DBSave(fieldName ="scoreboards")
+    @DBSave(fieldName = "scoreboards")
     private List<List<?>> saveScoreboards() {
         List<List<?>> scoreboardLists = new ArrayList<>();
         for (Position scoreboard : scoreboards) {
@@ -182,14 +193,14 @@ public class Arena extends DBEntity {
         return scoreboardLists;
     }
 
-    @DBLoad(fieldName ="checkpoints")
+    @DBLoad(fieldName = "checkpoints")
     private void loadCheckpoints(List<List<?>> checkpointLists) {
         for (List<?> checkpointList : checkpointLists) {
             checkpoints.add(new Position(checkpointList));
         }
     }
 
-    @DBSave(fieldName ="checkpoints")
+    @DBSave(fieldName = "checkpoints")
     private List<List<?>> saveCheckpoints() {
         List<List<?>> checkpointList = new ArrayList<>();
         for (Position checkpoint : checkpoints) {
@@ -527,7 +538,7 @@ public class Arena extends DBEntity {
     /**
      * Get the location for players after a game ends
      * used if they have Arena PostWarp enabled
-     *
+     * <p>
      * TODO: Right now this is just spectatorSpawn, should it be changed?
      *
      * @return Post Game Location

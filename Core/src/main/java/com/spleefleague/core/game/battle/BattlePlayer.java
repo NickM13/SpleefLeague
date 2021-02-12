@@ -1,7 +1,6 @@
 package com.spleefleague.core.game.battle;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,7 +10,7 @@ import org.bukkit.entity.Player;
 /**
  * BattlePlayer stores a DBPlayer and fallen state
  * of a player, managed in Battle's battlers
- * 
+ *
  * @author NickM
  * @since 4/14/2020
  */
@@ -47,7 +46,7 @@ public abstract class BattlePlayer {
     public Location getSpawn() {
         return spawn;
     }
-    
+
     public void setCheckpoint(int checkpoint) {
         this.checkpoint = checkpoint;
         Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
@@ -58,11 +57,11 @@ public abstract class BattlePlayer {
             }, 3L);
         });
     }
-    
+
     public int getCheckpoint() {
         return checkpoint;
     }
-    
+
     /**
      * @return Core Player
      */
@@ -118,7 +117,7 @@ public abstract class BattlePlayer {
     }
 
     public void onBlockBreak() {
-        
+
     }
 
     public void onSwapItem() {
@@ -152,7 +151,7 @@ public abstract class BattlePlayer {
         roundWins++;
         lastWin = System.currentTimeMillis();
     }
-    
+
     public int getRoundWins() {
         return roundWins;
     }
@@ -160,7 +159,7 @@ public abstract class BattlePlayer {
     public long getLastWin() {
         return lastWin;
     }
-    
+
     /**
      * @param state Fallen State
      */

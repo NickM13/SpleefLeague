@@ -18,22 +18,22 @@ import java.util.UUID;
 
 /**
  * PETS PETS PEPREPSTS SERKLRJSPKLHEL:KWJHYALIUUEWYAOIURYGHALOWSEI*U
- * 
+ *
  * @author NickM13
  */
 public class Pet extends Collectible {
-    
+
     private static final Map<CorePlayer, PetOwner> playerPetMap = new HashMap<>();
     private static final Map<UUID, CorePlayer> petPlayerMap = new HashMap<>();
-    
+
     public static void init() {
         Vendorable.registerParentType(Pet.class);
     }
-    
+
     public static void close() {
         playerPetMap.keySet().forEach(Pet::killPet);
     }
-    
+
     protected static void spawnPet(CorePlayer cp, Pet pet) {
         PetOwner petOwner;
         if (!playerPetMap.containsKey(cp)) {
@@ -48,7 +48,7 @@ public class Pet extends Collectible {
             petPlayerMap.put(entity.getUniqueID(), cp);
         }
     }
-    
+
     protected static void killPet(CorePlayer cp) {
         if (!playerPetMap.containsKey(cp)) return;
         if (playerPetMap.get(cp).getEntityPet() == null) return;
@@ -56,9 +56,10 @@ public class Pet extends Collectible {
         playerPetMap.get(cp).getEntityPet().killEntity();
         playerPetMap.get(cp).setEntityPet(null);
     }
-    
-    @DBField private PetType petType;
-    
+
+    @DBField
+    private PetType petType;
+
     public Pet() {
         super();
     }
@@ -67,7 +68,7 @@ public class Pet extends Collectible {
      * Constructor for use with /pet create
      *
      * @param identifier Identifier String
-     * @param name Display Name
+     * @param name       Display Name
      */
     public Pet(String identifier, String name) {
         super();
@@ -75,15 +76,15 @@ public class Pet extends Collectible {
         this.name = name;
         this.material = Material.WOLF_SPAWN_EGG;
     }
-    
+
     public void afterLoad() {
         super.afterLoad();
     }
-    
+
     public PetType getPetType() {
         return petType;
     }
-    
+
     /**
      * Called when a player clicks on this collectible on
      * their collections menu
@@ -95,7 +96,7 @@ public class Pet extends Collectible {
         cp.sendMessage("Fantastic!");
         spawnPet(cp, this);
     }
-    
+
     /**
      * Called when another collectible of the same type has
      * been enabled
@@ -107,7 +108,7 @@ public class Pet extends Collectible {
         cp.sendMessage("Goodbye :(");
         killPet(cp);
     }
-    
+
     /**
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
@@ -119,5 +120,5 @@ public class Pet extends Collectible {
     public boolean isAvailableToPurchase(CorePlayer cp) {
         return false;
     }
-    
+
 }

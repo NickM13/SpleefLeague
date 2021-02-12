@@ -22,18 +22,18 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
         GlobalVehicle.init();
         GlobalLock.init();
     }
-    
+
     public GlobalWorld(World world) {
         super(-1, world, GlobalWorldPlayer.class);
     }
-    
+
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
         if (!fakeBlocks.containsKey(pos)) return false;
         updateBlock(pos);
         return true;
     }
-    
+
     @Override
     protected boolean onItemUse(CorePlayer cp, BlockPosition pos, BlockPosition blockRelative) {
         if (!fakeBlocks.containsKey(pos)) return false;

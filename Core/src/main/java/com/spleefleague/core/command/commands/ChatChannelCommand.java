@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import com.spleefleague.core.command.annotation.OptionArg;
 
 /**
@@ -28,20 +29,21 @@ public class ChatChannelCommand extends CoreCommand {
         ChatChannel cc;
         String name;
         String desc;
-        
+
         public QuickChat(ChatChannel cc, String name, String desc) {
             this.cc = cc;
             this.name = name;
             this.desc = desc;
         }
-        
+
         public String createChatDescription() {
             String formatted = desc + ": " + name;
             return formatted;
         }
     }
+
     private final List<QuickChat> quickChats = new ArrayList<>();
-    
+
     public ChatChannelCommand() {
         super("chatchannels", CoreRank.DEFAULT);
         this.addAlias("cc");
@@ -55,7 +57,7 @@ public class ChatChannelCommand extends CoreCommand {
         setDescription("Set your current chat channel");
         setOptions("chatChannels", pi -> getAvailableChatNames(pi));
     }
-    
+
     private Set<String> getAvailableChatNames(PriorInfo pi) {
         Set<String> names = new HashSet<>();
         for (QuickChat qc : quickChats) {
@@ -65,21 +67,21 @@ public class ChatChannelCommand extends CoreCommand {
         }
         return names;
     }
-    
+
     private void newQuickChat(ChatChannel cc, String name, String desc) {
         quickChats.add(new QuickChat(cc, name, desc));
     }
-    
+
     private void printChatPerm(CorePlayer cp, QuickChat qc) {
         if (qc.cc.isAvailable(cp)) {
             Core.getInstance().sendMessage(cp, qc.createChatDescription());
         }
     }
-    
+
     private boolean checkChatPerm(CorePlayer cp, QuickChat qc) {
         return (qc.cc.isAvailable(cp));
     }
-    
+
     @CommandAnnotation
     public void chatchannels(CorePlayer sender) {
         Core.getInstance().sendMessage(sender, "Current Channel: " + sender.getChatChannel().getName());
@@ -88,9 +90,9 @@ public class ChatChannelCommand extends CoreCommand {
             printChatPerm(sender, qc);
         }
     }
-    
+
     @CommandAnnotation
-    public void chatchannels(CorePlayer sender, @OptionArg(listName="chatChannels") String channel) {
+    public void chatchannels(CorePlayer sender, @OptionArg(listName = "chatChannels") String channel) {
         for (QuickChat qc : quickChats) {
             if (channel.equalsIgnoreCase(qc.name)) {
                 if (checkChatPerm(sender, qc)) {

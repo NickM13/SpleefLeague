@@ -32,7 +32,7 @@ public class ChunkCoord extends DBVariable<List<Integer>> {
     public boolean equals(Object cc) {
         if (cc == this) return true;
         if (cc instanceof ChunkCoord) {
-            return (((ChunkCoord)cc).x == x && ((ChunkCoord) cc).z == z);
+            return (((ChunkCoord) cc).x == x && ((ChunkCoord) cc).z == z);
         }
         return false;
     }
@@ -44,12 +44,12 @@ public class ChunkCoord extends DBVariable<List<Integer>> {
         hash = 29 * hash + this.z;
         return hash;
     }
-    
+
     @Override
     public String toString() {
         return x + "," + z;
     }
-    
+
     public ChunkCoordIntPair toChunkCoordIntPair() {
         return new ChunkCoordIntPair(x, z);
     }

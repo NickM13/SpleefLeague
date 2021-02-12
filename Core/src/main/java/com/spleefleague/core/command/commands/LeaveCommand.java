@@ -18,14 +18,14 @@ import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave
  * @author NickM13
  */
 public class LeaveCommand extends CoreCommand {
-    
+
     public LeaveCommand() {
         super("leave", CoreRank.DEFAULT);
         addAlias("l");
         setUsage("/leave");
         setDescription("Leave all queues");
     }
-    
+
     @CommandAnnotation
     public void leave(CorePlayer sender) {
         if (sender.isInBattle()) {
@@ -38,5 +38,5 @@ public class LeaveCommand extends CoreCommand {
             Core.getInstance().sendPacket(new PacketSpigotQueueLeave(sender.getPlayer().getUniqueId()));
         }
     }
-    
+
 }

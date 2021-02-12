@@ -15,29 +15,29 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class Key extends Holdable {
-    
+
     public static void init() {
         Vendorable.registerParentType(Key.class);
     }
-    
+
     public static void close() {
 
     }
-    
+
     private static final Material DEFAULT_KEY_MAT = Material.BARRIER;
-    
+
     /**
      * Constructor for DB loading
      */
     public Key() {
         super();
     }
-    
+
     /**
      * Constructor for use with /key create
      *
      * @param identifier Identifier String
-     * @param name Display Name
+     * @param name       Display Name
      */
     public Key(String identifier, String name) {
         super();
@@ -45,7 +45,7 @@ public class Key extends Holdable {
         this.name = name;
         this.material = DEFAULT_KEY_MAT;
     }
-    
+
     /**
      * Whether an item is available for purchasing for things
      * such as requiring prerequisites, levels or achievements
@@ -57,10 +57,10 @@ public class Key extends Holdable {
     public boolean isAvailableToPurchase(CorePlayer cp) {
         return false;
     }
-    
+
     @Override
     public void onRightClick(CorePlayer cp) {
-    
+
     }
-    
+
 }

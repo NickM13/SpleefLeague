@@ -17,17 +17,18 @@ import java.util.List;
  * @author NickM13
  */
 public class TeleportHereCommand extends CoreCommand {
-    
+
     public TeleportHereCommand() {
         super("tphere", CoreRank.TEMP_MOD, CoreRank.BUILDER);
     }
-    
+
     @CommandAnnotation
     public void tphere(CorePlayer sender, CorePlayer cp) {
         cp.teleport(sender.getLocation());
         success(cp, "Teleported to " + sender.getDisplayName());
     }
-    @CommandAnnotation(minRank="DEVELOPER")
+
+    @CommandAnnotation(minRank = "DEVELOPER")
     public void tphere(CorePlayer sender, List<CorePlayer> cplayers) {
         for (CorePlayer cp : cplayers) {
             if (!cp.equals(sender)) {

@@ -19,9 +19,9 @@ import org.bukkit.Material;
  * @author NickM13
  */
 public class StaffMenu {
-    
+
     private static InventoryMenuItem menuItem = null;
-    
+
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Staff")
@@ -40,7 +40,7 @@ public class StaffMenu {
                             credit.getSlot());
         }
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it

@@ -14,22 +14,21 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.List;
 
 /**
  * Single-player gamemodes, doesn't actually use a queue system!
- * 
+ *
  * @author NickM13
  */
 public class BattleManagerSolo extends BattleManager {
-    
+
     public BattleManagerSolo(BattleMode mode) {
         super(mode);
     }
-    
+
     @Override
     public void startMatch(List<CorePlayer> players, String arenaName) {
         Arena arena = Arenas.get(arenaName, mode);
@@ -65,5 +64,5 @@ public class BattleManagerSolo extends BattleManager {
             e.printStackTrace();
         }
     }
-    
+
 }

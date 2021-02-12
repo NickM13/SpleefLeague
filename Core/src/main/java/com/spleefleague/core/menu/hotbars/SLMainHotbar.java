@@ -14,9 +14,9 @@ import org.bukkit.Material;
  * @since 4/18/2020
  */
 public class SLMainHotbar {
-    
+
     private static InventoryMenuItemHotbar menuItem = null;
-    
+
     public static void init() {
         menuItem = (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(0, "mainMenu")
                 .setName(ChatColor.RESET + "" + Chat.TAG + "" + ChatColor.BOLD + "SpleefLeague Menu")
@@ -24,7 +24,7 @@ public class SLMainHotbar {
                 .setAvailability(CorePlayer::isMenuAvailable)
                 .createLinkedContainer("SpleefLeague");
     }
-    
+
     /**
      * Gets the menu item for this menu, if it doesn't exist
      * already then initialize it
@@ -35,5 +35,5 @@ public class SLMainHotbar {
         if (menuItem == null) init();
         return menuItem;
     }
-    
+
 }

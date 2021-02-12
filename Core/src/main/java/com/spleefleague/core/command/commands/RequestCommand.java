@@ -31,7 +31,7 @@ public class RequestCommand extends CoreCommand {
         setUsage("Sends requests while in battle");
         setOptions("requests", RequestCommand::getAvailableRequests);
     }
-    
+
     protected static Set<String> getAvailableRequests(PriorInfo pi) {
         Set<String> availableRequests = new HashSet<>();
         if (pi.getCorePlayer().isInBattle()) {
@@ -42,35 +42,35 @@ public class RequestCommand extends CoreCommand {
 
     @CommandAnnotation
     public void request(CorePlayer sender,
-                        @OptionArg(listName="requests") String requestType,
+                        @OptionArg(listName = "requests") String requestType,
                         @Nullable String requestValue) {
         if (sender.isInBattle()) {
             sender.getBattle().onRequest(sender, requestType, requestValue);
         }
     }
 
-    @CommandAnnotation(hidden=true)
+    @CommandAnnotation(hidden = true)
     public void requestAccept(CorePlayer sender,
-                              @LiteralArg(value="accept") String l,
+                              @LiteralArg(value = "accept") String l,
                               String target) {
         if (!RequestManager.acceptRequest(sender, UUID.fromString(target))) {
             error(sender, "No pending request");
         }
     }
 
-    @CommandAnnotation(hidden=true)
+    @CommandAnnotation(hidden = true)
     public void requestDecline(CorePlayer sender,
-                               @LiteralArg(value="decline") String l,
+                               @LiteralArg(value = "decline") String l,
                                String target) {
         if (!RequestManager.declineRequest(sender, UUID.fromString(target))) {
             error(sender, "No pending request");
         }
     }
 
-    @CommandAnnotation(hidden=true)
+    @CommandAnnotation(hidden = true)
     public void requestJoin(CorePlayer sender,
-                               @LiteralArg(value="queue") String l,
-                               String target) {
+                            @LiteralArg(value = "queue") String l,
+                            String target) {
         Core.getInstance().queuePlayer(BattleMode.get(target), sender);
     }
 

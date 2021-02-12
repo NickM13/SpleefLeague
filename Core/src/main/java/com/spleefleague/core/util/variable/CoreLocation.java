@@ -27,7 +27,7 @@ public class CoreLocation extends DBVariable<List<?>> {
 
     /**
      * For database usage, requires list of 5 numbers
-    */
+     */
 
     public double x;
     public double y;
@@ -36,7 +36,8 @@ public class CoreLocation extends DBVariable<List<?>> {
     public long pitch;
     public UUID worldUuid;
 
-    public CoreLocation() { }
+    public CoreLocation() {
+    }
 
     public CoreLocation(double x, double y, double z) {
         this.x = x;
@@ -76,58 +77,58 @@ public class CoreLocation extends DBVariable<List<?>> {
     public CoreLocation(List<?> list) {
         super(list);
     }
-    
+
     public double getX() {
         return x;
     }
-    
+
     public double getY() {
         return y;
     }
-    
+
     public double getZ() {
         return z;
     }
-    
+
     public CoreLocation add(double x, double y, double z) {
         return new CoreLocation(this.x + x, this.y + y, this.z + z, yaw, pitch);
     }
-    
+
     public BlockPosition toBlockPosition() {
         return new BlockPosition((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
-    
+
     public double getYaw() {
         return yaw;
     }
-    
+
     public double getPitch() {
         return pitch;
     }
-    
+
     private double doublefy(List<?> list, int i) {
         double num = -1;
         if (list != null && i < list.size()) {
             Object o = list.get(i);
             if (o instanceof Double) {
-                num = ((Double)o);
+                num = ((Double) o);
             } else if (o instanceof Float) {
-                num = ((Float)o).doubleValue();
+                num = ((Float) o).doubleValue();
             } else if (o instanceof Integer) {
-                num = ((Integer)o).doubleValue();
+                num = ((Integer) o).doubleValue();
             } else if (o instanceof Long) {
-                num = ((Long)o).doubleValue();
+                num = ((Long) o).doubleValue();
             } else if (o instanceof Short) {
-                num = ((Short)o).doubleValue();
+                num = ((Short) o).doubleValue();
             }
         }
         return num;
     }
-    
+
     public double distance(CoreLocation pos) {
         return Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2) + Math.pow(z - pos.z, 2));
     }
-    
+
     @Override
     public void load(List<?> doc) {
         if (doc.size() >= 3) {
@@ -145,28 +146,28 @@ public class CoreLocation extends DBVariable<List<?>> {
             CoreLogger.logError(null, new IndexOutOfBoundsException("" + doc.size()));
         }
     }
-    
+
     @Override
     public List<?> save() {
         List<Object> list = new ArrayList<>();
-        
+
         list.add(x);
         list.add(y);
         list.add(z);
         list.add((double) yaw);
         list.add((double) pitch);
         list.add(worldUuid.toString());
-        
+
         return list;
     }
-    
+
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(worldUuid), x, y, z, (float)yaw, (float)pitch);
+        return new Location(Bukkit.getWorld(worldUuid), x, y, z, (float) yaw, (float) pitch);
     }
-    
+
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ", Y:" + yaw + ", P:" + pitch + ")";
     }
-    
+
 }
