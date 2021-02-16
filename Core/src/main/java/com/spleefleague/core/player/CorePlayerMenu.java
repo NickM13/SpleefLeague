@@ -73,13 +73,13 @@ public class CorePlayerMenu {
     }
 
     private void openInventory(InventoryMenuContainerChest inventoryMenuContainerChest) {
-        Inventory inventory = inventoryMenuContainerChest.open(owner);
+        Inventory inventory = inventoryMenuContainerChest.open(overlay, owner);
         if (overlay != null) overlay.openOverlay(inventory, owner, inventoryMenuContainerChest);
         owner.getPlayer().openInventory(inventory);
     }
 
     private void refreshInventory(InventoryMenuContainerChest inventoryMenuContainerChest) {
-        Inventory inventory = inventoryMenuContainerChest.refreshInventory(owner);
+        Inventory inventory = inventoryMenuContainerChest.refreshInventory(overlay, owner);
         if (overlay != null) overlay.openOverlay(inventory, owner, inventoryMenuContainerChest);
         owner.getPlayer().openInventory(inventory);
     }

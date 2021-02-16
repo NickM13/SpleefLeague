@@ -38,7 +38,7 @@ public class NoteBlockPlayer {
         playing = false;
     }
 
-    public void tick() {
+    public boolean tick() {
         if (playing) {
             for (NoteBlockSong.Layer layer : song.getLayerMap().values()) {
                 if (layer != null) {
@@ -105,10 +105,16 @@ public class NoteBlockPlayer {
                 }
             }
             tickCursor++;
-            if (tickCursor > song.getLengthSeconds() * 20 && song.isLooping()) {
-                tickCursor = song.getLoopStartStretched();
+            if (tickCursor > song.getLengthSeconds() * 20) {
+                if (song.isLooping() && (song.getLoops() > loop || song.getLoops() <= 0)) {
+                    tickCursor = song.getLoopStartStretched();
+                    loop++;
+                } else {
+                    return true;
+                }
             }
         }
+        return false;
     }
 
 }

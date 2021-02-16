@@ -40,22 +40,12 @@ import java.util.Set;
  */
 public class SpleggGun extends Holdable {
 
-    private static MongoCollection<Document> spleggGunCol;
-
     private static final ItemStack RANDOM_GUN = InventoryMenuUtils.createCustomItem(Material.IRON_INGOT, 1);
     
     public static void init() {
         Vendorable.registerParentType(SpleggGun.class);
-        
-        spleggGunCol = Splegg.getInstance().getPluginDB().getCollection("SpleggGuns");
-        int count = 0;
-        for (Document doc : spleggGunCol.find()) {
-            SpleggGun spleggGun = new SpleggGun();
-            spleggGun.load(doc);
-            Vendorables.register(spleggGun);
-            count++;
-        }
-        if (count == 0) {
+
+        if (loadCollectibles(SpleggGun.class) == 0) {
             create(SpleggGun.class, "henholster", "Hen Holster");
         }
 
@@ -284,19 +274,6 @@ public class SpleggGun extends Holdable {
     public void updateDisplayItem() {
         super.updateDisplayItem();
         projectileStats.updateProjectileItem();
-    }
-
-    @Override
-    public void saveChanges() {
-        save(spleggGunCol);
-    }
-
-    @Override
-    public void unsave() {
-        Document query = (new Document("identifier", this.identifier));
-        if (spleggGunCol.find(query).first() != null) {
-            spleggGunCol.deleteMany(query);
-        }
     }
     
 }

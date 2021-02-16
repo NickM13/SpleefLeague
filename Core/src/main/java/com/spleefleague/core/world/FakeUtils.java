@@ -3,6 +3,7 @@ package com.spleefleague.core.world;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.MathUtils;
+import com.spleefleague.core.util.variable.Position;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.util.BoundingBox;
@@ -138,6 +139,10 @@ public class FakeUtils {
         return transformedBlocks;
     }
 
+    public static Map<BlockPosition, FakeBlock> transformBlocks(Map<BlockPosition, FakeBlock> blocks, Position transform) {
+        return FakeUtils.translateBlocks(FakeUtils.rotateBlocks(blocks, (int) transform.getYaw()), transform.toBlockPosition());
+    }
+
     public static Set<BlockPosition> createCylinderShell(double radius, int height) {
         Set<BlockPosition> blocks = new HashSet<>();
         int lastMove1 = -1;
@@ -245,6 +250,12 @@ public class FakeUtils {
             }
         }
         return blocks;
+    }
+
+    private static int nextFakeId = 500000000;
+
+    public static int getNextId() {
+        return nextFakeId++;
     }
 
 }

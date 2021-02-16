@@ -16,7 +16,7 @@ public class SLMainOverlay {
 
     public static void init() {
         overlay = InventoryMenuAPI.createOverlay()
-                .setBackground(101);
+                .setBackground("嗰");
 
         // Options
         overlay.addItem(OptionsMenu.getItem(), 8, 0);

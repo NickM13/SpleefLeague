@@ -17,6 +17,4 @@ public abstract class InventoryMenuContainer {
 
     }
 
-    public abstract Inventory open(CorePlayer cp);
-
 }

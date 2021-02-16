@@ -259,17 +259,20 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         sortedItems.remove((page * pageBoundary.pageItemTotal) + slot);
     }
 
-    public Inventory refreshInventory(CorePlayer cp) {
+    public Inventory refreshInventory(InventoryMenuOverlay overlay, CorePlayer cp) {
         ItemStack[] contents = new ItemStack[MENU_SIZE];
 
         if (refreshAction != null) refreshAction.accept(this, cp);
 
         int pageCount = this.getPageCount(cp);
-        String title = titleFun != null ? titleFun.apply(cp) : "";
-        if (pageCount > 1) {
-            title = title + " (" + (cp.getMenu().getMenuTag("page", Integer.class) + 1) + "/" + pageCount + ")";
+        StringBuilder title = new StringBuilder(ChatColor.WHITE + "");
+        if (overlay != null) {
+            title.append(overlay.getTitlePrefix());
         }
-        String formattedTitle = ChatUtils.centerTitle(ChatColor.BLACK + "" + ChatColor.BOLD + title);
+        title.append(titleFun != null ? titleFun.apply(cp) : "");
+        if (pageCount > 1) {
+            title.append(" (").append(cp.getMenu().getMenuTag("page", Integer.class) + 1).append("/").append(pageCount).append(")");
+        }
 
         int toSkip = pageBoundary.pageItemTotal * cp.getMenu().getMenuTag("page", Integer.class);
 
@@ -314,15 +317,14 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
             }
         }
 
-        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, formattedTitle);
+        Inventory inv = Bukkit.createInventory(null, MENU_SIZE, title.toString());
         inv.setContents(contents);
         return inv;
     }
 
-    @Override
-    public Inventory open(CorePlayer cp) {
+    public Inventory open(InventoryMenuOverlay overlay, CorePlayer cp) {
         if (openAction != null) openAction.accept(this, cp);
-        return refreshInventory(cp);
+        return refreshInventory(overlay, cp);
     }
 
     public void setForcedPageCount(int count) {

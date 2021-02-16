@@ -49,7 +49,7 @@ public enum SpleefMode {
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1)
                 .setDescription("Take to the field in SpleefLeague's premier gamemode - Classic Spleef!" +
                         " Dig out blocks from under your opponent before they are able to do the same to you!" +
-                        "\n\nAffixes: " + ClassicSpleefAffixes.getActiveDisplayNames())
+                        "\n\n&6Current Affixes: &7" + ClassicSpleefAffixes.getActiveDisplayNames())
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
                 .setBattleClass(ClassicSpleefBattle.class);
 

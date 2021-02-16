@@ -2,7 +2,7 @@ package com.spleefleague.core.player.collectible.particles;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.gear.Gear;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.vendor.Vendorable;
 
 /**
@@ -13,6 +13,8 @@ public class Particles extends Collectible {
 
     public static void init() {
         Vendorable.registerParentType(Particles.class);
+
+        loadCollectibles(Particles.class);
     }
 
     public static void close() {

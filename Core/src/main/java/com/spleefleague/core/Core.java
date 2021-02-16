@@ -17,7 +17,6 @@ import com.spleefleague.core.crate.CrateManager;
 import com.spleefleague.core.game.BattleSessionManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.team.TeamInfo;
-import com.spleefleague.core.game.history.GameHistory;
 import com.spleefleague.core.game.history.GameHistoryManager;
 import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.listener.*;
@@ -44,7 +43,6 @@ import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.vendor.Artisans;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshServerList;
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
@@ -116,7 +114,6 @@ public class Core extends CorePlugin<CorePlayer> {
         FakeWorld.init();
         Arenas.init();
         NoteBlockMusic.init();
-        GlobalZones.init();
         PersonalScoreboard.init();
         Settings.init();
         InventoryMenuSkullManager.init();
@@ -438,6 +435,10 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public static void addProtocolPacketAdapter(PacketAdapter packetAdapter) {
         protocolManager.addPacketListener(packetAdapter);
+    }
+
+    public static ProtocolManager getProtocolManager() {
+        return protocolManager;
     }
 
     /**

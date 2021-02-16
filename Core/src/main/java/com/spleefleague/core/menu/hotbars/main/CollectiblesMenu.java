@@ -14,16 +14,13 @@ public class CollectiblesMenu {
 
     private static InventoryMenuItem menuItem = null;
 
-    public static void init() {
+    private static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Collectibles")
                 .setDescription("Collection of Collectibles!")
                 .setDisplayItem(Material.ITEM_FRAME, 1)
                 .setSelectedItem(Material.ITEM_FRAME, 2)
                 .createLinkedContainer("Collectibles Menu");
-
-        menuItem.getLinkedChest()
-                .addStaticItem(GearMenu.getItem(), 5, 2);
 
         menuItem.getLinkedChest()
                 .addStaticItem(HatMenu.getItem(), 4, 2);

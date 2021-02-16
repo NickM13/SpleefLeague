@@ -23,18 +23,13 @@ import org.bukkit.entity.Entity;
  */
 public class Artisan extends DBEntity {
 
-    @DBField
-    private String displayName = "";
+    @DBField private String displayName = "";
     @DBField(fieldName = "entity")
     private UUID entityUuid = null;
-    @DBField
-    private CoreCurrency currency = CoreCurrency.COIN;
-    @DBField
-    private String crate = "common";
-    @DBField
-    private Integer backgroundCmd = 30000;
-    @DBField
-    private Integer coinCost = 1;
+    @DBField private CoreCurrency currency = CoreCurrency.COIN;
+    @DBField private String crate = "common";
+    @DBField private String background = "嗰";
+    @DBField private Integer coinCost = 1;
 
     private InventoryMenuOverlay overlay = InventoryMenuAPI.createOverlay();
 
@@ -118,7 +113,7 @@ public class Artisan extends DBEntity {
 
     public void updateMenu() {
         overlay.clear();
-        overlay.setBackground(backgroundCmd);
+        overlay.setBackground(background);
 
         overlay.addItem(InventoryMenuUtils.getBackButton(), 1, 5);
 
@@ -207,8 +202,8 @@ public class Artisan extends DBEntity {
         updateMenu();
     }
 
-    public void setBackground(int cmd) {
-        this.backgroundCmd = cmd;
+    public void setBackground(String background) {
+        this.background = background;
         updateMenu();
     }
 

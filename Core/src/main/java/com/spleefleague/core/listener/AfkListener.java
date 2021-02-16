@@ -33,6 +33,7 @@ public class AfkListener implements Listener {
     }
 
     protected boolean setLastAction(CorePlayer cp) {
+        if (cp == null) return false;
         return cp.setLastAction();
     }
 

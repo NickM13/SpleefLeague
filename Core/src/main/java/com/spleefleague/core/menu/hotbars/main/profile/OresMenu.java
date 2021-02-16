@@ -36,25 +36,49 @@ public class OresMenu {
                 .setName(cp -> "Common Ore [" + cp.getPurse().getCurrency(CoreCurrency.ORE_COMMON) + "]")
                 .setDisplayItem(CoreCurrency.ORE_COMMON.displayItem)
                 .setDescription(CoreCurrency.ORE_COMMON.description)
-                .setCloseOnAction(false), 0, 1);
+                .setCloseOnAction(false), 0, 2);
 
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> "Rare Ore [" + cp.getPurse().getCurrency(CoreCurrency.ORE_RARE) + "]")
                 .setDisplayItem(CoreCurrency.ORE_RARE.displayItem)
                 .setDescription(CoreCurrency.ORE_RARE.description)
-                .setCloseOnAction(false), 1, 1);
+                .setCloseOnAction(false), 1, 2);
 
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> "Epic Ore [" + cp.getPurse().getCurrency(CoreCurrency.ORE_EPIC) + "]")
                 .setDisplayItem(CoreCurrency.ORE_EPIC.displayItem)
                 .setDescription(CoreCurrency.ORE_EPIC.description)
-                .setCloseOnAction(false), 2, 1);
+                .setCloseOnAction(false), 2, 2);
 
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> "Legendary Ore [" + cp.getPurse().getCurrency(CoreCurrency.ORE_LEGENDARY) + "]")
                 .setDisplayItem(CoreCurrency.ORE_LEGENDARY.displayItem)
                 .setDescription(CoreCurrency.ORE_LEGENDARY.description)
-                .setCloseOnAction(false), 3, 1);
+                .setCloseOnAction(false), 3, 2);
+
+        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> "Common Fragment [" + cp.getPurse().getCurrency(CoreCurrency.FRAGMENT_COMMON) + "]")
+                .setDisplayItem(CoreCurrency.FRAGMENT_COMMON.displayItem)
+                .setDescription(CoreCurrency.FRAGMENT_COMMON.description)
+                .setCloseOnAction(false), 0, 4);
+
+        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> "Rare Fragment [" + cp.getPurse().getCurrency(CoreCurrency.FRAGMENT_RARE) + "]")
+                .setDisplayItem(CoreCurrency.FRAGMENT_RARE.displayItem)
+                .setDescription(CoreCurrency.FRAGMENT_RARE.description)
+                .setCloseOnAction(false), 1, 4);
+
+        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> "Epic Fragment [" + cp.getPurse().getCurrency(CoreCurrency.FRAGMENT_EPIC) + "]")
+                .setDisplayItem(CoreCurrency.FRAGMENT_EPIC.displayItem)
+                .setDescription(CoreCurrency.FRAGMENT_EPIC.description)
+                .setCloseOnAction(false), 2, 4);
+
+        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> "Legendary Fragment [" + cp.getPurse().getCurrency(CoreCurrency.FRAGMENT_LEGENDARY) + "]")
+                .setDisplayItem(CoreCurrency.FRAGMENT_LEGENDARY.displayItem)
+                .setDescription(CoreCurrency.FRAGMENT_LEGENDARY.description)
+                .setCloseOnAction(false), 3, 4);
     }
 
     private static void createDigitMenu(InventoryMenuContainerChest container, int startX, int startY, int count, Function<CorePlayer, Integer> function) {

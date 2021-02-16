@@ -8,10 +8,10 @@ package com.spleefleague.core.listener;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
-import com.spleefleague.core.world.global.zone.GlobalZones;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,14 +37,15 @@ public class ConnectionListener implements Listener {
         //cp.gotoSpawn();
         Core.getInstance().applyVisibilities(cp);
         Core.getInstance().getPartyManager().onConnect(cp);
+        NoteBlockMusic.onPlayerJoin(cp);
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
         event.setQuitMessage("");
-        GlobalZones.onPlayerLeave(cp);
         Core.getInstance().getPartyManager().onDisconnect(cp);
+        NoteBlockMusic.onPlayerQuit(cp);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

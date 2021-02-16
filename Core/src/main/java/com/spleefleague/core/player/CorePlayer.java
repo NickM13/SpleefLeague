@@ -10,7 +10,6 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.mojang.authlib.GameProfile;
@@ -41,8 +40,6 @@ import com.spleefleague.core.util.variable.*;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
-import com.spleefleague.core.world.global.zone.GlobalZone;
-import com.spleefleague.core.world.global.zone.GlobalZones;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.player.PlayerRatings;
@@ -147,7 +144,6 @@ public class CorePlayer extends DBPlayer {
     private final Set<FakeWorld<?>> fakeWorlds = new TreeSet<>((left, right) -> right.getPriority() - left.getPriority());
     private Battle<?> battle;
     private BattleState battleState;
-    private GlobalZone globalZone;
 
     private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
 
@@ -170,7 +166,6 @@ public class CorePlayer extends DBPlayer {
         this.afkWarned = false;
         this.battle = null;
         this.battleState = BattleState.NONE;
-        this.globalZone = GlobalZones.getWilderness();
     }
 
     public CorePlayer(Player player) {
@@ -214,7 +209,6 @@ public class CorePlayer extends DBPlayer {
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
-        GlobalZones.onPlayerJoin(this);
     }
 
     @Override
@@ -928,32 +922,6 @@ public class CorePlayer extends DBPlayer {
      */
     public Checkpoint getCheckpoint() {
         return checkpoint;
-    }
-
-    public GlobalZone getGlobalZone() {
-        return globalZone;
-    }
-
-    public void setGlobalZone(GlobalZone globalZone) {
-        if (!isInGlobal()) return;
-        if (!globalZone.equals(this.globalZone)) {
-            this.globalZone = globalZone;
-            updateLeaves();
-        }
-    }
-
-    public void showGlobalZone() {
-        sendHotbarText(this.globalZone.getName());
-    }
-
-    public void updateLeaves() {
-        /*
-        if (globalZone == null || globalZone.getLeaves().isEmpty()) {
-            getPlayer().sendExperienceChange(0, 0);
-        } else {
-            getPlayer().sendExperienceChange(Math.min(1.f, getCollectibles().getLeafCount(globalZone.getIdentifier()) / ((float) globalZone.getLeaves().size())), 0);
-        }
-        */
     }
 
     /**

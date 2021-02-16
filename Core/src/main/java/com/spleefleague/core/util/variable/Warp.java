@@ -18,6 +18,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -201,7 +202,7 @@ public class Warp extends DBEntity {
         return false;
     }
 
-    public CoreLocation location;
+    @DBField public CoreLocation location;
     protected String warpName;
     protected String folderName = null;
 

@@ -78,7 +78,6 @@ public class PacketUtils {
     }
 
     public static PacketContainer createMultiBlockChangePacket(ChunkCoord chunkCoord, Map<Short, FakeBlock> fakeChunkBlocks) {
-        if (fakeChunkBlocks.isEmpty()) return null;
         PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
 
         packetContainer.getChunkCoordIntPairs().write(0, chunkCoord.toChunkCoordIntPair());

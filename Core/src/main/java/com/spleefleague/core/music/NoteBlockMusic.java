@@ -4,21 +4,25 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class NoteBlockMusic {
 
     private static final Map<String, NoteBlockSong> songMap = new HashMap<>();
     private static final Map<CorePlayer, NoteBlockPlayer> playerSongMap = new HashMap<>();
 
+    private static final Map<CorePlayer, List<NoteBlockPlayer>> asyncSongs = new HashMap<>();
+
     private static final String MUSIC_DIR = "../shared/music/";
+
+    private static BukkitTask songTask;
+    private static BukkitTask asyncTask;
 
     public static void init() {
         File file = new File(MUSIC_DIR);
@@ -30,19 +34,40 @@ public class NoteBlockMusic {
                 }
             }
         }
-        Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
-            for (NoteBlockPlayer player : playerSongMap.values()) {
-                player.tick();
+        songTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> playerSongMap.entrySet().removeIf(entry -> entry.getValue().tick()), 20L, 1L);
+        asyncTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
+            for (Map.Entry<CorePlayer, List<NoteBlockPlayer>> corePlayerListEntry : asyncSongs.entrySet()) {
+                List<NoteBlockPlayer> songs = corePlayerListEntry.getValue();
+                songs.removeIf(NoteBlockPlayer::tick);
             }
         }, 20L, 1L);
     }
 
     public static void close() {
+        songTask.cancel();
+        asyncTask.cancel();
+    }
 
+    public static void onPlayerJoin(CorePlayer cp) {
+        asyncSongs.put(cp, new ArrayList<>());
+    }
+
+    public static void onPlayerQuit(CorePlayer cp) {
+        synchronized (playerSongMap) {
+            playerSongMap.remove(cp);
+        }
+        synchronized (asyncSongs) {
+            asyncSongs.remove(cp);
+        }
     }
 
     public static NoteBlockPlayer getPlayer(CorePlayer listener) {
         return playerSongMap.get(listener);
+    }
+
+    public static void playSongAsync(CorePlayer listener, NoteBlockSong song, float volume) {
+        if (song == null) return;
+        asyncSongs.get(listener).add(new NoteBlockPlayer(listener, song, volume));
     }
 
     public static boolean playSong(CorePlayer listener) {

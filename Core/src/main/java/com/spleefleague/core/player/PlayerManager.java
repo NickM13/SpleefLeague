@@ -53,6 +53,7 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
     protected final Class<P> playerClass;
     protected final MongoCollection<Document> playerCol;
     protected final JavaPlugin plugin;
+    protected boolean saving = false;
 
     public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
         this.herePlayerList = new HashMap<>();
@@ -65,6 +66,10 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
         this.playerClass = playerClass;
         this.playerCol = collection;
         this.playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
+    }
+
+    public void enableSaving() {
+        saving = true;
     }
 
     public void setSortingComparible(Comparator<P> comparator) {
@@ -371,6 +376,9 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
         if (p != null) {
             p.setOnline(DBPlayer.OnlineState.OTHER);
             p.close();
+            if (saving) {
+                p.save(playerCol);
+            }
         } else {
             if (onlinePlayerListAll.containsKey(player.getUniqueId())) {
                 onlinePlayerListAll.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
@@ -391,14 +399,7 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
             p.init();
             herePlayerListAll.put(p.getUniqueId(), p);
 
-            if (plugin == Core.getInstance()) {
-                CorePlayer cp = (CorePlayer) p;
-                if (!cp.isVanished()) {
-                    herePlayerList.put(p.getUniqueId(), p);
-                }
-            } else {
-                herePlayerList.put(p.getUniqueId(), p);
-            }
+            herePlayerList.put(p.getUniqueId(), p);
             if (joinActions.containsKey(p.getUniqueId())) {
                 for (Consumer<P> action : joinActions.get(p.getUniqueId())) {
                     action.accept(p);

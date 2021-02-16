@@ -1,12 +1,12 @@
 package com.spleefleague.core.player.collectible;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.background.MenuBackground;
 import com.spleefleague.core.player.collectible.field.FieldGeneration;
-import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.collectible.key.Key;
 import com.spleefleague.core.player.collectible.music.Song;
@@ -43,19 +43,19 @@ public abstract class Collectible extends Vendorable {
     }
 
     public static void init() {
+        collectiblesCol = Core.getInstance().getPluginDB().getCollection("Collectibles");
+
         Vendorables.init();
 
         Hat.init();
         Key.init();
-        Pet.init();
-        Gear.init();
+        //Pet.init();
+
         MenuBackground.init();
         FieldGeneration.init();
         Song.init();
         Particles.init();
         VictoryMessage.init();
-        collectiblesCol = Core.getInstance().getPluginDB().getCollection("Collectibles");
-        loadDatabase();
     }
 
     public static void clear() {
@@ -65,7 +65,9 @@ public abstract class Collectible extends Vendorable {
     public static void loadDatabase() {
         for (Document doc : collectiblesCol.find()) {
             try {
-                Vendorable vendorable = Vendorable.getClassFromExactType(doc.get("type", String.class)).getConstructor().newInstance();
+                Class<? extends Vendorable> clazz = Vendorable.getClassFromExactType(doc.get("type", String.class));
+                if (clazz == null) continue;
+                Vendorable vendorable = clazz.getConstructor().newInstance();
                 vendorable.load(doc);
                 Vendorables.register(vendorable);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {
@@ -74,11 +76,27 @@ public abstract class Collectible extends Vendorable {
         }
     }
 
+    public static int loadCollectibles(Class<? extends Vendorable> parentClazz) {
+        int count = 0;
+        for (Document doc : collectiblesCol.find(new Document("parentType", Vendorable.getExactTypeName(parentClazz)))) {
+            try {
+                Class<? extends Vendorable> typeClazz = Vendorable.getClassFromExactType(doc.get("type", String.class));
+                if (typeClazz == null) continue;
+                Vendorable vendorable = typeClazz.getConstructor().newInstance();
+                vendorable.load(doc);
+                Vendorables.register(vendorable);
+                count++;
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+        return count;
+    }
+
     public static void close() {
         Hat.close();
         Key.close();
         Pet.close();
-        Gear.close();
         MenuBackground.close();
         FieldGeneration.close();
         Song.close();

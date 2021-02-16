@@ -8,9 +8,6 @@ package com.spleefleague.core.menu.hotbars.main.collectible;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.player.CorePlayerCollectibles;
-import com.spleefleague.core.player.collectible.gear.Gear;
-import com.spleefleague.core.player.collectible.hat.Hat;
 import org.bukkit.Material;
 
 /**

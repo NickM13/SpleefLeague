@@ -2,8 +2,7 @@ package com.spleefleague.core.player.collectible.background;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.gear.Gear;
-import com.spleefleague.core.player.collectible.particles.Particles;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.coreapi.database.annotation.DBField;
 
@@ -15,6 +14,8 @@ public class MenuBackground extends Collectible {
 
     public static void init() {
         Vendorable.registerParentType(MenuBackground.class);
+
+        loadCollectibles(MenuBackground.class);
     }
 
     public static void close() {

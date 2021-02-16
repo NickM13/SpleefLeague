@@ -33,6 +33,7 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onSlotChange(PlayerItemHeldEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getBattleState() == BattleState.BATTLER) {
             cp.getBattle().onSlotChange(cp, event.getNewSlot());
         }
@@ -41,6 +42,7 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onDropItem(PlayerDropItemEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getBattleState() == BattleState.BATTLER) {
             cp.getBattle().onDropItem(cp);
         }
@@ -49,6 +51,7 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onSwapItem(PlayerSwapHandItemsEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getBattleState() == BattleState.BATTLER) {
             cp.getBattle().onSwapItem(cp);
         }
@@ -57,6 +60,7 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onPlayerSneak(PlayerToggleSneakEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getBattleState() == BattleState.BATTLER) {
             if (event.isSneaking()) {
                 cp.getBattle().onStartSneak(cp);
@@ -75,6 +79,7 @@ public class BattleListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             CorePlayer cp = Core.getInstance().getPlayers().get((Player) event.getEntity());
+            if (cp == null) return;
             if (cp.isInBattle()) {
                 cp.getPlayer().setHealth(20);
                 cp.getPlayer().setFireTicks(0);
@@ -91,6 +96,7 @@ public class BattleListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.isInBattle()) {
             cp.getBattle().onMove(cp, event);
         }
@@ -105,6 +111,7 @@ public class BattleListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getBattleState() == BattleState.BATTLER) {
             if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 cp.getBattle().onRightClick(cp);
@@ -117,6 +124,7 @@ public class BattleListener implements Listener {
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
             CorePlayer cp = Core.getInstance().getPlayers().get((Player) event.getDamager());
             CorePlayer target = Core.getInstance().getPlayers().get((Player) event.getEntity());
+            if (cp == null || target == null) return;
             if (cp.getBattleState() == BattleState.BATTLER && target.getBattleState() == BattleState.BATTLER) {
                 cp.getBattle().onPlayerPunch(cp, target);
                 cp.getBattle().onPlayerHit(cp, target);
@@ -132,6 +140,7 @@ public class BattleListener implements Listener {
     @EventHandler
     public void onPlayerStopSpectate(PlayerToggleSneakEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (cp == null) return;
         if (cp.getPlayer().getGameMode() == GameMode.SPECTATOR &&
                 cp.getBattleState() == BattleState.SPECTATOR) {
             event.setCancelled(true);

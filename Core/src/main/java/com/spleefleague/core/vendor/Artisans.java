@@ -79,7 +79,7 @@ public class Artisans {
         save(artisan);
     }
 
-    public static void setBackground(String identifier, int background) {
+    public static void setBackground(String identifier, String background) {
         Artisan artisan = artisans.get(identifier);
         if (artisan == null) return;
         artisan.setBackground(background);

@@ -7,16 +7,11 @@
 package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.menu.*;
-import com.spleefleague.core.menu.hotbars.main.collectible.GearMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.HatMenu;
 import com.spleefleague.core.menu.hotbars.main.collectible.KeyMenu;
-import com.spleefleague.core.menu.hotbars.main.collectible.PetMenu;
 import com.spleefleague.core.player.CorePlayerCollectibles;
-import com.spleefleague.core.player.collectible.gear.Gear;
 import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.collectible.key.Key;
-import com.spleefleague.core.player.collectible.pet.Pet;
-import com.spleefleague.core.player.rank.CoreRank;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -41,17 +36,9 @@ public class HeldItemMenu {
         container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Hat.class), 2, 1);
         container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Hat.class), 2, 2);
 
-        container.addMenuItem(GearMenu.getItem(), 3, 0);
-        container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Gear.class), 3, 1);
-        container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Gear.class), 3, 2);
-
         container.addMenuItem(KeyMenu.getItem(), 4, 0);
         container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Key.class), 4, 1);
         container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Key.class), 4, 2);
-
-        //container.addMenuItem(PetMenu.getItem(), 4, 0);
-        //container.addMenuItem(CorePlayerCollectibles.createActiveMenuItem(Pet.class), 4, 1);
-        //container.addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Pet.class), 4, 2);
     }
 
     /**

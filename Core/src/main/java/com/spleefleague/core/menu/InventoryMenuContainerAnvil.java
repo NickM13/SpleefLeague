@@ -88,7 +88,6 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
         return this;
     }
 
-    @Override
     public Inventory open(CorePlayer cp) {
         parentContainer = (InventoryMenuContainerChest) cp.getMenu().getInventoryMenuContainer();
         cp.getMenu().addInvSwap();

@@ -18,6 +18,8 @@ public class Key extends Holdable {
 
     public static void init() {
         Vendorable.registerParentType(Key.class);
+
+        loadCollectibles(Key.class);
     }
 
     public static void close() {

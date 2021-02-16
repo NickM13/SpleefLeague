@@ -3,6 +3,7 @@ package com.spleefleague.core.player.collectible.hat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
+import com.spleefleague.core.player.collectible.key.Key;
 import com.spleefleague.core.vendor.Vendorable;
 import org.bukkit.Material;
 
@@ -23,6 +24,8 @@ public class Hat extends Collectible {
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Hat.class))
                 .setDescription(cp -> cp.getCollectibles().getActive(Hat.class).getDescription())
                 .setAvailability(cp -> cp.getCollectibles().hasActive(Hat.class) && cp.getCollectibles().isEnabled(Hat.class));
+
+        loadCollectibles(Hat.class);
     }
 
     public static void close() {

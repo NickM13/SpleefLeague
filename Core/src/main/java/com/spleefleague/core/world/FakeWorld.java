@@ -31,7 +31,6 @@ import java.util.*;
  */
 public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
 
-    private final static Map<UUID, Set<ChunkCoord>> loadedChunks = new HashMap<>();
     private static GlobalWorld globalFakeWorld;
     private final static Set<FakeWorld<?>> FAKE_WORLDS = new HashSet<>();
 
@@ -174,7 +173,6 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                         }, 20L);
                     }
                 }
-                loadedChunks.get(cp.getUniqueId()).add(chunkCoord);
             }
         });
         Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Server.UNLOAD_CHUNK) {
@@ -183,7 +181,6 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                 PacketContainer unloadChunkPacket = event.getPacket();
                 ChunkCoord chunkCoord = new ChunkCoord(unloadChunkPacket.getIntegers().read(0), unloadChunkPacket.getIntegers().read(1));
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-                loadedChunks.get(cp.getUniqueId()).remove(chunkCoord);
             }
         });
 
@@ -197,7 +194,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     }
 
     public static void onPlayerJoin(Player player) {
-        loadedChunks.put(player.getUniqueId(), new HashSet<>());
+
     }
 
     public static void onReload() {
@@ -216,7 +213,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     protected final Map<UUID, FWP> playerMap;
     protected final Map<BlockPosition, FakeBlock> fakeBlocks;
     protected final Map<ChunkCoord, Set<BlockPosition>> fakeChunks;
-    protected final Map<ChunkCoord, Map<Short, FakeBlock>> chunkChanges;
+    private final Map<ChunkCoord, Map<Short, FakeBlock>> chunkChanges;
     protected boolean destroyed = false;
 
     protected FakeWorld(int priority, World world, Class<FWP> fakePlayerClass) {
@@ -843,13 +840,15 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
 
     public void pushChanges() {
         synchronized (chunkChanges) {
-            for (Map.Entry<ChunkCoord, Map<Short, FakeBlock>> entry : chunkChanges.entrySet()) {
+            Iterator<Map.Entry<ChunkCoord, Map<Short, FakeBlock>>> it = chunkChanges.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<ChunkCoord, Map<Short, FakeBlock>> entry = it.next();
+                it.remove();
                 if (entry.getValue().isEmpty()) continue;
                 PacketContainer multiBlockChangePacket = PacketUtils.createMultiBlockChangePacket(entry.getKey(), entry.getValue());
                 for (FWP fwp : playerMap.values()) {
                     Core.sendPacket(fwp.getCorePlayer(), multiBlockChangePacket, 0L);
                 }
-                entry.getValue().clear();
             }
         }
     }

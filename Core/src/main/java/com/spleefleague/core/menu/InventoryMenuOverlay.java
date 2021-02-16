@@ -14,8 +14,6 @@ import java.util.TreeMap;
  */
 public class InventoryMenuOverlay {
 
-    private final int BG_SLOT = 6 * 9 - 3;
-
     private SortedMap<Integer, InventoryMenuItem> sortedItems = new TreeMap<>();
 
     protected int rowFirst;
@@ -23,11 +21,9 @@ public class InventoryMenuOverlay {
     protected int colFirst;
     protected int colLast;
 
-    protected int background = -1;
-    protected InventoryMenuItem BG_ITEM = InventoryMenuAPI.createItemDynamic()
-            .setName("")
-            .setDisplayItem(cp -> InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, background))
-            .setVisibility(cp -> background != -1);
+    protected static String WHITESPACE_FIRST = "临";
+    protected static String WHITESPACE_SECOND = "丵";
+    protected String background = "嗰";
 
     public InventoryMenuOverlay() {
         setPageBoundaries(0, 6, 0, 9);
@@ -50,8 +46,8 @@ public class InventoryMenuOverlay {
         return this;
     }
 
-    public InventoryMenuOverlay setBackground(int cmd) {
-        background = cmd;
+    public InventoryMenuOverlay setBackground(String background) {
+        this.background = WHITESPACE_FIRST + background + WHITESPACE_SECOND;
         return this;
     }
 
@@ -67,6 +63,10 @@ public class InventoryMenuOverlay {
         sortedItems.put(slot, item);
     }
 
+    public String getTitlePrefix() {
+        return background;
+    }
+
     public void openOverlay(Inventory inventory, CorePlayer cp, InventoryMenuContainerChest currentScreen) {
         ItemStack[] contents = inventory.getContents();
         for (Map.Entry<Integer, InventoryMenuItem> entry : sortedItems.entrySet()) {
@@ -78,9 +78,6 @@ public class InventoryMenuOverlay {
                     contents[entry.getKey()] = menuItem.createItem(cp, false);
                 }
             }
-        }
-        if (background != -1) {
-            contents[BG_SLOT] = BG_ITEM.createItem(cp);
         }
         inventory.setContents(contents);
     }

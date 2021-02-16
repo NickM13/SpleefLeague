@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
@@ -82,9 +83,13 @@ public class ArtisanCommand extends CoreCommand {
                                      @LiteralArg(value = "set") String l1,
                                      @LiteralArg(value = "background") String l2,
                                      @OptionArg(listName = "artisans") String artisan,
-                                     @NumberArg Integer background) {
+                                     String background) {
         Artisans.setBackground(artisan, background);
-        success(sender, artisan + " crate set to " + background);
+        StringBuilder builder = new StringBuilder();
+        for (char c : background.toCharArray()) {
+            builder.append((int) c);
+        }
+        success(sender, artisan + " background set to " + builder.toString());
     }
 
     @CommandAnnotation

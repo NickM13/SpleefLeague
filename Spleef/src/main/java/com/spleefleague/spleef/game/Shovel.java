@@ -15,6 +15,7 @@ import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.vendor.Vendorable;
+import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.spleef.Spleef;
 import java.util.Set;
@@ -23,7 +24,6 @@ import com.spleefleague.spleef.util.SpleefUtils;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import net.minecraft.server.v1_15_R1.NBTTagList;
 import net.minecraft.server.v1_15_R1.NBTTagString;
-import org.bson.Document;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
@@ -34,8 +34,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author NickM13
  */
 public class Shovel extends Holdable {
-    
-    private static MongoCollection<Document> shovelCol;
+
     private static NBTTagList canDestroyTags = new NBTTagList();
     
     public static void init() {
@@ -43,16 +42,9 @@ public class Shovel extends Holdable {
         
         Vendorable.registerParentType(Shovel.class);
 
-        boolean hasDefault = false;
-        shovelCol = Spleef.getInstance().getPluginDB().getCollection("Shovels");
-        for (Document doc : shovelCol.find()) {
-            Shovel shovel = new Shovel();
-            shovel.load(doc);
-            if (shovel.getIdentifier().equals("default")) {
-                hasDefault = true;
-            }
-        }
-        if (!hasDefault) {
+        loadCollectibles(Shovel.class);
+
+        if (!Vendorables.contains(Shovel.class, "default")) {
             Shovel.create(Shovel.class, "default", "Default Shovel");
         }
         
@@ -77,19 +69,7 @@ public class Shovel extends Holdable {
                 .setDescription(cp -> cp.getCollectibles().getActive(Shovel.class).getDescription())
                 .setAvailability(cp -> cp.isInGlobal() && cp.getCollectibles().hasActive(Shovel.class) && cp.getCollectibles().isEnabled(Shovel.class));
     }
-    
-    public static void save(Shovel shovel) {
-        unsave(shovel.getIdentifier());
-        shovelCol.insertOne(shovel.toDocument());
-    }
-    
-    // Better name? I don't think so
-    public static void unsave(String identifier) {
-        if (shovelCol.find(new Document("identifier", identifier)).first() != null) {
-            shovelCol.deleteMany(new Document("identifier", identifier));
-        }
-    }
-    
+
     public static void createMenu() {
         InventoryMenuItem shovelMenu = CorePlayerCollectibles.createCollectibleContainer(Shovel.class,
                 InventoryMenuAPI.createItemDynamic()
@@ -173,20 +153,6 @@ public class Shovel extends Holdable {
         if (itemMeta != null) itemMeta.addEnchant(Enchantment.DIG_SPEED, 9, true);
         itemStack.setItemMeta(itemMeta);
         return itemStack;
-    }
-
-    @Override
-    public void saveChanges() {
-        unsave();
-        shovelCol.insertOne(toDocument());
-    }
-
-    @Override
-    public void unsave() {
-        Document query = (new Document("type", this.type)).append("identifier", this.identifier);
-        if (shovelCol.find(query).first() != null) {
-            shovelCol.deleteMany(query);
-        }
     }
     
 }
