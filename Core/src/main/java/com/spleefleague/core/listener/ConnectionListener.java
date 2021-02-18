@@ -12,6 +12,8 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
+import com.spleefleague.core.plugin.CorePlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -30,8 +32,9 @@ public class ConnectionListener implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        CorePlugin.onPlayerJoin(event);
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
         event.setJoinMessage("");
         //cp.gotoSpawn();
@@ -40,12 +43,13 @@ public class ConnectionListener implements Listener {
         NoteBlockMusic.onPlayerJoin(cp);
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
         event.setQuitMessage("");
         Core.getInstance().getPartyManager().onDisconnect(cp);
         NoteBlockMusic.onPlayerQuit(cp);
+        CorePlugin.onPlayerQuit(event);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

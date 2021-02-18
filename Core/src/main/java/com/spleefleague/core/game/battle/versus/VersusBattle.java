@@ -38,7 +38,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
 
     protected int playToPoints = 5;
 
-    public VersusBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public VersusBattle(CorePlugin plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
 
@@ -263,6 +263,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             if (loser == null) {
                 loser = winner;
                 TextComponent text = new TextComponent();
+                text.setColor(ChatColor.GRAY.asBungee());
                 text.addExtra(winner.getCorePlayer().getChatName());
                 text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
                 text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
@@ -293,7 +294,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
                 text.addExtra(loser.getCorePlayer().getChatName());
                 text.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
-                text.addExtra("(");
+                text.addExtra(" (");
                 text.addExtra(Chat.SCORE + winner.getRoundWins());
                 text.addExtra("-");
                 text.addExtra(Chat.SCORE + loser.getRoundWins());

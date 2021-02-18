@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import org.bson.Document;
@@ -37,7 +38,7 @@ import org.bukkit.scheduler.BukkitTask;
  * @param <P> extends DBPlayer
  * @author NickM13
  */
-public class PlayerManager<P extends DBPlayer> implements Listener {
+public class PlayerManager<P extends DBPlayer> {
 
     // Players on this server (non-vanished)
     protected final Map<UUID, P> herePlayerList;
@@ -62,10 +63,10 @@ public class PlayerManager<P extends DBPlayer> implements Listener {
         this.onlinePlayerListAll = new HashMap<>();
         this.offlinePlayerList = new HashMap<>();
         this.plugin = plugin;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
         this.playerClass = playerClass;
         this.playerCol = collection;
         this.playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
+        CorePlugin.registerPlayerManager(this);
     }
 
     public void enableSaving() {

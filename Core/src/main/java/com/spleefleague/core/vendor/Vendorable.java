@@ -464,16 +464,23 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
             itemMeta.addItemFlags(ItemFlag.values());
             itemMeta.setDisplayName(rarity.color + "" + ChatColor.BOLD + name);
             itemMeta.setLore(ChatUtils.wrapDescription(getDescription()));
-            itemMeta.getPersistentDataContainer().set(
-                    new NamespacedKey(Core.getInstance(), identifierNbt),
-                    PersistentDataType.STRING,
-                    identifier != null ? identifier : "");
-            itemMeta.getPersistentDataContainer().set(
-                    new NamespacedKey(Core.getInstance(), typeNbt),
-                    PersistentDataType.STRING,
-                    type != null ? type : "");
             itemStack.setItemMeta(itemMeta);
+            applyPersistents(itemStack);
         }
+        return itemStack;
+    }
+
+    protected final ItemStack applyPersistents(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        itemMeta.getPersistentDataContainer().set(
+                new NamespacedKey(Core.getInstance(), identifierNbt),
+                PersistentDataType.STRING,
+                identifier != null ? identifier : "");
+        itemMeta.getPersistentDataContainer().set(
+                new NamespacedKey(Core.getInstance(), typeNbt),
+                PersistentDataType.STRING,
+                parentType != null ? parentType : "");
+        itemStack.setItemMeta(itemMeta);
         return itemStack;
     }
 

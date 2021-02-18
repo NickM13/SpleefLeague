@@ -16,7 +16,55 @@ public class GameUtils {
                 8, 0.25 * sizeMultiplier, 0.9 * sizeMultiplier, 0.25 * sizeMultiplier, 0D, dustOptions);
     }
 
-    public static void spawnRingParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld, Vector loc, Vector axis, Particle.DustOptions dustOptions, double radius, int count) {
+    public static void spawnCircleParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
+                                            Vector loc,
+                                            Vector axis,
+                                            Particle.DustOptions dustOptions,
+                                            double radius,
+                                            double rotationRadians,
+                                            double rotationSection,
+                                            int count) {
+        double dot = axis.dot(new Vector(0, 1, 0));
+        if (dot >= 0.999 || dot <= -0.999) {
+            spawnCircleParticles(gameWorld, loc, dustOptions, radius, rotationRadians, rotationSection, count);
+            return;
+        }
+        Vector rotAxis = axis.getCrossProduct(new Vector(0, 1, 0));
+        double angle = Math.toRadians(90 * (-dot + 1));
+        for (int i = 0; i < count; i++) {
+            double radians = ((double) i / count) * rotationSection + rotationRadians;
+            Vector vec = new Vector(Math.sin(radians), 0, Math.cos(radians)).rotateAroundAxis(rotAxis, angle).multiply(radius);
+            vec.add(loc);
+            gameWorld.spawnParticles(Particle.REDSTONE,
+                    vec.getX(), vec.getY(), vec.getZ(),
+                    1, 0, 0, 0, 0,
+                    dustOptions);
+        }
+    }
+
+    public static void spawnCircleParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
+                                            Vector loc,
+                                            Particle.DustOptions dustOptions,
+                                            double radius,
+                                            double rotationRadians,
+                                            double rotationSection,
+                                            int count) {
+        for (int i = 0; i < count; i++) {
+            double radians = (i / (double) count) * rotationSection + rotationRadians;
+            Vector pos = loc.clone().add(new Vector(Math.sin(radians), 0, Math.cos(radians)).multiply(radius));
+            gameWorld.spawnParticles(Particle.REDSTONE,
+                    pos.getX(), pos.getY(), pos.getZ(),
+                    1, 0, 0, 0, 0,
+                    dustOptions);
+        }
+    }
+
+    public static void spawnRingParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
+                                          Vector loc,
+                                          Vector axis,
+                                          Particle.DustOptions dustOptions,
+                                          double radius,
+                                          int count) {
         double dot = axis.dot(new Vector(0, 1, 0));
         if (dot >= 0.999 || dot <= -0.999) {
             spawnRingParticles(gameWorld, loc, dustOptions, radius, count);

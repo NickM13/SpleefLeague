@@ -24,11 +24,13 @@ import org.bukkit.Material;
  * @author NickM13
  * @since 4/16/2020
  */
-public class Splegg extends CorePlugin<SpleggPlayer> {
+public class Splegg extends CorePlugin {
 
     private static Splegg instance;
 
     private InventoryMenuItem spleggMenuItem;
+
+    private PlayerManager<SpleggPlayer> playerManager;
 
     @Override
     protected void init() {
@@ -60,6 +62,10 @@ public class Splegg extends CorePlugin<SpleggPlayer> {
     
     public static Splegg getInstance() {
         return instance;
+    }
+
+    public PlayerManager<SpleggPlayer> getPlayers() {
+        return playerManager;
     }
 
     public InventoryMenuItem getSpleggMenu() {

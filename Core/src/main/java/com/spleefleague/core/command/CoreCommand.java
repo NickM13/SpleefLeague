@@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.v1_15_R1.command.CraftBlockCommandSender;
  */
 public class CoreCommand extends Command {
 
-    public class PriorInfo {
+    public static class PriorInfo {
         CorePlayer cp;
         List<String> args;
         List<String> reverse;
@@ -618,7 +618,7 @@ public class CoreCommand extends Command {
                     List<Object> params = new ArrayList<>();
                     List<String> strParams = new ArrayList<>();
 
-                    if (cp != null && methodInfo.cpSender) {
+                    if (cp != null) {
                         if (!cp.getRank().hasPermission(methodInfo.minRank)) {
                             boolean hasPerms = false;
                             for (CoreRank aRank : methodInfo.additionalRanks) {
@@ -630,10 +630,8 @@ public class CoreCommand extends Command {
                             if (!hasPerms) continue;
                         }
                         params.add(cp);
-                    } else if (cp == null && !methodInfo.cpSender) {
+                    } else if (!methodInfo.cpSender) {
                         params.add(cs);
-                    } else {
-                        continue;
                     }
 
                     int paramSize = Math.min(methodInfo.maxParams, args.length) + 1;
@@ -955,8 +953,6 @@ public class CoreCommand extends Command {
                             }
                             if (!hasPerms) continue;
                         }
-                    } else {
-                        continue;
                     }
                 }
 

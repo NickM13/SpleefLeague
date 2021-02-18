@@ -32,11 +32,13 @@ import org.bukkit.Material;
 /**
  * @author NickM13
  */
-public class SuperJump extends CorePlugin<SuperJumpPlayer> {
+public class SuperJump extends CorePlugin {
     
     private static SuperJump instance;
     
     private InventoryMenuItem superJumpMenuItem;
+
+    private PlayerManager<SuperJumpPlayer> playerManager;
     
     @Override
     public void init() {
@@ -67,7 +69,11 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     public void close() {
         playerManager.close();
     }
-    
+
+    public PlayerManager<SuperJumpPlayer> getPlayers() {
+        return playerManager;
+    }
+
     @Override
     public TextComponent getChatPrefix() {
         return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "SuperJump" + Chat.TAG_BRACE + "] ");
@@ -84,7 +90,7 @@ public class SuperJump extends CorePlugin<SuperJumpPlayer> {
     private int getCurrentlyPlaying() {
         int playing = 0;
         for (SJMode mode : SJMode.values()) {
-            for (Battle<?> battle : mode.getBattleMode().getOngoingBattles()) {
+            for (Battle<?> battle : mode.getBattleMode().getOngoingBattles().values()) {
                 playing += battle.getBattlers().size();
             }
         }

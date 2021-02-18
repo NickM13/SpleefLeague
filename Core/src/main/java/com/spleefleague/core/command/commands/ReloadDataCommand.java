@@ -18,6 +18,7 @@ import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.settings.Settings;
+import com.spleefleague.core.world.build.BuildStructures;
 
 /**
  * @author NickM13
@@ -55,10 +56,17 @@ public class ReloadDataCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void reloaddataStructures(CorePlayer sender,
+                                 @LiteralArg("structures") String l) {
+        BuildStructures.init();
+        success(sender, "Reloaded structures from database");
+    }
+
+    @CommandAnnotation
     public void reloaddataCollectibles(CorePlayer sender,
                                        @LiteralArg("collectibles") String l) {
         Collectible.clear();
-        for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
+        for (CorePlugin plugin : CorePlugin.getAllPlugins()) {
             plugin.reloadCollectibles();
         }
         success(sender, "Reloaded collectibles from database");

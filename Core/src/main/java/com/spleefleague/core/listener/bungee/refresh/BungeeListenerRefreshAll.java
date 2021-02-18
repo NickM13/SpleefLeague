@@ -15,10 +15,7 @@ public class BungeeListenerRefreshAll extends BungeeListener<PacketBungeeRefresh
 
     @Override
     protected void receive(Player sender, PacketBungeeRefreshAll packet) {
-        //Core.getInstance().getLeaderboards().refresh();
-        for (CorePlugin<?> plugin : CorePlugin.getAllPlugins()) {
-            plugin.refreshPlayers(Sets.newHashSet(packet.players));
-        }
+        CorePlugin.refreshPlayers(Sets.newHashSet(packet.players));
     }
 
 }

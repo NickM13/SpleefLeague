@@ -30,6 +30,7 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.packet.PacketManager;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerManager;
+import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.party.CorePartyManager;
 import com.spleefleague.core.player.rank.CoreRankManager;
@@ -70,7 +71,7 @@ import java.util.logging.Logger;
  *
  * @author NickM13
  */
-public class Core extends CorePlugin<CorePlayer> {
+public class Core extends CorePlugin {
 
     private static Core instance;
     public static World DEFAULT_WORLD;
@@ -90,6 +91,7 @@ public class Core extends CorePlugin<CorePlayer> {
     private final CrateManager crateManager = new CrateManager();
     private final PacketManager packetManager = new PacketManager();
     private final BattleSessionManager battleSessionManager = new BattleSessionManager();
+    private CorePlayerManager playerManager;
 
     /**
      * Called when the plugin is enabling
@@ -199,8 +201,7 @@ public class Core extends CorePlugin<CorePlayer> {
         return battleSessionManager;
     }
 
-    public void refreshPlayers(Set<UUID> players) {
-        playerManager.refresh(players);
+    protected void refresh(Set<UUID> players) {
         leaderboards.refresh(players);
     }
 
@@ -366,19 +367,6 @@ public class Core extends CorePlugin<CorePlayer> {
         Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(cp)));
     }
 
-    public void onBungeeConnect(UUID uuid) {
-        CorePlayer cp = getPlayers().get(uuid);
-        if (cp == null || cp.isVanished() || cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) return;
-        //Core.sendPacketAll(PacketUtils.createAddPlayerPacket(Lists.newArrayList(cp)));
-        PersonalScoreboard.onPlayerJoin(cp);
-    }
-
-    public void onBungeeDisconnect(UUID uuid) {
-        CorePlayer cp = getPlayers().getOffline(uuid);
-        //Core.sendPacketAll(PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)));
-        PersonalScoreboard.onPlayerQuit(uuid);
-    }
-
     /**
      * Initialize Tab List packet listener that prevents players from
      * being removed upon entering a game and becoming invisible, and
@@ -439,6 +427,14 @@ public class Core extends CorePlugin<CorePlayer> {
 
     public static ProtocolManager getProtocolManager() {
         return protocolManager;
+    }
+    /**
+     * Player manager that contains all online players for this plugin
+     *
+     * @return Player Manager
+     */
+    public final PlayerManager<CorePlayer> getPlayers() {
+        return playerManager;
     }
 
     /**

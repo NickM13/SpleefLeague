@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
  */
 public class ClassicSpleefAffixes {
 
-    private static Map<String, ClassicSpleefAffix> affixMap = new HashMap<>();
-    private static Set<ClassicSpleefAffix> activeAffixes = new HashSet<>();
+    private static final Map<String, ClassicSpleefAffix> affixMap = new HashMap<>();
+    private static final Set<ClassicSpleefAffix> activeAffixes = new HashSet<>();
 
     private static MongoCollection<Document> affixCol;
 

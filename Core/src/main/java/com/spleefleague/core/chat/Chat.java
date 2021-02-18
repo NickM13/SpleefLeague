@@ -304,6 +304,44 @@ public class Chat {
         }
     }
 
+    private static final String LINEBREAK = ChatColor.GOLD + "" + ChatColor.BOLD + "- - - - - - - - - - - - - - - - - - - - - - - - - - -";
+
+    public static void sendNpcMessage(CorePlayer receiver, String profile, String name, String message) {
+        ComponentBuilder builder = new ComponentBuilder()
+                .append(LINEBREAK, ComponentBuilder.FormatRetention.NONE)
+                .append("\n" + profile, ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.WHITE).italic(false)
+                .append(" " + name.replaceAll("_", " "), ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GOLD).bold(true);
+        int i = 0;
+        for (String str : message.split("\\\\n")) {
+            builder.append("\n亖 " + str, ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GREEN).italic(true);
+            i++;
+        }
+        for (; i <= 4; i++) {
+            builder.append("\n");
+        }
+        builder.append(LINEBREAK, ComponentBuilder.FormatRetention.NONE);
+        receiver.sendMessage(builder.create());
+    }
+
+    public static void sendNpcMessage(CorePlayer receiver, NpcMessage message) {
+        ComponentBuilder builder = new ComponentBuilder()
+                .append(LINEBREAK, ComponentBuilder.FormatRetention.NONE)
+                .append("\n" + message.getProfile(), ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.WHITE).italic(false)
+                .append(" " + message.getName(), ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GOLD).bold(true);
+        int i = 0;
+        for (String str : message.getMessages()) {
+            builder.append("\n亖 " + str, ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GREEN).italic(true);
+            i++;
+        }
+        for (; i <= 4; i++) {
+            builder.append("\n");
+        }
+        builder.append(LINEBREAK, ComponentBuilder.FormatRetention.NONE);
+        receiver.sendMessage(builder.create());
+    }
+
+    ///npc 倗 Barmaid_Melissa What'll it be honey?\nOur Tree Stump Ales are made from the Valley's own\ntrees. You won't find a better Ale anywhere!
+
     public static void sendMessage(ChatChannel channel, TextComponent text) {
         Core.getInstance().sendPacket(new PacketSpigotChatConsole(channel.name(), text.toLegacyText(), false));
     }

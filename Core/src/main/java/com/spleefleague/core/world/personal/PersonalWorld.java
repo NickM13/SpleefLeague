@@ -35,4 +35,9 @@ public class PersonalWorld extends ProjectileWorld<PersonalWorldPlayer> {
         return fakeBlocks.containsKey(pos);
     }
 
+    @Override
+    protected void applyVisibility(CorePlayer cp) {
+
+    }
+
 }

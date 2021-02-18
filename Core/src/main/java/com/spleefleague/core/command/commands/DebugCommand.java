@@ -9,20 +9,25 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.core.world.global.GlobalWorld;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 /**
  * @author NickM13
@@ -34,6 +39,15 @@ public class DebugCommand extends CoreCommand {
         setUsage("/sldebug " + ChatColor.MAGIC + "[hope u no read]");
         setDescription("debu" + ChatColor.MAGIC + "g more read?");
         setOptions("sounds", pi -> CoreUtils.enumToStrSet(Sound.class, true));
+    }
+
+    @CommandAnnotation
+    public void debugItem(CorePlayer sender,
+                           @LiteralArg("item") String l) {
+        Random random = new Random();
+        GlobalWorld.getGlobalFakeWorld().addRotationItem(
+                sender,
+                InventoryMenuUtils.createCustomItem(Material.DIAMOND_SHOVEL, random.nextInt(50) * 100));
     }
 
     @CommandAnnotation

@@ -31,7 +31,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     protected int initBattlerCount;
     protected int avgBattlerRating;
 
-    public DynamicBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public DynamicBattle(CorePlugin plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
         roundCountdown = 10;
     }

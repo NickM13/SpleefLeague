@@ -133,13 +133,10 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     private static final Long RAND_REGEN = 30 * 1000L;
     private double regenSpeed = 1;
 
-    protected final BukkitTask playerBlastTask;
-    protected final List<PlayerBlast> playerBlasts;
-
     protected final BukkitTask playerPortalTask;
     protected final Map<UUID, PortalPair> playerPortals;
 
-    protected final List<BukkitTask> gameTasks;
+    protected final List<BukkitTask> gameTasks = new ArrayList<>();
 
     protected boolean showSpectators;
     protected final Map<UUID, CorePlayer> targetSpectatorMap = new HashMap<>();
@@ -157,17 +154,10 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
 
         showSpectators = true;
 
-        playerBlasts = new ArrayList<>();
-        playerBlastTask = Bukkit.getScheduler()
-                .runTaskTimer(Core.getInstance(),
-                        this::updatePlayerBlasts, 0L, 2L);
-
         playerPortals = new HashMap<>();
         playerPortalTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
                         this::updatePlayerPortals, 0L, 2L);
-
-        gameTasks = new ArrayList<>();
 
         futureBlockTask = Bukkit.getScheduler()
                 .runTaskTimer(Core.getInstance(),
@@ -182,7 +172,6 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     public void destroy() {
         super.destroy();
         futureBlockTask.cancel();
-        playerBlastTask.cancel();
         clearProjectiles();
     }
 
@@ -199,6 +188,10 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
 
     public void runTask(BukkitTask task) {
         gameTasks.add(task);
+    }
+
+    public void runTask(Runnable runnable, int repeats) {
+
     }
 
     /**
@@ -505,18 +498,6 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         return true;
     }
 
-    protected void updatePlayerBlasts() {
-        Iterator<PlayerBlast> pbit = playerBlasts.iterator();
-        while (pbit.hasNext()) {
-            PlayerBlast blast = pbit.next();
-            playerMap.values().forEach(player -> player.getPlayer().spawnParticle(Particle.SWEEP_ATTACK, blast.loc, 10, 0.5, 4, 0.5));
-            blast.time -= 2;
-            if (blast.time < 0)
-                pbit.remove();
-            blast.loc.add(0, 4, 0);
-        }
-    }
-
     private static final List<Color> colors = Lists.newArrayList(
             Color.BLUE, Color.AQUA,
             Color.RED, Color.YELLOW,
@@ -721,7 +702,12 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     }
 
     public void doFailBlast(CorePlayer cp) {
-        playerBlasts.add(new PlayerBlast(cp.getPlayer().getLocation(), 20));
+        PlayerBlast playerBlast = new PlayerBlast(cp.getPlayer().getLocation(), 20);
+        addRepeatingTask(() -> {
+            playerMap.values().forEach(player -> player.getPlayer().spawnParticle(Particle.SWEEP_ATTACK, playerBlast.loc, 10, 0.5, 4, 0.5));
+            playerBlast.loc.add(0, 4, 0);
+        }, 20, 2);
+
         getPlayerMap().values().forEach(gwp ->
                 gwp.getPlayer().playSound(gwp.getPlayer().getLocation(), Sound.ENTITY_DOLPHIN_DEATH, 15, 1));
     }

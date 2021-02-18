@@ -20,6 +20,7 @@ import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 
 import java.lang.reflect.InvocationTargetException;
@@ -216,6 +217,32 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     private final Map<ChunkCoord, Map<Short, FakeBlock>> chunkChanges;
     protected boolean destroyed = false;
 
+    private static class RepeatingTask {
+        Runnable runnable;
+        int repeats;
+        final int delay;
+        int cursor = 0;
+
+        public RepeatingTask(Runnable runnable, int repeats, int delay) {
+            this.runnable = runnable;
+            this.repeats = repeats;
+            this.delay = delay;
+        }
+
+        public boolean onRun() {
+            if (++cursor >= delay) {
+                cursor = 0;
+                runnable.run();
+                return --repeats > 0;
+            }
+            return true;
+        }
+
+    }
+
+    protected final List<RepeatingTask> repeatingTasks = new ArrayList<>();
+    protected BukkitTask repeatingTask;
+
     protected FakeWorld(int priority, World world, Class<FWP> fakePlayerClass) {
         this.priority = priority;
         this.world = world;
@@ -225,6 +252,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         this.fakeChunks = new HashMap<>();
         this.chunkChanges = new HashMap<>();
         FAKE_WORLDS.add(this);
+
+        repeatingTask = Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
+            repeatingTasks.removeIf(repeatingTask -> !repeatingTask.onRun());
+        }, 1L, 1L);
     }
 
     public boolean isDestroyed() {
@@ -271,6 +302,12 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             fakeChunks.clear();
         }
         playerMap.clear();
+        repeatingTasks.clear();
+        repeatingTask.cancel();
+    }
+
+    public void addRepeatingTask(Runnable runnable, int repeats, int delay) {
+        repeatingTasks.add(new RepeatingTask(runnable, repeats, delay));
     }
 
     public final Map<UUID, FWP> getPlayerMap() {
@@ -306,7 +343,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      *
      * @param cp Core Player
      */
-    protected final void applyVisibility(CorePlayer cp) {
+    protected void applyVisibility(CorePlayer cp) {
         // Hide and hide from all players not in this GameWorld
         if (cp.getOnlineState() != DBPlayer.OnlineState.HERE) return;
         for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {

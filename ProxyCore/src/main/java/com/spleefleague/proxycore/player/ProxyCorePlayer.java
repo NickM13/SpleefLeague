@@ -41,6 +41,7 @@ public class ProxyCorePlayer extends DBPlayer {
     private ServerInfo currentServer = null;
     private PacketSpigotQueueJoin lastQueueRequest = null;
     private boolean battling = false;
+    private boolean spectating = false;
 
     @DBField private String nickname = null;
     @DBField private UUID disguise = null;
@@ -280,6 +281,14 @@ public class ProxyCorePlayer extends DBPlayer {
 
     public boolean isBattling() {
         return battling;
+    }
+
+    public void setSpectating(boolean spectating) {
+        this.spectating = spectating;
+    }
+
+    public boolean isSpectating() {
+        return spectating;
     }
 
     public void setCurrentBattle(UUID battleUuid) {

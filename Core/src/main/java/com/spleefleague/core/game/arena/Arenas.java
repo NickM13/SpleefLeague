@@ -240,7 +240,7 @@ public class Arenas {
         return arenaMap.get(name);
     }
 
-    public static InventoryMenuItem createMenu(CorePlugin<?> plugin, BattleMode mode) {
+    public static InventoryMenuItem createMenu(CorePlugin plugin, BattleMode mode) {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
                 .setName(mode.getDisplayName())
                 .setDescription(cp -> mode.getDescription()
@@ -262,7 +262,7 @@ public class Arenas {
         return menuItem;
     }
 
-    public static void fillMenu(CorePlugin<?> plugin, InventoryMenuContainerChest container, BattleMode mode) {
+    public static void fillMenu(CorePlugin plugin, InventoryMenuContainerChest container, BattleMode mode) {
         container.clearUnsorted();
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName("&a&lRandom Arena")

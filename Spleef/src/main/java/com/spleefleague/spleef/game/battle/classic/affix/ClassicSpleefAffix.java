@@ -43,7 +43,6 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     }
 
     public String getDisplayName() {
-        System.out.println("DISPLAY " + displayName);
         return displayName;
     }
 

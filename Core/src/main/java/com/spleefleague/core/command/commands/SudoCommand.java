@@ -14,6 +14,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 
 /**
  * @author NickM13
@@ -36,6 +37,18 @@ public class SudoCommand extends CoreCommand {
             Bukkit.dispatchCommand(cp.getPlayer(), command);
         }
         success(sender, "Sudoed all : /" + command);
+    }
+
+    @CommandAnnotation
+    public void sudo(CommandSender sender, CorePlayer receiver, String command) {
+        Bukkit.dispatchCommand(receiver.getPlayer(), command);
+    }
+
+    @CommandAnnotation
+    public void sudo(CommandSender sender, List<CorePlayer> receivers, String command) {
+        for (CorePlayer cp : receivers) {
+            Bukkit.dispatchCommand(cp.getPlayer(), command);
+        }
     }
 
 }

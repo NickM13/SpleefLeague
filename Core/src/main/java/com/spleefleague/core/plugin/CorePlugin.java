@@ -34,8 +34,11 @@ import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpe
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -43,12 +46,12 @@ import org.bukkit.plugin.java.JavaPlugin;
  * all plugins that use this are stored in a plugins master list
  * allowing for synced battle states
  *
- * @param <P> extends DBPlayer
  * @author NickM13
  */
-public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
+public abstract class CorePlugin extends JavaPlugin {
 
-    private static final Set<CorePlugin<?>> plugins = new HashSet<>();
+    private static final Set<CorePlugin> plugins = new HashSet<>();
+    private static final List<PlayerManager<?>> playerManagers = new ArrayList<>();
 
     protected static Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
 
@@ -57,10 +60,6 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
 
     private static MongoClient mongoClient;
     private MongoDatabase pluginDb;
-
-    // Map of all players in the database and their UUIDs (loaded as they connect)
-    protected PlayerManager<P> playerManager;
-
 
     protected boolean running = false;
 
@@ -73,12 +72,15 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
-        if (playerManager != null) playerManager.initOnline();
         running = true;
         plugins.add(this);
     }
 
     protected abstract void init();
+
+    public static void registerPlayerManager(PlayerManager<?> playerManager) {
+        playerManagers.add(playerManager);
+    }
 
     /**
      * Connect to the Mongo database based on the mongo.cfg file
@@ -205,17 +207,41 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
         return pluginDb;
     }
 
-    /**
-     * Player manager that contains all online players for this plugin
-     *
-     * @return Player Manager
-     */
-    public final PlayerManager<P> getPlayers() {
-        return playerManager;
+    public static void refreshPlayers(Set<UUID> players) {
+        for (PlayerManager<?> playerManager : playerManagers) {
+            playerManager.refresh(players);
+        }
+        for (CorePlugin plugin : plugins) {
+            plugin.refresh(players);
+        }
     }
 
-    public void refreshPlayers(Set<UUID> players) {
-        playerManager.refresh(players);
+    protected void refresh(Set<UUID> players) {
+
+    }
+
+    public static void onBungeeConnect(OfflinePlayer offlinePlayer) {
+        for (PlayerManager<?> playerManager : playerManagers) {
+            playerManager.onBungeeConnect(offlinePlayer);
+        }
+    }
+
+    public static void onBungeeDisconnect(UUID uuid) {
+        for (PlayerManager<?> playerManager : playerManagers) {
+            playerManager.onBungeeDisconnect(uuid);
+        }
+    }
+
+    public static void onPlayerJoin(PlayerJoinEvent event) {
+        for (PlayerManager<?> playerManager : playerManagers) {
+            playerManager.onPlayerJoin(event);
+        }
+    }
+
+    public static void onPlayerQuit(PlayerQuitEvent event) {
+        for (PlayerManager<?> playerManager : playerManagers) {
+            playerManager.onPlayerQuit(event);
+        }
     }
 
     /**
@@ -254,7 +280,7 @@ public abstract class CorePlugin<P extends DBPlayer> extends JavaPlugin {
      *
      * @return CorePlugins Set
      */
-    public static Set<CorePlugin<?>> getAllPlugins() {
+    public static Set<CorePlugin> getAllPlugins() {
         return plugins;
     }
 

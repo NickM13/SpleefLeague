@@ -20,7 +20,7 @@ public abstract class SoloBattle<BP extends BattlePlayer> extends Battle<BP> {
 
     protected BP battler;
 
-    public SoloBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public SoloBattle(CorePlugin plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
 

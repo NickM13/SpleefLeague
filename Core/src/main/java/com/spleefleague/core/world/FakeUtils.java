@@ -1,20 +1,24 @@
 package com.spleefleague.core.world;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.MathUtils;
 import com.spleefleague.core.util.variable.Position;
+import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author NickM13
@@ -252,10 +256,76 @@ public class FakeUtils {
         return blocks;
     }
 
-    private static int nextFakeId = 500000000;
+    private static final AtomicInteger nextFakeId = new AtomicInteger(500000000);
 
     public static int getNextId() {
-        return nextFakeId++;
+        return nextFakeId.getAndIncrement();
+    }
+
+    private static final ProtocolManager protocolManager = Core.getProtocolManager();
+    private static final UUID unused = UUID.randomUUID();
+    private static final EntityArmorStand armorStand = new EntityArmorStand(((CraftWorld) Core.DEFAULT_WORLD).getHandle(), 0, 0, 0);
+    private static final DataWatcher dataWatcher;
+
+    static {
+        armorStand.setInvisible(true);
+        armorStand.setSmall(true);
+
+        dataWatcher = armorStand.getDataWatcher();
+    }
+
+    public static void sendArmorStandSpawn(Player player, int entityId, double x, double y, double z, ItemStack item) {
+        try {
+            PacketPlayOutSpawnEntity packetPlayOutSpawnEntity = new PacketPlayOutSpawnEntity(
+                    entityId,
+                    unused,
+                    x,
+                    y,
+                    z,
+                    0f, 0f,
+                    EntityTypes.ARMOR_STAND,
+                    0, Vec3D.a);
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY, packetPlayOutSpawnEntity), null, false);
+
+            PacketPlayOutEntityMetadata packetPlayOutEntityMetadata = new PacketPlayOutEntityMetadata(
+                    entityId,
+                    dataWatcher,
+                    true);
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.ENTITY_METADATA, packetPlayOutEntityMetadata), null, false);
+
+            PacketPlayOutEntityEquipment packetPlayOutEntityEquipment = new PacketPlayOutEntityEquipment(
+                    entityId,
+                    EnumItemSlot.HEAD,
+                    item
+            );
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.ENTITY_EQUIPMENT, packetPlayOutEntityEquipment), null, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendEntityMove(Player player, int entityId, short changeX, short changeY, short changeZ) {
+        try {
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.REL_ENTITY_MOVE, new PacketPlayOutEntity.PacketPlayOutRelEntityMove(
+                    entityId,
+                    changeX,
+                    changeY,
+                    changeZ,
+                    true
+            )), null, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendEntityDestroy(Player player, int entityId) {
+        try {
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY, new PacketPlayOutEntityDestroy(
+                    entityId
+            )), null, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
 }

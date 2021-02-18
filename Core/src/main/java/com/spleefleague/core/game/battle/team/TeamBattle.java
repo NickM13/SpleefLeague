@@ -32,7 +32,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     protected Set<TeamBattleTeam<BP>> remainingTeams = new HashSet<>();
     protected int playToPoints = 1;
 
-    public TeamBattle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public TeamBattle(CorePlugin plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         super(plugin, battleId, players, arena, battlePlayerClass, battleMode);
     }
 

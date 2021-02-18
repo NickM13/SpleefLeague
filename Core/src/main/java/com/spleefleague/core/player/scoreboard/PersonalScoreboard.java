@@ -8,7 +8,6 @@ package com.spleefleague.core.player.scoreboard;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.rank.CoreRankManager;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -79,24 +78,19 @@ public class PersonalScoreboard {
         }
     }
 
-    public static PersonalScoreboard createScoreboard(UUID uuid, boolean showRanks) {
-        CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
-        PersonalScoreboard ps = new PersonalScoreboard(cp, showRanks);
-        scoreboards.put(uuid, ps);
+    public static void createScoreboard(CorePlayer corePlayer, boolean showRanks) {
+        PersonalScoreboard ps = new PersonalScoreboard(corePlayer, showRanks);
+        scoreboards.put(corePlayer.getUniqueId(), ps);
         // Testing scoreboard display name for personal boards
-        ps.setScoreboardName(cp.getDisplayName());
-        return ps;
+        ps.setScoreboardName(corePlayer.getDisplayName());
     }
 
     public static PersonalScoreboard getScoreboard(UUID uuid) {
-        if (!scoreboards.containsKey(uuid)) {
-            return createScoreboard(uuid, true);
-        }
         return scoreboards.get(uuid);
     }
 
     public static void onPlayerJoin(CorePlayer corePlayer) {
-
+        createScoreboard(corePlayer, true);
     }
 
     public static void onPlayerQuit(UUID uuid) {
@@ -122,7 +116,6 @@ public class PersonalScoreboard {
 
         this.showRanks = showRanks;
         if (showRanks) {
-            System.out.println("PersonalScoreboard:130 Initializing scoreboard for " + owner.getDisplayName());
             Core.getInstance().getRankManager().initScoreboard(scoreboard);
         }
     }

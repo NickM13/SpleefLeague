@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  */
 public abstract class Battle<BP extends BattlePlayer> {
 
-    protected CorePlugin<?> plugin;
+    protected CorePlugin plugin;
 
     protected final UUID battleId;
     protected org.bukkit.GameMode gameMode = org.bukkit.GameMode.ADVENTURE;
@@ -106,7 +106,7 @@ public abstract class Battle<BP extends BattlePlayer> {
 
     protected final GameHistory gameHistory;
 
-    public Battle(CorePlugin<?> plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
+    public Battle(CorePlugin plugin, UUID battleId, List<UUID> players, Arena arena, Class<BP> battlePlayerClass, BattleMode battleMode) {
         this.battleId = battleId;
         this.plugin = plugin;
         this.arena = arena;
@@ -1212,7 +1212,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     /**
      * @return Containing plugin
      */
-    public CorePlugin<?> getPlugin() {
+    public CorePlugin getPlugin() {
         return plugin;
     }
 

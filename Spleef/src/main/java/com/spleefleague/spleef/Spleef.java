@@ -34,11 +34,13 @@ import org.bukkit.Material;
 /**
  * @author NickM13
  */
-public class Spleef extends CorePlugin<SpleefPlayer> {
+public class Spleef extends CorePlugin {
     
     private static Spleef instance;
     
     private InventoryMenuItem spleefMenuItem;
+
+    private PlayerManager<SpleefPlayer> playerManager;
     
     @Override
     public void init() {
@@ -79,6 +81,10 @@ public class Spleef extends CorePlugin<SpleefPlayer> {
     
     public static Spleef getInstance() {
         return instance;
+    }
+
+    public PlayerManager<SpleefPlayer> getPlayers() {
+        return playerManager;
     }
     
     public InventoryMenuItem getSpleefMenu() {

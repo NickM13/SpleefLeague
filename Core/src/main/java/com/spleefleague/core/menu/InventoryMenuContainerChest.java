@@ -269,7 +269,7 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         if (overlay != null) {
             title.append(overlay.getTitlePrefix());
         }
-        title.append(titleFun != null ? titleFun.apply(cp) : "");
+        title.append(ChatColor.BOLD).append("  ").append(titleFun != null ? titleFun.apply(cp) : "");
         if (pageCount > 1) {
             title.append(" (").append(cp.getMenu().getMenuTag("page", Integer.class) + 1).append("/").append(pageCount).append(")");
         }

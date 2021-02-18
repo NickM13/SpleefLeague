@@ -102,10 +102,8 @@ public class CoreUtils {
      * @deprecated Use StringUtils
      */
     public static String mergeSetString(Collection<String> stringCollection) {
-        System.out.println(stringCollection.size());
         StringBuilder stringBuilder = new StringBuilder();
         for (String str : stringCollection) {
-            System.out.println(str);
             stringBuilder.append((stringBuilder.length() > 0 ? ", " : "") + str);
         }
         return stringBuilder.toString();

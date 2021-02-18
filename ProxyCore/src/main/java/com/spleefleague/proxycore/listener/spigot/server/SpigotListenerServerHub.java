@@ -29,6 +29,7 @@ public class SpigotListenerServerHub extends SpigotListener<PacketSpigotServerHu
                 pcp.connect(lobby);
                 pcp.setCurrentBattle(null);
                 pcp.setBattling(false);
+                pcp.setSpectating(false);
             }
         }
     }
