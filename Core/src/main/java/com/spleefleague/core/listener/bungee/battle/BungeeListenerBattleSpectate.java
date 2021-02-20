@@ -2,6 +2,7 @@ package com.spleefleague.core.listener.bungee.battle;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.listener.bungee.BungeeListener;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleSpectate;
 import org.bukkit.entity.Player;

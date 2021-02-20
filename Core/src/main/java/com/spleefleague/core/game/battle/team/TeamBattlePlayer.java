@@ -2,6 +2,7 @@ package com.spleefleague.core.game.battle.team;
 
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 
 /**

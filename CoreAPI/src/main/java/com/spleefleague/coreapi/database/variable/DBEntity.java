@@ -30,6 +30,7 @@ public class DBEntity {
 
     // Set of classes that don't require converting
     private static final Set<Class<?>> noConvertSet = new HashSet<>();
+    private static final Map<Class<? extends DBEntity>, DBEntityForm> entityFormMap = new HashMap<>();
 
     static {
         noConvertSet.add(Boolean.class);
@@ -100,7 +101,7 @@ public class DBEntity {
         } else if (DBVariable.class.isAssignableFrom(clazz)) {
             return ((DBVariable<?>) obj).save();
         } else if (UUID.class.isAssignableFrom(clazz)) {
-            return (obj).toString();
+            return obj.toString();
         } else if (DBEntity.class.isAssignableFrom(clazz)) {
             DBEntity dbe = (DBEntity) obj;
             return dbe.toDocument();
@@ -136,35 +137,32 @@ public class DBEntity {
      * @return Document
      */
     public Document toDocument() {
+        if (!entityFormMap.containsKey(getClass())) {
+            entityFormMap.put(getClass(), new DBEntityForm(getClass()));
+        }
+        DBEntityForm form = entityFormMap.get(getClass());
         Document doc = new Document();
-        Class<?> clazz = this.getClass();
-        while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
-            for (Field f : clazz.getDeclaredFields()) {
-                DBField dbField = f.getAnnotation(DBField.class);
-                if (dbField != null && dbField.write()) {
-                    try {
-                        f.setAccessible(true);
-                        if (f.getName().equals("_id") || f.get(this) == null) continue;
-                        String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : f.getName();
-                        doc.append(fieldName, toDocumentable(f.getType(), f.get(this)));
-                    } catch (IllegalArgumentException | IllegalAccessException | NullPointerException | ClassNotFoundException exception) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, exception);
-                    }
-                }
+        for (Map.Entry<String, Field> entry : form.getWriteFields().entrySet()) {
+            String fieldName = entry.getKey();
+            Field field = entry.getValue();
+            try {
+                Object obj = field.get(this);
+                if (obj == null) continue;
+                doc.append(fieldName, toDocumentable(field.getType(), obj));
+            } catch (IllegalAccessException | ClassNotFoundException e) {
+                e.printStackTrace();
             }
-            for (Method m : clazz.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(DBSave.class)) {
-                    String fieldName = m.getAnnotation(DBSave.class).fieldName();
-                    try {
-                        m.setAccessible(true);
-                        Object o = m.invoke(this);
-                        if (o != null) doc.append(fieldName, o);
-                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException exception) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, exception);
-                    }
-                }
+        }
+        for (Map.Entry<String, Method> entry : form.getWriteMethods().entrySet()) {
+            String fieldName = entry.getKey();
+            Method method = entry.getValue();
+            try {
+                Object o = method.invoke(this);
+                if (o == null) continue;
+                doc.append(fieldName, o);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
             }
-            clazz = clazz.getSuperclass();
         }
         return doc;
     }
@@ -297,12 +295,7 @@ public class DBEntity {
                 if (dbVar == null) {
                     dbVar = (DBVariable<?>) field.getType().getDeclaredConstructor().newInstance();
                 }
-                for (Method method : field.getType().getMethods()) {
-                    if (method.getName().equalsIgnoreCase("load")) {
-                        method.invoke(dbVar, docObj);
-                        break;
-                    }
-                }
+                dbVar.objLoad(docObj);
                 field.set(this, dbVar);
             } else {
                 return false;
@@ -341,52 +334,36 @@ public class DBEntity {
      */
     public boolean load(Document doc) {
         if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
-        Class<?> clazz = this.getClass();
+        if (!entityFormMap.containsKey(getClass())) {
+            entityFormMap.put(getClass(), new DBEntityForm(getClass()));
+        }
+        DBEntityForm form = entityFormMap.get(getClass());
         boolean fullSuccess = true;
-        while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
-            for (Field field : clazz.getDeclaredFields()) {
-                DBField dbField = field.getAnnotation(DBField.class);
-                if (dbField != null && dbField.read()) {
-                    field.setAccessible(true);
-                    String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : field.getName();
-                    if (!doc.containsKey(fieldName)) continue;
-                    loadField(field, doc.get(fieldName));
-                }
+        for (Map.Entry<String, Field> entry : form.getReadFields().entrySet()) {
+            Object docObj = doc.get(entry.getKey());
+            if (docObj == null) continue;
+            if (!loadField(entry.getValue(), docObj)) {
+                fullSuccess = false;
             }
-            for (Method m : clazz.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(DBLoad.class)) {
-                    String fieldName = m.getAnnotation(DBLoad.class).fieldName();
-                    if (!doc.containsKey(fieldName)) continue;
-                    try {
-                        m.setAccessible(true);
-                        if (DBVariable.class.isAssignableFrom(m.getParameters()[0].getType())) {
-                            for (Method method : m.getParameters()[0].getType().getMethods()) {
-                                if (method.getName().equalsIgnoreCase("load")) {
-                                    try {
-                                        Object o = m.getParameters()[0].getType().getDeclaredConstructor().newInstance();
-                                        method.invoke(o, doc.get(fieldName, method.getParameters()[0].getType()));
-                                        m.invoke(this, o);
-                                    } catch (InstantiationException | NoSuchMethodException ex) {
-                                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, ex);
-                                        fullSuccess = false;
-                                    }
-                                    break;
-                                }
-                            }
-                        } else {
-                            Object docobj = doc.get(fieldName);
-                            if (docobj != null && m.getParameters()[0].getType().isAssignableFrom(docobj.getClass())) {
-                                m.invoke(this, doc.get(fieldName, m.getParameters()[0].getType()));
-                            }
-                        }
-                    } catch (IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException exception) {
-                        Logger.getLogger(DBEntity.class.getName()).log(Level.SEVERE, null, exception);
-                        fullSuccess = false;
+        }
+        for (Map.Entry<String, Method> entry : form.getReadMethods().entrySet()) {
+            String fieldName = entry.getKey();
+            Method method = entry.getValue();
+            try {
+                if (DBVariable.class.isAssignableFrom(method.getParameters()[0].getType())) {
+                    DBVariable<?> dbVariable = (DBVariable<?>) method.getParameters()[0].getType().getDeclaredConstructor().newInstance();
+                    Object docObj = doc.get(fieldName, method.getParameters()[0].getType());
+                    dbVariable.objLoad(docObj);
+                    method.invoke(this, dbVariable);
+                } else {
+                    Object docObj = doc.get(fieldName);
+                    if (docObj != null && method.getParameters()[0].getType().isAssignableFrom(docObj.getClass())) {
+                        method.invoke(this, doc.get(fieldName, method.getParameters()[0].getType()));
                     }
                 }
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+                e.printStackTrace();
             }
-            clazz = clazz.getSuperclass();
         }
         afterLoad();
         return fullSuccess;

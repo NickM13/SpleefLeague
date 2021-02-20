@@ -9,7 +9,7 @@ package com.spleefleague.core.chat.ticket;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.spleefleague.core.player.CorePlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 
@@ -93,24 +94,24 @@ public class Tickets {
         newTickets.add(ticket);
     }
 
-    public static void openTicket(CorePlayer cp, String issue) {
+    public static void openTicket(CoreOfflinePlayer cp, String issue) {
         Ticket ticket = new Ticket(allTickets.size(), cp.getUniqueId(), issue);
         openTickets.put(cp.getUniqueId(), ticket);
         addTicket(ticket);
     }
 
-    public static void respondTicket(CorePlayer sender, CorePlayer ticketOwner, String message) {
+    public static void respondTicket(CorePlayer sender, CoreOfflinePlayer ticketOwner, String message) {
         Ticket ticket = openTickets.get(ticketOwner.getUniqueId());
         if (ticket != null) {
             ticket.sendMessageToSender(sender, message);
         }
     }
 
-    public static Ticket getOpenTicket(CorePlayer cp) {
+    public static Ticket getOpenTicket(CoreOfflinePlayer cp) {
         return openTickets.get(cp.getUniqueId());
     }
 
-    public static List<Ticket> getAllTickets(CorePlayer cp) {
+    public static List<Ticket> getAllTickets(CoreOfflinePlayer cp) {
         return playerTickets.get(cp.getUniqueId());
     }
 

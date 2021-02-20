@@ -1,9 +1,11 @@
 package com.spleefleague.core.player.friends;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
+import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.chat.ChatColor;
+import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.player.friends.FriendsAction;
 import com.spleefleague.coreapi.player.friends.FriendsList;
 import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
@@ -17,13 +19,13 @@ import java.util.List;
 /**
  * @author NickM13
  */
-public class CorePlayerFriends extends FriendsList {
+public class CoreFriendsList extends FriendsList {
 
-    private final CorePlayer owner;
+    private final CoreOfflinePlayer owner;
     private final Set<String> allNames = new HashSet<>();
-    private final Set<CorePlayer> online = new HashSet<>();
+    private final Set<CoreOfflinePlayer> online = new HashSet<>();
 
-    public CorePlayerFriends(CorePlayer owner) {
+    public CoreFriendsList(CoreOfflinePlayer owner) {
         this.owner = owner;
     }
 
@@ -40,17 +42,18 @@ public class CorePlayerFriends extends FriendsList {
     }
 
     public boolean canAddFriends() {
-        return owner.getRank().getMaxFriends() <= 0 || owner.getRank().getMaxFriends() > friends.size();
+        CoreRank rank = Core.getInstance().getPlayers().get(owner.getUniqueId()).getRank();
+        return rank.getMaxFriends() <= 0 || rank.getMaxFriends() > friends.size();
     }
 
     public int getCount() {
         return friends.size();
     }
 
-    public void sendFriendRequest(CorePlayer cp) {
+    public void sendFriendRequest(CoreOfflinePlayer cp) {
         if (cp == null) return;
         if (cp.equals(owner)) {
-            Core.getInstance().sendMessage(owner, ChatColor.RED + "You can't add yourself!");
+            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(cp.getUniqueId()), ChatColor.RED + "You can't add yourself!");
             return;
         }
         if (canAddFriends()) {
@@ -59,22 +62,22 @@ public class CorePlayerFriends extends FriendsList {
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.ADD, owner.getUniqueId(), cp.getUniqueId()));
     }
 
-    public void sendFriendRemove(CorePlayer cp) {
+    public void sendFriendRemove(CoreOfflinePlayer cp) {
         if (cp == null) return;
         if (!friends.containsKey(cp.getUniqueId())) {
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.RED);
             text.addExtra("You aren't friends with ");
-            text.addExtra(cp.getChatName());
+            text.addExtra(Core.getInstance().getPlayers().get(cp.getUniqueId()).getChatName());
             text.addExtra("!");
-            Core.getInstance().sendMessage(cp, text);
+            Core.getInstance().sendMessage(Core.getInstance().getPlayers().get(cp.getUniqueId()), text);
             return;
         }
         friends.remove(cp.getUniqueId());
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.REMOVE, owner.getUniqueId(), cp.getUniqueId()));
     }
 
-    public void sendFriendDecline(CorePlayer cp) {
+    public void sendFriendDecline(CoreOfflinePlayer cp) {
         incoming.remove(cp.getUniqueId());
         Core.getInstance().sendPacket(new PacketSpigotFriend(FriendsAction.DECLINE_INCOMING, owner.getUniqueId(), cp.getUniqueId()));
     }
@@ -89,46 +92,46 @@ public class CorePlayerFriends extends FriendsList {
         }
     }
 
-    public void setOnline(UUID uuid, CorePlayer cp) {
+    public void setOnline(UUID uuid, CoreOfflinePlayer cp) {
         if (!friends.containsKey(uuid)) {
             return;
         }
-        if (cp.isOnline()) {
+        if (cp.getOnlineState() != DBPlayer.OnlineState.OFFLINE) {
             online.add(cp);
         } else {
             online.remove(cp);
         }
     }
 
-    public Set<CorePlayer> getOnline() {
+    public Set<CoreOfflinePlayer> getOnline() {
         return online;
     }
 
-    public void syncAdd(CorePlayer target) {
+    public void syncAdd(CoreOfflinePlayer target) {
         friends.put(target.getUniqueId(), new FriendInfo(target.getUniqueId()));
         allNames.add(target.getName());
         incoming.remove(target.getUniqueId());
         outgoing.remove(target.getUniqueId());
     }
 
-    public void syncRemove(CorePlayer target) {
+    public void syncRemove(CoreOfflinePlayer target) {
         friends.remove(target.getUniqueId());
         allNames.remove(target.getName());
     }
 
-    public void syncDeclineIncoming(CorePlayer target) {
+    public void syncDeclineIncoming(CoreOfflinePlayer target) {
         incoming.remove(target.getUniqueId());
     }
 
-    public void syncDeclineOutgoing(CorePlayer target) {
+    public void syncDeclineOutgoing(CoreOfflinePlayer target) {
         outgoing.remove(target.getUniqueId());
     }
 
-    public void syncIncoming(CorePlayer target) {
+    public void syncIncoming(CoreOfflinePlayer target) {
         incoming.add(target.getUniqueId());
     }
 
-    public void syncOutgoing(CorePlayer target) {
+    public void syncOutgoing(CoreOfflinePlayer target) {
         outgoing.add(target.getUniqueId());
     }
 
@@ -136,9 +139,9 @@ public class CorePlayerFriends extends FriendsList {
 
         @Override
         public int compare(FriendInfo friendInfo1, FriendInfo friendInfo2) {
-            CorePlayer cp1 = Core.getInstance().getPlayers().getOffline(friendInfo1.uuid);
-            CorePlayer cp2 = Core.getInstance().getPlayers().getOffline(friendInfo2.uuid);
-            return cp1.getNickname().compareTo(cp2.getNickname());
+            CoreOfflinePlayer cp1 = Core.getInstance().getPlayers().getOffline(friendInfo1.uuid);
+            CoreOfflinePlayer cp2 = Core.getInstance().getPlayers().getOffline(friendInfo2.uuid);
+            return cp1.getName().compareTo(cp2.getName());
         }
 
     }

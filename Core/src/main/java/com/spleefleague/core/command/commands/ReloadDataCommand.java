@@ -11,7 +11,6 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.command.error.CoreError;
-import com.spleefleague.core.crate.CrateManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
@@ -57,7 +56,7 @@ public class ReloadDataCommand extends CoreCommand {
 
     @CommandAnnotation
     public void reloaddataStructures(CorePlayer sender,
-                                 @LiteralArg("structures") String l) {
+                                     @LiteralArg("structures") String l) {
         BuildStructures.init();
         success(sender, "Reloaded structures from database");
     }

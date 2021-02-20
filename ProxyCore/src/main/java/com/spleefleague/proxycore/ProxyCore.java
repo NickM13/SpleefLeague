@@ -21,11 +21,13 @@ import com.spleefleague.proxycore.infraction.ProxyInfractionManager;
 import com.spleefleague.proxycore.listener.ConnectionListener;
 import com.spleefleague.proxycore.listener.SpigotPluginListener;
 import com.spleefleague.proxycore.packet.PacketManager;
-import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.party.ProxyPartyManager;
-import com.spleefleague.proxycore.player.ProxyPlayerManager;
+import com.spleefleague.proxycore.player.PlayerManager;
+import com.spleefleague.proxycore.player.ProxyDBPlayer;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ranks.ProxyRankManager;
 import com.spleefleague.proxycore.season.SeasonManager;
+import com.spleefleague.proxycore.ticket.TicketManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -58,7 +60,7 @@ public class ProxyCore extends Plugin {
     private MongoClient mongoClient;
     private MongoDatabase database;
 
-    private final ProxyPlayerManager playerManager = new ProxyPlayerManager();
+    private PlayerManager<ProxyCorePlayer> playerManager;
     private final ProxyPartyManager partyManager = new ProxyPartyManager();
 
     private final LeaderboardManager leaderboardManager = new LeaderboardManager();
@@ -70,6 +72,7 @@ public class ProxyCore extends Plugin {
     private final ProxyChat chat = new ProxyChat();
     private final SeasonManager seasonManager = new SeasonManager();
     private final ChallengeManager challengeManager = new ChallengeManager();
+    private final TicketManager ticketManager = new TicketManager();
 
     private final DropletManager dropletManager = new DropletManager();
 
@@ -94,13 +97,20 @@ public class ProxyCore extends Plugin {
         seasonManager.init();
         challengeManager.init();
 
-        playerManager.init();
+        playerManager = new PlayerManager<>(ProxyCorePlayer.class, getDatabase().getCollection("Players"));
         rankManager.init();
         leaderboardManager.init();
         infractionManager.init();
         arenaManager.init();
         queueManager.init();
         packetManager.init();
+        ticketManager.init();
+
+        ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            for (ProxyCorePlayer pcp : playerManager.getAll()) {
+                pcp.updateTempRanks();
+            }
+        }, 5L, 5L, TimeUnit.MINUTES);
 
         serverPingTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Set<String> toFindLobby = Sets.newHashSet(lobbyServers.keySet());
@@ -164,6 +174,7 @@ public class ProxyCore extends Plugin {
         infractionManager.close();
         packetManager.close();
         seasonManager.close();
+        ticketManager.close();
 
         serverPingTask.cancel();
     }
@@ -194,6 +205,10 @@ public class ProxyCore extends Plugin {
 
     public ChallengeManager getChallengeManager() {
         return challengeManager;
+    }
+
+    public TicketManager getTicketManager() {
+        return ticketManager;
     }
 
     public List<ServerInfo> getLobbyServers() {
@@ -254,7 +269,7 @@ public class ProxyCore extends Plugin {
         return database;
     }
 
-    public ProxyPlayerManager getPlayers() {
+    public PlayerManager<ProxyCorePlayer> getPlayers() {
         return playerManager;
     }
 
@@ -297,12 +312,12 @@ public class ProxyCore extends Plugin {
         return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
     }
 
-    public void sendMessage(ProxyCorePlayer pcp, String text) {
+    public void sendMessage(ProxyDBPlayer pcp, String text) {
         if (pcp.getPlayer() == null) return;
         pcp.getPlayer().sendMessage(new TextComponent(getChatTag() + text));
     }
 
-    public void sendMessage(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessage(ProxyDBPlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
         TextComponent textComp = new TextComponent(getChatTag());
         text.setColor(ChatColor.GRAY);
@@ -310,7 +325,7 @@ public class ProxyCore extends Plugin {
         pcp.getPlayer().sendMessage(textComp);
     }
 
-    public void sendMessageError(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessageError(ProxyDBPlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.RED);
@@ -319,7 +334,7 @@ public class ProxyCore extends Plugin {
         pcp.getPlayer().sendMessage(text2);
     }
 
-    public void sendMessageSuccess(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessageSuccess(ProxyDBPlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.GREEN);
@@ -327,7 +342,7 @@ public class ProxyCore extends Plugin {
         pcp.getPlayer().sendMessage(text2);
     }
 
-    public void sendMessageInfo(ProxyCorePlayer pcp, TextComponent text) {
+    public void sendMessageInfo(ProxyDBPlayer pcp, TextComponent text) {
         if (pcp.getPlayer() == null) return;
         TextComponent text2 = new TextComponent(getChatTag());
         text.setColor(ChatColor.YELLOW);

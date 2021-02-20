@@ -15,7 +15,7 @@ public class ActiveLeaderboard extends Leaderboard {
         active = true;
     }
 
-    public ActiveLeaderboard(String name, int season) {
+    public ActiveLeaderboard(String name, String season) {
         super(name, season);
         active = true;
         createTime = System.currentTimeMillis();

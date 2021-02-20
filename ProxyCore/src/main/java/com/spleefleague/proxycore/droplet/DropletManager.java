@@ -390,11 +390,11 @@ public class DropletManager {
         }
     }
 
-    public Droplet getBestLobby(ProxyCorePlayer cp) {
+    public Droplet getBestLobby(ProxyCorePlayer vanityPlayer) {
         if (!enabled) return null;
         Set<FriendDroplet> friendDroplets = new TreeSet<>(Comparator.comparingInt(FriendDroplet::getFriendCount));
 
-        for (ProxyCorePlayer friend : cp.getFriends().getOnline()) {
+        for (ProxyCorePlayer friend : vanityPlayer.getFriends().getOnline()) {
             Droplet droplet = friend.getCurrentDroplet();
             if (droplet.getType() == DropletType.LOBBY) {
                 FriendDroplet friendDroplet = new FriendDroplet(droplet);

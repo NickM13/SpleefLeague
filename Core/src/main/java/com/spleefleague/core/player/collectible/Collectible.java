@@ -1,6 +1,5 @@
 package com.spleefleague.core.player.collectible;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;

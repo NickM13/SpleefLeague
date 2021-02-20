@@ -41,7 +41,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         GlobalWorld.init();
 
         Core.getInstance().addTask(Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            Core.getInstance().getPlayers().getAllHere().forEach(cp -> {
+            Core.getInstance().getPlayers().getAllLocal().forEach(cp -> {
                 if (FakeUtils.isOnGround(cp)) {
                     net.minecraft.server.v1_15_R1.Entity entity = ((CraftEntity) cp.getPlayer()).getHandle();
                     entity.setMot(entity.getMot().getX(), 0, entity.getMot().getZ());
@@ -102,8 +102,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
         Core.addProtocolPacketAdapter(new PacketAdapter(Core.getInstance(), PacketType.Play.Client.USE_ITEM) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
-                PacketPlayInUseItem packetPlayInUseItem = (PacketPlayInUseItem) event.getPacket().getHandle();
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                if (cp == null) return;
+                PacketPlayInUseItem packetPlayInUseItem = (PacketPlayInUseItem) event.getPacket().getHandle();
                 net.minecraft.server.v1_15_R1.BlockPosition nmsBlockPosition = packetPlayInUseItem.c().getBlockPosition();
                 BlockPosition blockPosition = new BlockPosition(nmsBlockPosition.getX(), nmsBlockPosition.getY(), nmsBlockPosition.getZ());
                 EnumDirection direction = packetPlayInUseItem.c().getDirection();
@@ -140,9 +141,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer mapChunkPacket = event.getPacket();
+                ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
+                LOADED_CHUNKS.get(event.getPlayer().getUniqueId()).add(chunkCoord);
                 CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
                 if (cp == null) return;
-                ChunkCoord chunkCoord = new ChunkCoord(mapChunkPacket.getIntegers().read(0), mapChunkPacket.getIntegers().read(1));
                 Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
                 Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
                 while (fit.hasNext()) {
@@ -181,7 +183,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
             public void onPacketSending(PacketEvent event) {
                 PacketContainer unloadChunkPacket = event.getPacket();
                 ChunkCoord chunkCoord = new ChunkCoord(unloadChunkPacket.getIntegers().read(0), unloadChunkPacket.getIntegers().read(1));
-                CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+                LOADED_CHUNKS.get(event.getPlayer().getUniqueId()).remove(chunkCoord);
             }
         });
 
@@ -194,14 +196,14 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
 
     }
 
-    public static void onPlayerJoin(Player player) {
+    private static final Map<UUID, Set<ChunkCoord>> LOADED_CHUNKS = new HashMap<>();
 
+    public static void onPlayerJoin(UUID uuid) {
+        LOADED_CHUNKS.put(uuid, new HashSet<>());
     }
 
-    public static void onReload() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-
-        }
+    public static void onPlayerQuit(UUID uuid) {
+        LOADED_CHUNKS.remove(uuid);
     }
 
     public static GlobalWorld getGlobalFakeWorld() {
@@ -346,7 +348,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     protected void applyVisibility(CorePlayer cp) {
         // Hide and hide from all players not in this GameWorld
         if (cp.getOnlineState() != DBPlayer.OnlineState.HERE) return;
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllLocal()) {
             if (!cp.equals(cp2)) {
                 if (!playerMap.containsKey(cp2.getPlayer().getUniqueId())) {
                     cp.getPlayer().hidePlayer(Core.getInstance(), cp2.getPlayer());
@@ -850,7 +852,9 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     }
 
     public void updateAll(CorePlayer cp) {
+        Set<ChunkCoord> loadedChunks = LOADED_CHUNKS.get(cp.getUniqueId());
         for (Map.Entry<ChunkCoord, Set<BlockPosition>> entry : fakeChunks.entrySet()) {
+            if (!loadedChunks.contains(entry.getKey())) continue;
             Map<Short, FakeBlock> fakeBlocks = new HashMap<>();
             for (BlockPosition pos : entry.getValue()) {
                 short relativeLoc = (short) (((pos.getX() & 15) << 12) + ((pos.getZ() & 15) << 8) + pos.getY());

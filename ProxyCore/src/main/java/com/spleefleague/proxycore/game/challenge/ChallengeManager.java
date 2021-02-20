@@ -4,13 +4,11 @@ import com.google.common.collect.Lists;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ProxyChat;
 import com.spleefleague.proxycore.game.queue.QueueContainerDynamic;
-import com.spleefleague.proxycore.game.queue.QueueManager;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 

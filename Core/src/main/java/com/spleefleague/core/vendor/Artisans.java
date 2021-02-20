@@ -2,6 +2,7 @@ package com.spleefleague.core.vendor;
 
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.purse.CoreCurrency;
 import org.bson.Document;
@@ -25,7 +26,7 @@ public class Artisans {
     private static MongoCollection<Document> artisanCollection;
     private static final Map<String, Artisan> artisans = new HashMap<>();
     private static final Map<UUID, Artisan> entityVendorMap = new HashMap<>();
-    private static final Map<CorePlayer, Artisan> playerSetVendorMap = new HashMap<>();
+    private static final Map<CoreOfflinePlayer, Artisan> playerSetVendorMap = new HashMap<>();
 
     /**
      * Load all vendors from database
@@ -150,7 +151,7 @@ public class Artisans {
      * @param name   Vendor Name
      * @return Success
      */
-    public static boolean setPlayerVendor(CorePlayer player, String name) {
+    public static boolean setPlayerVendor(CoreOfflinePlayer player, String name) {
         Artisan vendor = artisans.get(name);
         if (vendor != null) {
             playerSetVendorMap.put(player, artisans.get(name));
@@ -165,7 +166,7 @@ public class Artisans {
      *
      * @param player Player
      */
-    public static void unsetPlayerVendor(CorePlayer player) {
+    public static void unsetPlayerVendor(CoreOfflinePlayer player) {
         playerSetVendorMap.put(player, null);
     }
 
@@ -185,7 +186,7 @@ public class Artisans {
      */
     public static void punchEvent(EntityDamageByEntityEvent event) {
         Player player = (Player) event.getDamager();
-        CorePlayer cp = Core.getInstance().getPlayers().get(player);
+        CoreOfflinePlayer cp = Core.getInstance().getPlayers().get(player);
         if (playerSetVendorMap.containsKey(cp)) {
             if (playerSetVendorMap.get(cp) == null) {
                 clearEntityVendor(event.getEntity());

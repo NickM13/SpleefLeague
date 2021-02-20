@@ -17,7 +17,7 @@ import java.util.*;
 public class Ratings extends DBEntity {
 
     @DBField private String name;
-    private final SortedMap<Integer, Rating> ratings = new TreeMap<>();
+    private final SortedMap<String, Rating> seasonalRatings = new TreeMap<>();
 
     public Ratings() {
 
@@ -30,7 +30,7 @@ public class Ratings extends DBEntity {
     @DBSave(fieldName="ratings")
     protected List<Document> saveRatings() {
         List<Document> docs = new ArrayList<>();
-        for (Map.Entry<Integer, Rating> entry : ratings.entrySet()) {
+        for (Map.Entry<String, Rating> entry : seasonalRatings.entrySet()) {
             docs.add(new Document("season", entry.getKey()).append("rating", entry.getValue().toDocument()));
         }
         return docs;
@@ -41,7 +41,7 @@ public class Ratings extends DBEntity {
         for (Document doc : docs) {
             Rating rating = new Rating();
             rating.load(doc.get("rating", Document.class));
-            ratings.put(doc.get("season", Integer.class), rating);
+            seasonalRatings.put(doc.getString("season"), rating);
         }
     }
 
@@ -51,15 +51,15 @@ public class Ratings extends DBEntity {
      * @param season Season
      * @return Rating
      */
-    public Rating get(int season) {
-        if (!ratings.containsKey(season)) {
-            ratings.put(season, new Rating());
+    public Rating get(String season) {
+        if (!seasonalRatings.containsKey(season)) {
+            seasonalRatings.put(season, new Rating());
         }
-        return ratings.get(season);
+        return seasonalRatings.get(season);
     }
 
-    public boolean isRanked(int season) {
-        return ratings.containsKey(season);
+    public boolean isRanked(String season) {
+        return seasonalRatings.containsKey(season);
     }
 
 }

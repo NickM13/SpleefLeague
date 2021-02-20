@@ -147,7 +147,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         eloChange = (int) (eloChange * placePercent);
 
         int initialElo = cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
-        boolean divChange = cp.getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
+        cp.getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
         cp.sendMessage(ChatColor.GRAY + " You have " +
                 (eloChange >= 0 ? "gained " : "lost ") +
                 ChatColor.GREEN + eloChange +

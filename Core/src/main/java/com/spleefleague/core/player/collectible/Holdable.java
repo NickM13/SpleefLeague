@@ -1,7 +1,6 @@
 package com.spleefleague.core.player.collectible;
 
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.coreapi.database.annotation.DBField;
 
 /**
  * @author NickM13

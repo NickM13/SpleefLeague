@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;

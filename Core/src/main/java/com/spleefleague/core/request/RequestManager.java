@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import net.md_5.bungee.api.chat.*;
-import org.bukkit.entity.Player;
 
 /**
  * @author NickM13

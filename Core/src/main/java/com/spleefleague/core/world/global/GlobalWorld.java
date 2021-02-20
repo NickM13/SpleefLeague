@@ -4,14 +4,13 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeUtils;
-import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
 import com.spleefleague.core.world.global.lock.GlobalLock;
 import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
 import net.minecraft.server.v1_15_R1.ItemStack;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -35,7 +34,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
     }
 
     // 32 * 128
-    private static final short COMPRESS_MULTIPLY = 4096;
+    private static final double COMPRESS_MULTIPLY = 4096;
 
     public static class RotatingItemPlayer {
 
@@ -48,6 +47,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
             final ProjectileWorld<? extends ProjectileWorldPlayer> world;
 
             private double lastRotation = 0;
+            double x, y, z;
 
             public RotatingItem(ProjectileWorld<? extends ProjectileWorldPlayer> world, double x, double y, double z, ItemStack item) {
                 remainingTime = 40;
@@ -58,6 +58,9 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
                             x, y, z + RADIUS,
                             item);
                 });
+                this.x = x;
+                this.y = y;
+                this.z = z + RADIUS;
                 this.world = world;
             }
 
@@ -75,15 +78,24 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
                 }
             }
 
-            public void update(double rotation, short changeX, short changeY, short changeZ) {
+            public void update(float rotation, short changeX, short changeY, short changeZ) {
+                short realChangeX = (short) (changeX + (Math.sin(rotation) - Math.sin(lastRotation)) * COMPRESS_MULTIPLY * RADIUS);
+                short realChangeY = changeY;
+                short realChangeZ = (short) (changeZ + (Math.cos(rotation) - Math.cos(lastRotation)) * COMPRESS_MULTIPLY * RADIUS);
+                this.x += realChangeX / COMPRESS_MULTIPLY;
+                this.y += realChangeY / COMPRESS_MULTIPLY;
+                this.z += realChangeZ / COMPRESS_MULTIPLY;
                 world.getPlayerMap().values().forEach(pwp -> {
-                    FakeUtils.sendEntityMove(
+                    FakeUtils.sendEntityMoveLook(
                             pwp.getPlayer(),
                             entityId,
-                            (short) (changeX + (Math.sin(rotation) - Math.sin(lastRotation)) * COMPRESS_MULTIPLY * RADIUS),
-                            changeY,
-                            (short) (changeZ + (Math.cos(rotation) - Math.cos(lastRotation)) * COMPRESS_MULTIPLY * RADIUS));
+                            realChangeX,
+                            realChangeY,
+                            realChangeZ,
+                            -rotation,
+                            0);
                 });
+                world.spawnParticles(Particle.CLOUD, x, y, z, 0, 0, 0, 0, 1);
                 lastRotation = rotation;
             }
 
@@ -94,7 +106,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
         private final Player player;
         private final ProjectileWorld<? extends ProjectileWorldPlayer> world;
         private double x, y, z;
-        private double rotation = 0;
+        private float rotation = 0;
 
         public RotatingItemPlayer(Player player, ProjectileWorld<? extends ProjectileWorldPlayer> world, ItemStack itemStack) {
             this.player = player;
@@ -106,7 +118,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
         }
 
         public void addRotatingItem(ItemStack itemStack) {
-            rotatingItems.add(0, new RotatingItem(world, x, y + 1.5, z, itemStack));
+            rotatingItems.add(new RotatingItem(world, x, y + 1.5, z, itemStack));
         }
 
         public boolean onTick() {
@@ -127,7 +139,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
             short changeY = (short) ((y - lastY) * COMPRESS_MULTIPLY);
             short changeZ = (short) ((z - lastZ) * COMPRESS_MULTIPLY);
 
-            double rotation = Math.PI * 2 / rotatingItems.size();
+            float rotation = (float) (Math.PI * 2 / rotatingItems.size());
             int i = 0;
             for (RotatingItem item : rotatingItems) {
                 item.update(this.rotation + rotation * i++, changeX, changeY, changeZ);
@@ -139,6 +151,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
     }
 
     private final Map<UUID, RotatingItemPlayer> rotatingItemMap = new HashMap<>();
+    //private final List<RotatingItemChest>
 
     private final BukkitTask rotatingItemTask;
 

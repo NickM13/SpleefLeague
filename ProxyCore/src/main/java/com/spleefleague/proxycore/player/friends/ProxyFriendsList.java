@@ -68,7 +68,8 @@ public class ProxyFriendsList extends FriendsList {
     }
 
     public boolean canAddFriends() {
-        return owner.getRank().getMaxFriends() <= 0 || owner.getRank().getMaxFriends() > friends.size();
+        return ProxyCore.getInstance().getPlayers().get(owner.getUniqueId()).getRank().getMaxFriends() <= 0 ||
+                ProxyCore.getInstance().getPlayers().get(owner.getUniqueId()).getRank().getMaxFriends() > friends.size();
     }
 
     private void addFriend(ProxyCorePlayer pcp) {
@@ -76,26 +77,26 @@ public class ProxyFriendsList extends FriendsList {
         outgoing.remove(pcp.getUniqueId());
         incoming.remove(pcp.getUniqueId());
 
-        ProxyCore.getInstance().getPacketManager().sendPacket(owner, new PacketBungeeFriend(FriendsAction.ADD, owner.getUniqueId(), pcp.getUniqueId()));
+        ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), new PacketBungeeFriend(FriendsAction.ADD, owner.getUniqueId(), pcp.getUniqueId()));
     }
 
     public int receiveFriendRequest(ProxyCorePlayer pcp) {
         if (!canAddFriends()) {
             return 6;
-        } else if (!owner.getOptions().getBoolean("Friend:Requests")) {
-            return 4;
+        //} else if (!owner.getOptions().getBoolean("Friend:Requests")) {
+        //    return 4;
         } else if (friends.containsKey(pcp.getUniqueId())) {
             return 2;
         } else if (outgoing.contains(pcp.getUniqueId())) {
             addFriend(pcp);
             TextComponent text = new TextComponent();
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             text.addExtra(" has accepted your friend request!");
             ProxyCore.getInstance().sendMessage(owner, text);
             return 0;
         } else if (!incoming.contains(pcp.getUniqueId())) {
             TextComponent text = new TextComponent("Friend request received from ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessage(owner, text);
 
             ProxyChat.sendConfirmationButtons(owner, "/friend add " + pcp.getName(), "/friend decline " + pcp.getName());
@@ -105,7 +106,7 @@ public class ProxyFriendsList extends FriendsList {
             PacketBungeeFriend packet =  new PacketBungeeFriend(FriendsAction.INCOMING,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
             return 1;
         } else {
             return 3;
@@ -117,12 +118,12 @@ public class ProxyFriendsList extends FriendsList {
         PacketBungeeFriend packet;
         if (friends.containsKey(pcp.getUniqueId())) {
             text = new TextComponent("You're already friends with ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessageError(owner, text);
             packet =  new PacketBungeeFriend(FriendsAction.ADD,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
             return;
         }
         if (!canAddFriends()) {
@@ -134,38 +135,38 @@ public class ProxyFriendsList extends FriendsList {
             case 0:
                 addFriend(pcp);
                 text = new TextComponent("You are now friends with ");
-                text.addExtra(pcp.getChatName());
+                text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
                 text.addExtra("!");
                 ProxyCore.getInstance().sendMessage(owner, text);
                 break;
             case 1:
                 text = new TextComponent("Friend request sent to ");
-                text.addExtra(pcp.getChatName());
+                text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
                 ProxyCore.getInstance().sendMessage(owner, text);
                 outgoing.add(pcp.getUniqueId());
                 packet =  new PacketBungeeFriend(FriendsAction.OUTGOING,
                         owner.getUniqueId(),
                         pcp.getUniqueId());
-                ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+                ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
                 break;
             case 2:
                 text = new TextComponent("You're already friends with ");
-                text.addExtra(pcp.getChatName());
+                text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
                 ProxyCore.getInstance().sendMessageError(owner, text);
                 friends.put(pcp.getUniqueId(), new FriendInfo(pcp.getUniqueId()));
                 packet =  new PacketBungeeFriend(FriendsAction.ADD,
                         owner.getUniqueId(),
                         pcp.getUniqueId());
-                ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+                ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
                 break;
             case 3:
                 text = new TextComponent("You already have an outgoing friend request to ");
-                text.addExtra(pcp.getChatName());
+                text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
                 text.addExtra("!");
                 ProxyCore.getInstance().sendMessage(owner, text);
                 break;
             case 4:
-                text = new TextComponent(pcp.getChatName());
+                text = new TextComponent(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
                 text.addExtra(" is blocking friend requests");
                 ProxyCore.getInstance().sendMessageError(owner, text);
                 break;
@@ -182,10 +183,10 @@ public class ProxyFriendsList extends FriendsList {
                     owner.getUniqueId(),
                     pcp.getUniqueId());
             TextComponent text = new TextComponent();
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             text.addExtra(" has removed you as a friend!");
             ProxyCore.getInstance().sendMessage(owner, text);
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
         }
     }
 
@@ -193,16 +194,16 @@ public class ProxyFriendsList extends FriendsList {
         pcp.getFriends().receiveFriendRemove(owner);
         if (friends.containsKey(pcp.getUniqueId())) {
             TextComponent text = new TextComponent("You are no longer friends with ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessage(owner, text);
             friends.remove(pcp.getUniqueId());
             PacketBungeeFriend packet =  new PacketBungeeFriend(FriendsAction.REMOVE,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
         } else {
             TextComponent text = new TextComponent("You aren't friends with ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessageError(owner, text);
         }
     }
@@ -210,28 +211,28 @@ public class ProxyFriendsList extends FriendsList {
     public void receiveFriendDecline(ProxyCorePlayer pcp) {
         if (outgoing.remove(pcp.getUniqueId())) {
             TextComponent text = new TextComponent();
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             text.addExtra(" declined your friend request");
             ProxyCore.getInstance().sendMessage(owner, text);
             PacketBungeeFriend packet =  new PacketBungeeFriend(FriendsAction.DECLINE_OUTGOING,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
         }
     }
 
     public void onFriendDecline(ProxyCorePlayer pcp) {
         if (incoming.remove(pcp.getUniqueId())) {
             TextComponent text = new TextComponent("Declined friend request from ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessage(owner, text);
             PacketBungeeFriend packet =  new PacketBungeeFriend(FriendsAction.DECLINE_INCOMING,
                     owner.getUniqueId(),
                     pcp.getUniqueId());
-            ProxyCore.getInstance().getPacketManager().sendPacket(owner, packet);
+            ProxyCore.getInstance().getPacketManager().sendPacket(owner.getUniqueId(), packet);
         } else {
             TextComponent text = new TextComponent("You don't have a friend request from ");
-            text.addExtra(pcp.getChatName());
+            text.addExtra(ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getChatName());
             ProxyCore.getInstance().sendMessageError(owner, text);
         }
         pcp.getFriends().receiveFriendDecline(owner);

@@ -10,7 +10,6 @@ import com.spleefleague.core.util.MathUtils;
 import com.spleefleague.core.util.variable.Position;
 import net.minecraft.server.v1_15_R1.*;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
@@ -311,6 +310,22 @@ public class FakeUtils {
                     changeX,
                     changeY,
                     changeZ,
+                    true
+            )), null, false);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendEntityMoveLook(Player player, int entityId, short changeX, short changeY, short changeZ, float yaw, float pitch) {
+        try {
+            protocolManager.sendServerPacket(player, new PacketContainer(PacketType.Play.Server.REL_ENTITY_MOVE_LOOK, new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(
+                    entityId,
+                    changeX,
+                    changeY,
+                    changeZ,
+                    (byte) (yaw / Math.PI / 2 * 256),
+                    (byte) (pitch / Math.PI / 2 * 256),
                     true
             )), null, false);
         } catch (InvocationTargetException e) {

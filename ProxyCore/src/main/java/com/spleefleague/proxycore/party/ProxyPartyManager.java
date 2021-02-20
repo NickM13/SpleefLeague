@@ -3,7 +3,6 @@ package com.spleefleague.proxycore.party;
 import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.party.PartyManager;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
-import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshParty;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ProxyChat;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;

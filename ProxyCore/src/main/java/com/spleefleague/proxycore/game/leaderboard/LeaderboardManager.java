@@ -1,7 +1,7 @@
 package com.spleefleague.proxycore.game.leaderboard;
 
 import com.mongodb.client.MongoCollection;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class LeaderboardManager {
 
-    private final Map<String, LeaderboardCollection> LEADERBOARDS = new HashMap<>();
+    private final Map<String, Leaderboard> LEADERBOARDS = new HashMap<>();
 
     private MongoCollection<Document> leaderboardCol;
 
@@ -24,20 +24,10 @@ public class LeaderboardManager {
 
     public void init() {
         leaderboardCol = ProxyCore.getInstance().getDatabase().getCollection("Leaderboards");
-        for (Document doc : leaderboardCol.find(new Document())) {
-            Leaderboard leaderboard;
-            Boolean active = doc.get("active", Boolean.class);
-            if (active == null) continue;
-            if (active) {
-                leaderboard = new ActiveLeaderboard();
-            } else {
-                leaderboard = new ArchivedLeaderboard();
-            }
+        for (Document doc : leaderboardCol.find(new Document("season", ProxyCore.getInstance().getSeasonManager().getCurrentSeason()))) {
+            Leaderboard leaderboard = new Leaderboard();
             leaderboard.load(doc);
-            if (!LEADERBOARDS.containsKey(leaderboard.getName())) {
-                LEADERBOARDS.put(leaderboard.getName(), new LeaderboardCollection(leaderboard.getName()));
-            }
-            LEADERBOARDS.get(leaderboard.getName()).addLeaderboard(leaderboard);
+            LEADERBOARDS.put(leaderboard.getName(), leaderboard);
         }
 
         decayTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), this::checkDecay, 0, 6, TimeUnit.HOURS);
@@ -49,15 +39,11 @@ public class LeaderboardManager {
     public void save() {
         if (!saving) {
             saving = true;
-            try {
-                if (leaderboardCol.find(new Document("active", true)).first() != null) {
-                    leaderboardCol.deleteMany(new Document("active", true));
-                }
-                for (Map.Entry<String, LeaderboardCollection> entry : LEADERBOARDS.entrySet()) {
-                    leaderboardCol.insertOne(entry.getValue().getActive().toDocument());
-                }
-            } catch (NoClassDefFoundError | IllegalAccessError ignored) {
-
+            for (Leaderboard leaderboard : LEADERBOARDS.values()) {
+                leaderboardCol.replaceOne(
+                        new Document("name", leaderboard.getName()).append("season", leaderboard.getSeason()),
+                        leaderboard.toDocument(),
+                        new ReplaceOptions().upsert(true));
             }
             saving = false;
         }
@@ -69,17 +55,11 @@ public class LeaderboardManager {
         save();
     }
 
-    public LeaderboardCollection get(String name) {
+    public Leaderboard get(String name) {
         if (!LEADERBOARDS.containsKey(name)) {
-            LEADERBOARDS.put(name, new LeaderboardCollection(name));
+            LEADERBOARDS.put(name, new Leaderboard(name, ProxyCore.getInstance().getSeasonManager().getCurrentSeason()));
         }
         return LEADERBOARDS.get(name);
-    }
-
-    public void startNewSeason() {
-        for (Map.Entry<String, LeaderboardCollection> entry : LEADERBOARDS.entrySet()) {
-            leaderboardCol.insertOne(entry.getValue().startNewSeason().toDocument());
-        }
     }
 
     /**
@@ -98,6 +78,7 @@ public class LeaderboardManager {
      * Check the decay of every leaderboard's current season players
      */
     public void checkDecay() {
+        /*
         for (Map.Entry<String, LeaderboardCollection> entry : LEADERBOARDS.entrySet()) {
             Map<Integer, Set<UUID>> oldPlayerScores = new HashMap<>();
             Map<Integer, Set<UUID>> newPlayerScores = new HashMap<>();
@@ -122,6 +103,7 @@ public class LeaderboardManager {
             }
             activeLeaderboard.sortMany(oldPlayerScores, newPlayerScores);
         }
+        */
     }
 
 }

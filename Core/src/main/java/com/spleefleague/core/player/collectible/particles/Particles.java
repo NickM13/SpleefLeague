@@ -2,7 +2,6 @@ package com.spleefleague.core.player.collectible.particles;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.vendor.Vendorable;
 
 /**

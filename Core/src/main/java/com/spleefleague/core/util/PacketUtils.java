@@ -7,25 +7,19 @@ import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
 import com.comphenix.protocol.wrappers.WrappedBlockData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.mojang.authlib.GameProfile;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.util.packet.BlockPalette;
 import com.spleefleague.core.util.packet.ByteBufferReader;
 import com.spleefleague.core.util.packet.ChunkData;
 import com.spleefleague.core.util.packet.ChunkSection;
-import com.spleefleague.core.util.packet.ProtocolLongArrayBitReader;
-import com.spleefleague.core.util.packet.ProtocolLongArrayBitWriter;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeBlock;
-import gnu.trove.list.array.TByteArrayList;
 import net.minecraft.server.v1_15_R1.EnumGamemode;
-import net.minecraft.server.v1_15_R1.IBlockData;
 import net.minecraft.server.v1_15_R1.IChatBaseComponent;
 import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_15_R1.block.data.CraftBlockData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,15 +37,15 @@ import java.util.UUID;
  */
 public class PacketUtils {
 
-    public static PacketContainer createAddPlayerPacket(List<CorePlayer> corePlayers) {
+    public static PacketContainer createAddPlayerPacket(List<CoreOfflinePlayer> corePlayers) {
         try {
             PacketPlayOutPlayerInfo nmsPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER);
             Field playerListField = PacketPlayOutPlayerInfo.class.getDeclaredField("b");
             playerListField.setAccessible(true);
             List playerList = (List) playerListField.get(nmsPacket);
-            for (CorePlayer cp : corePlayers) {
+            for (CoreOfflinePlayer cp : corePlayers) {
                 playerList.add(PacketPlayOutPlayerInfo.class.getDeclaredClasses()[0].getDeclaredConstructor(PacketPlayOutPlayerInfo.class, GameProfile.class, int.class, EnumGamemode.class, IChatBaseComponent.class)
-                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getTabName()).getJson())));
+                        .newInstance(nmsPacket, new GameProfile(cp.getUniqueId(), cp.getName()), 1, EnumGamemode.ADVENTURE, IChatBaseComponent.ChatSerializer.a(WrappedChatComponent.fromText(cp.getRankedDisplayName()).getJson())));
             }
             return new PacketContainer(PacketType.Play.Server.PLAYER_INFO, nmsPacket);
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException exception) {

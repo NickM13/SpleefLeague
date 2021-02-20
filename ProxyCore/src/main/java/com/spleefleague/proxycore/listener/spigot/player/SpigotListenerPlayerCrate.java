@@ -1,6 +1,5 @@
 package com.spleefleague.proxycore.listener.spigot.player;
 
-import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCollectibleSkin;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCrate;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
@@ -15,10 +14,10 @@ public class SpigotListenerPlayerCrate extends SpigotListener<PacketSpigotPlayer
 
     @Override
     protected void receive(Connection sender, PacketSpigotPlayerCrate packet) {
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
-        pcp.getCrates().changeCrateCount(packet.crateName, packet.amount);
+        ProxyCorePlayer pvp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
+        pvp.getCrates().changeCrateCount(packet.crateName, packet.amount);
         if (packet.opened) {
-            pcp.getCrates().addOpenedCrates(packet.crateName, -packet.amount);
+            pvp.getCrates().addOpenedCrates(packet.crateName, -packet.amount);
         }
     }
 

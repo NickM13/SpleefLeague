@@ -35,11 +35,11 @@ public class CancelAllCommand extends CoreCommand {
      */
     @CommandAnnotation
     public void cancelall(CorePlayer sender) {
-        Set<Battle> battles = new HashSet<>();
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
+        Set<Battle<?>> battles = new HashSet<>();
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
             battles.add(cp.getBattle());
         }
-        for (Battle battle : battles) {
+        for (Battle<?> battle : battles) {
             battle.cancel();
         }
         success(sender, "Cancelled all battles");

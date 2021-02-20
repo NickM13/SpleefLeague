@@ -6,10 +6,8 @@ import com.spleefleague.coreapi.infraction.Infraction;
 import com.spleefleague.coreapi.infraction.InfractionType;
 import com.spleefleague.coreapi.utils.TimeUtils;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerInfraction;
-import io.github.waterfallmc.waterfall.exception.ProxyCommandException;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 /**
  * @author NickM13

@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  */
 public class InventoryMenuItemStatic extends InventoryMenuItem {
 
-    private ItemStack DEFAULT_DISPLAY = new ItemStack(Material.SNOW_BLOCK);
+    private final ItemStack DEFAULT_DISPLAY = new ItemStack(Material.SNOW_BLOCK);
 
     protected boolean visible;
     protected boolean available;

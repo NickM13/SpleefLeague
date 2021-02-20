@@ -1,8 +1,6 @@
 package com.spleefleague.core.listener.bungee.connection;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.listener.bungee.BungeeListener;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import org.bukkit.Bukkit;

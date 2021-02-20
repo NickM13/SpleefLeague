@@ -213,7 +213,7 @@ public class BattleMode {
         return battleClass;
     }
 
-    public int getSeason() {
+    public String getSeason() {
         return Core.getInstance().getLeaderboards().get(name).getActive().getSeason();
     }
 

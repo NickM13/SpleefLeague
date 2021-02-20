@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCol
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.connection.Connection;
 
 /**
@@ -15,18 +16,19 @@ public class SpigotListenerPlayerCollectible extends SpigotListener<PacketSpigot
     @Override
     protected void receive(Connection sender, PacketSpigotPlayerCollectible packet) {
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
+        ProxyCorePlayer pvp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
         switch (packet.action) {
             case LOCK:
-                pcp.getCollectibles().remove(packet.parent, packet.identifier);
+                pvp.getCollectibles().remove(packet.parent, packet.identifier);
                 break;
             case UNLOCK:
-                pcp.getCollectibles().add(packet.parent, packet.identifier);
+                pvp.getCollectibles().add(packet.parent, packet.identifier);
                 break;
             case ACTIVE:
                 if (packet.identifier.length() > 0) {
-                    pcp.getCollectibles().setActiveItem(packet.parent, packet.identifier, packet.affix);
+                    pvp.getCollectibles().setActiveItem(packet.parent, packet.identifier, packet.affix);
                 } else {
-                    pcp.getCollectibles().removeActiveItem(packet.parent, packet.affix);
+                    pvp.getCollectibles().removeActiveItem(packet.parent, packet.affix);
                 }
                 break;
         }

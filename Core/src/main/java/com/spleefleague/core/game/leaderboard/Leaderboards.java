@@ -3,6 +3,8 @@ package com.spleefleague.core.game.leaderboard;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.ratings.CorePlayerRatings;
+import com.spleefleague.core.settings.Settings;
 import com.spleefleague.coreapi.game.leaderboard.ActiveLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.ArchivedLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
@@ -13,7 +15,6 @@ import org.bson.Document;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -38,14 +39,10 @@ public class Leaderboards {
     public void refresh() {
         for (Document doc : leaderboardCol.find(new Document())) {
             Leaderboard leaderboard;
-            if (doc.get("active", Boolean.class)) {
                 leaderboard = new ActiveLeaderboard();
-            } else {
-                leaderboard = new ArchivedLeaderboard();
-            }
             leaderboard.load(doc);
             if (!LEADERBOARDS.containsKey(leaderboard.getName())) {
-                LEADERBOARDS.put(leaderboard.getName(), new LeaderboardCollection(leaderboard.getName()));
+                LEADERBOARDS.put(leaderboard.getName(), new LeaderboardCollection(leaderboard.getName(), Settings.getCurrentSeason()));
             }
             LEADERBOARDS.get(leaderboard.getName()).addLeaderboard(leaderboard);
         }
@@ -58,10 +55,10 @@ public class Leaderboards {
         }
         for (LeaderboardCollection leaderboard : LEADERBOARDS.values()) {
             String name = leaderboard.getName();
-            int season = leaderboard.getActive().getSeason();
+            String season = leaderboard.getActive().getSeason();
             Set<RatedPlayerInfo> ratedPlayerInfos = new HashSet<>();
             for (CorePlayer cp : playerMap.values()) {
-                PlayerRatings ratings = cp.getRatings();
+                CorePlayerRatings ratings = cp.getRatings();
                 if (ratings.isRanked(name, season) && ratings.getGamesPlayed(name, season) > 0) {
                     ratedPlayerInfos.add(new RatedPlayerInfo(NumAction.SET, cp.getUniqueId(), ratings.getElo(name, season)));
                 }
@@ -76,7 +73,7 @@ public class Leaderboards {
 
     public LeaderboardCollection get(String name) {
         if (!LEADERBOARDS.containsKey(name)) {
-            LEADERBOARDS.put(name, new LeaderboardCollection(name));
+            LEADERBOARDS.put(name, new LeaderboardCollection(name, Settings.getCurrentSeason()));
         }
         return LEADERBOARDS.get(name);
     }

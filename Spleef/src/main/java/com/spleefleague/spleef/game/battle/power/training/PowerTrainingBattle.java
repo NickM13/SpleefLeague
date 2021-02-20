@@ -168,7 +168,7 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
         super.startRound();
         for (PowerTrainingPlayer psp : battlers.values()) {
             psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
-            NoteBlockMusic.playSong(psp.getCorePlayer(), NoteBlockMusic.getSong("biogra.nbs"), 0.2f);
+            NoteBlockMusic.playSong(psp.getCorePlayer().getUniqueId(), NoteBlockMusic.getSong("biogra.nbs"), 0.2f);
         }
     }
 

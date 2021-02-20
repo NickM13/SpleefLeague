@@ -15,8 +15,4 @@ public class ProxyPlayerStatistics extends PlayerStatistics {
         this.owner = owner;
     }
 
-    public void setOwner(ProxyCorePlayer owner) {
-        this.owner = owner;
-    }
-
 }

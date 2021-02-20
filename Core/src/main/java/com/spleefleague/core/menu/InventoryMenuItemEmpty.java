@@ -1,14 +1,8 @@
 package com.spleefleague.core.menu;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -18,14 +12,11 @@ import java.util.function.Consumer;
  */
 public class InventoryMenuItemEmpty extends InventoryMenuItem {
 
-    private ItemStack DEFAULT_DISPLAY = new ItemStack(Material.SNOW_BLOCK);
-
     protected boolean visible;
     protected boolean available;
 
     protected String name;
     protected String description;
-    protected ItemStack displayItem;
     protected ItemStack selectedItem;
 
     public InventoryMenuItemEmpty() {
@@ -34,7 +25,6 @@ public class InventoryMenuItemEmpty extends InventoryMenuItem {
 
         name = "";
         description = "";
-        displayItem = DEFAULT_DISPLAY;
         selectedItem = null;
     }
 

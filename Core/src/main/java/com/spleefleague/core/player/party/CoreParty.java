@@ -7,11 +7,8 @@
 package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.*;
@@ -19,7 +16,6 @@ import java.util.*;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.party.Party;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Material;
 
 /**
  * @author NickM13
@@ -46,8 +42,8 @@ public class CoreParty extends Party {
                     }));
     */
 
-    private final Set<CorePlayer> playerSet = new HashSet<>();
-    private final Set<CorePlayer> localPlayers = new HashSet<>();
+    private final Map<UUID, CorePlayer> playerSet = new HashMap<>();
+    private final Map<UUID, CorePlayer> localPlayers = new HashMap<>();
 
     public CoreParty(UUID owner, List<UUID> players) {
         super(owner);
@@ -65,22 +61,22 @@ public class CoreParty extends Party {
         return owner.equals(cp.getUniqueId());
     }
 
-    public Set<CorePlayer> getPlayerSet() {
-        return playerSet;
+    public Collection<CorePlayer> getPlayerSet() {
+        return playerSet.values();
     }
 
-    public Set<CorePlayer> getLocalPlayers() {
-        return localPlayers;
+    public Collection<CorePlayer> getLocalPlayers() {
+        return localPlayers.values();
     }
 
     public TextComponent getPlayersFormatted() {
         TextComponent message = new TextComponent("");
 
-        Iterator<CorePlayer> cpit = playerSet.iterator();
-        while (cpit.hasNext()) {
-            CorePlayer cp = cpit.next();
-            message.addExtra(cp.getChatName());
-            if (cpit.hasNext()) {
+        Iterator<Map.Entry<UUID, CorePlayer>> it = playerSet.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, CorePlayer> entry = it.next();
+            message.addExtra(entry.getValue().getChatName());
+            if (it.hasNext()) {
                 message.addExtra(new TextComponent(", "));
             }
         }
@@ -89,17 +85,17 @@ public class CoreParty extends Party {
     }
 
     public void sendMessage(TextComponent text) {
-        for (CorePlayer cp : localPlayers) {
+        for (CorePlayer cp : localPlayers.values()) {
             Core.getInstance().sendMessage(cp, text);
         }
     }
 
     public void addLocal(CorePlayer cp) {
-        localPlayers.add(cp);
+        localPlayers.put(cp.getUniqueId(), cp);
     }
 
-    public void removeLocal(CorePlayer cp) {
-        localPlayers.remove(cp);
+    public void removeLocal(UUID uuid) {
+        localPlayers.remove(uuid);
         if (localPlayers.isEmpty()) {
             Core.getInstance().getPartyManager().removeParty(this);
         }
@@ -115,18 +111,17 @@ public class CoreParty extends Party {
 
         CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
 
-        playerSet.add(cp);
+        playerSet.put(uuid, cp);
 
         if (cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
-            localPlayers.add(cp);
+            localPlayers.put(uuid, cp);
         }
     }
 
     @Override
     public boolean removePlayer(UUID uuid) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
-        playerSet.remove(cp);
-        localPlayers.remove(cp);
+        playerSet.remove(uuid);
+        localPlayers.remove(uuid);
         return super.removePlayer(uuid);
     }
 
@@ -147,9 +142,9 @@ public class CoreParty extends Party {
 
             CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
 
-            playerSet.add(cp);
+            playerSet.put(uuid, cp);
             if (cp.getOnlineState() == DBPlayer.OnlineState.HERE) {
-                localPlayers.add(cp);
+                localPlayers.put(uuid, cp);
             }
         }
     }

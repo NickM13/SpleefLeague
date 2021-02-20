@@ -6,11 +6,8 @@
 
 package com.spleefleague.core.menu.hotbars.main.socialmedia;
 
-import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.settings.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

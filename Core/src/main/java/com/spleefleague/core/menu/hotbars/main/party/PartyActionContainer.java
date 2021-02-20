@@ -4,8 +4,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.coreapi.player.friends.FriendsList;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import org.bukkit.Material;
 
 import java.util.UUID;
@@ -22,7 +21,7 @@ public class PartyActionContainer {
         container = InventoryMenuAPI.createContainer()
                 .setTitle(cp -> {
                     StringBuilder builder = new StringBuilder();
-                    CorePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
+                    CoreOfflinePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
                     if (member != null) {
                         builder.append(member.getName());
                     }
@@ -34,12 +33,12 @@ public class PartyActionContainer {
                         .setName("Promote Player")
                         .setDescription(cp -> {
                             UUID uuid = UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class));
-                            CorePlayer member = Core.getInstance().getPlayers().getOffline(uuid);
+                            CoreOfflinePlayer member = Core.getInstance().getPlayers().getOffline(uuid);
                             return "Transfer ownership of the party to " + member.getDisplayName();
                         })
                         .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BRAIN_CORAL))
                         .setAction(cp -> {
-                            CorePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
+                            CoreOfflinePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
                             if (member != null) {
                                 cp.getFriends().toggleFavorite(member.getUniqueId());
                             }
@@ -50,7 +49,7 @@ public class PartyActionContainer {
         container.addStaticItem(InventoryMenuAPI.createItemStatic()
                         .setName("Kick Player")
                         .setAction(cp -> {
-                            CorePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
+                            CoreOfflinePlayer member = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("partyUuid", String.class)));
                             if (member != null) {
                                 cp.getFriends().sendFriendRemove(member);
                             }

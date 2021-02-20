@@ -6,15 +6,13 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.chat.ticket.Ticket;
-import com.spleefleague.core.chat.ticket.Tickets;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
-import org.bukkit.OfflinePlayer;
+import com.spleefleague.coreapi.utils.packet.spigot.ticket.PacketSpigotTicketOpen;
 
 /**
  * @author NickM13
@@ -23,73 +21,25 @@ public class TicketCommand extends CoreCommand {
 
     public TicketCommand() {
         super("ticket", CoreRank.DEFAULT);
-        setUsage("/ticket <msg|player|close> [msg|player]");
     }
 
     @CommandAnnotation
     public void ticketOpen(CorePlayer sender,
-                           @LiteralArg("open") String l,
-                           @HelperArg("<message>") String msg) {
-        if ((Tickets.getOpenTicket(sender) == null)) {
-            Tickets.openTicket(sender, msg);
-        } else {
-            error(sender, "You can only have one open ticket!");
-        }
+                           @HelperArg("message") String msg) {
+        Core.getInstance().sendPacket(new PacketSpigotTicketOpen(sender.getUniqueId(), msg));
     }
 
+    /*
     @CommandAnnotation
     public void ticketView(CorePlayer sender,
-                           @LiteralArg("view") String l) {
-        Ticket ticket = Tickets.getOpenTicket(sender);
-        if (ticket != null && ticket.isOpen()) {
-            // Display ticket
-            ticket.sendResponses(sender);
-        } else {
-            error(sender, "You don't have an open ticket!");
-        }
-    }
-
-    @CommandAnnotation(minRank = "MODERATOR")
-    public void ticketAll(CorePlayer sender,
-                          @LiteralArg(value = "all") String l,
-                          OfflinePlayer op) {
-
+                           @LiteralArg("review") String l) {
+        error(sender, CoreError.SETUP);
     }
 
     @CommandAnnotation
     public void ticketClose(CorePlayer sender,
                             @LiteralArg("close") String l) {
-        Ticket ticket = Tickets.getOpenTicket(sender);
-        if (ticket != null) {
-            ticket.close(sender);
-        } else {
-            error(sender, "You don't have an open ticket!");
-        }
+        Core.getInstance().sendPacket(new PacketSpigotTicketClose(sender.getUniqueId(), sender.getUniqueId()));
     }
-
-    @CommandAnnotation(minRank = "MODERATOR")
-    public void ticketCloseOther(CorePlayer sender,
-                                 @LiteralArg("close") String l,
-                                 CorePlayer cp) {
-        Ticket ticket = Tickets.getOpenTicket(cp);
-        if (ticket != null) {
-            ticket.close(sender);
-        } else {
-            error(sender, "Is this a color issue? " + cp.getDisplayName() + " doesn't have any open tickets!");
-        }
-    }
-
-    @CommandAnnotation(minRank = "MODERATOR")
-    public void ticketReply(CorePlayer sender,
-                            @LiteralArg(value = "reply") String l,
-                            CorePlayer cp,
-                            String msg) {
-        Ticket ticket = Tickets.getOpenTicket(cp);
-        if (ticket != null) {
-            ticket.sendMessageToSender(sender, msg);
-        } else {
-            error(sender, cp.getDisplayName() + " doesn't have any open tickets!");
-        }
-    }
-
+    */
 }

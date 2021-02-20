@@ -6,7 +6,7 @@
 
 package com.spleefleague.core.request;
 
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  */
 public class PunchChallenge {
 
-    private Map<CorePlayer, Consumer<CorePlayer>> challenges;
+    private Map<CoreOfflinePlayer, Consumer<CoreOfflinePlayer>> challenges;
 
     public static void setPunchChallenge() {
 

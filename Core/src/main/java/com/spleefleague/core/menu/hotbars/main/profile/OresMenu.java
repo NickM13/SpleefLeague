@@ -9,7 +9,6 @@ import com.spleefleague.core.player.purse.CoreCurrency;
 import org.bukkit.Material;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class OresMenu {
 

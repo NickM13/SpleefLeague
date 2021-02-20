@@ -8,6 +8,7 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
@@ -23,13 +24,15 @@ public class TeleportHereCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void tphere(CorePlayer sender, CorePlayer cp) {
+    public void tphere(CorePlayer sender,
+                       @CorePlayerArg CorePlayer cp) {
         cp.teleport(sender.getLocation());
         success(cp, "Teleported to " + sender.getDisplayName());
     }
 
     @CommandAnnotation(minRank = "DEVELOPER")
-    public void tphere(CorePlayer sender, List<CorePlayer> cplayers) {
+    public void tphere(CorePlayer sender,
+                       List<CorePlayer> cplayers) {
         for (CorePlayer cp : cplayers) {
             if (!cp.equals(sender)) {
                 cp.teleport(sender.getLocation());

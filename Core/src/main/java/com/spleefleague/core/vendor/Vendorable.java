@@ -7,7 +7,6 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.purse.CoreCurrency;
-import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -191,7 +190,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         this.parentType = getParentTypeName(getClass());
         this.coinCost = 0;
         vendorMenuItem = InventoryMenuAPI.createItemDynamic()
-                .setAction(this::attemptPurchase);
+                .setAction(cp -> attemptPurchase(Core.getInstance().getPlayers().get(cp.getUniqueId())));
     }
 
     @Override
@@ -376,7 +375,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     }
 
     public boolean isDefault(CorePlayer cp) {
-        return cp.getRank().hasPermission(CoreRank.DEVELOPER);
+        return false;
     }
 
     public abstract void saveChanges();

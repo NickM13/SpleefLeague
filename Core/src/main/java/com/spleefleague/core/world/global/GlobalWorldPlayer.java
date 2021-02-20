@@ -1,7 +1,6 @@
 package com.spleefleague.core.world.global;
 
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.world.FakeWorldPlayer;
 import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
 
 /**

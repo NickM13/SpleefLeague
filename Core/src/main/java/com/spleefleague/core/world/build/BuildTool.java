@@ -1,6 +1,7 @@
 package com.spleefleague.core.world.build;
 
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 
 /**
@@ -20,6 +21,6 @@ public abstract class BuildTool {
         return hotbarItem;
     }
 
-    public abstract void use(CorePlayer cp, BuildWorld buildWorld);
+    public abstract void use(CoreOfflinePlayer cp, BuildWorld buildWorld);
 
 }

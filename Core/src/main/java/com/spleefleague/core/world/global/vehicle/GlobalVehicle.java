@@ -5,7 +5,6 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.spleefleague.core.Core;
-import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 

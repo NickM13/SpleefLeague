@@ -429,7 +429,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                     <tr id="i16" class="altColor">
                                         <td class="colFirst"><code>void</code></td>
                                         <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
-                                                href="../../../com/spleefleague/core/Core.html#returnToWorld(com.spleefleague.core.player.CorePlayer)">returnToWorld</a></span>&#8203;(<a
+                                                href="../../../com/spleefleague/core/Core.html#returnToWorld(com.spleefleague.core.player.CoreOfflinePlayer)">returnToWorld</a></span>&#8203;(<a
                                                 href="../../../com/spleefleague/core/player/CorePlayer.html"
                                                 title="class in com.spleefleague.core.player">CorePlayer</a>&nbsp;cp)</code>
                                         </th>
@@ -442,7 +442,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                     <tr id="i17" class="rowColor">
                                         <td class="colFirst"><code>static void</code></td>
                                         <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
-                                                href="../../../com/spleefleague/core/Core.html#sendPacket(com.spleefleague.core.player.CorePlayer,com.comphenix.protocol.events.PacketContainer)">sendPacket</a></span>&#8203;(<a
+                                                href="../../../com/spleefleague/core/Core.html#sendPacket(com.spleefleague.core.player.CoreOfflinePlayer,com.comphenix.protocol.events.PacketContainer)">sendPacket</a></span>&#8203;(<a
                                                 href="../../../com/spleefleague/core/player/CorePlayer.html"
                                                 title="class in com.spleefleague.core.player">CorePlayer</a>&nbsp;cp,
                                             com.comphenix.protocol.events.PacketContainer&nbsp;packet)</code></th>
@@ -471,7 +471,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                     <tr id="i20" class="altColor">
                                         <td class="colFirst"><code>void</code></td>
                                         <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
-                                                href="../../../com/spleefleague/core/Core.html#sendTell(com.spleefleague.core.player.CorePlayer,com.spleefleague.core.player.CorePlayer,java.lang.String)">sendTell</a></span>&#8203;(<a
+                                                href="../../../com/spleefleague/core/Core.html#sendTell(com.spleefleague.core.player.CoreOfflinePlayer,com.spleefleague.core.player.CoreOfflinePlayer,java.lang.String)">sendTell</a></span>&#8203;(<a
                                                 href="../../../com/spleefleague/core/player/CorePlayer.html"
                                                 title="class in com.spleefleague.core.player">CorePlayer</a>&nbsp;sender,
                                             <a href="../../../com/spleefleague/core/player/CorePlayer.html"
@@ -528,7 +528,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                     <tr id="i25" class="rowColor">
                                         <td class="colFirst"><code>boolean</code></td>
                                         <th class="colSecond" scope="row"><code><span class="memberNameLink"><a
-                                                href="../../../com/spleefleague/core/Core.html#unqueuePlayerGlobally(com.spleefleague.core.player.CorePlayer)">unqueuePlayerGlobally</a></span>&#8203;(<a
+                                                href="../../../com/spleefleague/core/Core.html#unqueuePlayerGlobally(com.spleefleague.core.player.CoreOfflinePlayer)">unqueuePlayerGlobally</a></span>&#8203;(<a
                                                 href="../../../com/spleefleague/core/player/CorePlayer.html"
                                                 title="class in com.spleefleague.core.player">CorePlayer</a>&nbsp;cp)</code>
                                         </th>
@@ -559,7 +559,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                                 title="class in com.spleefleague.core.plugin">CorePlugin</a></h3>
                                         <code><a
                                                 href="../../../com/spleefleague/core/plugin/CorePlugin.html#addBattleManager(com.spleefleague.core.game.BattleMode)">addBattleManager</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#addIngamePlayerName(com.spleefleague.core.player.CorePlayer)">addIngamePlayerName</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#addIngamePlayerName(com.spleefleague.core.player.CoreOfflinePlayer)">addIngamePlayerName</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#closeMongo()">closeMongo</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#getAllPlugins()">getAllPlugins</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#getBattleManager(com.spleefleague.core.game.BattleMode)">getBattleManager</a>,
@@ -569,17 +569,17 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#initMongo()">initMongo</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#onDisable()">onDisable</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#onEnable()">onEnable</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#queuePlayer(com.spleefleague.core.game.BattleMode,com.spleefleague.core.player.CorePlayer)">queuePlayer</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#queuePlayer(com.spleefleague.core.game.BattleMode,com.spleefleague.core.player.CorePlayer,com.spleefleague.core.game.Arena)">queuePlayer</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#removeIngamePlayerName(com.spleefleague.core.player.CorePlayer)">removeIngamePlayerName</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#queuePlayer(com.spleefleague.core.game.BattleMode,com.spleefleague.core.player.CoreOfflinePlayer)">queuePlayer</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#queuePlayer(com.spleefleague.core.game.BattleMode,com.spleefleague.core.player.CoreOfflinePlayer,com.spleefleague.core.game.Arena)">queuePlayer</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#removeIngamePlayerName(com.spleefleague.core.player.CoreOfflinePlayer)">removeIngamePlayerName</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(com.spleefleague.core.chat.ChatChannel,java.lang.String)">sendMessage</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(com.spleefleague.core.chat.ChatGroup,java.lang.String)">sendMessage</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(com.spleefleague.core.player.CorePlayer,java.lang.String)">sendMessage</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(com.spleefleague.core.player.CoreOfflinePlayer,java.lang.String)">sendMessage</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(java.lang.String)">sendMessage</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#sendMessage(org.bukkit.command.CommandSender,java.lang.String)">sendMessage</a>,
                                             <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#setPluginDB(java.lang.String)">setPluginDB</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#spectatePlayerGlobal(com.spleefleague.core.player.CorePlayer,com.spleefleague.core.player.CorePlayer)">spectatePlayerGlobal</a>,
-                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#unspectatePlayer(com.spleefleague.core.player.CorePlayer)">unspectatePlayer</a></code>
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#spectatePlayerGlobal(com.spleefleague.core.player.CoreOfflinePlayer,com.spleefleague.core.player.CoreOfflinePlayer)">spectatePlayerGlobal</a>,
+                                            <a href="../../../com/spleefleague/core/plugin/CorePlugin.html#unspectatePlayer(com.spleefleague.core.player.CoreOfflinePlayer)">unspectatePlayer</a></code>
                                     </li>
                                 </ul>
                                 <ul class="blockList">
@@ -777,7 +777,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                         </dl>
                                     </li>
                                 </ul>
-                                <a id="sendPacket(com.spleefleague.core.player.CorePlayer,com.comphenix.protocol.events.PacketContainer)">
+                                <a id="sendPacket(com.spleefleague.core.player.CoreOfflinePlayer,com.comphenix.protocol.events.PacketContainer)">
                                     <!--   -->
                                 </a>
                                 <ul class="blockList">
@@ -1102,7 +1102,7 @@ extends <a href="../../../com/spleefleague/core/plugin/CorePlugin.html" title="c
                                         </dl>
                                     </li>
                                 </ul>
-                                <a id="sendTell(com.spleefleague.core.player.CorePlayer,com.spleefleague.core.player.CorePlayer,java.lang.String)">
+                                <a id="sendTell(com.spleefleague.core.player.CoreOfflinePlayer,com.spleefleague.core.player.CoreOfflinePlayer,java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class="blockList">

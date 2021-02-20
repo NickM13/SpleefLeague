@@ -1,7 +1,6 @@
 package com.spleefleague.core.menu;
 
 import com.spleefleague.core.player.CorePlayer;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -14,7 +13,7 @@ import java.util.TreeMap;
  */
 public class InventoryMenuOverlay {
 
-    private SortedMap<Integer, InventoryMenuItem> sortedItems = new TreeMap<>();
+    private final SortedMap<Integer, InventoryMenuItem> sortedItems = new TreeMap<>();
 
     protected int rowFirst;
     protected int rowLast;

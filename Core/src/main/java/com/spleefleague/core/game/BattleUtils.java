@@ -1,19 +1,15 @@
 package com.spleefleague.core.game;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.google.common.collect.Lists;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.team.TeamBattlePlayer;
 import com.spleefleague.core.game.battle.team.TeamBattleTeam;
-import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Position;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 

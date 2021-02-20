@@ -8,7 +8,6 @@ package com.spleefleague.core.request;
 
 import com.spleefleague.core.player.CorePlayer;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author NickM13

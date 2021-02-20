@@ -13,12 +13,12 @@ import javax.annotation.Nonnull;
 public class PacketSpigotPlayerRating extends PacketSpigot {
 
     public String mode;
-    public int season;
+    public String season;
     public RatedPlayerInfo rpi;
 
     public PacketSpigotPlayerRating() { }
 
-    public PacketSpigotPlayerRating(String mode, int season, RatedPlayerInfo rpi) {
+    public PacketSpigotPlayerRating(String mode, String season, RatedPlayerInfo rpi) {
         this.mode = mode;
         this.season = season;
         this.rpi = rpi;

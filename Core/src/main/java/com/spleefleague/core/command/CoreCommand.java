@@ -13,6 +13,7 @@ import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
@@ -23,7 +24,6 @@ import java.util.*;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -74,7 +74,7 @@ public class CoreCommand extends Command {
         }
     }
 
-    private class MethodInfo {
+    private static class MethodInfo {
 
         boolean cpSender;
         Method method;
@@ -366,7 +366,7 @@ public class CoreCommand extends Command {
         return location;
     }
 
-    private boolean isValidCorePlayer(CommandSender cs, CorePlayer sender, CorePlayer cp, CorePlayerArg cpa) {
+    private boolean isValidCorePlayer(CommandSender cs, CoreOfflinePlayer sender, CoreOfflinePlayer cp, CorePlayerArg cpa) {
         if (cp == null) return false;
         if (cpa == null) return true;
         if ((!cpa.allowOffline() && !cp.isOnline()) ||
@@ -629,7 +629,11 @@ public class CoreCommand extends Command {
                             }
                             if (!hasPerms) continue;
                         }
-                        params.add(cp);
+                        if (methodInfo.cpSender) {
+                            params.add(cp);
+                        } else {
+                            params.add(cs);
+                        }
                     } else if (!methodInfo.cpSender) {
                         params.add(cs);
                     }
@@ -675,7 +679,7 @@ public class CoreCommand extends Command {
                                         if (cp != null) {
                                             obj = cp;
                                         } else if (bcs != null) {
-                                            for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
+                                            for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllLocal()) {
                                                 if (obj == null
                                                         || (cp2.getLocation().getWorld().equals(loc.getWorld())
                                                         && cp2.getLocation().distance(loc) < ((CorePlayer) obj).getLocation().distance(loc))) {
@@ -690,7 +694,7 @@ public class CoreCommand extends Command {
                                         params.add(obj);
                                         break;
                                     case 'r': // Random player
-                                        if (!paramClass.equals(CorePlayer.class)) {
+                                        if (!CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                                             invalidArg = true;
                                             break;
                                         }
@@ -703,7 +707,7 @@ public class CoreCommand extends Command {
                                             break;
                                         }
                                         entities = new ArrayList<>();
-                                        for (CorePlayer cp1 : Core.getInstance().getPlayers().getAllHere()) {
+                                        for (CorePlayer cp1 : Core.getInstance().getPlayers().getAllLocal()) {
                                             entities.add(cp1.getPlayer());
                                         }
                                         entities = getEntitiesByArgs(cs, loc, entities, arg.substring(1));
@@ -724,12 +728,12 @@ public class CoreCommand extends Command {
                                         break;
                                     case 's': // The entity executing this command
                                         if (cp != null &&
-                                                paramClass.equals(CorePlayer.class)) {
+                                                CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                                             params.add(cp);
                                         } else if (cs instanceof BlockCommandSender &&
                                                 paramClass.equals(BlockCommandSender.class)) {
                                             params.add(cs);
-                                        } else if (paramClass.equals(CorePlayer.class)) {
+                                        } else if (CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                                             params.add(cs);
                                         } else {
                                             invalidArg = true;
@@ -750,9 +754,9 @@ public class CoreCommand extends Command {
                                 ai++;
                                 continue;
                             }
-                            if (paramClass.equals(CorePlayer.class) &&
+                            if (CoreOfflinePlayer.class.isAssignableFrom(paramClass) &&
                                     (obj = Core.getInstance().getPlayers().getOffline(arg)) != null) {
-                                invalidArg = !isValidCorePlayer(cs, cp, (CorePlayer) obj, param.getAnnotation(CorePlayerArg.class));
+                                invalidArg = !isValidCorePlayer(cs, cp, (CoreOfflinePlayer) obj, param.getAnnotation(CorePlayerArg.class));
                                 params.add(obj);
                                 strParams.add(arg);
                                 ai++;
@@ -981,7 +985,7 @@ public class CoreCommand extends Command {
                         switch (arg.charAt(0)) {
                             case 'p':
                             case 'r': // One player
-                                if (!paramClass.equals(CorePlayer.class)) {
+                                if (!CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                                     invalidArg = true;
                                     break;
                                 }
@@ -995,7 +999,7 @@ public class CoreCommand extends Command {
                                 break;
                             case 's':
                             case 'S': // The entity executing this command
-                                if (!paramClass.equals(CorePlayer.class) &&
+                                if (!CoreOfflinePlayer.class.isAssignableFrom(paramClass) &&
                                         !(cs instanceof BlockCommandSender &&
                                                 paramClass.equals(BlockCommandSender.class))) {
                                     invalidArg = true;
@@ -1015,10 +1019,10 @@ public class CoreCommand extends Command {
                         ai++;
                         continue;
                     }
-                    if (paramClass.equals(CorePlayer.class)) {
+                    if (CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                         invalidArg = ((obj = Core.getInstance().getPlayers().getOffline(arg)) == null);
                         if (!invalidArg) {
-                            if (isValidCorePlayer(cs, cp, (CorePlayer) obj, param.getAnnotation(CorePlayerArg.class))) {
+                            if (isValidCorePlayer(cs, cp, (CoreOfflinePlayer) obj, param.getAnnotation(CorePlayerArg.class))) {
                                 invalidArg = false;
                             } else {
                                 invalidArg = true;
@@ -1145,13 +1149,13 @@ public class CoreCommand extends Command {
                                 addOption(options, option, lastArg);
                             }
                         }
-                    } else if (currParam.getType().equals(CorePlayer.class) ||
+                    } else if (CoreOfflinePlayer.class.isAssignableFrom(currParam.getType()) ||
                             currParam.getType().equals(Player.class) ||
                             currParam.getType().equals(OfflinePlayer.class)) {
                         CorePlayerArg cpa = currParam.getAnnotation(CorePlayerArg.class);
                         Collection<CorePlayer> cpCollection;
                         if (cpa == null || !cpa.allowCrossServer()) {
-                            cpCollection = Core.getInstance().getPlayers().getAllHere();
+                            cpCollection = Core.getInstance().getPlayers().getAllLocal();
                         } else {
                             cpCollection = Core.getInstance().getPlayers().getAll();
                         }

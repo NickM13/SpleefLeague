@@ -2,11 +2,9 @@ package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.party.PartyManager;
 import com.spleefleague.coreapi.utils.packet.spigot.party.PacketSpigotParty;
-import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,15 +21,15 @@ public class CorePartyManager extends PartyManager<CoreParty> {
         }
     }
 
-    public void onDisconnect(CorePlayer cp) {
-        CoreParty party = partyMap.get(cp.getUniqueId());
+    public void onDisconnect(UUID uuid) {
+        CoreParty party = partyMap.get(uuid);
         if (party != null) {
-            party.removeLocal(cp);
+            party.removeLocal(uuid);
         }
     }
 
-    public CoreParty getParty(CorePlayer cp) {
-        return partyMap.get(cp.getUniqueId());
+    public CoreParty getParty(UUID uuid) {
+        return partyMap.get(uuid);
     }
 
     public void onRefresh(CorePlayer owner, List<UUID> players) {

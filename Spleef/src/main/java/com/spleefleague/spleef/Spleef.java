@@ -15,6 +15,7 @@ import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
+import com.spleefleague.core.player.CoreDBPlayer;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.spleef.commands.*;
@@ -40,7 +41,7 @@ public class Spleef extends CorePlugin {
     
     private InventoryMenuItem spleefMenuItem;
 
-    private PlayerManager<SpleefPlayer> playerManager;
+    private PlayerManager<SpleefPlayer, CoreDBPlayer> playerManager;
     
     @Override
     public void init() {
@@ -56,7 +57,7 @@ public class Spleef extends CorePlugin {
         Shovel.init();
         
         // Initialize player manager
-        playerManager = new PlayerManager<>(this, SpleefPlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(SpleefPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
         
         // Load Spleef gamemodes
         SpleefMode.init();
@@ -83,7 +84,7 @@ public class Spleef extends CorePlugin {
         return instance;
     }
 
-    public PlayerManager<SpleefPlayer> getPlayers() {
+    public PlayerManager<SpleefPlayer, CoreDBPlayer> getPlayers() {
         return playerManager;
     }
     

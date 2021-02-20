@@ -222,7 +222,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         for (BattlePlayer bp : battlers.values()) {
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             int toChange = bp.equals(winner) ? eloChange : -eloChange;
-            boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
+            bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));
@@ -286,7 +286,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
                 applyRewards(winner);
-                int change = applyEloChange(winner);
+                applyEloChange(winner);
 
                 TextComponent text = new TextComponent();
                 text.addExtra(winner.getCorePlayer().getChatName());

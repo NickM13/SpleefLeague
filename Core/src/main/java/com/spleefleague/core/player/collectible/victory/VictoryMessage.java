@@ -2,8 +2,6 @@ package com.spleefleague.core.player.collectible.victory;
 
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.hat.Hat;
-import com.spleefleague.core.player.collectible.particles.Particles;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.coreapi.database.annotation.DBField;
 

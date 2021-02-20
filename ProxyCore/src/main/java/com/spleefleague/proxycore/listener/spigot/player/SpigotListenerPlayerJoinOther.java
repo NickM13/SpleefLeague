@@ -1,10 +1,7 @@
 package com.spleefleague.proxycore.listener.spigot.player;
 
-import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerInfraction;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerJoinOther;
 import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.droplet.Droplet;
-import com.spleefleague.proxycore.droplet.DropletType;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.config.ServerInfo;

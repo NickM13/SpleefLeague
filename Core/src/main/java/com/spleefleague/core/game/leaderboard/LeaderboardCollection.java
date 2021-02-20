@@ -4,16 +4,14 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
-import com.spleefleague.core.menu.InventoryMenuItemStatic;
 import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.coreapi.game.leaderboard.ActiveLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.ArchivedLeaderboard;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -25,18 +23,18 @@ public class LeaderboardCollection {
 
     protected String name;
     protected ActiveLeaderboard activeLeaderboard;
-    protected final Map<Integer, Leaderboard> leaderboards = new TreeMap<>();
+    protected final Map<String, Leaderboard> leaderboards = new TreeMap<>();
 
-    public LeaderboardCollection(String name) {
+    public LeaderboardCollection(String name, String season) {
         this.name = name;
-        activeLeaderboard = new ActiveLeaderboard(name, 0);
-        leaderboards.put(0, activeLeaderboard);
+        activeLeaderboard = new ActiveLeaderboard(name, season);
+        leaderboards.put(season, activeLeaderboard);
     }
 
-    public ArchivedLeaderboard startNewSeason() {
+    public ArchivedLeaderboard startNewSeason(String season) {
         ArchivedLeaderboard archivedLeaderboard = new ArchivedLeaderboard(activeLeaderboard);
         leaderboards.put(activeLeaderboard.getSeason(), archivedLeaderboard);
-        activeLeaderboard = new ActiveLeaderboard(name, leaderboards.size());
+        activeLeaderboard = new ActiveLeaderboard(name, season);
         leaderboards.put(activeLeaderboard.getSeason(), activeLeaderboard);
         return archivedLeaderboard;
     }
@@ -56,11 +54,11 @@ public class LeaderboardCollection {
         return activeLeaderboard;
     }
 
-    public Map<Integer, Leaderboard> getLeaderboards() {
+    public Map<String, Leaderboard> getLeaderboards() {
         return leaderboards;
     }
 
-    public int findPage(CorePlayer cp, int pageSize) {
+    public int findPage(CoreOfflinePlayer cp, int pageSize) {
         int place = leaderboards.get(activeLeaderboard.getSeason()).getPlayerRank(cp.getUniqueId());
         if (place != -1) return place / pageSize;
         return 0;
@@ -76,7 +74,6 @@ public class LeaderboardCollection {
                 .setTitle(cp -> ChatColor.stripColor(BattleMode.get(name).getDisplayName()) + " Season " + activeLeaderboard.getSeason())
                 .setPageBoundaries(1, 4, 0, 5)
                 .setRefreshAction((container, cp) -> {
-                    int season = activeLeaderboard.getSeason();
                     int page = cp.getMenu().getPage();
                     int skip = container.getPageItemTotal() * page;
                     container.setForcedPageCount(activeLeaderboard.getPlayerCount() / container.getPageItemTotal() + 1);
@@ -84,8 +81,9 @@ public class LeaderboardCollection {
                     container.clearUnsorted();
                     List<UUID> players = new ArrayList<>(activeLeaderboard.getPlayers(skip, container.getPageItemTotal()));
                     for (int i = 0; i < players.size(); i++) {
-                        CorePlayer cp2 = Core.getInstance().getPlayers().getOffline(players.get(i));
+                        CoreOfflinePlayer cp2 = Core.getInstance().getPlayers().getOffline(players.get(i));
                         if (cp2 != null) {
+                            /*
                             container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                     .setName(cp2.getMenuName() + " " + cp2.getRatings().getDisplayElo(name, season))
                                     .setDescription(ChatColor.GRAY + "Rank: " + cp2.getRatings().getDisplayDivision(name, season) + ChatColor.YELLOW + " (#" + (i + container.getPageItemTotal() * page + 1) + ")\n"
@@ -94,6 +92,7 @@ public class LeaderboardCollection {
                                             + ChatColor.GRAY + "Win Rate: " + cp2.getRatings().getWinPercent(name, season))
                                     .setDisplayItem(InventoryMenuUtils.createCustomSkullOrDefault(cp2.getUniqueId()))
                                     .setCloseOnAction(false));
+                            */
                         } else {
                             container.addMenuItem(InventoryMenuUtils.createLockedMenuItem("Invalid Player"));
                         }

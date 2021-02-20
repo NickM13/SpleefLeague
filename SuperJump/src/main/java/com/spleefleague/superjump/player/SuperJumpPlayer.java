@@ -6,12 +6,12 @@
 
 package com.spleefleague.superjump.player;
 
-import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.core.player.CoreDBPlayer;
 
 /**
  * @author NickM13
  */
-public class SuperJumpPlayer extends DBPlayer {
+public class SuperJumpPlayer extends CoreDBPlayer {
     
     @Override
     public void init() {

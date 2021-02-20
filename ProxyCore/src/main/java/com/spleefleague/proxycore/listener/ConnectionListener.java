@@ -9,18 +9,20 @@ import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshA
 import com.spleefleague.coreapi.utils.packet.shared.QueueContainerInfo;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.droplet.Droplet;
-import com.spleefleague.proxycore.droplet.DropletManager;
 import com.spleefleague.proxycore.game.session.BattleSessionManager;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +34,7 @@ public class ConnectionListener implements Listener {
     @EventHandler
     public void onPreLogin(LoginEvent event) {
         // Save if loaded here, in case any offline player data was changed recently
+        ProxyCore.getInstance().getPlayers().saveIfLoaded(event.getConnection().getUniqueId());
         ProxyCore.getInstance().getPlayers().saveIfLoaded(event.getConnection().getUniqueId());
         Infraction infraction = ProxyCore.getInstance().getInfractions().isBanned(event.getConnection().getUniqueId());
         if (infraction != null) {
@@ -60,7 +63,8 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onServerConnect(ServerConnectEvent event) {
-        Droplet droplet = ProxyCore.getInstance().getDropletManager().getBestLobby(ProxyCore.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId()));
+        Droplet droplet = ProxyCore.getInstance().getDropletManager().getBestLobby(
+                ProxyCore.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId()));
         if (droplet == null) {
             if (!ProxyCore.getInstance().getDropletManager().isEnabled()) {
                 return;
@@ -83,7 +87,21 @@ public class ConnectionListener implements Listener {
         }, 1000, TimeUnit.MILLISECONDS);
 
         ProxyCore.getInstance().getPartyManager().onConnect(event.getPlayer().getUniqueId());
+
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().onPlayerJoin(event.getPlayer());
+
+        TextComponent text = new TextComponent();
+        text.addExtra(pcp.getChatName());
+        text.addExtra(" has logged in");
+        for (UUID uuid : pcp.getFriends().getAll()) {
+            ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (friend != null) {
+                //if (friend.getOptions().getBoolean("Friend:Connection")) {
+                    ProxyCore.getInstance().sendMessage(friend, text);
+                //}
+                friend.getFriends().onPlayerJoin(pcp);
+            }
+        }
 
         TextComponent textComponent = new TextComponent("Welcome to SpleefLeague, ");
         textComponent.addExtra(pcp.getChatName());
@@ -110,9 +128,24 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
-        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.DISCONNECT, event.getPlayer().getUniqueId()));
+        ProxiedPlayer pp = event.getPlayer();
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeeConnection(PacketBungeeConnection.ConnectionType.DISCONNECT, pp.getUniqueId()));
 
-        ProxyCore.getInstance().getPlayers().onPlayerQuit(event.getPlayer());
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().onPlayerQuit(pp.getUniqueId());
+
+        TextComponent text = new TextComponent();
+        text.addExtra(pcp.getChatName());
+        text.addExtra(" has logged out");
+
+        for (UUID uuid : pcp.getFriends().getAll()) {
+            ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (friend != null) {
+                //if (friend.getOptions().getBoolean("Friend:Connection")) {
+                    ProxyCore.getInstance().sendMessage(friend, text);
+                //}
+                friend.getFriends().onPlayerLeave(pcp);
+            }
+        }
 
         ProxyCore.getInstance().getPartyManager().onDisconnect(event.getPlayer().getUniqueId());
     }

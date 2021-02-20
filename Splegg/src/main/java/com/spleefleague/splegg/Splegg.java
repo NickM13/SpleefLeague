@@ -9,6 +9,7 @@ import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
 import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
+import com.spleefleague.core.player.CoreDBPlayer;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.splegg.commands.SpleggCommand;
@@ -30,7 +31,7 @@ public class Splegg extends CorePlugin {
 
     private InventoryMenuItem spleggMenuItem;
 
-    private PlayerManager<SpleggPlayer> playerManager;
+    private PlayerManager<SpleggPlayer, CoreDBPlayer> playerManager;
 
     @Override
     protected void init() {
@@ -39,7 +40,7 @@ public class Splegg extends CorePlugin {
 
         SpleggGun.init();
 
-        playerManager = new PlayerManager<>(this, SpleggPlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(SpleggPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
 
         SpleggMode.init();
         addBattleManager(SpleggMode.VERSUS.getBattleMode());
@@ -64,7 +65,7 @@ public class Splegg extends CorePlugin {
         return instance;
     }
 
-    public PlayerManager<SpleggPlayer> getPlayers() {
+    public PlayerManager<SpleggPlayer, CoreDBPlayer> getPlayers() {
         return playerManager;
     }
 

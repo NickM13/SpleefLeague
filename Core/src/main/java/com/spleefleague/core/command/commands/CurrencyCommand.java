@@ -8,7 +8,6 @@ package com.spleefleague.core.command.commands;
 
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
-import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.player.rank.CoreRank;

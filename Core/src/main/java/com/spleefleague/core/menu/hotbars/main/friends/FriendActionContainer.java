@@ -4,7 +4,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.coreapi.player.friends.FriendsList;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerJoinOther;
 import org.bukkit.Material;
@@ -22,7 +22,7 @@ public class FriendActionContainer {
         container = InventoryMenuAPI.createContainer()
                 .setTitle(cp -> {
                     StringBuilder builder = new StringBuilder();
-                    CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
+                    CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                     if (friend != null) {
                         builder.append(friend.getName());
                     }
@@ -34,14 +34,14 @@ public class FriendActionContainer {
                         .setName("Favorite Friend")
                         .setDescription(cp -> {
                             UUID uuid = UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class));
-                            CorePlayer friend = Core.getInstance().getPlayers().getOffline(uuid);
+                            CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(uuid);
                             FriendsList.FriendInfo info = cp.getFriends().getInfo(uuid);
                             if (info == null) return "";
                             return friend.getDisplayName() + " is currently " + (info.favorite ? ("favorited") : ("not favorited"));
                         })
                         .setDisplayItem(InventoryMenuUtils.createCustomItem(Material.BRAIN_CORAL))
                         .setAction(cp -> {
-                            CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
+                            CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                             if (friend != null) {
                                 cp.getFriends().toggleFavorite(friend.getUniqueId());
                             }
@@ -52,7 +52,7 @@ public class FriendActionContainer {
         container.addStaticItem(InventoryMenuAPI.createItemStatic()
                         .setName("Remove Friend")
                         .setAction(cp -> {
-                            CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
+                            CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                             if (friend != null) {
                                 cp.getFriends().sendFriendRemove(friend);
                             }
@@ -62,7 +62,7 @@ public class FriendActionContainer {
         container.addStaticItem(InventoryMenuAPI.createItemStatic()
                         .setName("Join Friend")
                         .setAction(cp -> {
-                            CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
+                            CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                             if (friend != null) {
                                 Core.getInstance().sendPacket(new PacketSpigotPlayerJoinOther(cp.getUniqueId(), friend.getUniqueId()));
                             }

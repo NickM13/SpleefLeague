@@ -1,10 +1,8 @@
 package com.spleefleague.proxycore.listener.spigot.chat;
 
-import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatConsole;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatPlayer;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ChatChannel;
-import com.spleefleague.proxycore.chat.ProxyChat;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.connection.Connection;

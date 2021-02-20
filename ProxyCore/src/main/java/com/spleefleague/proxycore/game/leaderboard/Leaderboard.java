@@ -14,29 +14,28 @@ import java.util.*;
  * @author NickM13
  * @since 4/28/2020
  */
-public abstract class Leaderboard extends DBEntity {
+public class Leaderboard extends DBEntity {
 
-    protected static final DateFormat dateFormat = new SimpleDateFormat("dd MMMMMMMMM, yyyy");
-
-    @DBField
-    protected Boolean active;
     @DBField protected String name;
-    @DBField protected Integer season;
+    @DBField protected String season;
     @DBField protected Long createTime;
 
     protected final HashMap<UUID, Integer> playerScoreMap;
     protected final TreeMap<Integer, LinkedHashSet<UUID>> scorePlayersMap;
+
+    private boolean modified = false;
 
     public Leaderboard() {
         playerScoreMap = new HashMap<>();
         scorePlayersMap = new TreeMap<>(Collections.reverseOrder());
     }
 
-    public Leaderboard(String name, int season) {
+    public Leaderboard(String name, String season) {
         this.name = name;
         this.season = season;
         playerScoreMap = new HashMap<>();
         scorePlayersMap = new TreeMap<>(Collections.reverseOrder());
+        modified = true;
     }
 
     public String getName() {
@@ -52,11 +51,7 @@ public abstract class Leaderboard extends DBEntity {
         return createTime;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public int getSeason() {
+    public String getSeason() {
         return season;
     }
 
@@ -152,6 +147,7 @@ public abstract class Leaderboard extends DBEntity {
             scorePlayersMap.put(score, new LinkedHashSet<>());
         }
         scorePlayersMap.get(score).add(player);
+        modified = true;
     }
 
     /**
@@ -181,13 +177,16 @@ public abstract class Leaderboard extends DBEntity {
                 playerScoreMap.put(uuid, entry.getKey());
             }
         }
+        modified = true;
     }
 
     @DBSave(fieldName = "players")
     protected Document savePlayers() {
         Document doc = new Document();
-        for (Map.Entry<UUID, Integer> entry : playerScoreMap.entrySet()) {
-            doc.append(entry.getKey().toString(), entry.getValue());
+        for (Map.Entry<Integer, LinkedHashSet<UUID>> entry : scorePlayersMap.entrySet()) {
+            for (UUID uuid : entry.getValue()) {
+                doc.append(uuid.toString(), entry.getKey());
+            }
         }
         return doc;
     }
@@ -199,6 +198,12 @@ public abstract class Leaderboard extends DBEntity {
         }
     }
 
-    public abstract String getDescription();
+    public boolean onSave() {
+        if (modified) {
+            modified = false;
+            return true;
+        }
+        return false;
+    }
 
 }

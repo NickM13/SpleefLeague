@@ -22,6 +22,9 @@ import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueReque
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueLeave;
 import com.spleefleague.coreapi.utils.packet.spigot.server.*;
+import com.spleefleague.coreapi.utils.packet.spigot.ticket.PacketSpigotTicketClose;
+import com.spleefleague.coreapi.utils.packet.spigot.ticket.PacketSpigotTicketOpen;
+import com.spleefleague.coreapi.utils.packet.spigot.ticket.PacketSpigotTicketReply;
 
 /**
  * @author NickM13
@@ -98,7 +101,10 @@ public class PacketType {
         SERVER_HUB(PacketSpigotServerHub.class),
         SERVER_PING(PacketSpigotServerPing.class),
         SERVER_RESTART(PacketSpigotServerRestart.class),
-        SERVER_STOP(PacketSpigotServerStop.class);
+        SERVER_STOP(PacketSpigotServerStop.class),
+        TICKET_CLOSE(PacketSpigotTicketClose.class),
+        TICKET_OPEN(PacketSpigotTicketOpen.class),
+        TICKET_REPLY(PacketSpigotTicketReply.class);
 
         private final Class<? extends PacketSpigot> clazz;
 

@@ -2,8 +2,8 @@ package com.spleefleague.core.music;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.DataInputStream;
@@ -15,9 +15,9 @@ import java.util.*;
 public class NoteBlockMusic {
 
     private static final Map<String, NoteBlockSong> songMap = new HashMap<>();
-    private static final Map<CorePlayer, NoteBlockPlayer> playerSongMap = new HashMap<>();
+    private static final Map<UUID, NoteBlockPlayer> playerSongMap = new HashMap<>();
 
-    private static final Map<CorePlayer, List<NoteBlockPlayer>> asyncSongs = new HashMap<>();
+    private static final Map<UUID, List<NoteBlockPlayer>> asyncSongs = new HashMap<>();
 
     private static final String MUSIC_DIR = "../shared/music/";
 
@@ -36,7 +36,7 @@ public class NoteBlockMusic {
         }
         songTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> playerSongMap.entrySet().removeIf(entry -> entry.getValue().tick()), 20L, 1L);
         asyncTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), () -> {
-            for (Map.Entry<CorePlayer, List<NoteBlockPlayer>> corePlayerListEntry : asyncSongs.entrySet()) {
+            for (Map.Entry<UUID, List<NoteBlockPlayer>> corePlayerListEntry : asyncSongs.entrySet()) {
                 List<NoteBlockPlayer> songs = corePlayerListEntry.getValue();
                 songs.removeIf(NoteBlockPlayer::tick);
             }
@@ -48,54 +48,58 @@ public class NoteBlockMusic {
         asyncTask.cancel();
     }
 
-    public static void onPlayerJoin(CorePlayer cp) {
-        asyncSongs.put(cp, new ArrayList<>());
+    public static void onPlayerJoin(UUID uuid) {
+        asyncSongs.put(uuid, new ArrayList<>());
     }
 
-    public static void onPlayerQuit(CorePlayer cp) {
+    public static void onPlayerQuit(UUID uuid) {
         synchronized (playerSongMap) {
-            playerSongMap.remove(cp);
+            playerSongMap.remove(uuid);
         }
         synchronized (asyncSongs) {
-            asyncSongs.remove(cp);
+            asyncSongs.remove(uuid);
         }
     }
 
-    public static NoteBlockPlayer getPlayer(CorePlayer listener) {
-        return playerSongMap.get(listener);
+    public static NoteBlockPlayer getPlayer(UUID uuid) {
+        return playerSongMap.get(uuid);
     }
 
-    public static void playSongAsync(CorePlayer listener, NoteBlockSong song, float volume) {
+    public static void playSongAsync(UUID uuid, NoteBlockSong song, float volume) {
         if (song == null) return;
-        asyncSongs.get(listener).add(new NoteBlockPlayer(listener, song, volume));
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null) return;
+        asyncSongs.get(uuid).add(new NoteBlockPlayer(player, song, volume));
     }
 
-    public static boolean playSong(CorePlayer listener) {
-        if (playerSongMap.containsKey(listener) && !playerSongMap.get(listener).isPlaying()) {
-            playerSongMap.get(listener).play();
+    public static boolean playSong(UUID uuid) {
+        if (playerSongMap.containsKey(uuid) && !playerSongMap.get(uuid).isPlaying()) {
+            playerSongMap.get(uuid).play();
             return true;
         }
         return false;
     }
 
-    public static boolean playSong(CorePlayer listener, NoteBlockSong song, float volume) {
+    public static boolean playSong(UUID uuid, NoteBlockSong song, float volume) {
         if (song != null) {
-            playerSongMap.put(listener, new NoteBlockPlayer(listener, song, volume));
+            Player player = Bukkit.getPlayer(uuid);
+            if (player == null) return false;
+            playerSongMap.put(uuid, new NoteBlockPlayer(player, song, volume));
             return true;
         }
         return false;
     }
 
-    public static boolean pauseSong(CorePlayer listener) {
-        if (playerSongMap.containsKey(listener)) {
-            playerSongMap.get(listener).pause();
+    public static boolean pauseSong(UUID uuid) {
+        if (playerSongMap.containsKey(uuid)) {
+            playerSongMap.get(uuid).pause();
             return true;
         }
         return false;
     }
 
-    public static boolean stopSong(CorePlayer listener) {
-        return (playerSongMap.remove(listener) != null);
+    public static boolean stopSong(UUID uuid) {
+        return (playerSongMap.remove(uuid) != null);
     }
 
     public static Set<String> getSongs() {
@@ -117,7 +121,7 @@ public class NoteBlockMusic {
             // 1: Header
             readShort(dataInputStream); // NULL
             dataInputStream.readByte(); // Version
-            byte instrumentCount = dataInputStream.readByte();
+            dataInputStream.readByte(); // Instrument Count
             short length = readShort(dataInputStream);
             short layers = readShort(dataInputStream);
             String name = readString(dataInputStream);
@@ -158,7 +162,7 @@ public class NoteBlockMusic {
             }
 
             // 3: Layers
-            for (int i = 0; i < layers; i++) {
+            for (short i = 0; i < layers; i++) {
                 NoteBlockSong.Layer layer = layerMap.get(i);
                 if (layer != null) {
                     layer.setName(readString(dataInputStream));

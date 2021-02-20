@@ -1,6 +1,6 @@
 package com.spleefleague.core.world.game.projectile;
 
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import net.minecraft.server.v1_15_R1.Entity;
 
 /**
@@ -8,7 +8,7 @@ import net.minecraft.server.v1_15_R1.Entity;
  */
 public interface FakeEntity {
 
-    CorePlayer getCpShooter();
+    CoreOfflinePlayer getCpShooter();
 
     void reducedStats(FakeEntity fakeEntity);
 

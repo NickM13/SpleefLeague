@@ -18,10 +18,9 @@ public abstract class Leaderboard extends DBEntity {
 
     protected static final DateFormat dateFormat = new SimpleDateFormat("dd MMMMMMMMM, yyyy");
 
-    @DBField
-    protected Boolean active;
+    @DBField protected Boolean active;
     @DBField protected String name;
-    @DBField protected Integer season;
+    @DBField protected String season;
     @DBField protected Long createTime;
 
     protected final Map<UUID, Integer> playerScoreMap;
@@ -32,7 +31,7 @@ public abstract class Leaderboard extends DBEntity {
         scorePlayersMap = new TreeMap<>(Collections.reverseOrder());
     }
 
-    public Leaderboard(String name, int season) {
+    public Leaderboard(String name, String season) {
         this.name = name;
         this.season = season;
         playerScoreMap = new HashMap<>();
@@ -56,7 +55,7 @@ public abstract class Leaderboard extends DBEntity {
         return active;
     }
 
-    public int getSeason() {
+    public String getSeason() {
         return season;
     }
 

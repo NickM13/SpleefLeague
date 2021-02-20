@@ -6,12 +6,12 @@
 
 package com.spleefleague.spleef.player;
 
-import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.core.player.CoreDBPlayer;
 
 /**
  * @author NickM13
  */
-public class SpleefPlayer extends DBPlayer {
+public class SpleefPlayer extends CoreDBPlayer {
     
     public SpleefPlayer() {
         super();

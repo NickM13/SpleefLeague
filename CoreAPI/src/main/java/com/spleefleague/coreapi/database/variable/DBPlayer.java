@@ -9,6 +9,7 @@ package com.spleefleague.coreapi.database.variable;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,9 +24,8 @@ import java.util.UUID;
 public abstract class DBPlayer extends DBEntity {
 
     protected UUID uuid;
-    @DBField
-    protected String username;
-    protected List<Document> brokenProfiles;
+    @DBField protected String username;
+    protected List<Document> brokenProfiles = new ArrayList<>();
     protected long presaved = -1;
     protected long lastOfflineLoad = -1;
     

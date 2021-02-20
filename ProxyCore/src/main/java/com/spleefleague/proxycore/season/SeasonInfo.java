@@ -9,16 +9,19 @@ import com.spleefleague.coreapi.database.variable.DBEntity;
  */
 public class SeasonInfo extends DBEntity {
 
-    @DBField Boolean preseason = true;
-    @DBField String name = "Preseason 1";
-    @DBField Integer seasonId = 0;
+    @DBField private Boolean preseason = true;
+    @DBField private String name = "Preseason NULL";
 
     public SeasonInfo() {
 
     }
 
-    public int getSeasonId() {
-        return seasonId;
+    public String getDisplayName() {
+        return name;
+    }
+
+    public boolean isPreseason() {
+        return preseason;
     }
 
 }

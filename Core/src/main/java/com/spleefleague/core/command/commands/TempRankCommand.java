@@ -6,7 +6,6 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.mysql.jdbc.TimeUtil;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
@@ -15,7 +14,6 @@ import com.spleefleague.core.command.annotation.OptionArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
-import com.spleefleague.core.player.rank.CoreRankManager;
 import com.spleefleague.core.util.TimeUtils;
 import org.bukkit.command.CommandSender;
 

@@ -9,7 +9,7 @@ import net.md_5.bungee.api.connection.Connection;
  */
 public abstract class SpigotListener <P extends PacketSpigot> {
 
-    public void receivePacket(Connection sender, PacketSpigot packet) {
+    public final void receivePacket(Connection sender, PacketSpigot packet) {
         if (packet != null) {
             receive(sender, (P) packet);
         }

@@ -20,17 +20,6 @@ public class SetCheckpointCommand extends CoreCommand {
 
     public SetCheckpointCommand() {
         super("setcheckpoint", CoreRank.TEMP_MOD);
-        setUsage("/setcheckpoint <target> <warp> [duration]");
-    }
-
-    @CommandAnnotation
-    public void setcheckpoint(CorePlayer sender, List<CorePlayer> cps, String warpName) {
-        sender.setCheckpoint(warpName, 0);
-    }
-
-    @CommandAnnotation
-    public void setcheckpoint(CorePlayer sender, List<CorePlayer> cps, String warpName, Integer duration) {
-        sender.setCheckpoint(warpName, duration);
     }
 
 }

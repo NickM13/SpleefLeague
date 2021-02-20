@@ -10,18 +10,18 @@ public class LeaderboardCollection {
 
     protected String name;
     protected ActiveLeaderboard activeLeaderboard;
-    protected final Map<Integer, Leaderboard> leaderboards = new TreeMap<>();
+    protected final Map<String, Leaderboard> leaderboards = new TreeMap<>();
 
-    public LeaderboardCollection(String name) {
+    public LeaderboardCollection(String name, String season) {
         this.name = name;
-        activeLeaderboard = new ActiveLeaderboard(name, 0);
-        leaderboards.put(0, activeLeaderboard);
+        activeLeaderboard = new ActiveLeaderboard(name, season);
+        leaderboards.put(season, activeLeaderboard);
     }
 
-    public ArchivedLeaderboard startNewSeason() {
+    public ArchivedLeaderboard startNewSeason(String season) {
         ArchivedLeaderboard archivedLeaderboard = new ArchivedLeaderboard(activeLeaderboard);
         leaderboards.put(activeLeaderboard.getSeason(), archivedLeaderboard);
-        activeLeaderboard = new ActiveLeaderboard(name, leaderboards.size());
+        activeLeaderboard = new ActiveLeaderboard(name, season);
         leaderboards.put(activeLeaderboard.getSeason(), activeLeaderboard);
         return archivedLeaderboard;
     }
@@ -41,7 +41,7 @@ public class LeaderboardCollection {
         return activeLeaderboard;
     }
 
-    public Map<Integer, Leaderboard> getLeaderboards() {
+    public Map<String, Leaderboard> getLeaderboards() {
         return leaderboards;
     }
 

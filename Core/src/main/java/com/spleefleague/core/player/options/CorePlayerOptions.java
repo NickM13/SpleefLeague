@@ -1,7 +1,7 @@
 package com.spleefleague.core.player.options;
 
 import com.spleefleague.core.Core;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.coreapi.player.options.PlayerOptions;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerOptions;
 
@@ -11,9 +11,9 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerOpt
  */
 public class CorePlayerOptions extends PlayerOptions {
 
-    private final CorePlayer owner;
+    private final CoreOfflinePlayer owner;
 
-    public CorePlayerOptions(CorePlayer owner) {
+    public CorePlayerOptions(CoreOfflinePlayer owner) {
         this.owner = owner;
     }
 

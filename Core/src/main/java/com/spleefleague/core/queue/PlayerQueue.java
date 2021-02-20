@@ -9,8 +9,8 @@ package com.spleefleague.core.queue;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.party.CoreParty;
 
 import java.util.ArrayList;
 import java.util.Iterator;

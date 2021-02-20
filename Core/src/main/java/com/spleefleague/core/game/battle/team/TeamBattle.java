@@ -265,7 +265,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
             boolean isWinner = teamBattleTeamMap.get(bp).equals(winner);
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             int toChange = isWinner ? eloChange : -eloChange;
-            boolean divChange = bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
+            bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));

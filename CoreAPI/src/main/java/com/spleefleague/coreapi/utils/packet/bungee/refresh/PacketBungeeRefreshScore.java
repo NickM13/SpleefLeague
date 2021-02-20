@@ -14,12 +14,12 @@ import java.util.List;
 public class PacketBungeeRefreshScore extends PacketBungee {
 
     public String mode;
-    public int season;
+    public String season;
     public List<RatedPlayerInfo> players;
 
     public PacketBungeeRefreshScore() { }
 
-    public PacketBungeeRefreshScore(String mode, int season, List<RatedPlayerInfo> players) {
+    public PacketBungeeRefreshScore(String mode, String season, List<RatedPlayerInfo> players) {
         this.mode = mode;
         this.season = season;
         this.players = players;

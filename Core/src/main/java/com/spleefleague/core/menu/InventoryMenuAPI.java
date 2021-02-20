@@ -9,7 +9,6 @@ package com.spleefleague.core.menu;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.Collection;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.bukkit.inventory.ItemStack;

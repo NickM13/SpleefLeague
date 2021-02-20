@@ -2,8 +2,6 @@ package com.spleefleague.core.world.personal;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.world.FakeWorld;
-import com.spleefleague.core.world.FakeWorldPlayer;
 import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import org.bukkit.World;
 

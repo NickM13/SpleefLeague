@@ -3,6 +3,7 @@ package com.spleefleague.proxycore.chat;
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatEmoticons;
 import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.player.ProxyDBPlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
@@ -159,13 +160,13 @@ public class ProxyChat {
 
         TextComponent textComponent = new TextComponent(TextComponent.fromLegacyText(message));
         for (ProxyCorePlayer friend : friends) {
-            if (friend.getOptions().getBoolean("Friend:Notifications") && channel.isActive(friend)) {
+            //if (friend.getOptions().getBoolean("Friend:Notifications") && channel.isActive(friend)) {
                 friend.getPlayer().sendMessage(textComponent);
-            }
+            //}
         }
     }
 
-    public static void sendConfirmationButtons(ProxyCorePlayer receiver, String acceptCmd, String declineCmd) {
+    public static void sendConfirmationButtons(ProxyDBPlayer receiver, String acceptCmd, String declineCmd) {
         TextComponent text = new TextComponent();
 
         TextComponent accept = new TextComponent(Chat.TAG_BRACE + "[" + Chat.SUCCESS + "Accept" + Chat.TAG_BRACE + "]");

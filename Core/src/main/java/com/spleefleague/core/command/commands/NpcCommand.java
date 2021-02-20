@@ -26,7 +26,7 @@ public class NpcCommand extends CoreCommand {
                     String profile,
                     String name,
                     String message) {
-        Chat.sendNpcMessage(sender, profile, name, message);
+        Chat.sendNpcMessage(profile, name, message);
     }
 
 }

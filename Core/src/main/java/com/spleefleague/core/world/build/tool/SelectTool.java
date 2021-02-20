@@ -2,6 +2,7 @@ package com.spleefleague.core.world.build.tool;
 
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.core.world.build.BuildWorldPlayer;

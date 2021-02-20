@@ -15,7 +15,7 @@ public class BungeeListenerServerKill extends BungeeListener<PacketBungeeServerK
     @Override
     protected void receive(Player sender, PacketBungeeServerKill packet) {
         Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            if (Core.getInstance().getPlayers().getAllOnlineExtended().isEmpty()) {
+            if (Core.getInstance().getPlayers().getAllOnline().isEmpty()) {
                 System.exit(0);
             }
         }, 0, 20);

@@ -6,22 +6,20 @@
 
 package com.spleefleague.core.command.commands;
 
-import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCursor;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -50,7 +48,7 @@ public class PlayerInfoCommand extends CoreCommand {
 
     @CommandAnnotation
     public void playerinfo(CorePlayer sender, OfflinePlayer op) {
-        CorePlayer cp = Core.getInstance().getPlayers().getOffline(op.getUniqueId());
+        CoreOfflinePlayer cp = Core.getInstance().getPlayers().getOffline(op.getUniqueId());
 
         if (cp == null) {
             error(sender, op.getName() + " has never logged in!");
@@ -92,11 +90,11 @@ public class PlayerInfoCommand extends CoreCommand {
         sender.sendMessage(textComponents.toArray(new TextComponent[0]));
     }
 
-    private String getMuted(CorePlayer cp) {
+    private String getMuted(CoreOfflinePlayer cp) {
         return "Maybe?";
     }
 
-    private String getState(CorePlayer cp) {
+    private String getState(CoreOfflinePlayer cp) {
         String state;
 
         if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
@@ -120,11 +118,7 @@ public class PlayerInfoCommand extends CoreCommand {
              */
             state = "Offline";
         } else {
-            if (cp.isAfk()) {
-                state = "Away";
-            } else {
-                state = "Online";
-            }
+            state = "Online";
         }
 
         return state;
@@ -175,7 +169,7 @@ public class PlayerInfoCommand extends CoreCommand {
 
     */
 
-    private String getOnlineTime(CorePlayer cp) {
+    private String getOnlineTime(CoreOfflinePlayer cp) {
         String onlineTime = "";
         long onlineTimeTotal = 0;
         long lastJoin = -1;
@@ -204,11 +198,12 @@ public class PlayerInfoCommand extends CoreCommand {
         return onlineTime;
     }
 
-    private String getActiveTime(CorePlayer cp) {
-        return TimeUtils.timeToString(cp.getStatistics().get("general", "playTime"));
+    private String getActiveTime(CoreOfflinePlayer cp) {
+        //return TimeUtils.timeToString(cp.getStatistics().get("general", "playTime"));
+        return "Not set up";
     }
 
-    private String getLastSeen(CorePlayer cp) {
+    private String getLastSeen(CoreOfflinePlayer cp) {
         String lastSeen = "";
         long lastConnection = -1;
 

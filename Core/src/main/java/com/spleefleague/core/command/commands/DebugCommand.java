@@ -23,7 +23,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.Inventory;
 
 import javax.annotation.Nullable;
@@ -42,8 +41,17 @@ public class DebugCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void debugRank(CorePlayer sender,
+                          @LiteralArg("rank") String l,
+                          String mode,
+                          String season,
+                          Integer elo) {
+        sender.getRatings().addRating(mode, season, elo);
+    }
+
+    @CommandAnnotation
     public void debugItem(CorePlayer sender,
-                           @LiteralArg("item") String l) {
+                          @LiteralArg("item") String l) {
         Random random = new Random();
         GlobalWorld.getGlobalFakeWorld().addRotationItem(
                 sender,

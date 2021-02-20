@@ -8,7 +8,6 @@ package com.spleefleague.core.menu;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.player.CorePlayer;
 
 import java.util.*;

@@ -12,8 +12,8 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.party.CoreParty;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.party.CoreParty;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.ArrayList;

@@ -42,7 +42,7 @@ public class PersonalScoreboard {
         // Pull all online players and add them to their respective ranked teams
         Scoreboard scoreboard = ps.getScoreboard();
 
-        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllHere()) {
+        for (CorePlayer cp2 : Core.getInstance().getPlayers().getAllLocal()) {
             Team team = scoreboard.getTeam(cp2.getRank().getIdentifierShort());
             if (team != null) {
                 team.addEntry(cp2.getName());
@@ -70,31 +70,16 @@ public class PersonalScoreboard {
 
     public static void updatePlayerRank(CorePlayer cp) {
         Team team;
-        if ((team = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard().getEntryTeam(cp.getNickname())) != null) {
-            team.removeEntry(cp.getNickname());
+        if ((team = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard().getEntryTeam(cp.getName())) != null) {
+            team.removeEntry(cp.getName());
         }
         for (PersonalScoreboard ps : scoreboards.values()) {
-            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getNickname());
+            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getName());
         }
-    }
-
-    public static void createScoreboard(CorePlayer corePlayer, boolean showRanks) {
-        PersonalScoreboard ps = new PersonalScoreboard(corePlayer, showRanks);
-        scoreboards.put(corePlayer.getUniqueId(), ps);
-        // Testing scoreboard display name for personal boards
-        ps.setScoreboardName(corePlayer.getDisplayName());
     }
 
     public static PersonalScoreboard getScoreboard(UUID uuid) {
         return scoreboards.get(uuid);
-    }
-
-    public static void onPlayerJoin(CorePlayer corePlayer) {
-        createScoreboard(corePlayer, true);
-    }
-
-    public static void onPlayerQuit(UUID uuid) {
-        scoreboards.remove(uuid);
     }
 
     protected Scoreboard scoreboard;

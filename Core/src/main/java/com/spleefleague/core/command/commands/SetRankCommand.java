@@ -14,7 +14,6 @@ import com.spleefleague.core.command.annotation.CorePlayerArg;
 import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
-import com.spleefleague.core.player.rank.CoreRankManager;
 import org.bukkit.command.CommandSender;
 import com.spleefleague.core.command.annotation.OptionArg;
 
@@ -55,7 +54,7 @@ public class SetRankCommand extends CoreCommand {
             error(sender, "Rank does not exist");
             return true;
         }
-        success(sender, cp.getDisplayName() + Chat.DEFAULT + "'s rank has been set to " + rank.getDisplayName());
+        success(sender, cp.getDisplayNamePossessive() + Chat.DEFAULT + "'s rank has been set to " + rank.getDisplayName());
         success(cp, Chat.DEFAULT + "Your rank has been set to " + rank.getDisplayName());
         cp.setRank(rank);
         return true;

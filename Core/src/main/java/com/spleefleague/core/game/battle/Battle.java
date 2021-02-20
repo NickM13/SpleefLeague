@@ -951,7 +951,6 @@ public abstract class Battle<BP extends BattlePlayer> {
         if (!spectators.contains(cp)) return;
         if (removePlayer(cp)) {
             spectators.remove(cp);
-            cp.checkGlobalSpectate();
         }
     }
 

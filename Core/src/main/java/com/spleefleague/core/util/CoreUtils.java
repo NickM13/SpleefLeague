@@ -7,13 +7,9 @@
 package com.spleefleague.core.util;
 
 import com.google.common.collect.Sets;
-import com.spleefleague.core.Core;
-import com.spleefleague.core.player.BattleState;
-import com.spleefleague.core.player.CorePlayer;
-import net.md_5.bungee.api.ChatColor;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
@@ -76,12 +72,12 @@ public class CoreUtils {
         return null;
     }
 
-    public static TextComponent mergePlayerNames(Collection<CorePlayer> players) {
+    public static TextComponent mergePlayerNames(Collection<? extends CoreOfflinePlayer> players) {
         TextComponent formatted = new TextComponent();
-        Iterator<CorePlayer> cpit = players.iterator();
+        Iterator<? extends CoreOfflinePlayer> cpit = players.iterator();
         boolean first = true;
         while (cpit.hasNext()) {
-            CorePlayer cp = cpit.next();
+            CoreOfflinePlayer cp = cpit.next();
             if (!first) {
                 if (!cpit.hasNext()) {
                     formatted.addExtra(" and ");

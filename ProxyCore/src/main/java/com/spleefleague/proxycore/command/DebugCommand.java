@@ -1,12 +1,7 @@
 package com.spleefleague.proxycore.command;
 
-import com.spleefleague.proxycore.ProxyCore;
-import com.spleefleague.proxycore.droplet.DropletType;
-import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
-
-import java.util.UUID;
 
 /**
  * @author NickM13

@@ -14,11 +14,11 @@ import java.util.Map;
  * @author NickM13
  * @since 4/28/2020
  */
-public class PlayerRatings extends DBVariable<Document> {
+public abstract class PlayerRatings extends DBVariable<Document> {
 
     protected final Map<String, Ratings> modeRatingsMap = new HashMap<>();
 
-    public PlayerRatings() {
+    protected PlayerRatings() {
 
     }
 
@@ -40,38 +40,38 @@ public class PlayerRatings extends DBVariable<Document> {
         return doc;
     }
 
-    public boolean isRanked(String mode, int season) {
+    protected boolean isRanked(String mode, String season) {
         return modeRatingsMap.containsKey(mode)
                 && modeRatingsMap.get(mode).isRanked(season);
     }
 
-    public int getElo(String mode, int season) {
+    protected int getElo(String mode, String season) {
         if (!modeRatingsMap.containsKey(mode)) {
             modeRatingsMap.put(mode, new Ratings(mode));
         }
         return modeRatingsMap.get(mode).get(season).getElo();
     }
 
-    public String getDisplayElo(String mode, int season) {
+    protected String getDisplayElo(String mode, String season) {
         if (!modeRatingsMap.containsKey(mode)) {
             modeRatingsMap.put(mode, new Ratings(mode));
         }
         return modeRatingsMap.get(mode).get(season).getDisplayElo();
     }
 
-    public String getDisplayDivision(String mode, int season) {
+    protected String getDisplayDivision(String mode, String season) {
         return modeRatingsMap.get(mode).get(season).getDivision().getDisplayName();
     }
 
-    public int getWins(String mode, int season) {
+    protected int getWins(String mode, String season) {
         return modeRatingsMap.get(mode).get(season).getWins();
     }
 
-    public int getLosses(String mode, int season) {
+    protected int getLosses(String mode, String season) {
         return modeRatingsMap.get(mode).get(season).getLosses();
     }
 
-    public int getGamesPlayed(String mode, int season) {
+    protected int getGamesPlayed(String mode, String season) {
         Rating rating = modeRatingsMap.get(mode).get(season);
         if (rating != null) {
             return rating.getWins() + rating.getLosses();
@@ -79,7 +79,7 @@ public class PlayerRatings extends DBVariable<Document> {
         return 0;
     }
 
-    public String getWinPercent(String mode, int season) {
+    protected String getWinPercent(String mode, String season) {
         float percent = Math.round((float) modeRatingsMap.get(mode).get(season).getWins()
                 / (modeRatingsMap.get(mode).get(season).getWins()
                 + modeRatingsMap.get(mode).get(season).getLosses()) * 1000.f) / 10.f;
@@ -92,7 +92,7 @@ public class PlayerRatings extends DBVariable<Document> {
         }
     }
 
-    public void setRating(String mode, int season, int elo) {
+    protected void setRating(String mode, String season, int elo) {
         if (!modeRatingsMap.containsKey(mode)) {
             modeRatingsMap.put(mode, new Ratings());
         }
@@ -103,7 +103,7 @@ public class PlayerRatings extends DBVariable<Document> {
         }
     }
 
-    public boolean addRating(String mode, int season, int change) {
+    protected int addRating(String mode, String season, int change) {
         if (!modeRatingsMap.containsKey(mode)) {
             modeRatingsMap.put(mode, new Ratings());
         }
@@ -115,11 +115,11 @@ public class PlayerRatings extends DBVariable<Document> {
         return modeRatingsMap.get(mode).get(season).addElo(change);
     }
 
-    public void addWin(String mode, int season) {
+    protected void addWin(String mode, String season) {
         modeRatingsMap.get(mode).get(season).addWin();
     }
 
-    public void addLoss(String mode, int season) {
+    protected void addLoss(String mode, String season) {
         modeRatingsMap.get(mode).get(season).addLoss();
     }
 

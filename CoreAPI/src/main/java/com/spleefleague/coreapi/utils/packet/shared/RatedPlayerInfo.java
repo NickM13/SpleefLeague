@@ -15,6 +15,7 @@ public class RatedPlayerInfo extends PacketVariable {
     public RatedPlayerInfo() { }
 
     public RatedPlayerInfo(NumAction action, UUID uuid, int elo) {
+        this.action = action;
         this.uuid = uuid;
         this.elo = elo;
     }

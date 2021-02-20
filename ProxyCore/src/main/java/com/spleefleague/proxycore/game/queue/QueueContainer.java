@@ -247,7 +247,7 @@ public abstract class QueueContainer {
     protected List<QueueEntity> queuedEntities = new ArrayList<>();
 
     protected final int DYNAMIC_DELAY_START = 3;
-    protected final int SEASON;
+    protected final String SEASON;
 
     public QueueContainer(String identifier, String displayName, int reqTeams, int maxTeams) {
         this.identifier = identifier;

@@ -13,6 +13,7 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.SLMainHotbar;
 import com.spleefleague.core.menu.hotbars.main.GamemodeMenu;
+import com.spleefleague.core.player.CoreDBPlayer;
 import com.spleefleague.core.player.PlayerManager;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.superjump.commands.*;
@@ -38,7 +39,7 @@ public class SuperJump extends CorePlugin {
     
     private InventoryMenuItem superJumpMenuItem;
 
-    private PlayerManager<SuperJumpPlayer> playerManager;
+    private PlayerManager<SuperJumpPlayer, CoreDBPlayer> playerManager;
     
     @Override
     public void init() {
@@ -48,7 +49,7 @@ public class SuperJump extends CorePlugin {
 
         initCommands();
         
-        playerManager = new PlayerManager<>(this, SuperJumpPlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(SuperJumpPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
         
         SJUtils.init();
         SJMode.init();
@@ -70,7 +71,7 @@ public class SuperJump extends CorePlugin {
         playerManager.close();
     }
 
-    public PlayerManager<SuperJumpPlayer> getPlayers() {
+    public PlayerManager<SuperJumpPlayer, CoreDBPlayer> getPlayers() {
         return playerManager;
     }
 

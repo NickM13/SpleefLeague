@@ -18,12 +18,12 @@ public class SeasonManager {
     private MongoCollection<Document> seasonCollection;
     private MongoCollection<Document> settingsCollection;
 
-    private Map<Integer, SeasonInfo> seasonInfoMap = new HashMap<>();
+    private Map<String, SeasonInfo> seasonInfoMap = new HashMap<>();
 
-    private int currentSeason;
+    private String currentSeason;
 
     public SeasonManager() {
-        currentSeason = 0;
+        currentSeason = "preseason1";
         seasonInfoMap.put(currentSeason, new SeasonInfo());
     }
 
@@ -34,17 +34,17 @@ public class SeasonManager {
         for (Document doc : seasonCollection.find()) {
             SeasonInfo seasonInfo = new SeasonInfo();
             seasonInfo.load(doc);
-            seasonInfoMap.put(seasonInfo.getSeasonId(), seasonInfo);
+            seasonInfoMap.put(seasonInfo.getIdentifier(), seasonInfo);
         }
 
-        currentSeason = Objects.requireNonNull(settingsCollection.find(new Document("identifier", "season")).first()).getInteger("current");
+        currentSeason = Objects.requireNonNull(settingsCollection.find(new Document("identifier", "season")).first()).getString("current");
     }
 
     public void close() {
 
     }
 
-    public int getCurrentSeason() {
+    public String getCurrentSeason() {
         return currentSeason;
     }
 

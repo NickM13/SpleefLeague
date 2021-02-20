@@ -11,8 +11,7 @@ import javax.annotation.Nonnull;
  */
 public abstract class PacketSpigot extends Packet {
 
-    public abstract @Nonnull
-    PacketType.Spigot getSpigotTag();
+    public abstract @Nonnull PacketType.Spigot getSpigotTag();
 
     public final int getTag() {
         return getSpigotTag().ordinal();

@@ -288,7 +288,6 @@ public class Chat {
         if (channel.isGlobal()) {
             Core.getInstance().sendPacket(new PacketSpigotChatPlayer(sender.getUniqueId(), channel.name(), message));
         } else {
-            System.out.println("Sending local chat");
             TextComponent textComponent = new TextComponent();
 
             textComponent.addExtra(channel.getTagComponent());
@@ -296,7 +295,7 @@ public class Chat {
             textComponent.addExtra(net.md_5.bungee.api.ChatColor.GRAY + ": ");
             textComponent.addExtra(playerMessage.textComponent);
 
-            for (CorePlayer cp : Core.getInstance().getPlayers().getAllHereExtended()) {
+            for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
                 if (channel.isActive(cp)) {
                     cp.sendMessage(textComponent);
                 }
@@ -321,6 +320,29 @@ public class Chat {
         }
         builder.append(LINEBREAK, ComponentBuilder.FormatRetention.NONE);
         receiver.sendMessage(builder.create());
+    }
+
+    public static void sendNpcMessage(String profile, String name, String message) {
+        ComponentBuilder builder = new ComponentBuilder()
+                .append(LINEBREAK, ComponentBuilder.FormatRetention.NONE)
+                .append("\n" + profile, ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.WHITE).italic(false)
+                .append(" " + name.replaceAll("_", " "), ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GOLD).bold(true);
+        int i = 0;
+        for (String str : message.split("\\\\n")) {
+            builder.append("\n亖 " + str, ComponentBuilder.FormatRetention.NONE).color(net.md_5.bungee.api.ChatColor.GREEN).italic(true);
+            i++;
+        }
+        for (; i <= 4; i++) {
+            builder.append("\n");
+        }
+        builder.append(LINEBREAK, ComponentBuilder.FormatRetention.NONE);
+        Chat.sendMessageLocal(builder.create());
+    }
+
+    private static void sendMessageLocal(BaseComponent... baseComponents) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
+            cp.sendMessage(baseComponents);
+        }
     }
 
     public static void sendNpcMessage(CorePlayer receiver, NpcMessage message) {
@@ -355,7 +377,7 @@ public class Chat {
     }
 
     public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
             if (cp.getOptions().getBoolean("Chat:" + channel.getName())
                     && channel.isAvailable(cp)) {
                 cp.getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);

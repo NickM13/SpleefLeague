@@ -16,6 +16,9 @@ import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueReque
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerDirect;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerHub;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerPing;
+import com.spleefleague.proxycore.listener.spigot.ticket.SpigotListenerTicketClose;
+import com.spleefleague.proxycore.listener.spigot.ticket.SpigotListenerTicketOpen;
+import com.spleefleague.proxycore.listener.spigot.ticket.SpigotListenerTicketReply;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -64,6 +67,9 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.SERVER_HUB, new SpigotListenerServerHub());
         registeredListeners.put(PacketType.Spigot.SERVER_DIRECT, new SpigotListenerServerDirect());
         registeredListeners.put(PacketType.Spigot.SERVER_PING, new SpigotListenerServerPing());
+        registeredListeners.put(PacketType.Spigot.TICKET_CLOSE, new SpigotListenerTicketClose());
+        registeredListeners.put(PacketType.Spigot.TICKET_OPEN, new SpigotListenerTicketOpen());
+        registeredListeners.put(PacketType.Spigot.TICKET_REPLY, new SpigotListenerTicketReply());
     }
 
     @EventHandler

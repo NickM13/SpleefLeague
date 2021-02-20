@@ -290,7 +290,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
 
     public <T extends Collectible> void setEnabled(Class<T> clazz, boolean state) {
         owner.getOptions().setBoolean("Collectibles:" + Vendorable.getParentTypeName(clazz), state);
-        owner.refreshHotbar();
+        Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
     }
 
     public <T extends Collectible> List<T> getAll(Class<T> clazz) {
@@ -319,7 +319,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
         activeMap.put(collectible.getParentType(), collectible.getIdentifier());
-        owner.refreshHotbar();
+        Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
         Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
                 owner.getUniqueId(),
                 collectible.getParentType(),
@@ -338,7 +338,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         if (current != null) current.onDisable(owner);
         collectible.onEnable(owner);
         activeMap.put(collectible.getParentType() + affix, collectible.getIdentifier());
-        owner.refreshHotbar();
+        Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
         Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
                 owner.getUniqueId(),
                 collectible.getParentType(),
@@ -349,7 +349,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
 
     public void setSkin(Collectible collectible, String skin) {
         owner.getCollectibles().getInfo(collectible).setSelectedSkin(skin);
-        owner.refreshHotbar();
+        Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
         Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
                 owner.getUniqueId(),
                 collectible.getParentType(),
@@ -367,7 +367,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 collectible.onDisable(owner);
             }
             activeMap.remove(type);
-            owner.refreshHotbar();
+            Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
             Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
                     owner.getUniqueId(),
                     type,
@@ -385,7 +385,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 collectible.onDisable(owner);
             }
             activeMap.remove(type);
-            owner.refreshHotbar();
+            Core.getInstance().getPlayers().get(owner.getUniqueId()).refreshHotbar();
             Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
                     owner.getUniqueId(),
                     type,
@@ -461,12 +461,13 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                     if (index == -1 && collectible.equals(active)) {
                         index = i;
                     }
+                    CorePlayer cvp = Core.getInstance().getPlayers().get(cp.getUniqueId());
                     container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayName() : "Locked")
-                            .setDisplayItem(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
-                            .setDescription(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDescription() : "")
+                            .setName(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayName() : "Locked")
+                            .setDisplayItem(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
+                            .setDescription(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDescription() : "")
                             .setAction(cp2 -> {
-                                if (collectible.isUnlocked(cp2)) {
+                                if (collectible.isUnlocked(cvp)) {
                                     if (collectible.hasSkins()) {
                                         cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
                                         cp2.getMenu().setInventoryMenuItem(skinMenuItem);
@@ -483,12 +484,13 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 String search = cp.getMenu().getMenuTag(COLLECTIBLE_SEARCH, String.class);
                 for (Collectible collectible : Vendorables.getAllSorted(clazz, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
                     if (!collectible.getName().toLowerCase().contains(search.toLowerCase())) continue;
+                    CorePlayer cvp = Core.getInstance().getPlayers().get(cp.getUniqueId());
                     container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayName() : "Locked")
-                            .setDisplayItem(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
-                            .setDescription(cp2 -> collectible.isUnlocked(cp2) ? collectible.getDescription() : "")
+                            .setName(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayName() : "Locked")
+                            .setDisplayItem(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
+                            .setDescription(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDescription() : "")
                             .setAction(cp2 -> {
-                                if (collectible.isUnlocked(cp2)) {
+                                if (collectible.isUnlocked(cvp)) {
                                     if (collectible.hasSkins()) {
                                         cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
                                         cp2.getMenu().setInventoryMenuItem(skinMenuItem);

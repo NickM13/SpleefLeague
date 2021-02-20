@@ -12,7 +12,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.menu.*;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.*;
@@ -251,7 +251,7 @@ public class Warp extends DBEntity {
         return location.toLocation();
     }
 
-    public boolean isAvailable(CorePlayer cp) {
+    public boolean isAvailable(CoreOfflinePlayer cp) {
         CoreRank rank = Core.getInstance().getRankManager().getRank(folderName);
         if (rank == null) {
             return cp.getRank().hasPermission(CoreRank.TEMP_MOD, Lists.newArrayList(CoreRank.BUILDER));

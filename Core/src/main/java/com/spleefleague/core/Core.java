@@ -28,9 +28,9 @@ import com.spleefleague.core.menu.hotbars.main.socialmedia.Credits;
 import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.packet.PacketManager;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.CorePlayerManager;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.PlayerManager;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.party.CorePartyManager;
 import com.spleefleague.core.player.rank.CoreRankManager;
@@ -91,7 +91,7 @@ public class Core extends CorePlugin {
     private final CrateManager crateManager = new CrateManager();
     private final PacketManager packetManager = new PacketManager();
     private final BattleSessionManager battleSessionManager = new BattleSessionManager();
-    private CorePlayerManager playerManager;
+    private PlayerManager<CorePlayer, CoreOfflinePlayer> playerManager;
 
     /**
      * Called when the plugin is enabling
@@ -123,7 +123,7 @@ public class Core extends CorePlugin {
         GameHistoryManager.init();
 
         // Initialize manager
-        playerManager = new CorePlayerManager(getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(CorePlayer.class, CoreOfflinePlayer.class, getPluginDB().getCollection("Players"));
         crateManager.init();
         packetManager.init();
         battleSessionManager.init();
@@ -143,10 +143,9 @@ public class Core extends CorePlugin {
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (CorePlayer cp : getPlayers().getAllHere()) {
+            for (CorePlayer cp : getPlayers().getAllLocal()) {
                 cp.checkAfk();
                 cp.checkTempRanks();
-                cp.checkGlobalSpectate();
             }
             RequestManager.checkTimeouts();
         }, 0L, 100L);
@@ -339,20 +338,20 @@ public class Core extends CorePlugin {
      */
     public void applyVisibilities(CorePlayer cp) {
         if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) return;
-        if (cp.isVanished() || cp.isGhosting()) {
+        if (cp.isGhosting()) {
             cp.getPlayer().hidePlayer(Core.getInstance(), cp.getPlayer());
         } else {
             cp.getPlayer().showPlayer(Core.getInstance(), cp.getPlayer());
         }
         // See and become seen by all players outside of games
         // getOnline doesn't return vanished players
-        for (CorePlayer cp2 : getPlayers().getAllHere()) {
+        for (CorePlayer cp2 : getPlayers().getAllLocal()) {
             if (!cp.equals(cp2)) {
                 if (cp.getBattle() == cp2.getBattle() &&
                         cp.getBuildWorld() == cp2.getBuildWorld()) {
                     if (!cp2.isGhosting()) cp.getPlayer().showPlayer(this, cp2.getPlayer());
                     else cp.getPlayer().hidePlayer(this, cp2.getPlayer());
-                    if (!cp.isVanished() && !cp.isGhosting()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
+                    if (!cp.isGhosting()) cp2.getPlayer().showPlayer(this, cp.getPlayer());
                     else cp2.getPlayer().hidePlayer(this, cp.getPlayer());
                 } else {
                     cp.getPlayer().hidePlayer(this, cp2.getPlayer());
@@ -362,7 +361,7 @@ public class Core extends CorePlugin {
         }
     }
 
-    public void returnToHub(CorePlayer cp) {
+    public void returnToHub(CoreOfflinePlayer cp) {
         if (cp == null || !cp.isOnline()) return;
         Core.getInstance().sendPacket(new PacketSpigotServerHub(Lists.newArrayList(cp)));
     }
@@ -379,30 +378,11 @@ public class Core extends CorePlugin {
                 if (pe.getPacketType() == PacketType.Play.Server.PLAYER_INFO) {
                     PacketContainer packet = pe.getPacket();
                     switch (packet.getPlayerInfoAction().read(0)) {
-                        case ADD_PLAYER: {
-                            List<PlayerInfoData> newData = new ArrayList<>();
-                            for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
-                                CorePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
-                                if (!cp.isVanished()) {
-                                    newData.add(new PlayerInfoData(
-                                            playerInfoData.getProfile(),
-                                            playerInfoData.getLatency(),
-                                            playerInfoData.getGameMode(),
-                                            WrappedChatComponent.fromText(cp.getTabName())));
-                                }
-                            }
-                            if (newData.isEmpty()) {
-                                pe.setCancelled(true);
-                            } else {
-                                packet.getPlayerInfoDataLists().write(0, newData);
-                            }
-                        }
-                        break;
                         case REMOVE_PLAYER: {
                             List<PlayerInfoData> newData = new ArrayList<>();
                             for (PlayerInfoData playerInfoData : packet.getPlayerInfoDataLists().read(0)) {
-                                CorePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
-                                if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE || cp.isVanished()) {
+                                CoreOfflinePlayer cp = Core.getInstance().getPlayers().get(playerInfoData.getProfile().getUUID());
+                                if (cp == null || cp.getOnlineState() != DBPlayer.OnlineState.HERE) {
                                     newData.add(playerInfoData);
                                 }
                             }
@@ -433,7 +413,7 @@ public class Core extends CorePlugin {
      *
      * @return Player Manager
      */
-    public final PlayerManager<CorePlayer> getPlayers() {
+    public final PlayerManager<CorePlayer, CoreOfflinePlayer> getPlayers() {
         return playerManager;
     }
 
@@ -460,11 +440,11 @@ public class Core extends CorePlugin {
      * @param cp     Core Player
      * @param packet Packet Container
      */
-    public static void sendPacket(CorePlayer cp, PacketContainer packet) {
+    public static void sendPacket(CoreOfflinePlayer cp, PacketContainer packet) {
         sendPacket(cp, packet, 1L);
     }
 
-    public static void sendPacket(CorePlayer cp, PacketContainer packet, long delay) {
+    public static void sendPacket(CoreOfflinePlayer cp, PacketContainer packet, long delay) {
         if (packet == null) return;
         if (delay > 0) {
             Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
@@ -506,7 +486,7 @@ public class Core extends CorePlugin {
      */
     public static void sendPacketAll(PacketContainer packet) {
         if (packet == null) return;
-        for (CorePlayer cp : Core.getInstance().getPlayers().getAllHere()) {
+        for (CoreOfflinePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
             sendPacket(cp, packet);
         }
     }
@@ -569,7 +549,7 @@ public class Core extends CorePlugin {
     public List<CorePlayer> getPlayersInRadius(Location loc, Double minDist, Double maxDist) {
         List<CorePlayer> cpList = new ArrayList<>();
 
-        for (CorePlayer cp1 : playerManager.getAllHere()) {
+        for (CorePlayer cp1 : playerManager.getAllLocal()) {
             if (loc.getWorld() != null
                     && loc.getWorld().equals(cp1.getLocation().getWorld())
                     && loc.distance(cp1.getLocation()) >= minDist
@@ -611,8 +591,6 @@ public class Core extends CorePlugin {
 
     /**
      * Send a packet to all servers with 1 or more players
-     *
-     * @param packet
      */
     public void sendPacket(PacketSpigot packet) {
         packetManager.sendPacket(packet);

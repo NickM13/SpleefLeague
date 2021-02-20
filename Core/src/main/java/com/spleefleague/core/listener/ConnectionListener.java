@@ -12,8 +12,10 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
-import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.world.FakeWorld;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,34 +24,36 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 
+import java.util.UUID;
+
 /**
  * @author NickM13
  */
 public class ConnectionListener implements Listener {
 
     @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent event) {
-
-    }
-
-    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        CorePlugin.onPlayerJoin(event);
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        FakeWorld.onPlayerJoin(event.getPlayer().getUniqueId());
         event.setJoinMessage("");
-        //cp.gotoSpawn();
-        Core.getInstance().applyVisibilities(cp);
-        Core.getInstance().getPartyManager().onConnect(cp);
-        NoteBlockMusic.onPlayerJoin(cp);
+        Player player = event.getPlayer();
+        Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
+            CorePlugin.onPlayerJoin(player);
+            CorePlayer cp = Core.getInstance().getPlayers().get(player);
+            //cp.gotoSpawn();
+            Core.getInstance().applyVisibilities(cp);
+            Core.getInstance().getPartyManager().onConnect(cp);
+            NoteBlockMusic.onPlayerJoin(player.getUniqueId());
+        });
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().getOffline(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        CorePlugin.onPlayerQuit(uuid);
         event.setQuitMessage("");
-        Core.getInstance().getPartyManager().onDisconnect(cp);
-        NoteBlockMusic.onPlayerQuit(cp);
-        CorePlugin.onPlayerQuit(event);
+        Core.getInstance().getPartyManager().onDisconnect(uuid);
+        NoteBlockMusic.onPlayerQuit(uuid);
+        FakeWorld.onPlayerQuit(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGH)

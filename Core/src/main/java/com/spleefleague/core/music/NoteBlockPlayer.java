@@ -1,18 +1,18 @@
 package com.spleefleague.core.music;
 
-import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.SoundCategory;
+import org.bukkit.entity.Player;
 
 public class NoteBlockPlayer {
 
-    private final CorePlayer listener;
+    private final Player listener;
     private final NoteBlockSong song;
     private float volume = 1;
     private short tickCursor = 0;
     private boolean playing = true;
     private byte loop = 0;
 
-    public NoteBlockPlayer(CorePlayer listener, NoteBlockSong song, float volume) {
+    public NoteBlockPlayer(Player listener, NoteBlockSong song, float volume) {
         this.listener = listener;
         this.song = song;
         this.volume = volume;
@@ -96,7 +96,7 @@ public class NoteBlockPlayer {
                                 instrument = "minecraft:block.note_block.pling";
                                 break;
                         }
-                        listener.getPlayer().playSound(listener.getPlayer().getLocation(),
+                        listener.playSound(listener.getLocation(),
                                 instrument + (note.key < 33 ? "_-1" : note.key > 57 ? "_1" : ""),
                                 SoundCategory.RECORDS,
                                 (layer.getVolume() / 100.f) * (note.velocity / 100.f) * volume,

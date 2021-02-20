@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -25,61 +24,53 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Manager for custom DBPlayer objects based on Player UUIDs
  *
- * @param <P> extends DBPlayer
+ * @param <ONLINE> extends DBPlayer
  * @author NickM13
  */
-public class PlayerManager<P extends DBPlayer> {
+public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer> {
 
-    // Players on this server (non-vanished)
-    protected final Map<UUID, P> herePlayerList;
     // Players on this server
-    protected final Map<UUID, P> herePlayerListAll;
-    // Players on any server (non-vanished)
-    protected final Map<UUID, P> onlinePlayerList;
+    protected final Map<UUID, ONLINE> localPlayerMap;
     // Players on any server
-    protected final Map<UUID, P> onlinePlayerListAll;
+    protected final Map<UUID, ONLINE> onlinePlayerMap;
     // Offline players to prevent loading offline players more than once
-    protected final Map<UUID, P> offlinePlayerList;
-    protected SortedSet<P> playerListSorted;
-    protected final Class<P> playerClass;
+    protected final Map<UUID, OFFLINE> offlinePlayerList;
+    protected SortedSet<ONLINE> playerListSorted;
+    protected final Class<ONLINE> onlinePlayerClass;
+    protected final Class<OFFLINE> offlinePlayerClass;
     protected final MongoCollection<Document> playerCol;
-    protected final JavaPlugin plugin;
     protected boolean saving = false;
 
-    public PlayerManager(JavaPlugin plugin, Class<P> playerClass, MongoCollection<Document> collection) {
-        this.herePlayerList = new HashMap<>();
-        this.herePlayerListAll = new HashMap<>();
-        this.onlinePlayerList = new HashMap<>();
-        this.onlinePlayerListAll = new HashMap<>();
+    public PlayerManager(Class<ONLINE> onlineClass, Class<OFFLINE> offlineClass, MongoCollection<Document> collection) {
+        this.localPlayerMap = new HashMap<>();
+        this.onlinePlayerMap = new HashMap<>();
         this.offlinePlayerList = new HashMap<>();
-        this.plugin = plugin;
-        this.playerClass = playerClass;
+        this.onlinePlayerClass = onlineClass;
+        this.offlinePlayerClass = offlineClass;
         this.playerCol = collection;
-        this.playerListSorted = new TreeSet<>(Comparator.comparing(P::getName));
+        this.playerListSorted = new TreeSet<>(Comparator.comparing(ONLINE::getName));
         CorePlugin.registerPlayerManager(this);
+    }
+
+    public Class<ONLINE> getOnlinePlayerClass() {
+        return onlinePlayerClass;
     }
 
     public void enableSaving() {
         saving = true;
     }
 
-    public void setSortingComparible(Comparator<P> comparator) {
+    public void setSortingComparible(Comparator<ONLINE> comparator) {
         playerListSorted = new TreeSet<>(comparator);
-        playerListSorted.addAll(onlinePlayerListAll.values());
+        playerListSorted.addAll(onlinePlayerMap.values());
     }
 
-    public Collection<P> getSortedPlayers() {
-        return onlinePlayerListAll.values();
+    public Collection<ONLINE> getSortedPlayers() {
+        return onlinePlayerMap.values();
     }
 
     /**
@@ -87,19 +78,18 @@ public class PlayerManager<P extends DBPlayer> {
      * Add all online players to player list
      */
     public void initOnline() {
-        onlinePlayerListAll.clear();
+        onlinePlayerMap.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
             load(p.getUniqueId(), p.getName());
         }
         playerListSorted.clear();
-        playerListSorted.addAll(onlinePlayerListAll.values());
-        for (P p : onlinePlayerListAll.values()) {
-            p.init();
-            p.setOnline(DBPlayer.OnlineState.HERE);
-            if (!Core.getInstance().getPlayers().get(p).isVanished()) {
-                herePlayerList.put(p.getUniqueId(), p);
-            }
-            herePlayerListAll.put(p.getUniqueId(), p);
+        playerListSorted.addAll(onlinePlayerMap.values());
+        for (ONLINE p : onlinePlayerMap.values()) {
+            Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
+                p.init();
+                p.setOnline(DBPlayer.OnlineState.HERE);
+                localPlayerMap.put(p.getUniqueId(), p);
+            });
         }
     }
 
@@ -109,7 +99,7 @@ public class PlayerManager<P extends DBPlayer> {
      * @param username Player Username
      * @return DBPlayer
      */
-    public P get(String username) {
+    public ONLINE get(String username) {
         return PlayerManager.this.get(Bukkit.getPlayer(username));
     }
 
@@ -119,7 +109,7 @@ public class PlayerManager<P extends DBPlayer> {
      * @param player Player
      * @return DBPlayer
      */
-    public P get(Player player) {
+    public ONLINE get(Player player) {
         if (player != null) {
             return get(player.getUniqueId());
             /*
@@ -144,8 +134,12 @@ public class PlayerManager<P extends DBPlayer> {
      * @param uniqueId Player UUID
      * @return DBPlayer
      */
-    public P get(UUID uniqueId) {
-        return onlinePlayerListAll.get(uniqueId);
+    public ONLINE get(UUID uniqueId) {
+        return onlinePlayerMap.get(uniqueId);
+    }
+
+    public ONLINE getLocal(UUID uniqueId) {
+        return localPlayerMap.get(uniqueId);
     }
 
     /**
@@ -154,7 +148,7 @@ public class PlayerManager<P extends DBPlayer> {
      * @param dbp DBPlayer
      * @return DBPlayer
      */
-    public P get(DBPlayer dbp) {
+    public ONLINE get(DBPlayer dbp) {
         return get(dbp.getUniqueId());
     }
 
@@ -164,19 +158,21 @@ public class PlayerManager<P extends DBPlayer> {
      * @param uniqueId Player UUID
      * @return DBPlayer
      */
-    public P getOffline(UUID uniqueId) {
+    public OFFLINE getOffline(UUID uniqueId) {
         try {
-            P p;
+            ONLINE p;
             if ((p = get(uniqueId)) != null) return p;
-            p = offlinePlayerList.get(uniqueId);
-            if (p != null/* && p.getLastOfflineLoad() > System.currentTimeMillis() - 1000*/) return p;
-            p = playerClass.getDeclaredConstructor().newInstance();
+            OFFLINE op = offlinePlayerList.get(uniqueId);
+            if (op != null/* && op.getLastOfflineLoad() > System.currentTimeMillis() - 1000*/) {
+                return op;
+            }
+            op = offlinePlayerClass.getDeclaredConstructor().newInstance();
             Document doc = playerCol.find(new Document("identifier", uniqueId.toString())).first();
             if (doc != null) {
-                p.load(doc);
-                p.initOffline();
-                offlinePlayerList.put(uniqueId, p);
-                return p;
+                op.load(doc);
+                op.init();
+                offlinePlayerList.put(uniqueId, op);
+                return op;
             }
         } catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
             Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -192,14 +188,19 @@ public class PlayerManager<P extends DBPlayer> {
      * @deprecated Bukkit's getOfflinePlayer(name) is deprecated
      */
     @Deprecated
-    public P getOffline(String username) {
+    public OFFLINE getOffline(String username) {
         Player p = Bukkit.getPlayer(username);
         if (p != null) return getOffline(p.getUniqueId());
         return getOffline(Bukkit.getOfflinePlayer(username).getUniqueId());
     }
 
     public boolean isOnline(UUID uuid) {
-        return onlinePlayerList.containsKey(uuid);
+        return onlinePlayerMap.containsKey(uuid);
+    }
+
+    public boolean isLocal(UUID uuid) {
+        ONLINE p = localPlayerMap.get(uuid);
+        return p != null && p.getOnlineState() != DBPlayer.OnlineState.OFFLINE;
     }
 
     /**
@@ -207,26 +208,17 @@ public class PlayerManager<P extends DBPlayer> {
      *
      * @return Players
      */
-    public Collection<P> getAll() {
-        return onlinePlayerListAll.values();
+    public Collection<ONLINE> getAll() {
+        return onlinePlayerMap.values();
     }
 
     /**
      * Get list of all player names, non-vanished
      *
-     * @return
+     * @return Sorted Name List
      */
     public TreeSet<String> getAllNames() {
-        return onlinePlayerList.values().stream().map(DBPlayer::getName).collect(Collectors.toCollection(TreeSet::new));
-    }
-
-    /**
-     * Get all players that are not vanished
-     *
-     * @return Unvanished Players
-     */
-    public Collection<P> getAllHere() {
-        return herePlayerList.values();
+        return onlinePlayerMap.values().stream().map(DBPlayer::getName).collect(Collectors.toCollection(TreeSet::new));
     }
 
     /**
@@ -234,17 +226,8 @@ public class PlayerManager<P extends DBPlayer> {
      *
      * @return All players on this server
      */
-    public Collection<P> getAllHereExtended() {
-        return herePlayerListAll.values();
-    }
-
-    /**
-     * Get all players on bungee, excluding vanished
-     *
-     * @return Bungee players, excluding vanished
-     */
-    public Collection<P> getAllOnline() {
-        return onlinePlayerList.values();
+    public Collection<ONLINE> getAllLocal() {
+        return localPlayerMap.values();
     }
 
     /**
@@ -252,8 +235,8 @@ public class PlayerManager<P extends DBPlayer> {
      *
      * @return Bungee players, including vanished
      */
-    public Collection<P> getAllOnlineExtended() {
-        return onlinePlayerListAll.values();
+    public Collection<ONLINE> getAllOnline() {
+        return onlinePlayerMap.values();
     }
 
     /**
@@ -275,28 +258,15 @@ public class PlayerManager<P extends DBPlayer> {
      * @param username Player Username
      * @return DBPlayer
      */
-    protected P load(UUID uuid, String username) {
+    protected ONLINE load(UUID uuid, String username) {
         offlinePlayerList.remove(uuid);
-        if (herePlayerListAll.containsKey(uuid)) {
-            P p = herePlayerListAll.get(uuid);
-            if (!onlinePlayerListAll.containsKey(uuid)) {
-                onlinePlayerListAll.put(uuid, p);
-                // Include vanished code here
-                if (plugin == Core.getInstance()) {
-                    CorePlayer cp = (CorePlayer) p;
-                    if (!cp.isVanished()) {
-                        onlinePlayerList.put(uuid, p);
-                        herePlayerList.put(uuid, p);
-                    }
-                } else {
-                    onlinePlayerList.put(uuid, p);
-                    herePlayerList.put(uuid, p);
-                }
-            }
-            return herePlayerListAll.get(uuid);
+        if (localPlayerMap.containsKey(uuid)) {
+            ONLINE p = localPlayerMap.get(uuid);
+            onlinePlayerMap.put(uuid, p);
+            return p;
         }
         try {
-            P p = playerClass.getDeclaredConstructor().newInstance();
+            ONLINE p = onlinePlayerClass.getDeclaredConstructor().newInstance();
             Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
             if (pdoc != null) {
                 p.load(pdoc);
@@ -305,34 +275,23 @@ public class PlayerManager<P extends DBPlayer> {
                 p.newPlayer(uuid, username);
             }
             p.setOnline(DBPlayer.OnlineState.OTHER);
-            onlinePlayerListAll.put(uuid, p);
-
-            if (plugin == Core.getInstance()) {
-                CorePlayer cp = (CorePlayer) p;
-                if (!cp.isVanished()) {
-                    onlinePlayerList.put(uuid, p);
-                }
-            } else {
-                onlinePlayerList.put(uuid, p);
-            }
+            onlinePlayerMap.put(uuid, p);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-        return onlinePlayerListAll.get(uuid);
+        return onlinePlayerMap.get(uuid);
     }
 
     public void resync(UUID uuid, List<PacketBungeePlayerResync.Field> fields) {
-        if (!onlinePlayerListAll.containsKey(uuid)) {
+        if (!onlinePlayerMap.containsKey(uuid)) {
             CoreLogger.logWarning("Attempted to reload field of offline player");
-            return;
         }
     }
 
     public void refresh(Set<UUID> players) {
         players.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList()));
-        onlinePlayerListAll.entrySet().removeIf(p -> !players.contains(p.getKey()));
-        onlinePlayerList.entrySet().removeIf(p -> !players.contains(p.getKey()));
+        onlinePlayerMap.entrySet().removeIf(p -> !players.contains(p.getKey()));
         for (UUID uuid : players) {
             OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
             load(uuid, op.getName());
@@ -368,12 +327,9 @@ public class PlayerManager<P extends DBPlayer> {
     /**
      * Remove a DBPlayer from the player list
      * Called on player disconnects from this server
-     *
-     * @param player Player
      */
-    protected void quit(Player player) {
-        P p = herePlayerListAll.remove(player.getUniqueId());
-        herePlayerList.remove(player.getUniqueId());
+    protected void quit(UUID uuid) {
+        ONLINE p = localPlayerMap.remove(uuid);
         if (p != null) {
             p.setOnline(DBPlayer.OnlineState.OTHER);
             p.close();
@@ -381,28 +337,24 @@ public class PlayerManager<P extends DBPlayer> {
                 p.save(playerCol);
             }
         } else {
-            if (onlinePlayerListAll.containsKey(player.getUniqueId())) {
-                onlinePlayerListAll.get(player.getUniqueId()).setOnline(DBPlayer.OnlineState.OTHER);
+            if (onlinePlayerMap.containsKey(uuid)) {
+                onlinePlayerMap.get(uuid).setOnline(DBPlayer.OnlineState.OTHER);
             }
         }
     }
 
     /**
      * When a player logs in load their DBPlayer data
-     *
-     * @param event Event
      */
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        P p = load(event.getPlayer().getUniqueId(), event.getPlayer().getName());
+    public void onPlayerJoin(Player player) {
+        ONLINE p = load(player.getUniqueId(), player.getName());
         if (p != null) {
+            p.init(player);
             p.setOnline(DBPlayer.OnlineState.HERE);
-            p.init();
-            herePlayerListAll.put(p.getUniqueId(), p);
+            localPlayerMap.put(p.getUniqueId(), p);
 
-            herePlayerList.put(p.getUniqueId(), p);
             if (joinActions.containsKey(p.getUniqueId())) {
-                for (Consumer<P> action : joinActions.get(p.getUniqueId())) {
+                for (Consumer<ONLINE> action : joinActions.get(p.getUniqueId())) {
                     action.accept(p);
                 }
                 joinActions.remove(p.getUniqueId());
@@ -412,11 +364,11 @@ public class PlayerManager<P extends DBPlayer> {
         }
     }
 
-    protected Map<UUID, List<Consumer<P>>> joinActions = new HashMap<>();
+    protected Map<UUID, List<Consumer<ONLINE>>> joinActions = new HashMap<>();
 
-    public void addPlayerJoinAction(UUID uuid, Consumer<P> action, boolean runIfOnline) {
-        if (runIfOnline && herePlayerListAll.containsKey(uuid)) {
-            action.accept(herePlayerListAll.get(uuid));
+    public void addPlayerJoinAction(UUID uuid, Consumer<ONLINE> action, boolean runIfOnline) {
+        if (runIfOnline && localPlayerMap.containsKey(uuid)) {
+            action.accept(localPlayerMap.get(uuid));
         } else {
             if (!joinActions.containsKey(uuid)) {
                 joinActions.put(uuid, new ArrayList<>());
@@ -431,37 +383,34 @@ public class PlayerManager<P extends DBPlayer> {
      * @param username Player Username
      * @return ? extends DBPlayer
      */
-    public P createFakePlayer(String username) {
+    public ONLINE createFakePlayer(String username) {
         Document pdoc = playerCol.find(new Document("username", username)).first();
-        if (pdoc == null || onlinePlayerListAll.containsKey(UUID.fromString(pdoc.get("identifier", String.class)))) {
+        if (pdoc == null || onlinePlayerMap.containsKey(UUID.fromString(pdoc.get("identifier", String.class)))) {
             try {
-                P p = playerClass.getDeclaredConstructor().newInstance();
+                ONLINE p = onlinePlayerClass.getDeclaredConstructor().newInstance();
                 if (pdoc != null) {
                     p.load(pdoc);
                 } else {
                     OfflinePlayer op = Bukkit.getOfflinePlayer(username);
                     p.newPlayer(op.getUniqueId(), op.getName());
                 }
-                p.initOffline();
                 p.setOnline(DBPlayer.OnlineState.OFFLINE);
-                onlinePlayerListAll.put(p.getUniqueId(), p);
+                p.initOffline();
+                onlinePlayerMap.put(p.getUniqueId(), p);
                 return p;
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
                 Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }
         }
-        return onlinePlayerListAll.get(UUID.fromString(pdoc.get("identifier", String.class)));
+        return onlinePlayerMap.get(UUID.fromString(pdoc.get("identifier", String.class)));
     }
 
     /**
      * Called when a player disconnects from the server
-     *
-     * @param event Event
      */
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        quit(event.getPlayer());
+    public void onPlayerQuit(UUID uuid) {
+        quit(uuid);
     }
 
     /**
@@ -476,8 +425,7 @@ public class PlayerManager<P extends DBPlayer> {
     }
 
     public void onBungeeDisconnect(UUID uuid) {
-        onlinePlayerListAll.remove(uuid);
-        onlinePlayerList.remove(uuid);
+        onlinePlayerMap.remove(uuid);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.spleefleague.core.world.game.projectile;
 
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.game.GameWorld;
 import net.minecraft.server.v1_15_R1.EntityHuman;
@@ -25,7 +25,7 @@ public class FakeEntityTrident extends EntityThrownTrident {
     private Point lastLoc = null;
     private int bounces;
 
-    public FakeEntityTrident(GameWorld gameWorld, CorePlayer shooter, ProjectileStats projectileStats) {
+    public FakeEntityTrident(GameWorld gameWorld, CoreOfflinePlayer shooter, ProjectileStats projectileStats) {
         super(EntityTypes.TRIDENT, ((CraftWorld) gameWorld.getWorld()).getHandle());
 
         this.gameWorld = gameWorld;

@@ -1,11 +1,10 @@
 package com.spleefleague.proxycore.packet;
 
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
-import com.spleefleague.coreapi.utils.packet.bungee.PacketBungeeBundleIn;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungeeBundleOut;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.player.ProxyPlayerManager;
+import com.spleefleague.proxycore.player.PlayerManager;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 
@@ -125,7 +124,7 @@ public class PacketManager {
 
     public void sendPacket(PacketBungee packet, UUID... uuids) {
         Set<String> used = new HashSet<>();
-        ProxyPlayerManager playerManager = ProxyCore.getInstance().getPlayers();
+        PlayerManager<ProxyCorePlayer> playerManager = ProxyCore.getInstance().getPlayers();
         byte[] data = packet.toByteArray();
         for (UUID uuid : uuids) {
             ProxyCorePlayer pcp = playerManager.get(uuid);

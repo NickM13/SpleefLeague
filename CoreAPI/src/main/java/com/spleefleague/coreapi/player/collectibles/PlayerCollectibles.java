@@ -12,12 +12,12 @@ import java.util.*;
  */
 public class PlayerCollectibles extends DBEntity {
 
-    protected final SortedMap<String, Map<String, CollectibleInfo>> collectibleMap;
-    protected final SortedMap<String, String> activeMap;
+    protected final SortedMap<String, Map<String, CollectibleInfo>> collectibleMap = new TreeMap<>();
+    protected final SortedMap<String, String> activeMap = new TreeMap<>();
+    protected final SortedMap<String, Boolean> enabledMap = new TreeMap<>();
 
     public PlayerCollectibles() {
-        this.collectibleMap = new TreeMap<>();
-        this.activeMap = new TreeMap<>();
+
     }
 
     @DBLoad(fieldName = "collectibles")

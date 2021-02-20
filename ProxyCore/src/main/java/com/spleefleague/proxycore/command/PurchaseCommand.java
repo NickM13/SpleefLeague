@@ -35,7 +35,7 @@ public class PurchaseCommand extends Command {
     }
 
     private void purchaseCrate(ProxyCorePlayer pcp, String crateName, Integer count) {
-        pcp.getCrates().changeCrateCount(crateName, count);
+        ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getCrates().changeCrateCount(crateName, count);
     }
 
     private void purchaseBooster(ProxyCorePlayer pcp, String boosterName) {

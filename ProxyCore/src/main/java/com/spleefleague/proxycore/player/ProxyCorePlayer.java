@@ -12,7 +12,6 @@ import com.spleefleague.coreapi.utils.packet.spigot.queue.PacketSpigotQueueJoin;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ChatChannel;
 import com.spleefleague.proxycore.droplet.Droplet;
-import com.spleefleague.proxycore.game.queue.QueueContainer;
 import com.spleefleague.proxycore.party.ProxyParty;
 import com.spleefleague.proxycore.player.crates.ProxyPlayerCrates;
 import com.spleefleague.proxycore.player.friends.ProxyFriendsList;
@@ -35,7 +34,7 @@ import java.util.UUID;
  * @author NickM13
  * @since 6/6/2020
  */
-public class ProxyCorePlayer extends DBPlayer {
+public class ProxyCorePlayer extends ProxyDBPlayer {
 
     private Droplet droplet = null;
     private ServerInfo currentServer = null;

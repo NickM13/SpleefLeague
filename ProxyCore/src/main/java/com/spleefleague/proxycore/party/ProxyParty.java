@@ -1,9 +1,7 @@
 package com.spleefleague.proxycore.party;
 
 import com.spleefleague.coreapi.party.Party;
-import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.utils.packet.bungee.PacketBungee;
-import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.PacketBungeeRefreshParty;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ChatChannel;
@@ -11,7 +9,9 @@ import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -36,10 +36,10 @@ public class ProxyParty extends Party {
         return true;
     }
 
-    public int getAvgRating(String mode, int season) {
+    public int getAvgRating(String mode, String season) {
         int rating = 0;
         for (ProxyCorePlayer pcp : playerSet) {
-            rating += pcp.getRatings().getElo(mode, season);
+            rating += ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getRatings().getElo(mode, season);
         }
         return rating / playerSet.size();
     }
@@ -101,15 +101,8 @@ public class ProxyParty extends Party {
         return playerList.size();
     }
 
-    public void kick(UUID uuid) {
-        if (removePlayer(uuid)) {
-            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
-        }
-    }
-
     public void leave(UUID uuid) {
         if (removePlayer(uuid)) {
-            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
             if (playerList.isEmpty()) return;
             if (uuid.equals(owner)) {
                 setOwner(playerList.get(0));

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import com.spleefleague.coreapi.database.variable.DBPlayer;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleChallenge;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleForceStart;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpectate;
@@ -37,8 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -51,7 +49,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public abstract class CorePlugin extends JavaPlugin {
 
     private static final Set<CorePlugin> plugins = new HashSet<>();
-    private static final List<PlayerManager<?>> playerManagers = new ArrayList<>();
+    private static final List<PlayerManager<?, ?>> playerManagers = new ArrayList<>();
 
     protected static Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
 
@@ -78,7 +76,7 @@ public abstract class CorePlugin extends JavaPlugin {
 
     protected abstract void init();
 
-    public static void registerPlayerManager(PlayerManager<?> playerManager) {
+    public static void registerPlayerManager(PlayerManager<?, ?> playerManager) {
         playerManagers.add(playerManager);
     }
 
@@ -208,7 +206,7 @@ public abstract class CorePlugin extends JavaPlugin {
     }
 
     public static void refreshPlayers(Set<UUID> players) {
-        for (PlayerManager<?> playerManager : playerManagers) {
+        for (PlayerManager<?, ?> playerManager : playerManagers) {
             playerManager.refresh(players);
         }
         for (CorePlugin plugin : plugins) {
@@ -221,26 +219,26 @@ public abstract class CorePlugin extends JavaPlugin {
     }
 
     public static void onBungeeConnect(OfflinePlayer offlinePlayer) {
-        for (PlayerManager<?> playerManager : playerManagers) {
+        for (PlayerManager<?, ?> playerManager : playerManagers) {
             playerManager.onBungeeConnect(offlinePlayer);
         }
     }
 
     public static void onBungeeDisconnect(UUID uuid) {
-        for (PlayerManager<?> playerManager : playerManagers) {
+        for (PlayerManager<?, ?> playerManager : playerManagers) {
             playerManager.onBungeeDisconnect(uuid);
         }
     }
 
-    public static void onPlayerJoin(PlayerJoinEvent event) {
-        for (PlayerManager<?> playerManager : playerManagers) {
-            playerManager.onPlayerJoin(event);
+    public static void onPlayerJoin(Player player) {
+        for (PlayerManager<?, ?> playerManager : playerManagers) {
+            playerManager.onPlayerJoin(player);
         }
     }
 
-    public static void onPlayerQuit(PlayerQuitEvent event) {
-        for (PlayerManager<?> playerManager : playerManagers) {
-            playerManager.onPlayerQuit(event);
+    public static void onPlayerQuit(UUID uuid) {
+        for (PlayerManager<?, ?> playerManager : playerManagers) {
+            playerManager.onPlayerQuit(uuid);
         }
     }
 

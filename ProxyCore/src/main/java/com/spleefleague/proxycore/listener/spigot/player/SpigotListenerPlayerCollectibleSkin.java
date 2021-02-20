@@ -4,6 +4,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCol
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.listener.spigot.SpigotListener;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.connection.Connection;
 
 /**
@@ -15,18 +16,19 @@ public class SpigotListenerPlayerCollectibleSkin extends SpigotListener<PacketSp
     @Override
     protected void receive(Connection sender, PacketSpigotPlayerCollectibleSkin packet) {
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
+        ProxyCorePlayer pvp = ProxyCore.getInstance().getPlayers().get(packet.uuid);
         switch (packet.action) {
             case LOCK:
-                pcp.getCollectibles().removeSkin(packet.parent, packet.identifier, packet.skin);
+                pvp.getCollectibles().removeSkin(packet.parent, packet.identifier, packet.skin);
                 break;
             case UNLOCK:
-                pcp.getCollectibles().addSkin(packet.parent, packet.identifier, packet.skin);
+                pvp.getCollectibles().addSkin(packet.parent, packet.identifier, packet.skin);
                 break;
             case ACTIVE:
                 if (packet.identifier.length() > 0) {
-                    pcp.getCollectibles().setSkin(packet.parent, packet.identifier, packet.skin);
+                    pvp.getCollectibles().setSkin(packet.parent, packet.identifier, packet.skin);
                 } else {
-                    pcp.getCollectibles().setSkin(packet.parent, packet.identifier, null);
+                    pvp.getCollectibles().setSkin(packet.parent, packet.identifier, null);
                 }
                 break;
         }

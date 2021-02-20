@@ -5,8 +5,8 @@ import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendActionContainer;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendOptionsMenu;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendPendingMenu;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.friends.CorePlayerFriends;
+import com.spleefleague.core.player.CoreOfflinePlayer;
+import com.spleefleague.core.player.friends.CoreFriendsList;
 import com.spleefleague.core.util.TimeUtils;
 import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.coreapi.chat.ChatColor;
@@ -28,7 +28,7 @@ public class FriendsMenu {
 
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName(cp -> "&9&lFriends List (" + cp.getFriends().getCount() + "/" + cp.getRank().getMaxFriends() + ")")
+                .setName(cp -> "&9&lFriends List (" + cp.getFriends().getCount() + "/" + (cp.getRank().getMaxFriends() > 0 ? cp.getRank().getMaxFriends() : "∞") + ")")
                 .setDisplayItem(Material.FEATHER, 2)
                 .setSelectedItem(Material.FEATHER, 3)
                 .setDescription(cp -> "View your friends list, change friends settings and more!")
@@ -61,7 +61,7 @@ public class FriendsMenu {
         InventoryMenuContainer actionContainer = FriendActionContainer.getItem()
                 .setTitle(cp -> {
                     StringBuilder builder = new StringBuilder();
-                    CorePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
+                    CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(UUID.fromString(cp.getMenu().getMenuTag("friendUuid", String.class)));
                     if (friend != null) {
                         builder.append(friend.getName());
                     }
@@ -72,7 +72,7 @@ public class FriendsMenu {
 
         container.setOpenAction((container2, cp) -> {
             container2.clearUnsorted();
-            CorePlayerFriends friends = cp.getFriends();
+            CoreFriendsList friends = cp.getFriends();
             if (friends.getAllNames().isEmpty()) {
                 container2.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("You have no friends yet! :(")
@@ -82,9 +82,9 @@ public class FriendsMenu {
                         2, 2);
             } else {
                 String search = cp.getMenu().getMenuTag(FRIEND_SEARCH, String.class);
-                List<CorePlayerFriends.FriendInfo> friendInfoList = friends.getAllSorted(CorePlayerFriends.FriendSortStyle.ALPHABETICAL);
-                List<CorePlayerFriends.FriendInfo> favorites = new ArrayList<>();
-                List<CorePlayerFriends.FriendInfo> normals = new ArrayList<>();
+                List<CoreFriendsList.FriendInfo> friendInfoList = friends.getAllSorted(CoreFriendsList.FriendSortStyle.ALPHABETICAL);
+                List<CoreFriendsList.FriendInfo> favorites = new ArrayList<>();
+                List<CoreFriendsList.FriendInfo> normals = new ArrayList<>();
                 for (FriendsList.FriendInfo friend : friendInfoList) {
                     if (friend.favorite) {
                         favorites.add(friend);
@@ -93,7 +93,7 @@ public class FriendsMenu {
                     }
                 }
                 for (FriendsList.FriendInfo info : favorites) {
-                    CorePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
+                    CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
                     if (search != null && !friend.getName().contains(search)) continue;
 
                     container2.addMenuItem(createFriendItem(friend, info, actionContainer));
@@ -104,7 +104,7 @@ public class FriendsMenu {
                 }
                  */
                 for (FriendsList.FriendInfo info : normals) {
-                    CorePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
+                    CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
                     if (search != null && !friend.getName().contains(search)) continue;
 
                     container2.addMenuItem(createFriendItem(friend, info, actionContainer));
@@ -116,7 +116,7 @@ public class FriendsMenu {
 
     private static String favoriteStar = ChatColor.YELLOW + "★ ";
 
-    private static InventoryMenuItemStatic createFriendItem(CorePlayer friend, FriendsList.FriendInfo info, InventoryMenuContainer container) {
+    private static InventoryMenuItemStatic createFriendItem(CoreOfflinePlayer friend, FriendsList.FriendInfo info, InventoryMenuContainer container) {
         StringBuilder description = new StringBuilder();
 
         if (!friend.isOnline()) {

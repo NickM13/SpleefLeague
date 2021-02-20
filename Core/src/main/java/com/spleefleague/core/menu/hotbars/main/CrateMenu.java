@@ -84,8 +84,28 @@ public class CrateMenu {
                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                     .setName("Open Crate")
                                     .setDisplayItem(InventoryMenuUtils.MenuIcon.ENABLED.getIconItem(crateCount))
-                                    .setAction(cp2 -> cp2.getMenu().setMenuTag("openedCrate", crate.getIdentifier()))
-                                    .setLinkedContainer(lootContainer));
+                                    .setAction(cp2 -> {
+                                        CrateLoot loot = cp.getCrates().openCrate(crate.getIdentifier());
+                                        for (Collectible collectible : loot.collectibles) {
+                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                    .setDisplayItem(collectible.getDisplayItem())
+                                                    .setName(collectible.getDisplayName()));
+                                        }
+                                        for (CollectibleSkin skin : loot.collectibleSkins) {
+                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                    .setDisplayItem(skin.getDisplayItem())
+                                                    .setName(skin.getDisplayName()));
+                                        }
+                                        for (Map.Entry<CoreCurrency, Integer> entry : loot.currencies.entrySet()) {
+                                            ItemStack item = entry.getKey().displayItem.clone();
+                                            item.setAmount(entry.getValue());
+                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                    .setDisplayItem(item)
+                                                    .setName(entry.getKey().displayName));
+                                        }
+                                        //cp2.getMenu().setMenuTag("openedCrate", crate.getIdentifier());
+                                    })
+                                    .setCloseOnAction(true));
                         } else {
                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                     .setName("0 Crates, buy more at the store!")

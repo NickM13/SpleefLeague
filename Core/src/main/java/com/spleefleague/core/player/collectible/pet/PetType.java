@@ -1,9 +1,7 @@
 package com.spleefleague.core.player.collectible.pet;
 
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.CorePlayer;
 import net.minecraft.server.v1_15_R1.*;
-import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 
 import java.lang.reflect.InvocationTargetException;
 

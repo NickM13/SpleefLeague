@@ -1,24 +1,19 @@
 package com.spleefleague.core.menu;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import net.minecraft.server.v1_15_R1.NBTTagList;
 import net.minecraft.server.v1_15_R1.NBTTagString;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -127,10 +122,6 @@ public class InventoryMenuSkullManager {
     }
 
     public static ItemStack getPlayerSkullForced(UUID uuid) {
-        CorePlayer cp = Core.getInstance().getPlayers().getOffline(uuid);
-        if (cp != null && cp.getDisguise() != null) {
-            uuid = cp.getDisguise();
-        }
         return getPlayerSkull(uuid, getTexture(uuid));
     }
 

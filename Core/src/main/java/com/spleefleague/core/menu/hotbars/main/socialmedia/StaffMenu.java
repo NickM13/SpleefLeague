@@ -10,8 +10,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuSkullManager;
-import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -30,7 +29,8 @@ public class StaffMenu {
                 .createLinkedContainer("Staff");
 
         for (Credits credit : Credits.getCredits()) {
-            CorePlayer cp = Core.getInstance().getPlayers().getOffline(credit.getUuid());
+            CoreOfflinePlayer cp = Core.getInstance().getPlayers().getOffline(credit.getUuid());
+            if (cp == null) continue;
             menuItem.getLinkedChest()
                     .addMenuItem(InventoryMenuAPI.createItemStatic()
                                     .setDisplayItem(InventoryMenuSkullManager.getPlayerSkullForced(credit.getUuid()))

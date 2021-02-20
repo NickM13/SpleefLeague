@@ -96,7 +96,7 @@ public class QueueContainerDynamic extends QueueContainer {
      */
     public int join(ProxyCorePlayer pcp, String query) {
         QueuePlayer replaced = leave(pcp);
-        QueuePlayer qp = new QueuePlayer(pcp, query, pcp.getRatings().getElo(identifier, SEASON));
+        QueuePlayer qp = new QueuePlayer(pcp, query, ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getRatings().getElo(identifier, SEASON));
         if (qp.query.equals("arena:*") && replaced != null) return -1;
         queuedEntities.add(qp);
         queueSize++;

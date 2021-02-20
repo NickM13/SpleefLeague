@@ -3,7 +3,6 @@ package com.spleefleague.core.player.collectible.hat;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Collectible;
-import com.spleefleague.core.player.collectible.key.Key;
 import com.spleefleague.core.vendor.Vendorable;
 import org.bukkit.Material;
 

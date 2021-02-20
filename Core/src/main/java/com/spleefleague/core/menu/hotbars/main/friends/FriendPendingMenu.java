@@ -4,7 +4,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import org.bukkit.Material;
 
 import java.util.UUID;
@@ -31,7 +31,7 @@ public class FriendPendingMenu {
                 .setRefreshAction((container, cp) -> {
                     container.clear();
                     for (UUID uuid : cp.getFriends().getIncoming()) {
-                        CorePlayer friend = Core.getInstance().getPlayers().getOffline(uuid);
+                        CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(uuid);
 
                         if (friend == null) continue;
 

@@ -25,8 +25,8 @@ public class MusicCommand extends CoreCommand {
     @CommandAnnotation
     public void musicPlay(CorePlayer sender,
                           @LiteralArg("play") String l) {
-        if (NoteBlockMusic.playSong(sender)) {
-            success(sender, "Resuming play: " + NoteBlockMusic.getPlayer(sender).getSong().getName());
+        if (NoteBlockMusic.playSong(sender.getUniqueId())) {
+            success(sender, "Resuming play: " + NoteBlockMusic.getPlayer(sender.getUniqueId()).getSong().getName());
         } else {
             error(sender, "There is no paused song!");
         }
@@ -37,7 +37,7 @@ public class MusicCommand extends CoreCommand {
                           @LiteralArg("play") String l,
                           @OptionArg(listName = "songNames", force = false) String songName) {
         NoteBlockSong song = NoteBlockMusic.getSong(songName);
-        if (NoteBlockMusic.playSong(sender, song, 1)) {
+        if (NoteBlockMusic.playSong(sender.getUniqueId(), song, 1)) {
             success(sender, "Now playing: " + song.getName() + " (" + song.getLengthSeconds() + ")");
         } else {
             error(sender, "Song file not found!");
@@ -47,7 +47,7 @@ public class MusicCommand extends CoreCommand {
     @CommandAnnotation
     public void musicPause(CorePlayer sender,
                            @LiteralArg("pause") String l) {
-        if (NoteBlockMusic.pauseSong(sender)) {
+        if (NoteBlockMusic.pauseSong(sender.getUniqueId())) {
             success(sender, "Song paused");
         } else {
             error(sender, "Song file not found!");
@@ -57,7 +57,7 @@ public class MusicCommand extends CoreCommand {
     @CommandAnnotation
     public void musicStop(CorePlayer sender,
                           @LiteralArg("stop") String l) {
-        if (NoteBlockMusic.stopSong(sender)) {
+        if (NoteBlockMusic.stopSong(sender.getUniqueId())) {
             success(sender, "Song stopped");
         } else {
             error(sender, "Song file not found!");
@@ -68,7 +68,7 @@ public class MusicCommand extends CoreCommand {
     public void musicInfo(CorePlayer sender,
                           @LiteralArg("info") String l) {
         error(sender, CoreError.SETUP);
-        NoteBlockPlayer player = NoteBlockMusic.getPlayer(sender);
+        NoteBlockPlayer player = NoteBlockMusic.getPlayer(sender.getUniqueId());
         if (player != null) {
 
         }

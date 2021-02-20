@@ -20,7 +20,11 @@ public abstract class DBVariable<T> {
     public DBVariable(T t) {
         load(t);
     }
-    
+
+    public final void objLoad(Object obj) {
+        load((T) obj);
+    }
+
     public abstract void load(T doc);
     public abstract T save();
     

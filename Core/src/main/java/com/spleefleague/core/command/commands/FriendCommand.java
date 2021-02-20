@@ -7,11 +7,6 @@ import com.spleefleague.core.menu.hotbars.main.FriendsMenu;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendPendingMenu;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
-import net.md_5.bungee.api.chat.*;
-
-import javax.annotation.Nullable;
-import java.util.Iterator;
-import java.util.UUID;
 
 public class FriendCommand extends CoreCommand {
 

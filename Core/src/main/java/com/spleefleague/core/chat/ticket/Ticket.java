@@ -8,7 +8,7 @@ package com.spleefleague.core.chat.ticket;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
-import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -23,12 +23,9 @@ import java.util.UUID;
  */
 public class Ticket extends DBEntity {
 
-    @DBField
-    protected Long ticketId;
-    @DBField
-    protected UUID sender;
-    @DBField
-    protected List<String> messages;
+    @DBField protected Long ticketId;
+    @DBField protected UUID sender;
+    @DBField protected List<String> messages;
 
     // Timeout if ticket is not replied to
     protected long timeout;
@@ -61,7 +58,7 @@ public class Ticket extends DBEntity {
     }
 
     public CorePlayer getSenderPlayer() {
-        return Core.getInstance().getPlayers().getOffline(sender);
+        return Core.getInstance().getPlayers().get(sender);
     }
 
     public void resetTimeout() {
@@ -87,7 +84,7 @@ public class Ticket extends DBEntity {
     }
 
     // Ticket sender sees this one
-    protected TextComponent formatStaff1(CorePlayer player, String issue) {
+    protected TextComponent formatStaff1(CoreOfflinePlayer player, String issue) {
         TextComponent msg = new TextComponent();
 
         msg.addExtra(Chat.TICKET_PREFIX + "[Ticket");
@@ -102,7 +99,7 @@ public class Ticket extends DBEntity {
     }
 
     // Staff sees this one
-    protected TextComponent formatStaff2(CorePlayer player, String issue) {
+    protected TextComponent formatStaff2(CoreOfflinePlayer player, String issue) {
         TextComponent msg = new TextComponent();
 
         msg.addExtra(Chat.TICKET_PREFIX + "[Ticket: ");
@@ -150,7 +147,7 @@ public class Ticket extends DBEntity {
         return open;
     }
 
-    public void close(CorePlayer staff) {
+    public void close(CoreOfflinePlayer staff) {
         if (!open) return;
         open = false;
         Chat.sendMessageToPlayer(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + " Your ticket has been closed.");
