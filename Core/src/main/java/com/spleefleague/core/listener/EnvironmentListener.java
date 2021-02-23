@@ -241,6 +241,12 @@ public class EnvironmentListener implements Listener {
         }
     }
 
+    private static final Set<EntityDamageEvent.DamageCause> ALLOWED_PLAYER_DAMAGE = Sets.newHashSet(
+            EntityDamageEvent.DamageCause.DROWNING,
+            EntityDamageEvent.DamageCause.THORNS,
+            EntityDamageEvent.DamageCause.LAVA
+    );
+
     /**
      * Perform effects based on the type of damage
      * a player takes
@@ -250,13 +256,16 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
-            //if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
-            event.setCancelled(true);
-            //}
+            if (ALLOWED_PLAYER_DAMAGE.contains(event.getCause())) {
+                event.setDamage(event.getDamage() / 2);
+            } else {
+                event.getEntity().setFireTicks(0);
+                event.setCancelled(true);
+            }
         }
     }
 
-    private static final Set<EntityType> damageableMobs = Sets.newHashSet(EntityType.BLAZE, EntityType.BOAT, EntityType.CAVE_SPIDER,
+    private static final Set<EntityType> DAMAGEABLE_MOBS = Sets.newHashSet(EntityType.BLAZE, EntityType.BOAT, EntityType.CAVE_SPIDER,
             EntityType.CREEPER, EntityType.DROWNED, EntityType.ELDER_GUARDIAN, EntityType.ENDERMAN, EntityType.ENDERMITE, EntityType.ENDER_DRAGON,
             EntityType.EVOKER, EntityType.GHAST, EntityType.GIANT, EntityType.GUARDIAN, EntityType.HUSK, EntityType.ILLUSIONER, EntityType.MAGMA_CUBE,
             EntityType.MINECART, EntityType.PHANTOM, EntityType.PIG_ZOMBIE, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.SHULKER,
@@ -274,18 +283,18 @@ public class EnvironmentListener implements Listener {
             Projectile projectile = (Projectile) event.getDamager();
             if (projectile.getShooter() instanceof Player) {
                 if (!Core.getInstance().getPlayers().get((Player) projectile.getShooter()).canBuild()) {
-                    if (!damageableMobs.contains(event.getEntityType()))
+                    if (!DAMAGEABLE_MOBS.contains(event.getEntityType()))
                         event.setCancelled(true);
                 }
             }
         } else if (event.getDamager() instanceof Player) {
             if (!Core.getInstance().getPlayers().get((Player) event.getDamager()).canBuild()) {
-                if (!damageableMobs.contains(event.getEntityType()))
+                if (!DAMAGEABLE_MOBS.contains(event.getEntityType()))
                     event.setCancelled(true);
             } else {
                 Artisans.punchEvent(event);
             }
-        } else if (!event.getEntityType().equals(EntityType.PLAYER) && !damageableMobs.contains(event.getEntityType())) {
+        } else if (!event.getEntityType().equals(EntityType.PLAYER) && !DAMAGEABLE_MOBS.contains(event.getEntityType())) {
             event.setCancelled(true);
         }
     }

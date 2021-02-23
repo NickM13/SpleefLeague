@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.game.GameUtils;
+import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.power.ability.AbilityStats;
@@ -14,6 +15,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.util.Vector;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author NickM13
@@ -82,6 +86,7 @@ public class OffensiveLivingBomb extends AbilityOffensive {
             loc.setPitch(0);
             loc.add(0, 1.2, 0);
             getUser().getBattle().getGameWorld().shootProjectile(getUser().getCorePlayer(), loc, projectileStats);
+            AbilityUtils.breakAbove(getUser(), 3);
             AbilityUtils.startFling(getUser(), new Vector(0, 1.2, 0), 0.2);
             bombing = false;
             return;

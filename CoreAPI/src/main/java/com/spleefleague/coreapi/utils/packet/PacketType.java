@@ -8,6 +8,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConne
 import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerMute;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.*;
 import com.spleefleague.coreapi.utils.packet.bungee.server.PacketBungeeServerKill;
@@ -44,6 +45,7 @@ public class PacketType {
         FRIEND(PacketBungeeFriend.class),
         PARTY(PacketBungeeParty.class),
         PLAYER_KICK(PacketBungeePlayerKick.class),
+        PLAYER_MUTE(PacketBungeePlayerMute.class),
         PLAYER_RESYNC(PacketBungeePlayerResync.class),
         REFRESH_ALL(PacketBungeeRefreshAll.class),
         REFRESH_PARTY(PacketBungeeRefreshParty.class),
@@ -77,6 +79,7 @@ public class PacketType {
         BATTLE_PING(PacketSpigotBattlePing.class),
         BATTLE_REJOIN(PacketSpigotBattleRejoin.class),
         BATTLE_SPECTATE(PacketSpigotBattleSpectate.class),
+        CHAT_BROADCAST(PacketSpigotChatBroadcast.class),
         CHAT_CHANNEL_JOIN(PacketSpigotChatChannelJoin.class),
         CHAT_CONSOLE(PacketSpigotChatConsole.class),
         CHAT_FRIEND(PacketSpigotChatFriend.class),
@@ -94,6 +97,7 @@ public class PacketType {
         PLAYER_OPTIONS(PacketSpigotPlayerOptions.class),
         PLAYER_RANK(PacketSpigotPlayerRank.class),
         PLAYER_RATING(PacketSpigotPlayerRating.class),
+        PLAYER_STATISTICS(PacketSpigotPlayerStatistics.class),
         QUEUE_JOIN(PacketSpigotQueueJoin.class),
         QUEUE_LEAVE(PacketSpigotQueueLeave.class),
         QUEUE_REQUEUE(PacketSpigotQueueRequeue.class),

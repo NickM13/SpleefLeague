@@ -136,6 +136,14 @@ public class DropletManager {
             PORT_START = Integer.parseInt(portStart);
             PORT_END = Integer.parseInt(portEnd);
 
+            DropletType.LOBBY.softCap = Integer.parseInt(dropletProps.getProperty("softCapLobby", "50"));
+            DropletType.LOBBY.playersPerServer = Integer.parseInt(dropletProps.getProperty("playersPerLobby", "150"));
+            DropletType.LOBBY.serverCap = Integer.parseInt(dropletProps.getProperty("serverCapLobby", "1"));
+
+            DropletType.MINIGAME.softCap = Integer.parseInt(dropletProps.getProperty("softCapMinigame", "20"));
+            DropletType.MINIGAME.playersPerServer = Integer.parseInt(dropletProps.getProperty("playersPerMinigame", "70"));
+            DropletType.MINIGAME.serverCap = Integer.parseInt(dropletProps.getProperty("serverCapMinigame", "1"));
+
             String hosts = dropletProps.getProperty("hosts");
             for (String host : hosts.split(",")) {
                 ACTIVE_SERVERS.put(host, new HashSet<>());
@@ -303,13 +311,13 @@ public class DropletManager {
         int totalPlayers = ProxyCore.getInstance().getPlayers().getAll().size() + 1;
         for (DropletType type : DropletType.values()) {
             int totalServers = AWAITING.get(type).size() + ACTIVE_SERVERS_TYPED.get(type).size();
-            if (totalServers < totalPlayers / type.playersPerServer) {
-                System.out.println("Attempting to open 2 " + type.getName() + " servers...");
-                openNext(type, 2);
+            if (totalServers < totalPlayers / type.playersPerServer && (totalServers < type.serverCap || type.serverCap <= 0)) {
+                System.out.println("Attempting to open 1 " + type.getName() + " servers...");
+                openNext(type);
             } else if (totalServers * 0.7D > totalPlayers / type.playersPerServer) {
                 if (DROP_COUNTER.get(type) >= DROP_AT) {
                     System.out.println("Dropping extra server for type " + type.getName() + "...");
-                    dropServer(type, 1);
+                    dropServer(type);
                 } else {
                     System.out.println("DEBUG: Extra servers for type " + type.getName() + " detected, attempting to shut down after " + (DROP_AT - DROP_COUNTER.get(type)) + " more checks");
                     DROP_COUNTER.put(type, DROP_COUNTER.get(type) + 1);
@@ -363,7 +371,7 @@ public class DropletManager {
         return bestDroplet;
     }
 
-    private class FriendDroplet {
+    private static class FriendDroplet {
 
         Droplet droplet;
         int friendCount = 0;
@@ -454,7 +462,7 @@ public class DropletManager {
 
             out.println("type:" + type.name().toLowerCase());
             out.println("id:" + nextId);
-            out.println("port:" + String.valueOf(nextPort));
+            out.println("port:" + nextPort);
             out.println("count:" + 1);
 
             AwaitingServer awaitingServer = new AwaitingServer(type, nextId, mainHost, nextPort);

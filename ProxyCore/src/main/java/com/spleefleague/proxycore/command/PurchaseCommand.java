@@ -1,7 +1,9 @@
 package com.spleefleague.proxycore.command;
 
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -25,17 +27,22 @@ public class PurchaseCommand extends Command {
     }
 
     private void purchaseRank(ProxyCorePlayer pcp, String rankName) {
-        pcp.setPermRank(ProxyCore.getInstance().getRankManager().getRank(rankName));
+        ProxyRank rank = ProxyCore.getInstance().getRankManager().getRank(rankName);
+        pcp.setPermRank(rank);
+        ProxyCore.getInstance().sendMessage(pcp, "You are now rank " + rank.getDisplayName() + ChatColor.GRAY + "!");
     }
 
     private static long MILLIS_TO_DAYS = 1000 * 60 * 60 * 24;
 
     private void purchaseTempRank(ProxyCorePlayer pcp, String rankName, Integer time) {
+        ProxyRank rank = ProxyCore.getInstance().getRankManager().getRank(rankName);
         pcp.addTempRank(rankName, time * MILLIS_TO_DAYS);
+        ProxyCore.getInstance().sendMessage(pcp, "You are now rank " + rank.getDisplayName() + ChatColor.GRAY + "!");
     }
 
     private void purchaseCrate(ProxyCorePlayer pcp, String crateName, Integer count) {
         ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getCrates().changeCrateCount(crateName, count);
+        ProxyCore.getInstance().sendMessage(pcp, "You received some crates!");
     }
 
     private void purchaseBooster(ProxyCorePlayer pcp, String boosterName) {
@@ -78,7 +85,7 @@ public class PurchaseCommand extends Command {
             return;
         }
 
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
 
         switch (purchaseType) {
             case RANK:

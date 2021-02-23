@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class LeaderboardManager {
 
-    private final Map<String, Leaderboard> LEADERBOARDS = new HashMap<>();
+    private final Map<String, ProxyLeaderboard> LEADERBOARDS = new HashMap<>();
 
     private MongoCollection<Document> leaderboardCol;
 
@@ -25,7 +25,7 @@ public class LeaderboardManager {
     public void init() {
         leaderboardCol = ProxyCore.getInstance().getDatabase().getCollection("Leaderboards");
         for (Document doc : leaderboardCol.find(new Document("season", ProxyCore.getInstance().getSeasonManager().getCurrentSeason()))) {
-            Leaderboard leaderboard = new Leaderboard();
+            ProxyLeaderboard leaderboard = new ProxyLeaderboard();
             leaderboard.load(doc);
             LEADERBOARDS.put(leaderboard.getName(), leaderboard);
         }
@@ -39,11 +39,13 @@ public class LeaderboardManager {
     public void save() {
         if (!saving) {
             saving = true;
-            for (Leaderboard leaderboard : LEADERBOARDS.values()) {
-                leaderboardCol.replaceOne(
-                        new Document("name", leaderboard.getName()).append("season", leaderboard.getSeason()),
-                        leaderboard.toDocument(),
-                        new ReplaceOptions().upsert(true));
+            for (ProxyLeaderboard leaderboard : LEADERBOARDS.values()) {
+                if (leaderboard.onSave()) {
+                    leaderboardCol.replaceOne(
+                            new Document("name", leaderboard.getName()).append("season", leaderboard.getSeason()),
+                            leaderboard.toDocument(),
+                            new ReplaceOptions().upsert(true));
+                }
             }
             saving = false;
         }
@@ -55,9 +57,9 @@ public class LeaderboardManager {
         save();
     }
 
-    public Leaderboard get(String name) {
+    public ProxyLeaderboard get(String name) {
         if (!LEADERBOARDS.containsKey(name)) {
-            LEADERBOARDS.put(name, new Leaderboard(name, ProxyCore.getInstance().getSeasonManager().getCurrentSeason()));
+            LEADERBOARDS.put(name, new ProxyLeaderboard(name, ProxyCore.getInstance().getSeasonManager().getCurrentSeason()));
         }
         return LEADERBOARDS.get(name);
     }

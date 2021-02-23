@@ -2,8 +2,10 @@ package com.spleefleague.core.game.battle.dynamic;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
+import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.request.EndGameRequest;
@@ -70,7 +72,21 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
 
     @Override
     protected void setupScoreboard() {
+        chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + "   " + getMode().getDisplayName() + "   ");
+        chatGroup.addTeam("arena", ChatColor.GREEN + "  " + arena.getName());
+        chatGroup.addTeam("time", "  00:00:00");
+        chatGroup.addTeam("l1", "");
+        chatGroup.addTeam("remain", remainingPlayers.size() + " Players Left");
+    }
 
+    /**
+     * Called every 1 second or on score updates
+     * Updates the player scoreboards
+     */
+    @Override
+    public void updateScoreboard() {
+        chatGroup.setTeamDisplayName("time", "  " + Chat.DEFAULT + getRuntimeStringNoMillis());
+        chatGroup.setTeamDisplayName("remain", remainingPlayers.size() + " Players Left");
     }
 
     /**
@@ -139,16 +155,23 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         }
     }
 
-    private void applyEloChange(CorePlayer cp, int place) {
-        int diffFromAvg = avgBattlerRating - cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
+    private void applyEloChange(BP battler, int place) {
+        battler.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
+        StringBuilder linebreak = new StringBuilder(Chat.colorize("             &8"));
+        for (int i = 0; i < ChatUtils.getPixelCount(ChatColor.BOLD + getMode().getDisplayName()) / (double) (ChatUtils.getPixelCount("-")); i++) {
+            linebreak.append("-");
+        }
+        battler.getCorePlayer().sendMessage(linebreak.toString());
+        if (forced) return;
+        int diffFromAvg = avgBattlerRating - battler.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
         diffFromAvg = Math.min(Math.max(diffFromAvg * 2, -750), 750);
         int eloChange = (int) (0.00001f * diffFromAvg * diffFromAvg + 0.014f * diffFromAvg + 20.f);
         float placePercent = (2 * (initBattlerCount - place - 1f) / (initBattlerCount - 1f)) - 1f;
         eloChange = (int) (eloChange * placePercent);
 
-        int initialElo = cp.getRatings().getElo(getMode().getName(), getMode().getSeason());
-        cp.getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
-        cp.sendMessage(ChatColor.GRAY + " You have " +
+        int initialElo = battler.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
+        battler.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), -eloChange);
+        battler.getCorePlayer().sendMessage(ChatColor.GRAY + " You have " +
                 (eloChange >= 0 ? "gained " : "lost ") +
                 ChatColor.GREEN + eloChange +
                 ChatColor.GRAY + " Rating Points (" +
@@ -156,16 +179,18 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
                 ChatColor.GRAY + "->" +
                 ChatColor.GREEN + (initialElo + eloChange) +
                 ChatColor.GRAY + ")");
+
+        applyRewards(battler, place == 0);
     }
 
     /**
      * @param winner Battle Player
      */
     protected void applyEloChange(@Nonnull BP winner) {
-        applyEloChange(winner.getCorePlayer(), 0);
+        applyEloChange(winner, 0);
     }
 
-    protected abstract void applyRewards(BP winner);
+    protected abstract void applyRewards(BP battler, boolean winner);
 
     /**
      * End a battle with a determined winner
@@ -177,7 +202,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         if (winner != null) {
             applyEloChange(winner);
             sendEndMessage(winner);
-            applyRewards(winner);
         }
         Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), this::destroy, 200L);
@@ -194,7 +218,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     protected void failBattler(CorePlayer cp) {
         remainingPlayers.remove(battlers.get(cp));
-        applyEloChange(cp, remainingPlayers.size());
+        applyEloChange(battlers.get(cp), remainingPlayers.size());
         if (remainingPlayers.isEmpty()) {
             endRound(battlers.get(cp));
         } else if (remainingPlayers.size() == 1) {
@@ -202,7 +226,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         }
         addBattlerGhost(cp);
         if (remainingPlayers.size() > 1) {
-            chatGroup.sendMessage(cp.getDisplayName() + " has been eliminated, " + remainingPlayers.size() + " remaining");
+            chatGroup.sendMessage(cp.getDisplayName() + ChatColor.GRAY + " has been eliminated, " + remainingPlayers.size() + " remaining");
         }
     }
 
@@ -243,6 +267,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
+        applyEloChange(battlers.get(cp), remainingPlayers.size() - 1);
         if (battlers.size() <= 2) {
             removeBattler(cp);
             if (battlers.isEmpty()) {
@@ -261,18 +286,9 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
             if (remainingPlayers.isEmpty()) {
                 startRound();
             } else if (remainingPlayers.size() == 1) {
-                endRound(battlers.values().iterator().next());
+                endRound(remainingPlayers.iterator().next());
             }
         }
-    }
-
-    /**
-     * Called every 1 second or on score updates
-     * Updates the player scoreboards
-     */
-    @Override
-    public void updateScoreboard() {
-        chatGroup.setScoreboardName(Chat.DEFAULT + getRuntimeString());
     }
 
     /**

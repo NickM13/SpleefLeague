@@ -154,7 +154,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
             Vector pos = new Vector(getPositionVector().getX(), getPositionVector().getY(), getPositionVector().getZ());
             Vector direction = pos.subtract(lastLoc.toVector());
             if (stuck != null) {
-                FakeBlock fb = projectileWorld.getFakeBlocks().get(stuck);
+                FakeBlock fb = projectileWorld.getFakeBlock(stuck);
                 if ((fb == null || fb.getBlockData().getMaterial().isAir()) &&
                         projectileWorld.getWorld().getBlockAt(stuck.getX(), stuck.getY(), stuck.getZ()).getType().isAir()) {
                     setStuck(null);
@@ -179,11 +179,10 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
             }
         }
         craftEntity.setVelocity(craftEntity.getVelocity().multiply(projectileStats.drag));
-        Map<BlockPosition, FakeBlock> fakeBlocks = projectileWorld.getFakeBlocks();
         for (RaycastResult result : results) {
             if (result instanceof BlockRaycastResult) {
                 BlockRaycastResult blockResult = (BlockRaycastResult) result;
-                FakeBlock fb = fakeBlocks.get(blockResult.getBlockPos());
+                FakeBlock fb = projectileWorld.getFakeBlock(blockResult.getBlockPos());
                 Material mat;
                 if (!blockResult.getBlockPos().equals(lastBlock)) {
                     blockChange(craftEntity, blockResult);

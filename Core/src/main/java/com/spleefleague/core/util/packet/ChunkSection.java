@@ -55,15 +55,15 @@ public class ChunkSection {
         this.nonAirCount = nonAirCount;
     }
 
-    public BlockData getBlockRelative(int x, int y, int z) {
-        return blocks[x + z * 16 + y * 256];
+    public BlockData getBlockRelative(int pos) {
+        return blocks[pos];
     }
 
-    public void setBlockRelative(BlockData data, int x, int y, int z) {
-        blocks[x + z * 16 + y * 256] = data;
+    public void setBlockRelative(BlockData data, int pos) {
+        blocks[pos] = data;
         modified = true;
         if (paletteBlockSet != null) {
-            if (!paletteBlockSet.add(data)) {
+            if (paletteBlockSet.add(data)) {
                 paletteBlocks = null;//Invalidate if new element was inserted
             }
         }

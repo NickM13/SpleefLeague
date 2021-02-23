@@ -17,6 +17,7 @@ import com.spleefleague.core.util.variable.Day;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
+import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.util.SJUtils;
@@ -80,7 +81,7 @@ public class EndlessSJBattle extends SoloBattle<EndlessSJPlayer> {
         while (bpit.hasNext()) {
             BlockPosition pos = bpit.next();
             if (!bpit.hasNext()) {
-                getGameWorld().setBlock(pos, Material.REDSTONE_LAMP.createBlockData());
+                getGameWorld().setBlock(pos, new FakeBlock(Material.REDSTONE_LAMP.createBlockData()));
                 Dimension goal = new Dimension(new Point(pos.getX() - 0.29, pos.getY(), pos.getZ() - 0.29), new Point(pos.getX() + 1.29, pos.getY() + 1.1, pos.getZ() + 1.29));
                 setGoals(Lists.newArrayList(goal));
             } else {

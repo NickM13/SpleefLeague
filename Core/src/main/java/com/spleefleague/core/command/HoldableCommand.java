@@ -2,6 +2,7 @@ package com.spleefleague.core.command;
 
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CoreOfflinePlayer;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorable;
@@ -36,7 +37,7 @@ public class HoldableCommand extends CollectibleCommand {
     @CommandAnnotation
     public boolean collectibleHolding(CommandSender sender,
                                       @LiteralArg("holding") String l,
-                                      List<CoreOfflinePlayer> targets,
+                                      List<CorePlayer> targets,
                                       @OptionArg(listName = "collectibles") String identifier,
                                       @HelperArg("playerCount") @NumberArg(minValue = 1, defaultValue = 1) @Nullable Integer playerCount) {
         Holdable holdable = Vendorables.get(holdableClazz, identifier);
@@ -45,7 +46,7 @@ public class HoldableCommand extends CollectibleCommand {
             return false;
         }
         int required = playerCount != null ? playerCount : 1;
-        for (CoreOfflinePlayer target : targets) {
+        for (CorePlayer target : targets) {
             Vendorable vendorable = Vendorables.get(target.getHeldItem());
             if (vendorable != null && vendorable.equalsSoft(holdable)) {
                 required--;

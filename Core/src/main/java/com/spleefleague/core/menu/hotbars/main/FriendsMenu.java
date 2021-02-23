@@ -129,12 +129,13 @@ public class FriendsMenu {
         description.append(ChatColor.GRAY + "Friends since: ").append(ChatColor.GOLD + zonedDateTime.format(DateTimeFormatter.ofPattern("MMMM d, uuuu")));
 
         return (InventoryMenuItemStatic) InventoryMenuAPI.createItemStatic()
-                .setName((info.favorite ? favoriteStar : "") + friend.getRank().getColor() + "" + ChatColor.BOLD + friend.getName() + ChatColor.YELLOW + " ▹ Click for options ◃")
+                .setName((info.favorite ? favoriteStar : "") + friend.getRank().getColor() + "" + ChatColor.BOLD + friend.getName())
                 .setDisplayItem(InventoryMenuSkullManager.getPlayerSkull(info.uuid))
                 .setDescription(description.toString())
                 .setDescriptionBuffer(0)
-                .setAction(cp2 -> cp2.getMenu().setMenuTag("friendUuid", info.uuid.toString()))
-                .setLinkedContainer(container);
+                //.setAction(cp2 -> cp2.getMenu().setMenuTag("friendUuid", info.uuid.toString()))
+                //.setLinkedContainer(container);
+                .setCloseOnAction(false);
     }
 
     /**

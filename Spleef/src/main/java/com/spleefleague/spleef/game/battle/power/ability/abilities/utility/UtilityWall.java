@@ -5,6 +5,7 @@ import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.core.world.game.GameWorld;
@@ -42,12 +43,12 @@ public class UtilityWall extends AbilityUtility {
     public boolean onUse() {
         BuildStructure structure = BuildStructures.get("power:wall");
         GameWorld gameWorld = getUser().getBattle().getGameWorld();
-        Map<BlockPosition, FakeBlock> blocks = gameWorld.getFakeBlocks();
         World world = gameWorld.getWorld();
         Iterator<BlockRaycastResult> results = new Point(getPlayer().getEyeLocation()).castBlocks(getPlayer().getLocation().getDirection(), 5).iterator();
         while (results.hasNext()) {
             BlockRaycastResult result = results.next();
-            if ((blocks.containsKey(result.getBlockPos()) && !blocks.get(result.getBlockPos()).getBlockData().getMaterial().isAir()) ||
+            FakeBlock fakeBlock = gameWorld.getFakeBlock(result.getBlockPos());
+            if ((fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) ||
                     !world.getBlockAt(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).getType().isAir()) {
                 gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
                         structure.getFakeBlocks(), Math.round(getPlayer().getLocation().getYaw() / 45) * 45),
@@ -59,7 +60,7 @@ public class UtilityWall extends AbilityUtility {
                 for (BlockPosition pos : gameWorld.replaceAir(FakeUtils.translateBlocks(FakeUtils.rotateBlocks(
                         structure.getFakeBlocks(), Math.round(getPlayer().getLocation().getYaw() / 45) * 45),
                         result.getBlockPos()))) {
-                    gameWorld.setBlockDelayed(pos, Material.AIR.createBlockData(), rand.nextInt() % 20 + 30);
+                    gameWorld.setBlockDelayed(pos, FakeWorld.AIR, rand.nextInt() % 20 + 30);
                 }
                 getUser().getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,
                         result.getBlockPos().getX() + 0.5,

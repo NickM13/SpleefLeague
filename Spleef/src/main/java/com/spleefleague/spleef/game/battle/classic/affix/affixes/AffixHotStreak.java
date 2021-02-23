@@ -1,6 +1,7 @@
 package com.spleefleague.spleef.game.battle.classic.affix.affixes;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefBattle;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefPlayer;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffix;
@@ -74,7 +75,7 @@ public class AffixHotStreak extends ClassicSpleefAffix {
                             (int) Math.floor(csp.getPlayer().getBoundingBox().getMinZ())));
                     for (BlockPosition pos : positions) {
                         if (!battle.getGameWorld().hasBlockDelayed(pos)) {
-                            battle.getGameWorld().setBlockDelayed(pos, Material.AIR.createBlockData(), 10L);
+                            battle.getGameWorld().setBlockDelayed(pos, FakeWorld.AIR, 10L);
                         }
                     }
                 } else {

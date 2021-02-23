@@ -1,5 +1,6 @@
 package com.spleefleague.proxycore.game.queue;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.proxycore.ProxyCore;
@@ -29,6 +30,13 @@ public abstract class QueueContainer {
             this.id = id;
         }
 
+        public QueueTeam(QueueTeam queueTeam) {
+            this.players.addAll(queueTeam.players);
+            this.total = queueTeam.total;
+            this.teamSize = queueTeam.teamSize;
+            this.id = queueTeam.id;
+        }
+
         public boolean add(UUID uuid) {
             if (total + 1 > teamSize) {
                 return false;
@@ -43,7 +51,6 @@ public abstract class QueueContainer {
             if (total + uuid.size() > teamSize) {
                 return false;
             } else {
-                System.out.println("Adding players");
                 players.addAll(uuid);
                 total += uuid.size();
                 return true;
@@ -76,10 +83,40 @@ public abstract class QueueContainer {
         List<QueueTeam> openTeams = new ArrayList<>();
         List<QueueTeam> filledTeams = new ArrayList<>();
 
-        boolean teamSplitting;
-        int teamSize;
+        final boolean teamSplitting;
+        final int teamSize;
         StringBuilder query;
         int minElo, maxElo;
+
+        public QueuedChunk(QueueEntity entity, int teamSize, int maxTeamCount) {
+            this.teamSize = teamSize;
+            this.teamSplitting = teamSize == 1;
+            for (int i = 0; i < maxTeamCount; i++) {
+                QueueTeam team = new QueueTeam(teamSize, i);
+                openTeams.add(team);
+            }
+
+            minElo = entity.getRatingMin();
+            maxElo = entity.getRatingMax();
+            query = new StringBuilder(entity.query);
+
+            pushEntity(entity);
+        }
+
+        public QueuedChunk(QueuedChunk queuedChunk) {
+            for (QueueContainer.QueueTeam team : queuedChunk.openTeams) {
+                this.openTeams.add(new QueueContainer.QueueTeam(team));
+            }
+            for (QueueContainer.QueueTeam team : queuedChunk.filledTeams) {
+                this.filledTeams.add(new QueueContainer.QueueTeam(team));
+            }
+
+            this.teamSplitting = queuedChunk.teamSplitting;
+            this.teamSize = queuedChunk.teamSize;
+            this.query = new StringBuilder(queuedChunk.query);
+            this.minElo = queuedChunk.minElo;
+            this.maxElo = queuedChunk.maxElo;
+        }
 
         /**
          * Attemps to match two query searches, returning null if any sub queries return an empty string
@@ -109,23 +146,6 @@ public abstract class QueueContainer {
                 }
             }
             return matchedQuery.toString();
-        }
-
-        public void start(QueueEntity entity, int teamSize, int maxTeamCount) {
-            this.teamSize = teamSize;
-            this.teamSplitting = teamSize == 1;
-            openTeams.clear();
-            filledTeams.clear();
-            for (int i = 0; i < maxTeamCount; i++) {
-                QueueTeam team = new QueueTeam(teamSize, i);
-                openTeams.add(team);
-            }
-
-            minElo = entity.getRatingMin();
-            maxElo = entity.getRatingMax();
-            query = new StringBuilder(entity.query);
-
-            pushEntity(entity);
         }
 
         private boolean pushEntity(QueueEntity entity) {
@@ -191,11 +211,9 @@ public abstract class QueueContainer {
 
         public boolean join(QueueEntity entity, boolean compareRating) {
             if (compareRating) {
-                /*
                 if (entity.getRatingMin() > maxElo || entity.getRatingMax() < minElo) {
                     return false;
                 }
-                */
             }
             String newQuery = matchQueries(query.toString(), entity.query);
             if (newQuery == null) {
@@ -216,12 +234,13 @@ public abstract class QueueContainer {
     public enum TeamStyle {
         SOLO(   true,  false, true,  1, 1 ),
         VERSUS( false, false, true,  2, 2 ),
-        DYNAMIC(true,  true,  false, 3, 32),
+        DYNAMIC(true,  true,  false, 4, 12),
         BONANZA(true,  false, true,  1, 1 );
 
         boolean allowPartySplit;
         boolean delayStart;
         boolean compareRating;
+        boolean spectatable;
 
         int minSize;
         int maxSize;
@@ -246,7 +265,7 @@ public abstract class QueueContainer {
 
     protected List<QueueEntity> queuedEntities = new ArrayList<>();
 
-    protected final int DYNAMIC_DELAY_START = 3;
+    protected final int DYNAMIC_DELAY_START = 60;
     protected final String SEASON;
 
     public QueueContainer(String identifier, String displayName, int reqTeams, int maxTeams) {

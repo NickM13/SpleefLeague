@@ -63,6 +63,14 @@ public class CoreRank extends Rank {
         this.hasOp = op;
     }
 
+    public void setCoinMultiplier(double multiplier) {
+        this.coinMultiplier = multiplier;
+    }
+
+    public void setOreMultiplier(double multiplier) {
+        this.oreMultiplier = multiplier;
+    }
+
     public void setPriority(int priority) {
         if (priority < 0 || priority > 100) return;
         this.priority = String.format("%03d", priority);

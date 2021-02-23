@@ -99,6 +99,7 @@ public abstract class Battle<BP extends BattlePlayer> {
     protected long roundStartTime = 0;
     protected boolean frozen = false;
     protected boolean matchPointing = false;
+    protected boolean forced = false;
 
     // Round countdown
     protected int roundCountdown = 3;
@@ -123,6 +124,10 @@ public abstract class Battle<BP extends BattlePlayer> {
         this.gameHistory = new GameHistory(battleId, players, battleMode.getName(), arena.getName(), -1);
     }
 
+    public void setForced(boolean forced) {
+        this.forced = forced;
+    }
+
     public UUID getBattleId() {
         return battleId;
     }
@@ -136,7 +141,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             battleMode.addBattle(this);
             startedTime = System.currentTimeMillis();
             battlers.keySet().forEach(cp -> addPlayer(cp, BattleState.BATTLER));
-            battlers.entrySet().forEach(entry -> battlersOriginal.put(entry.getKey(), entry.getValue()));
+            battlers.forEach(battlersOriginal::put);
             setupBattleRequests();
             setupBaseSettings();
             setupBattlers();
@@ -257,6 +262,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             BP bp = battlersOriginal.get(cp);
             bp.setCorePlayer(cp);
             cp.joinBattle(this, BattleState.BATTLER);
+            players.add(cp);
             battlers.put(cp, bp);
             battlerUuids.add(cp.getUniqueId());
             onRejoin(bp);
@@ -598,9 +604,11 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @return Spawn Location
      */
     protected Position getSpawn(int id) {
-        if (id < spawns.size())
-            return spawns.get(id);
-        return spawns.get(0);
+        if (spawns.isEmpty()) {
+            this.cancel();
+            return new Position();
+        }
+        return spawns.get(id % spawns.size());
     }
 
     public void setCheckpoints(List<Position> checkpoints) {
@@ -808,10 +816,8 @@ public abstract class Battle<BP extends BattlePlayer> {
     public Set<String> getAvailableRequests(CorePlayer cp) {
         Set<String> availableRequests = new HashSet<>();
         if (battlers.containsKey(cp)) {
-            availableRequests.addAll(battleRequests.keySet());
-        } else {
             battleRequests.values().forEach(request -> {
-                if (!request.isBattlerRequest()) {
+                if (!request.isRequireLiving() || remainingPlayers.contains(battlers.get(cp))) {
                     availableRequests.add(request.getRequestName());
                 }
             });
@@ -827,21 +833,22 @@ public abstract class Battle<BP extends BattlePlayer> {
     public void onRequest(CorePlayer cp, String requestType, @Nullable String requestValue) {
         if (battleRequests.containsKey(requestType)) {
             BattleRequest battleRequest = battleRequests.get(requestType);
-            if (!battleRequest.isBattlerRequest() || battlers.containsKey(cp)) {
+            if (battlers.containsKey(cp)) {
                 if (battleRequest.isRequesting(cp)) {
-                    battleRequest.removeRequester(cp);
+                    battleRequest.removeRequester(cp, true);
                     return;
                 }
                 if (battleRequest.isOngoing()) {
                     if (requestValue == null) {
                         battleRequest.addRequester(cp,
-                                battleRequest.isBattlerRequest() ? battlers.size() : players.size());
+                                battleRequest.isRequireLiving() ? remainingPlayers.size() : battlers.size(),
+                                true);
                     } else {
                         Core.getInstance().sendMessage(cp, "Someone is already requesting this!");
                     }
                 } else {
                     battleRequest.startRequest(cp,
-                            battleRequest.isBattlerRequest() ? battlers.size() : players.size(),
+                            battleRequest.isRequireLiving() ? remainingPlayers.size() : battlers.size(),
                             requestValue);
                 }
             } else {
@@ -900,7 +907,7 @@ public abstract class Battle<BP extends BattlePlayer> {
      * @param spectator CorePlayer
      * @param target    Target
      */
-    public void addSpectator(CorePlayer spectator, CorePlayer target) {
+    public boolean addSpectator(CorePlayer spectator, CorePlayer target) {
         if (addPlayer(spectator, BattleState.SPECTATOR)) {
             spectators.add(spectator);
             spectator.getPlayer().setAllowFlight(true);
@@ -913,6 +920,9 @@ public abstract class Battle<BP extends BattlePlayer> {
                 spectator.setGhosting(true);
             }
             Core.getInstance().applyVisibilities(spectator);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -1086,12 +1096,11 @@ public abstract class Battle<BP extends BattlePlayer> {
      * the world to be broken by specified tools and specified blocks
      */
     public void releaseBattlers() {
-        BattleUtils.clearDome(gameWorld, spawns);
         gameWorld.setEditable(true);
         frozen = false;
         for (BattlePlayer bp : battlers.values()) {
             bp.getCorePlayer().refreshHotbar();
-            bp.respawn();
+            //bp.respawn();
         }
     }
 

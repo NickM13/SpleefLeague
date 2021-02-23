@@ -22,7 +22,9 @@ public class Settings {
         discord = new Discord();
         Document doc = settingsCollection.find(new Document("identifier", discord.getIdentifier())).first();
         if (doc != null) discord.load(doc);
-        season = Objects.requireNonNull(settingsCollection.find(new Document("identifier", "season")).first()).getString("current");
+        doc = settingsCollection.find(new Document("identifier", "season")).first();
+        if (doc != null) season = doc.getString("current");
+        else season = "preseason1";
     }
 
     public static void setDiscord(String url) {

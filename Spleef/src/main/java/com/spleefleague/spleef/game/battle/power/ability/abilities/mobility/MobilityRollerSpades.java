@@ -31,10 +31,10 @@ public class MobilityRollerSpades extends AbilityMobility {
     private static final double DURATION = 7D;
     private static final double DELAY = 0.5D;
 
-    private static final Material MARKER = Material.RED_CONCRETE;
+    private static final FakeBlock MARKER = new FakeBlock(Material.RED_CONCRETE.createBlockData());
 
     private double spadeTime = -1;
-    private Set<BlockPosition> marked = new HashSet<>();
+    private final Set<BlockPosition> marked = new HashSet<>();
 
     /**
      * Called every 0.1 seconds (2 ticks)
@@ -51,9 +51,9 @@ public class MobilityRollerSpades extends AbilityMobility {
                             new BlockPosition((int) Math.floor(bb.getMaxX()), (int) Math.floor(bb.getMinY() - 1), (int) Math.floor(bb.getMaxZ())),
                             new BlockPosition((int) Math.floor(bb.getMinX()), (int) Math.floor(bb.getMinY() - 1), (int) Math.floor(bb.getMaxZ())));
                     for (BlockPosition pos : toCheck) {
-                        FakeBlock fb = getUser().getBattle().getGameWorld().getFakeBlocks().get(pos);
+                        FakeBlock fb = getUser().getBattle().getGameWorld().getFakeBlock(pos);
                         if (fb != null && getUser().getBattle().getGameWorld().getBreakables().contains(fb.getBlockData().getMaterial())) {
-                            getUser().getBattle().getGameWorld().setBlockDelayed(pos, MARKER.createBlockData(), (int) (DELAY * 20));
+                            getUser().getBattle().getGameWorld().setBlockDelayed(pos, MARKER, (int) (DELAY * 20));
                             marked.add(pos);
                         }
                     }
@@ -70,9 +70,9 @@ public class MobilityRollerSpades extends AbilityMobility {
         Set<BlockPosition> toBreak = new HashSet<>();
         Set<BlockPosition> toRepair = new HashSet<>();
         for (BlockPosition mark : marked) {
-            FakeBlock fb = gameWorld.getFakeBlocks().get(mark);
+            FakeBlock fb = gameWorld.getFakeBlock(mark);
             if (fb != null) {
-                if (fb.getBlockData().getMaterial().equals(MARKER)) {
+                if (fb.equals(MARKER)) {
                     toBreak.add(mark);
                     if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(-1, 0, 0)));
                     if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(1, 0, 0)));
@@ -123,9 +123,9 @@ public class MobilityRollerSpades extends AbilityMobility {
         Set<BlockPosition> toBreak = new HashSet<>();
         Set<BlockPosition> toRepair = new HashSet<>();
         for (BlockPosition mark : marked) {
-            FakeBlock fb = gameWorld.getFakeBlocks().get(mark);
+            FakeBlock fb = gameWorld.getFakeBlock(mark);
             if (fb != null) {
-                if (fb.getBlockData().getMaterial().equals(MARKER)) {
+                if (fb.equals(MARKER)) {
                     toBreak.add(mark);
                     if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(-1, 0, 0)));
                     if (Math.random() > 0.5) toBreak.add(mark.add(new BlockPosition(1, 0, 0)));

@@ -52,7 +52,7 @@ public class Shovel extends Holdable {
                 .setName(cp -> cp.getCollectibles().getActiveName(Shovel.class))
                 .setDisplayItem(cp -> {
                     if (cp.getBattle().getGameWorld().isEditable()) {
-                        return cp.getCollectibles().getActive(Shovel.class).getGameItem();
+                        return getGameItem(cp.getCollectibles().getActiveIcon(Shovel.class));
                     } else {
                         return cp.getCollectibles().getActiveIcon(Shovel.class);
                     }
@@ -82,24 +82,9 @@ public class Shovel extends Holdable {
         HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 0, 2);
     }
 
-    protected enum ShovelType {
-        DEFAULT,
-        HIDDEN,
-        EVENT,
-        TOURNAMENT,
-        SHOP
-    }
-    
-    public static Set<String> getShovelTypes() {
-        return CoreUtils.enumToStrSet(ShovelType.class, false);
-    }
-
-    @DBField private ShovelType shovelType;
-    
     public Shovel() {
         super();
         this.material = Material.DIAMOND_SHOVEL;
-        this.shovelType = ShovelType.DEFAULT;
     }
     
     public Shovel(String identifier, String displayName) {
@@ -107,19 +92,11 @@ public class Shovel extends Holdable {
         this.identifier = identifier;
         this.name = displayName;
         this.material = Material.DIAMOND_SHOVEL;
-        this.shovelType = ShovelType.DEFAULT;
     }
 
     @Override
     public boolean isDefault(CorePlayer cp) {
-        return shovelType.equals(ShovelType.DEFAULT) || super.isDefault(cp);
-    }
-
-    public void setShovelType(String type) {
-        shovelType = ShovelType.valueOf(type);
-    }
-    public ShovelType getShovelType() {
-        return shovelType;
+        return unlockType.equals(UnlockType.DEFAULT) || super.isDefault(cp);
     }
     
     @Override
@@ -142,8 +119,8 @@ public class Shovel extends Holdable {
      *
      * @return Shovel ItemStack
      */
-    public ItemStack getGameItem() {
-        net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getDisplayItem());
+    public static ItemStack getGameItem(ItemStack activeDisplayItem) {
+        net.minecraft.server.v1_15_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(activeDisplayItem);
         NBTTagCompound tagCompound = nmsItemStack.hasTag() ? nmsItemStack.getTag() : new NBTTagCompound();
         tagCompound.set("CanDestroy", canDestroyTags);
         nmsItemStack.setTag(tagCompound);

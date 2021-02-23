@@ -16,7 +16,7 @@ public class PauseRequest extends BattleRequest {
     private int pauseTime;
 
     public PauseRequest(Battle<?> battle) {
-        super(battle, true, "pause");
+        super(battle, "pause", true, 1D);
     }
 
     @Override

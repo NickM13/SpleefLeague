@@ -29,7 +29,7 @@ import java.util.UUID;
  */
 public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
 
-    private static float DECAY_TIME = 60 * 4;
+    private static float DECAY_TIME = 60 * 6;
 
     public MultiSpleggBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Splegg.getInstance(), battleId, players, arena, MultiSpleggPlayer.class, SpleggMode.MULTI.getBattleMode());
@@ -73,14 +73,13 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
     }
 
     @Override
-    protected void applyRewards(MultiSpleggPlayer winner) {
-        for (BattlePlayer bp : battlers.values()) {
+    protected void applyRewards(MultiSpleggPlayer player, boolean winner) {
             int common = 0, rare = 0, epic = 0, legendary = 0;
-            int coins = getRandomCoins(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
+            int coins = getRandomCoins(player.getCorePlayer(),
+                    winner,
                     0, 15);
-            Battle.OreType ore = getRandomOre(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
+            Battle.OreType ore = getRandomOre(player.getCorePlayer(),
+                    winner,
                     0.050, 0.02, 0.01, 0.002);
             switch (ore) {
                 case COMMON: common++; break;
@@ -88,12 +87,11 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
                 case EPIC: epic++; break;
                 case LEGENDARY: legendary++; break;
             }
-            if (coins > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-            if (common > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-            if (rare > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-            if (epic > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-            if (legendary > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
-        }
+            if (coins > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
+            if (common > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
+            if (rare > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
+            if (epic > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
+            if (legendary > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
     }
 
     @Override
@@ -116,13 +114,6 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
             msp.updateAbilities();
         }
         //gameWorld.performBaseBreakRegen();
-        /*
-        for (int i = 0; i < getDecay() - 1 && i < layers.size(); i++) {
-            if (!layers.get(i).isEmpty()) {
-                gameWorld.setBlock(layers.get(i).remove(random.nextInt(layers.get(i).size())), AIR);
-            }
-        }
-        */
     }
 
     @Override

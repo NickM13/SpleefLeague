@@ -1,9 +1,10 @@
 package com.spleefleague.coreapi.game.leaderboard;
 
+import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
-import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
+import com.spleefleague.coreapi.player.statistics.Rating;
 import org.bson.Document;
 
 import java.text.DateFormat;
@@ -14,17 +15,84 @@ import java.util.*;
  * @author NickM13
  * @since 4/28/2020
  */
-public abstract class Leaderboard extends DBEntity {
+public class Leaderboard extends DBEntity {
+
+    public static class LeaderboardEntry extends DBEntity {
+
+        private final UUID uuid;
+        @DBField private String username;
+        @DBField private Integer elo;
+        @DBField private Rating.Division division;
+        @DBField private Integer wins;
+        @DBField private Integer losses;
+        @DBField private Long lastPlayed;
+        @DBField private Long lastDecay;
+
+        public LeaderboardEntry(UUID uuid) {
+            this.uuid = uuid;
+        }
+
+        public LeaderboardEntry(UUID uuid, String username, Rating rating) {
+            this.uuid = uuid;
+            this.username = username;
+            update(rating);
+        }
+
+        public UUID getUniqueId() {
+            return uuid;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getDisplayElo() {
+            return Chat.BRACKET + "(" + division.getScorePrefix() + elo + Chat.BRACKET + ")";
+        }
+
+        public int getElo() {
+            return elo;
+        }
+
+        public Rating.Division getDivision() {
+            return division;
+        }
+
+        public int getWins() {
+            return wins;
+        }
+
+        public int getLosses() {
+            return losses;
+        }
+
+        public long getLastPlayed() {
+            return lastPlayed;
+        }
+
+        public long getLastDecay() {
+            return lastDecay;
+        }
+
+        public void update(Rating rating) {
+            this.elo = rating.getElo();
+            this.division = rating.getDivision();
+            this.wins = rating.getWins();
+            this.losses = rating.getLosses();
+            this.lastPlayed = System.currentTimeMillis();
+            this.lastDecay = 0L;
+        }
+
+    }
 
     protected static final DateFormat dateFormat = new SimpleDateFormat("dd MMMMMMMMM, yyyy");
 
-    @DBField protected Boolean active;
     @DBField protected String name;
     @DBField protected String season;
     @DBField protected Long createTime;
 
     protected final Map<UUID, Integer> playerScoreMap;
-    protected final SortedMap<Integer, Set<UUID>> scorePlayersMap;
+    protected final SortedMap<Integer, LinkedHashMap<UUID, LeaderboardEntry>> scorePlayersMap;
 
     public Leaderboard() {
         playerScoreMap = new HashMap<>();
@@ -51,10 +119,6 @@ public abstract class Leaderboard extends DBEntity {
         return createTime;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
     public String getSeason() {
         return season;
     }
@@ -66,19 +130,19 @@ public abstract class Leaderboard extends DBEntity {
      * @param count Max Number of Players
      * @return Player UUIDs
      */
-    public List<UUID> getPlayers(int startPlace, int count) {
-        List<UUID> playerSection = new ArrayList<>();
+    public List<LeaderboardEntry> getPlayers(int startPlace, int count) {
+        List<LeaderboardEntry> playerSection = new ArrayList<>();
 
         int lastSectPlace = 0;
         int currPlace = 0;
-        Iterator<Map.Entry<Integer, Set<UUID>>> spit = scorePlayersMap.entrySet().iterator();
+        Iterator<Map.Entry<Integer, LinkedHashMap<UUID, LeaderboardEntry>>> spit = scorePlayersMap.entrySet().iterator();
         while (spit.hasNext() && currPlace < startPlace + count) {
-            Map.Entry<Integer, Set<UUID>> entry = spit.next();
+            Map.Entry<Integer, LinkedHashMap<UUID, LeaderboardEntry>> entry = spit.next();
             lastSectPlace += entry.getValue().size();
             if (lastSectPlace > startPlace) {
-                for (UUID uuid : entry.getValue()) {
+                for (LeaderboardEntry leaderboardEntry : entry.getValue().values()) {
                     if (currPlace >= startPlace) {
-                        playerSection.add(uuid);
+                        playerSection.add(leaderboardEntry);
                         if (playerSection.size() >= count) {
                             return playerSection;
                         }
@@ -112,12 +176,12 @@ public abstract class Leaderboard extends DBEntity {
      * @param player Player UUID
      * @return Ladder Rank
      */
-    public int getPlayerRank(UUID player) {
+    public int getPlayerRanking(UUID player) {
         if (!playerScoreMap.containsKey(player)) {
             return -1;
         }
         int placement = 0;
-        for (Map.Entry<Integer, Set<UUID>> entry : scorePlayersMap.entrySet()) {
+        for (Map.Entry<Integer, LinkedHashMap<UUID, LeaderboardEntry>> entry : scorePlayersMap.entrySet()) {
             if (!entry.getKey().equals(playerScoreMap.get(player))) {
                 placement += entry.getValue().size();
             } else {
@@ -136,68 +200,42 @@ public abstract class Leaderboard extends DBEntity {
      * Inserts a player's score into the leaderboard, removing them first if they already existed
      *
      * @param player Player UUID
-     * @param score Score
+     * @param rating Score
      */
-    public void setPlayerScore(UUID player, Integer score) {
+    public void setPlayerScore(UUID player, String username, Rating rating) {
+        Integer prevScore = playerScoreMap.get(player);
+        LeaderboardEntry entry;
+        if (prevScore != null) {
+            if (prevScore == rating.getElo()) return;
+            entry = scorePlayersMap.get(prevScore).remove(player);
+            entry.update(rating);
+            if (scorePlayersMap.get(prevScore).isEmpty()) {
+                scorePlayersMap.remove(prevScore);
+            }
+        } else {
+            entry = new LeaderboardEntry(player, username, rating);
+        }
+        playerScoreMap.put(player, rating.getElo());
+        if (!scorePlayersMap.containsKey(rating.getElo())) {
+            scorePlayersMap.put(rating.getElo(), new LinkedHashMap<>());
+        }
+        scorePlayersMap.get(rating.getElo()).put(player, entry);
+    }
+
+    protected void setPlayerScore(UUID player, LeaderboardEntry entry) {
         Integer prevScore = playerScoreMap.get(player);
         if (prevScore != null) {
+            if (entry.getElo() == prevScore) return;
             scorePlayersMap.get(prevScore).remove(player);
             if (scorePlayersMap.get(prevScore).isEmpty()) {
                 scorePlayersMap.remove(prevScore);
             }
         }
-        playerScoreMap.put(player, score);
-        if (!scorePlayersMap.containsKey(score)) {
-            scorePlayersMap.put(score, new LinkedHashSet<>());
+        playerScoreMap.put(player, entry.getElo());
+        if (!scorePlayersMap.containsKey(entry.getElo())) {
+            scorePlayersMap.put(entry.getElo(), new LinkedHashMap<>());
         }
-        scorePlayersMap.get(score).add(player);
+        scorePlayersMap.get(entry.getElo()).put(player, entry);
     }
-
-    /**
-     * Sorts a map of players with new scores into the leaderboard, see elo decay
-     *
-     * @param oldScores Score Map of Score, Player Set
-     * @param newScores Score Map of Score, Player Set
-     */
-    public void sortMany(Map<Integer, Set<UUID>> oldScores, Map<Integer, Set<UUID>> newScores) {
-        for (Map.Entry<Integer, Set<UUID>> entry : oldScores.entrySet()) {
-            if (scorePlayersMap.containsKey(entry.getKey())) {
-                if (scorePlayersMap.get(entry.getKey()).size() <= entry.getValue().size()) {
-                    scorePlayersMap.remove(entry.getKey());
-                } else {
-                    for (UUID uuid : entry.getValue()) {
-                        scorePlayersMap.get(entry.getKey()).remove(uuid);
-                    }
-                }
-            }
-        }
-        for (Map.Entry<Integer, Set<UUID>> entry : newScores.entrySet()) {
-            if (!scorePlayersMap.containsKey(entry.getKey())) {
-                scorePlayersMap.put(entry.getKey(), new LinkedHashSet<>());
-            }
-            for (UUID uuid : entry.getValue()) {
-                scorePlayersMap.get(entry.getKey()).add(uuid);
-                playerScoreMap.put(uuid, entry.getKey());
-            }
-        }
-    }
-
-    @DBSave(fieldName = "players")
-    protected Document savePlayers() {
-        Document doc = new Document();
-        for (Map.Entry<UUID, Integer> entry : playerScoreMap.entrySet()) {
-            doc.append(entry.getKey().toString(), entry.getValue());
-        }
-        return doc;
-    }
-
-    @DBLoad(fieldName = "players")
-    protected void loadPlayers(Document doc) {
-        for (Map.Entry<String, Object> entry : doc.entrySet()) {
-            setPlayerScore(UUID.fromString(entry.getKey()), (Integer) entry.getValue());
-        }
-    }
-
-    public abstract String getDescription();
 
 }

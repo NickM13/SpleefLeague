@@ -26,6 +26,11 @@ public class ProxyFriendsList extends FriendsList {
     public ProxyFriendsList(ProxyCorePlayer owner) {
         super();
         this.owner = owner;
+        checkOnline();
+    }
+
+    public void checkOnline() {
+        online.clear();
         for (UUID uuid : friends.keySet()) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
             if (pcp != null) {
@@ -83,8 +88,8 @@ public class ProxyFriendsList extends FriendsList {
     public int receiveFriendRequest(ProxyCorePlayer pcp) {
         if (!canAddFriends()) {
             return 6;
-        //} else if (!owner.getOptions().getBoolean("Friend:Requests")) {
-        //    return 4;
+        } else if (!owner.getOptions().getBoolean("Friend:Requests")) {
+            return 4;
         } else if (friends.containsKey(pcp.getUniqueId())) {
             return 2;
         } else if (outgoing.contains(pcp.getUniqueId())) {

@@ -6,12 +6,14 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatBroadcast;
 
 /**
  * @author NickM13
@@ -25,17 +27,8 @@ public class BroadcastCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void broadcast(CorePlayer sender, @HelperArg(value = "<title/subtitle>") String message) {
-        Chat.broadcast(message);
-    }
-
-    @CommandAnnotation
-    public void broadcast(CorePlayer sender,
-                          @HelperArg(value = "<fadeIn>") Integer fadeIn,
-                          @HelperArg(value = "<stay>") Integer stay,
-                          @HelperArg(value = "<fadeOut>") Integer fadeOut,
-                          @HelperArg(value = "<title/subtitle>") String message) {
-        Chat.broadcast(message);
+    public void broadcast(CorePlayer sender, @HelperArg(value = "<title \\n subtitle>") String message) {
+        Core.getInstance().sendPacket(new PacketSpigotChatBroadcast(message));
     }
 
 }

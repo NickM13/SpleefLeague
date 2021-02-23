@@ -7,7 +7,7 @@ package com.spleefleague.proxycore.game.queue;
 public abstract class QueueEntity {
 
     protected int rating;
-    protected int ratingDiff;
+    protected int ratingDiff = 0;
     long joinTime;
     String query;
     int size;

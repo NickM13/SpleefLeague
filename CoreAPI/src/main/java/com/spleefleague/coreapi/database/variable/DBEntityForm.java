@@ -21,12 +21,17 @@ public class DBEntityForm {
 
     private final Map<String, Field> readFields = new HashMap<>();
     private final Map<String, Field> writeFields = new HashMap<>();
+    private final Map<String, Field> readTopFields = new HashMap<>();
+    private final Map<String, Field> writeTopFields = new HashMap<>();
 
     private final Map<String, Method> readMethods = new HashMap<>();
     private final Map<String, Method> writeMethods = new HashMap<>();
+    private final Map<String, Method> readTopMethods = new HashMap<>();
+    private final Map<String, Method> writeTopMethods = new HashMap<>();
 
     public DBEntityForm(Class<? extends DBEntity> entityClazz) {
         Class<?> clazz = entityClazz;
+        boolean isFirst = true;
         while (clazz != null && DBEntity.class.isAssignableFrom(clazz)) {
             for (Field field : clazz.getDeclaredFields()) {
                 DBField dbField = field.getAnnotation(DBField.class);
@@ -35,9 +40,11 @@ public class DBEntityForm {
                     String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : field.getName();
                     if (dbField.write()) {
                         writeFields.put(fieldName, field);
+                        if (isFirst) writeTopFields.put(fieldName, field);
                     }
                     if (dbField.read()) {
                         readFields.put(fieldName, field);
+                        if (isFirst) readTopFields.put(fieldName, field);
                     }
                 }
             }
@@ -46,13 +53,16 @@ public class DBEntityForm {
                     String fieldName = method.getAnnotation(DBSave.class).fieldName();
                     method.setAccessible(true);
                     writeMethods.put(fieldName, method);
+                    if (isFirst) writeTopMethods.put(fieldName, method);
                 } else if (method.isAnnotationPresent(DBLoad.class)) {
                     String fieldName = method.getAnnotation(DBLoad.class).fieldName();
                     method.setAccessible(true);
                     readMethods.put(fieldName, method);
+                    if (isFirst) readTopMethods.put(fieldName, method);
                 }
             }
             clazz = clazz.getSuperclass();
+            isFirst = false;
         }
     }
 
@@ -72,4 +82,19 @@ public class DBEntityForm {
         return writeMethods;
     }
 
+    public Map<String, Field> getReadTopFields() {
+        return readTopFields;
+    }
+
+    public Map<String, Field> getWriteTopFields() {
+        return writeTopFields;
+    }
+
+    public Map<String, Method> getReadTopMethods() {
+        return readTopMethods;
+    }
+
+    public Map<String, Method> getWriteTopMethods() {
+        return writeTopMethods;
+    }
 }

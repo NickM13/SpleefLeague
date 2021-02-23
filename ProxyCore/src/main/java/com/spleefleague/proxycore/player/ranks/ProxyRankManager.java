@@ -88,6 +88,7 @@ public class ProxyRankManager extends RankManager <ProxyRank> {
         ProxyRank.DONOR_1 =           getRankOrDefault("DONOR_1");
         ProxyRank.DONOR_2 =           getRankOrDefault("DONOR_2");
         ProxyRank.DONOR_3 =           getRankOrDefault("DONOR_3");
+        ProxyRank.DONOR_4 =           getRankOrDefault("DONOR_4");
     }
 
     public boolean createRank(String identifier, int ladder, ChatColor chatColor) {

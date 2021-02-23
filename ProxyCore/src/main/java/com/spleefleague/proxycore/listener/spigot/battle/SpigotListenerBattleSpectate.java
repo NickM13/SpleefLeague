@@ -25,14 +25,14 @@ public class SpigotListenerBattleSpectate extends SpigotListener<PacketSpigotBat
         ProxyCorePlayer target = ProxyCore.getInstance().getPlayers().get(packet.target);
         if (target.isBattling()) {
             BattleSession session = BattleSessionManager.getSession(target.getCurrentBattle());
-            spectator.connect(session.getDroplet());
-            ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
+            if (session.isSpectatable()) {
+                spectator.connect(session.getDroplet());
                 ProxyCore.getInstance().getPacketManager().sendPacket(target.getCurrentServer(), new PacketBungeeBattleSpectate(packet));
-            }, 500, TimeUnit.MILLISECONDS);
-            spectator.setSpectating(true);
-        } else {
-            spectator.getPlayer().sendMessage(new TextComponent(ChatColor.YELLOW + target.getName() + ChatColor.RED + "'s game cannot be spectated"));
+                spectator.setSpectating(true);
+                return;
+            }
         }
+        spectator.getPlayer().sendMessage(new TextComponent(ChatColor.YELLOW + target.getName() + ChatColor.RED + "'s game cannot be spectated"));
     }
 
 }

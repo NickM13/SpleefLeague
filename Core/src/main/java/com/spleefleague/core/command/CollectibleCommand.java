@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author NickM13
@@ -53,7 +54,7 @@ public class CollectibleCommand extends CoreCommand {
                                @OptionArg(listName = "collectibles") String identifier) {
         Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
-            sender.setHeldItem(collectible.getDisplayItem());
+            sender.getPlayer().getInventory().addItem(collectible.getDisplayItem());
             success(sender, "Given copy of display item for collectible " + identifier);
         } else {
             error(sender, "Collectible not found " + identifier);
@@ -112,8 +113,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetName(CorePlayer sender,
                                    @LiteralArg("set") String e,
                                    @LiteralArg("name") String l,
+                                   @OptionArg(listName = "collectibles") String identifier,
                                    @HelperArg("displayName") String displayName) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             String prevName = collectible.getName();
             collectible.setName(displayName);
@@ -128,8 +130,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetDescription(CorePlayer sender,
                                           @LiteralArg("set") String e,
                                           @LiteralArg("description") String l,
+                                          @OptionArg(listName = "collectibles") String identifier,
                                           @HelperArg("description") String description) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             collectible.setDescription(description);
             success(sender, "Changed " + collectible.getIdentifier() + " description to:");
@@ -144,8 +147,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetModel(CorePlayer sender,
                                     @LiteralArg("set") String e,
                                     @LiteralArg("model") String l,
+                                    @OptionArg(listName = "collectibles") String identifier,
                                     @HelperArg("customModelData") Integer customModelData) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             Integer prevModel = collectible.getCustomModelData();
             collectible.setCustomModelData(customModelData);
@@ -160,8 +164,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetCoin(CorePlayer sender,
                                    @LiteralArg("set") String l1,
                                    @LiteralArg("cost") String l,
+                                   @OptionArg(listName = "collectibles") String identifier,
                                    @HelperArg("coins") Integer coins) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             collectible.setCoinCost(coins);
             sender.setHeldItem(collectible.getDisplayItem());
@@ -175,8 +180,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetRarity(CorePlayer sender,
                                      @LiteralArg("set") String l1,
                                      @LiteralArg("rarity") String l,
+                                     @OptionArg(listName = "collectibles") String identifier,
                                      @EnumArg Vendorable.Rarity rarity) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             collectible.setRarity(rarity);
             sender.setHeldItem(collectible.getDisplayItem());
@@ -190,8 +196,9 @@ public class CollectibleCommand extends CoreCommand {
     public void collectibleSetUnlock(CorePlayer sender,
                                      @LiteralArg("set") String l1,
                                      @LiteralArg("unlock") String l,
+                                     @OptionArg(listName = "collectibles") String identifier,
                                      @EnumArg Vendorable.UnlockType type) {
-        Collectible collectible = Vendorables.get(collectibleClass, sender.getHeldItem());
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
             collectible.setUnlockType(type);
             sender.setHeldItem(collectible.getDisplayItem());
@@ -217,7 +224,7 @@ public class CollectibleCommand extends CoreCommand {
         if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
             sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
         } else {
-            sender.sendMessage(target.getChatName() + " already had " + identifier);
+            sender.sendMessage(target.getDisplayName() + " already had " + identifier);
         }
     }
 
@@ -238,7 +245,7 @@ public class CollectibleCommand extends CoreCommand {
             if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
                 sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
             } else {
-                sender.sendMessage(target.getChatName() + " already had " + identifier);
+                sender.sendMessage(target.getDisplayName() + " already had " + identifier);
             }
         }
     }
@@ -257,9 +264,9 @@ public class CollectibleCommand extends CoreCommand {
                                   CorePlayer target,
                                   @OptionArg(listName = "collectibles") String identifier) {
         if (target.getCollectibles().remove(Vendorables.get(collectibleClass, identifier))) {
-            success(sender, "Removed collectible " + identifier + " from " + target.getChatNamePossessive() + " collection");
+            success(sender, "Removed collectible " + identifier + " from " + target.getDisplayNamePossessive() + " collection");
         } else {
-            error(sender, target.getChatName() + " didn't have " + identifier);
+            error(sender, target.getDisplayName() + " didn't have " + identifier);
         }
     }
 
@@ -306,7 +313,7 @@ public class CollectibleCommand extends CoreCommand {
                                    CorePlayer target,
                                    @OptionArg(listName = "collectibles") String parent,
                                    @OptionArg(listName = "skins") String identifier) {
-        switch (target.getCollectibles().addSkin(Vendorables.get(collectibleClass, parent), identifier)) {
+        switch (target.getCollectibles().addSkin(Objects.requireNonNull(Vendorables.get(collectibleClass, parent)), identifier)) {
             case 0:
                 success(sender, "Added collectible skin " + parent + ":" + identifier + " to " + target.getDisplayNamePossessive() + " collection");
                 break;

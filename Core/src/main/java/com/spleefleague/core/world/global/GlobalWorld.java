@@ -40,7 +40,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
 
         public static class RotatingItem {
 
-            private static double RADIUS = 1;
+            private static final double RADIUS = 1.25;
 
             int remainingTime;
             final int entityId = FakeUtils.getNextId();
@@ -92,7 +92,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
                             realChangeX,
                             realChangeY,
                             realChangeZ,
-                            -rotation,
+                            (float) (-rotation + Math.PI),
                             0);
                 });
                 world.spawnParticles(Particle.CLOUD, x, y, z, 0, 0, 0, 0, 1);
@@ -114,11 +114,24 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
             this.x = player.getLocation().getX();
             this.y = player.getLocation().getY();
             this.z = player.getLocation().getZ();
-            this.rotatingItems.add(new RotatingItem(world, x, y + 1.5, z, itemStack));
+            this.rotatingItems.add(new RotatingItem(world, x, y + 0.75, z, itemStack));
+        }
+
+        public RotatingItemPlayer(Player player, ProjectileWorld<? extends ProjectileWorldPlayer> world, ItemStack itemStack, double heightMod) {
+            this.player = player;
+            this.world = world;
+            this.x = player.getLocation().getX();
+            this.y = player.getLocation().getY();
+            this.z = player.getLocation().getZ();
+            this.rotatingItems.add(new RotatingItem(world, x, y + 0.75 + heightMod, z, itemStack));
         }
 
         public void addRotatingItem(ItemStack itemStack) {
-            rotatingItems.add(new RotatingItem(world, x, y + 1.5, z, itemStack));
+            rotatingItems.add(new RotatingItem(world, x, y + 0.75, z, itemStack));
+        }
+
+        public void addRotatingItem(ItemStack itemStack, double heightMod) {
+            rotatingItems.add(new RotatingItem(world, x, y + 0.75 + heightMod, z, itemStack));
         }
 
         public boolean onTick() {
@@ -171,6 +184,15 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
         }
     }
 
+    public void addRotationItem(CorePlayer corePlayer, org.bukkit.inventory.ItemStack itemStack, double heightMod) {
+        ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+        if (!rotatingItemMap.containsKey(corePlayer.getUniqueId())) {
+            rotatingItemMap.put(corePlayer.getUniqueId(), new RotatingItemPlayer(corePlayer.getPlayer(), this, nmsItemStack, heightMod));
+        } else {
+            rotatingItemMap.get(corePlayer.getUniqueId()).addRotatingItem(nmsItemStack, heightMod);
+        }
+    }
+
     @Override
     public void destroy() {
         super.destroy();
@@ -179,15 +201,15 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
 
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        if (!fakeBlocks.containsKey(pos)) return false;
-        updateBlock(pos);
+        if (getFakeBlock(pos) == null) return false;
+        tryFix(cp, pos);
         return true;
     }
 
     @Override
     protected boolean onItemUse(CorePlayer cp, BlockPosition pos, BlockPosition blockRelative) {
-        if (!fakeBlocks.containsKey(pos)) return false;
-        updateBlock(pos);
+        if (getFakeBlock(pos) == null) return false;
+        tryFix(cp, pos);
         return true;
     }
 

@@ -92,6 +92,20 @@ public class ArtisanCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void artisanSetBorder(CorePlayer sender,
+                                 @LiteralArg(value = "set") String l1,
+                                 @LiteralArg(value = "border") String l2,
+                                 @OptionArg(listName = "artisans") String artisan,
+                                 String background) {
+        Artisans.setBackground(artisan, background);
+        StringBuilder builder = new StringBuilder();
+        for (char c : background.toCharArray()) {
+            builder.append((int) c);
+        }
+        success(sender, artisan + " background set to " + builder.toString());
+    }
+
+    @CommandAnnotation
     public void artisanSetCoins(CorePlayer sender,
                                 @LiteralArg(value = "set") String l1,
                                 @LiteralArg(value = "coinCost") String l2,

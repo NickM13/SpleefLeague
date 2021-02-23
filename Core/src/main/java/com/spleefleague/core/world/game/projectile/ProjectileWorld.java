@@ -160,6 +160,7 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
         return entities;
     }
 
+    @SuppressWarnings("unused")
     public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
         return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone()
                         .add(shooter.getPlayer().getLocation().getDirection()
@@ -179,6 +180,7 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
         return shoot(shooter, location, projectileStats, charge);
     }
 
+    @SuppressWarnings("unused")
     public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
         return shootProjectile(shooter, shooter.getPlayer().getEyeLocation().clone()
                 .add(shooter.getPlayer().getLocation().getDirection()

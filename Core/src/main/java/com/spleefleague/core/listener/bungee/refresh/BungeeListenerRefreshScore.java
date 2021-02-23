@@ -12,12 +12,15 @@ public class BungeeListenerRefreshScore extends BungeeListener<PacketBungeeRefre
 
     @Override
     protected void receive(Player sender, PacketBungeeRefreshScore packet) {
-        Leaderboard leaderboard = Core.getInstance().getLeaderboards().get(packet.mode).getLeaderboards().get(packet.season);
+        /*
+        Leaderboard leaderboard = Core.getInstance().getLeaderboards().get(packet.mode);
         for (RatedPlayerInfo rpi : packet.players) {
             CorePlayer cp = Core.getInstance().getPlayers().get(rpi.uuid);
+            if (cp == null) return;
             cp.getRatings().setRating(packet.mode, packet.season, rpi.elo);
             leaderboard.setPlayerScore(rpi.uuid, rpi.elo);
         }
+        */
     }
 
 }

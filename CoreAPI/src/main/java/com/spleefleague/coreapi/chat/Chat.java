@@ -1,11 +1,14 @@
 package com.spleefleague.coreapi.chat;
 
+import java.util.Stack;
+
 /**
  * @author NickM13
  * @since 6/7/2020
  */
 public class Chat {
 
+    @SuppressWarnings("unused")
     public static final String DEFAULT = ChatColor.GRAY + "",
             WHISPER = ChatColor.WHITE + "" + ChatColor.ITALIC + "",
             SUCCESS = ChatColor.GREEN + "",

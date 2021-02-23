@@ -49,8 +49,8 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
                 if (battle.getRoundTime() > activateTime) {
                     activate(battle);
                 } else if (Math.floor(lastUpdate) < Math.floor(battle.getRoundTime())) {
-                    if (Math.floor(battle.getRoundTime()) == activateTime - 3) {
-                        battle.getChatGroup().sendMessage(getPreActiveMessage(3));
+                    if (Math.floor(battle.getRoundTime()) == activateTime - 15) {
+                        battle.getChatGroup().sendMessage(getPreActiveMessage(15));
                     }
                 }
                 lastUpdate = battle.getRoundTime();

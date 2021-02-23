@@ -10,6 +10,8 @@ import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.purse.CoreCurrency;
+import com.spleefleague.core.world.global.GlobalWorld;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -32,38 +34,18 @@ public class CrateMenu {
                 .setDescription("")
                 .createLinkedContainer("Crates");
 
-        InventoryMenuContainer lootContainer = InventoryMenuAPI.createContainer()
-                .setTitle("Loot!")
-                .setParent(menuItem.getLinkedChest())
-                .setOpenAction((container, cp) -> {
-                    String crateName = cp.getMenu().getMenuTag("openedCrate", String.class);
-                    CrateLoot loot = cp.getCrates().openCrate(crateName);
-                    container.clear();
-                    for (Collectible collectible : loot.collectibles) {
-                        container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                .setDisplayItem(collectible.getDisplayItem())
-                                .setName(collectible.getDisplayName()));
-                    }
-                    for (CollectibleSkin skin : loot.collectibleSkins) {
-                        container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                .setDisplayItem(skin.getDisplayItem())
-                                .setName(skin.getDisplayName()));
-                    }
-                    for (Map.Entry<CoreCurrency, Integer> entry : loot.currencies.entrySet()) {
-                        ItemStack item = entry.getKey().displayItem.clone();
-                        item.setAmount(entry.getValue());
-                        container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                .setDisplayItem(item)
-                                .setName(entry.getKey().displayName));
-                    }
-                });
-
         menuItem.getLinkedChest()
                 .addDeadSpace(0, 0)
                 .addDeadSpace(0, 1)
                 .addDeadSpace(0, 2)
                 .addDeadSpace(0, 3)
                 .addDeadSpace(0, 4)
+
+                .addDeadSpace(3, 0)
+                .addDeadSpace(3, 1)
+                .addDeadSpace(3, 2)
+                .addDeadSpace(3, 3)
+                .addDeadSpace(3, 4)
 
                 .addDeadSpace(4, 0)
                 .addDeadSpace(4, 1)
@@ -86,15 +68,35 @@ public class CrateMenu {
                                     .setDisplayItem(InventoryMenuUtils.MenuIcon.ENABLED.getIconItem(crateCount))
                                     .setAction(cp2 -> {
                                         CrateLoot loot = cp.getCrates().openCrate(crate.getIdentifier());
+                                        int delay = 0;
+                                        GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, crate.getOpened());
                                         for (Collectible collectible : loot.collectibles) {
                                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                                     .setDisplayItem(collectible.getDisplayItem())
                                                     .setName(collectible.getDisplayName()));
+                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                Core.getInstance().sendMessage(cp,
+                                                        ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
+                                                double height = 0.05;
+                                                if (collectible.getParentType().equalsIgnoreCase("Shovel")) {
+                                                    height += 0.2;
+                                                }
+                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, collectible.getDisplayItem(), height);
+                                            }, delay += 20);
                                         }
                                         for (CollectibleSkin skin : loot.collectibleSkins) {
                                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                                     .setDisplayItem(skin.getDisplayItem())
                                                     .setName(skin.getDisplayName()));
+                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                Core.getInstance().sendMessage(cp,
+                                                        ChatColor.GRAY + "You've received " + skin.getFullDisplayName() + ChatColor.GRAY + "!");
+                                                double height = 0.05;
+                                                if (skin.getParent().getParentType().equalsIgnoreCase("Shovel")) {
+                                                    height += 0.2;
+                                                }
+                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, skin.getDisplayItem(), height);
+                                            }, delay += 20);
                                         }
                                         for (Map.Entry<CoreCurrency, Integer> entry : loot.currencies.entrySet()) {
                                             ItemStack item = entry.getKey().displayItem.clone();
@@ -102,6 +104,12 @@ public class CrateMenu {
                                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                                     .setDisplayItem(item)
                                                     .setName(entry.getKey().displayName));
+                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                Core.getInstance().sendMessage(cp,
+                                                        ChatColor.GRAY + "You've received " + entry.getKey().color + entry.getValue() + " " +
+                                                                entry.getKey().displayName + (entry.getValue() != 1 ? "s" : "") + ChatColor.GRAY + "!");
+                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, entry.getKey().displayItem, -0.05);
+                                            }, delay += 20);
                                         }
                                         //cp2.getMenu().setMenuTag("openedCrate", crate.getIdentifier());
                                     })
@@ -119,10 +127,12 @@ public class CrateMenu {
                                 .setDescription(crate.getDescription())
                                 .setCloseOnAction(false));
 
+                        /*
                         container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                 .setName("Crates Online Store")
                                 .setDisplayItem(InventoryMenuUtils.MenuIcon.STORE.getIconItem())
                                 .setCloseOnAction(false));
+                        */
                     }
                 });
     }

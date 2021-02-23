@@ -19,7 +19,9 @@ public class PacketBungeePlayerResync extends PacketBungee {
         CRATES("crates"),
         FRIENDS("fields"),
         PURSE("purse"),
-        RANK("");
+        PERM_RANK("permRank"),
+        TEMP_RANKS("tempRanks"),
+        MUTE("mute");
 
         String fieldName;
 

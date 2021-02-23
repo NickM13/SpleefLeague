@@ -13,10 +13,16 @@ public class SpigotListenerChatTell extends SpigotListener<PacketSpigotChatTell>
 
     @Override
     protected void receive(Connection sender, PacketSpigotChatTell packet) {
-        ProxyCore.getInstance().getChat().sendTell(
-                ProxyCore.getInstance().getPlayers().get(packet.sender),
-                ProxyCore.getInstance().getPlayers().get(packet.target),
-                packet.message);
+        if (packet.target == null) {
+            ProxyCore.getInstance().getChat().sendReply(
+                    ProxyCore.getInstance().getPlayers().get(packet.sender),
+                    packet.message);
+        } else {
+            ProxyCore.getInstance().getChat().sendTell(
+                    ProxyCore.getInstance().getPlayers().get(packet.sender),
+                    ProxyCore.getInstance().getPlayers().get(packet.target),
+                    packet.message);
+        }
     }
 
 }

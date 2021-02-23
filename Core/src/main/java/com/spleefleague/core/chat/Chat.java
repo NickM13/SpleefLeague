@@ -41,7 +41,7 @@ public class Chat {
             TAG_BRACE = ChatColor.DARK_GRAY + "",
             RANK = ChatColor.GRAY + "",
             GAMEMODE = ChatColor.GREEN + "",
-            GAMEMAP = ChatColor.RED + "",
+            GAMEMAP = ChatColor.GREEN + "",
             MENU_NAME = ChatColor.WHITE + "" + ChatColor.BOLD,
             DESCRIPTION = ChatColor.GRAY + "",
             STAT = ChatColor.RED + "",
@@ -158,80 +158,80 @@ public class Chat {
     public static String colorize(String msg) {
         StringBuilder newmsg = new StringBuilder();
         int i;
-        Stack<ChatColor> colorStack = new Stack<>();
+        Stack<com.spleefleague.coreapi.chat.ChatColor> colorStack = new Stack<>();
         for (i = 0; i < msg.length() - 1; i++) {
             if (msg.charAt(i) == '&' || msg.charAt(i) == '§') {
                 if (i >= msg.length() - 1) continue;
                 switch (msg.charAt(i + 1)) {
                     case 'b':
-                        newmsg.append(colorStack.push(ChatColor.AQUA));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.AQUA));
                         break;
                     case '0':
-                        newmsg.append(colorStack.push(ChatColor.BLACK));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BLACK));
                         break;
                     case '9':
-                        newmsg.append(colorStack.push(ChatColor.BLUE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BLUE));
                         break;
                     case '3':
-                        newmsg.append(colorStack.push(ChatColor.DARK_AQUA));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_AQUA));
                         break;
                     case '1':
-                        newmsg.append(colorStack.push(ChatColor.DARK_BLUE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_BLUE));
                         break;
                     case '8':
-                        newmsg.append(colorStack.push(ChatColor.DARK_GRAY));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_GRAY));
                         break;
                     case '2':
-                        newmsg.append(colorStack.push(ChatColor.DARK_GREEN));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_GREEN));
                         break;
                     case '5':
-                        newmsg.append(colorStack.push(ChatColor.DARK_PURPLE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_PURPLE));
                         break;
                     case '4':
-                        newmsg.append(colorStack.push(ChatColor.DARK_RED));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_RED));
                         break;
                     case '6':
-                        newmsg.append(colorStack.push(ChatColor.GOLD));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GOLD));
                         break;
                     case '7':
-                        newmsg.append(colorStack.push(ChatColor.GRAY));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GRAY));
                         break;
                     case 'a':
-                        newmsg.append(colorStack.push(ChatColor.GREEN));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GREEN));
                         break;
                     case 'd':
-                        newmsg.append(colorStack.push(ChatColor.LIGHT_PURPLE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.LIGHT_PURPLE));
                         break;
                     case 'c':
-                        newmsg.append(colorStack.push(ChatColor.RED));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.RED));
                         break;
                     case 'f':
-                        newmsg.append(colorStack.push(ChatColor.WHITE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.WHITE));
                         break;
                     case 'e':
-                        newmsg.append(colorStack.push(ChatColor.YELLOW));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.YELLOW));
                         break;
                     case 'l':
-                        newmsg.append(colorStack.push(ChatColor.BOLD));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BOLD));
                         break;
                     case 'i':
-                        newmsg.append(colorStack.push(ChatColor.ITALIC));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.ITALIC));
                         break;
                     case 'r':
-                        newmsg.append(colorStack.push(ChatColor.RESET));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.RESET));
                         break;
                     case 'n':
-                        newmsg.append(colorStack.push(ChatColor.UNDERLINE));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.UNDERLINE));
                         break;
                     case 'm':
-                        newmsg.append(colorStack.push(ChatColor.STRIKETHROUGH));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.STRIKETHROUGH));
                         break;
                     case 'k':
-                        newmsg.append(colorStack.push(ChatColor.MAGIC));
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.MAGIC));
                         break;
                     case 'u':
                         if (colorStack.size() <= 1) {
-                            newmsg.append(ChatColor.RESET);
+                            newmsg.append(com.spleefleague.coreapi.chat.ChatColor.RESET);
                         } else {
                             colorStack.pop();
                             newmsg.append(colorStack.peek());
@@ -259,6 +259,36 @@ public class Chat {
             newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(msg.length() - 1))));
         }
         return newmsg.toString();
+    }
+
+    public static void sendFakeMessage(CorePlayer sender, ChatChannel channel, String message) {
+        if (channel == null) channel = sender.getChatChannel();
+
+        if (!channel.isAvailable(sender)) {
+            Core.getInstance().sendMessage(sender, "You have " + channel.getName() + " muted!");
+            Core.getInstance().sendMessage(sender, "To unmute, go to Menu->Options->Chat Channels");
+            return;
+        }
+
+        FormattedPlayerMessage playerMessage = formatPlayerMessage(message, channel.getPlayerMessageBase());
+
+        if (playerMessage.containsUrl) {
+            if (!sender.canSendUrl()) {
+                Core.getInstance().sendMessage(sender, "Please ask for permission to send a URL");
+                return;
+            } else {
+                //sender.disallowUrl();
+            }
+        }
+
+        TextComponent textComponent = new TextComponent();
+
+        textComponent.addExtra(channel.getTagComponent());
+        textComponent.addExtra(channel.isShowingTag() ? sender.getChatName() : sender.getChatNameRanked());
+        textComponent.addExtra(net.md_5.bungee.api.ChatColor.GRAY + ": ");
+        textComponent.addExtra(playerMessage.textComponent);
+
+        sender.sendMessage(textComponent);
     }
 
     public static void sendMessage(CorePlayer sender, String message) {
@@ -468,20 +498,6 @@ public class Chat {
      */
     public static void sendTell(CorePlayer sender, CorePlayer target, String msg) {
         Core.getInstance().sendPacket(new PacketSpigotChatTell(sender.getUniqueId(), target.getUniqueId(), msg));
-    }
-
-    /**
-     * Send a title to all players, stay is based on how long message is
-     * Used by /broadcast command
-     *
-     * @param msg Message
-     */
-    public static void broadcast(String msg) {
-        String title, subtitle;
-        String[] msgs = msg.split("\\n");
-        title = msgs[0];
-        subtitle = msgs.length > 1 ? msgs[1] : "";
-        Chat.sendTitle(ChatChannel.GLOBAL, Chat.BROADCAST + title, Chat.BROADCAST + subtitle, 5, msg.length() * 2 + 10, 15);
     }
 
 }

@@ -108,7 +108,7 @@ public class Spleef extends CorePlugin {
         InventoryMenuItem powerMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER.getBattleMode());
 
         InventoryMenuItem powerTrainingMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER_TRAINING.getBattleMode());
-        powerMenu.getLinkedChest().addStaticItem(powerTrainingMenu, 4, 5);
+        powerMenu.getLinkedChest().addStaticItem(powerTrainingMenu, 2, 5);
 
         powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE, powerMenu.getLinkedChest()), 6, 2);
         powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY, powerMenu.getLinkedChest()), 6, 3);

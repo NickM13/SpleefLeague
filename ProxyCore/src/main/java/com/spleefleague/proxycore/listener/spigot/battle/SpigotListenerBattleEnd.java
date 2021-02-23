@@ -21,7 +21,7 @@ public class SpigotListenerBattleEnd extends SpigotListener<PacketSpigotBattleEn
         BattleSession battleSession = BattleSessionManager.destroyBattleSession(packet.battleId);
         if (battleSession != null) {
             for (UUID uuid : battleSession.getPlayers()) {
-                ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+                ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
                 pcp.leaveBattle(packet.battleId);
             }
         }

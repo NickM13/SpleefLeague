@@ -23,21 +23,6 @@ public class ShovelCommand extends HoldableCommand {
     public ShovelCommand() {
         super(Shovel.class, "shovel", CoreRank.DEVELOPER);
         this.setContainer("spleef");
-        this.setOptions("shovelTypes", cp -> Shovel.getShovelTypes());
-    }
-
-    @CommandAnnotation
-    public void shovelSetType(CorePlayer sender,
-                              @LiteralArg("set") String l1,
-                              @LiteralArg("type") String l2,
-                              @OptionArg(listName = "shovelTypes") String type) {
-        Shovel shovel = Vendorables.get(Shovel.class, sender.getHeldItem());
-        if (shovel != null) {
-            shovel.setShovelType(type);
-            success(sender, "Changed shovel type to " + type);
-        } else {
-            error(sender, "That's not a registered collectible!");
-        }
     }
 
 }

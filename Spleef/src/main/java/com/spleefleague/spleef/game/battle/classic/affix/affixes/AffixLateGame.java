@@ -38,12 +38,13 @@ public class AffixLateGame extends ClassicSpleefAffix {
                 battle.getGameWorld().setBlockDelayed(pos, Material.AIR.createBlockData(), 0.2, battle.getArena().getSpawns());
             }
         }
+        FakeBlock snowBlock = new FakeBlock(Material.SNOW_BLOCK.createBlockData());
         for (Position spawn : battle.getArena().getSpawns()) {
             BlockPosition blockPos = new BlockPosition(
                     (int) Math.floor(spawn.getX()),
                     (int) Math.floor(spawn.getY()) - 1,
                     (int) Math.floor(spawn.getZ()));
-            battle.getGameWorld().setBlockDelayed(blockPos, Material.SNOW_BLOCK.createBlockData(), 8);
+            battle.getGameWorld().setBlockDelayed(blockPos, snowBlock, 8);
         }
     }
 

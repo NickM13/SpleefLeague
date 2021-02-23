@@ -211,6 +211,8 @@ public class PortalPair {
 
     public void pushPortal(World world, BlockPosition pos, BlockFace blockFace) {
         Portal portal = new Portal(world, pos, blockFace);
+        if ((portal1 != null && portal1.getRelativePos().equals(portal.getRelativePos())) ||
+                (portal2 != null && portal2.getRelativePos().equals(portal.getRelativePos()))) return;
         if (last) portal1 = portal;
         else portal2 = portal;
         last = !last;

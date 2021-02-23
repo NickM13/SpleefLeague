@@ -1,5 +1,6 @@
 package com.spleefleague.coreapi.player.collectibles;
 
+import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
@@ -13,8 +14,8 @@ import java.util.*;
 public class PlayerCollectibles extends DBEntity {
 
     protected final SortedMap<String, Map<String, CollectibleInfo>> collectibleMap = new TreeMap<>();
-    protected final SortedMap<String, String> activeMap = new TreeMap<>();
-    protected final SortedMap<String, Boolean> enabledMap = new TreeMap<>();
+    @DBField protected final Map<String, String> activeMap = new HashMap<>();
+    @DBField protected final Map<String, Boolean> enabledMap = new HashMap<>();
 
     public PlayerCollectibles() {
 
@@ -50,69 +51,32 @@ public class PlayerCollectibles extends DBEntity {
         return doc;
     }
 
-    @DBLoad(fieldName = "active")
-    protected void loadActive(Document doc) {
-        activeMap.clear();
-        for (Map.Entry<String, Object> activePair : doc.entrySet()) {
-            activeMap.put(activePair.getKey(), (String) activePair.getValue());
-        }
-    }
-
-    @DBSave(fieldName = "active")
-    protected Document saveActive() {
-        Document doc = new Document();
-        for (Map.Entry<String, String> active : activeMap.entrySet()) {
-            doc.append(active.getKey(), active.getValue());
-        }
-        return doc;
-    }
-
     public boolean add(String type, String identifier) {
-        if (!collectibleMap.containsKey(type)) {
-            collectibleMap.put(type, new HashMap<>());
-        }
-        collectibleMap.get(type).put(identifier, new CollectibleInfo(System.currentTimeMillis()));
-        return true;
-    }
-
-    public boolean removeSkin(String type, String identifier, String skin) {
-        if (collectibleMap.containsKey(type)) {
-            if (collectibleMap.get(type).containsKey(identifier)) {
-                return (collectibleMap.get(type).get(identifier).removeSkin(skin));
-            }
-        }
-        return false;
-    }
-
-    public int addSkin(String type, String identifier, String skin) {
-        if (!collectibleMap.containsKey(type) ||
-                !collectibleMap.get(type).containsKey(identifier)) {
-            add(type, identifier);
-        }
-        return collectibleMap.get(type).get(identifier).addSkin(skin, System.currentTimeMillis()) ? 0 : 2;
-    }
-
-    public boolean contains(String type, String identifier) {
-        if (collectibleMap.containsKey(type)) {
-            return collectibleMap.get(type).get(identifier) != null;
-        }
-        return false;
-    }
-
-    public CollectibleInfo getInfo(String type, String identifier) {
-        if (!contains(type, identifier)) {
-            add(type, identifier);
-        }
-        return collectibleMap.get(type).get(identifier);
+        return getInfo(type, identifier).unlockBase();
     }
 
     public boolean remove(String type, String identifier) {
-        if (collectibleMap.containsKey(type)) {
-            collectibleMap.get(type).remove(identifier);
+        if (getInfo(type, identifier).lockBase()) {
             deactivate(type, identifier);
             return true;
         }
         return false;
+    }
+
+    public boolean removeSkin(String type, String identifier, String skin) {
+        return getInfo(type, identifier).removeSkin(skin);
+    }
+
+    public int addSkin(String type, String identifier, String skin) {
+        return getInfo(type, identifier).addSkin(skin, System.currentTimeMillis()) ? 0 : 2;
+    }
+
+    public CollectibleInfo getInfo(String type, String identifier) {
+        if (!collectibleMap.containsKey(type)) {
+            collectibleMap.put(type, new HashMap<>());
+        }
+        collectibleMap.get(type).putIfAbsent(identifier, new CollectibleInfo());
+        return collectibleMap.get(type).get(identifier);
     }
 
     public void setActiveItem(String type, String identifier) {
@@ -140,6 +104,10 @@ public class PlayerCollectibles extends DBEntity {
                 activeMap.get(type).equalsIgnoreCase(identifier)) {
             activeMap.remove(type);
         }
+    }
+
+    public void setEnabled(String type, boolean state) {
+        enabledMap.put(type, state);
     }
 
 }

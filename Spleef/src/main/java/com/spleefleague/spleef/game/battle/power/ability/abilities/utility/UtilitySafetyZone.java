@@ -41,10 +41,10 @@ public class UtilitySafetyZone extends AbilityUtility {
                 getPlayer().getLocation().getBlockY(),
                 getPlayer().getLocation().getBlockZ()));
         GameWorld gameWorld = getUser().getBattle().getGameWorld();
-        Map<BlockPosition, FakeBlock> changedBlocks = gameWorld.replaceBlocks(blocks, Material.CYAN_CONCRETE.createBlockData());
+        Map<BlockPosition, FakeBlock> changedBlocks = gameWorld.replaceBlocks(blocks, new FakeBlock(Material.CYAN_CONCRETE.createBlockData()));
         getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
             for (Map.Entry<BlockPosition, FakeBlock> entry : changedBlocks.entrySet()) {
-                gameWorld.setBlock(entry.getKey(), Material.SNOW_BLOCK.createBlockData());
+                gameWorld.setBlock(entry.getKey(), gameWorld.getBaseBlock(entry.getKey()));
             }
         }, (int) (DURATION * 20)));
         getUser().getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,

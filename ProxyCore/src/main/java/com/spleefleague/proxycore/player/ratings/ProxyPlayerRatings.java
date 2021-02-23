@@ -20,6 +20,8 @@ public class ProxyPlayerRatings extends PlayerRatings {
 
     public void setRating(String mode, String season, int elo) {
         super.setRating(mode, season, elo);
+
+        ProxyCore.getInstance().getLeaderboards().get(mode).setPlayerScore(owner.getUniqueId(), owner.getName(), modeRatingsMap.get(mode).get(season));
     }
 
     /**
@@ -37,17 +39,9 @@ public class ProxyPlayerRatings extends PlayerRatings {
 
         int elo = modeRatingsMap.get(mode).get(season).addElo(amt);
 
-        ProxyCore.getInstance().getLeaderboards().get(mode).setPlayerScore(owner.getUniqueId(), elo);
+        ProxyCore.getInstance().getLeaderboards().get(mode).setPlayerScore(owner.getUniqueId(), owner.getName(), modeRatingsMap.get(mode).get(season));
 
         return elo;
-    }
-
-    public boolean checkDecay(String mode, String season) {
-        Ratings ratings = modeRatingsMap.get(mode);
-        if (ratings != null && ratings.isRanked(season)) {
-            return ratings.get(season).checkDecay();
-        }
-        return false;
     }
 
     public int getElo(String mode, String season) {

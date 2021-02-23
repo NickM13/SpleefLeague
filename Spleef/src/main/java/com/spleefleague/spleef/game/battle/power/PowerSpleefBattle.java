@@ -20,6 +20,7 @@ import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
@@ -68,6 +69,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     @Override
     protected void setupScoreboard() {
         chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
+        chatGroup.addTeam("arena", ChatColor.GREEN + "  " + arena.getName());
         chatGroup.addTeam("time", "  00:00:00");
         chatGroup.addTeam("p1", "  " + Chat.PLAYER_NAME + ChatColor.BOLD + sortedBattlers.get(0).getCorePlayer().getName());
         chatGroup.addTeam("p1score", "");
@@ -85,7 +87,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     @Override
     protected void setupBattlers() {
         super.setupBattlers();
-        for (PowerSpleefPlayer psp : sortedBattlers) {
+        for (PowerSpleefPlayer psp : battlers.values()) {
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:offensive", psp.getOffensiveName());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:utility", psp.getUtilityName());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:mobility", psp.getMobilityName());
@@ -170,7 +172,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         Map<BlockPosition, FakeBlock> transformed = FakeUtils.translateBlocks(platform.getFakeBlocks(), pos);
         getGameWorld().setBlocks(transformed);
         for (Map.Entry<BlockPosition, FakeBlock> entry : transformed.entrySet()) {
-            getGameWorld().setBlockDelayed(entry.getKey(), Material.AIR.createBlockData(), 6 * 20);
+            getGameWorld().setBlockDelayed(entry.getKey(), FakeWorld.AIR, 6 * 20);
         }
         return pos;
     }
@@ -232,9 +234,9 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
         battlers.get(cp).respawn();
 
         for (Map.Entry<BlockPosition, FakeBlock> baseBlock : gameWorld.getBaseBlocks().entrySet()) {
-            if (!gameWorld.getFakeBlocks().containsKey(baseBlock.getKey()) ||
-                    gameWorld.getFakeBlocks().get(baseBlock.getKey()).getBlockData().getMaterial() != baseBlock.getValue().getBlockData().getMaterial()) {
-                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue().getBlockData(), (int) (Math.random() * 40));
+            FakeBlock fakeBlock = gameWorld.getFakeBlock(baseBlock.getKey());
+            if (fakeBlock == null || fakeBlock.getBlockData().getMaterial() != baseBlock.getValue().getBlockData().getMaterial()) {
+                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue(), (int) (Math.random() * 40));
             }
         }
     }

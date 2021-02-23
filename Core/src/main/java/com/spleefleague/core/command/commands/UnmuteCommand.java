@@ -33,11 +33,13 @@ public class UnmuteCommand extends CoreCommand {
         Infractions.unmute(sender, op, reason == null ? "" : reason);
     }
 
+    /*
     @CommandAnnotation
     public void unmute(CommandSender sender,
                        OfflinePlayer op,
                        @Nullable String reason) {
         Infractions.unmute(null, op, reason == null ? "" : reason);
     }
+    */
 
 }

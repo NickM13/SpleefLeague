@@ -18,14 +18,16 @@ public class PacketBungeeBattleStart extends PacketBungee {
     public String mode;
     public String query;
     public List<UUID> players;
+    public Boolean challenge;
 
     public PacketBungeeBattleStart() { }
 
-    public PacketBungeeBattleStart(UUID uuid, String mode, String query, List<UUID> players) {
+    public PacketBungeeBattleStart(UUID uuid, String mode, String query, List<UUID> players, boolean challenge) {
         this.battleId = uuid;
         this.mode = mode;
         this.query = query;
         this.players = players;
+        this.challenge = challenge;
     }
 
     public PacketBungeeBattleStart(ByteArrayDataInput input) {

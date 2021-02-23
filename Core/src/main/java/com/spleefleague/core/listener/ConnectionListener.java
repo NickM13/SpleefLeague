@@ -12,9 +12,11 @@ import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.world.FakeWorld;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,14 +38,14 @@ public class ConnectionListener implements Listener {
         FakeWorld.onPlayerJoin(event.getPlayer().getUniqueId());
         event.setJoinMessage("");
         Player player = event.getPlayer();
-        Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(), () -> {
-            CorePlugin.onPlayerJoin(player);
-            CorePlayer cp = Core.getInstance().getPlayers().get(player);
-            //cp.gotoSpawn();
-            Core.getInstance().applyVisibilities(cp);
-            Core.getInstance().getPartyManager().onConnect(cp);
-            NoteBlockMusic.onPlayerJoin(player.getUniqueId());
-        });
+        CorePlugin.onPlayerJoin(player);
+
+        CorePlayer cp = Core.getInstance().getPlayers().get(player);
+        cp.gotoSpawn();
+        PersonalScoreboard.initPlayerScoreboard(cp);
+        Core.getInstance().applyVisibilities(cp);
+        Core.getInstance().getPartyManager().onConnect(cp);
+        NoteBlockMusic.onPlayerJoin(player.getUniqueId());
     }
 
     @EventHandler
@@ -66,10 +68,10 @@ public class ConnectionListener implements Listener {
         if (cp == null || !cp.getRank().hasPermission(CoreRank.TEMP_MOD)) {
             switch (event.getStatus()) {
                 case DECLINED:
-                    //event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");
+                    event.getPlayer().kickPlayer("Allow the SpleefLeague resource pack to be used in order to log in!");
                     break;
                 case FAILED_DOWNLOAD:
-                    //event.getPlayer().kickPlayer("There was an issue while downloading the resource pack, try logging out and back in");
+                    event.getPlayer().kickPlayer("There was an issue while downloading the resource pack, try logging out and back in");
                     break;
             }
         }

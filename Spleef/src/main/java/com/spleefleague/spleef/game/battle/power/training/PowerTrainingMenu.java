@@ -6,27 +6,18 @@
 
 package com.spleefleague.spleef.game.battle.power.training;
 
-import com.spleefleague.core.game.arena.Arenas;
-import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.menu.InventoryMenuUtils;
-import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
-import com.spleefleague.spleef.game.battle.power.ability.Ability;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
@@ -39,7 +30,7 @@ public class PowerTrainingMenu {
 
     private static InventoryMenuItem menuItem;
 
-    public static InventoryMenuItem createMenu() {
+    public static void createMenu() {
         if (menuItem == null) {
             menuItem = InventoryMenuAPI.createItemDynamic()
                     .setName("&6&lTraining Field")
@@ -117,7 +108,6 @@ public class PowerTrainingMenu {
                     .setAction(cp -> cp.getBattle().leavePlayer(cp)));
         }
 
-        return menuItem;
     }
 
 }

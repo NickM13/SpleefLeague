@@ -28,10 +28,11 @@ public class Artisan extends DBEntity {
     private UUID entityUuid = null;
     @DBField private CoreCurrency currency = CoreCurrency.COIN;
     @DBField private String crate = "common";
-    @DBField private String background = "嗰";
+    @DBField private String background = "噔";
+    @DBField private String border = "嗰";
     @DBField private Integer coinCost = 1;
 
-    private InventoryMenuOverlay overlay = InventoryMenuAPI.createOverlay();
+    private final InventoryMenuOverlay overlay = InventoryMenuAPI.createOverlay();
 
     public Artisan() {
         super();
@@ -113,9 +114,9 @@ public class Artisan extends DBEntity {
 
     public void updateMenu() {
         overlay.clear();
-        overlay.setBackground(background);
+        overlay.setTitlePrefix(border, background);
 
-        overlay.addItem(InventoryMenuUtils.getBackButton(), 1, 5);
+        overlay.addItem(InventoryMenuUtils.getBackButton(), 0, 5);
 
         shopContainer = InventoryMenuAPI.createContainer()
                 .setTitle(getDisplayName());
@@ -125,7 +126,7 @@ public class Artisan extends DBEntity {
                         .setDisplayItem(currency.displayItem)
                         .setCloseOnAction(false)
                         .setVisibility(cp -> cp.getPurse().getCurrency(currency) >= 1),
-                2, 2);
+                2, 1);
 
         shopContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
                         .setName("")
@@ -139,15 +140,22 @@ public class Artisan extends DBEntity {
                         .setDisplayItem(currency.displayItem)
                         .setCloseOnAction(false)
                         .setVisibility(cp -> cp.getPurse().getCurrency(currency) >= 3),
-                6, 2);
+                6, 1);
 
         if (Core.getInstance().getCrateManager().get(crate) != null) {
             shopContainer.addStaticItem(InventoryMenuAPI.createItemStatic()
                             .setName(Core.getInstance().getCrateManager().get(crate).getDisplayName())
                             .setDisplayItem(Core.getInstance().getCrateManager().get(crate).getClosed())
                             .setCloseOnAction(false),
-                    4, 3);
+                    2, 3);
         }
+
+        shopContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
+                .setName(cp -> "Gold Coins [" + coinCost + "]")
+                .setDisplayItem(CoreCurrency.COIN.displayItem)
+                .setDescription(CoreCurrency.COIN.description)
+                .setCloseOnAction(false), 5, 5);
+        InventoryMenuUtils.createDigitMenu(shopContainer, 6, 5, 3, cp -> coinCost, true);
 
         shopContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> {
@@ -204,6 +212,11 @@ public class Artisan extends DBEntity {
 
     public void setBackground(String background) {
         this.background = background;
+        updateMenu();
+    }
+
+    public void setBorder(String border) {
+        this.border = border;
         updateMenu();
     }
 

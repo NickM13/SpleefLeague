@@ -118,6 +118,18 @@ public class CoreRankManager extends RankManager<CoreRank> {
         saveRank(ranks.get(identifier));
     }
 
+    public void setCoinMultiplier(String identifier, double multiplier) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setCoinMultiplier(multiplier);
+        saveRank(ranks.get(identifier));
+    }
+
+    public void setOreMultiplier(String identifier, double multiplier) {
+        if (!ranks.containsKey(identifier)) return;
+        ranks.get(identifier).setOreMultiplier(multiplier);
+        saveRank(ranks.get(identifier));
+    }
+
     private void saveRank(CoreRank rank) {
         rank.save(rankCollection);
     }
@@ -127,7 +139,8 @@ public class CoreRankManager extends RankManager<CoreRank> {
         CoreRank.DEFAULT = getRankOrDefault("DEFAULT");
         CoreRank.ADMIN = getRankOrDefault("ADMIN");
         CoreRank.DEVELOPER = getRankOrDefault("DEVELOPER");
-        CoreRank.TEMP_MOD = getRankOrDefault("MODERATOR");
+        CoreRank.MODERATOR = getRankOrDefault("MODERATOR");
+        CoreRank.TEMP_MOD = getRankOrDefault("TEMP_MOD");
         CoreRank.SENIOR_MODERATOR = getRankOrDefault("SENIOR_MODERATOR");
         CoreRank.BUILDER = getRankOrDefault("BUILDER");
         CoreRank.ORGANIZER = getRankOrDefault("ORGANIZER");

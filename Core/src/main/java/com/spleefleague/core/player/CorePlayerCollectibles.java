@@ -87,7 +87,8 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 }
                 Vendorable.Rarity rarity = entry.getValue().getRarity();
                 Collectible collectible = (Collectible) entry.getValue();
-                if (collectible.getUnlockType().isRolled()) {
+                System.out.println(rarity + ", " + collectible.getIdentifier());
+                if (collectible.getUnlockType().isRolled() && (!collectible.getUnlockType().isBaseRequired() || getInfo(collectible).isBaseUnlocked())) {
                     available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier());
                     for (String skin : collectible.getSkinIds()) {
                         available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
@@ -99,11 +100,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
     }
 
     public boolean add(Collectible collectible) {
-        if (collectible != null) {
-            if (!collectibleMap.containsKey(collectible.getParentType())) {
-                collectibleMap.put(collectible.getParentType(), new HashMap<>());
-            }
-            collectibleMap.get(collectible.getParentType()).put(collectible.getIdentifier(), new CollectibleInfo(System.currentTimeMillis()));
+        if (super.add(collectible.getParentType(), collectible.getIdentifier())) {
             Core.getInstance().sendPacket(new PacketSpigotPlayerCollectible(
                     owner.getUniqueId(),
                     collectible.getParentType(),
@@ -116,23 +113,15 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
     }
 
     public boolean removeSkin(Collectible collectible, String skin) {
-        if (collectible != null) {
-            if (collectibleMap.containsKey(collectible.getParentType())) {
-                if (collectibleMap.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
-                    if (collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()).removeSkin(skin)) {
-                        Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
-                                owner.getUniqueId(),
-                                collectible.getParentType(),
-                                collectible.getIdentifier(),
-                                skin != null ? skin : "",
-                                CollectibleAction.LOCK,
-                                ""));
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            }
+        if (getInfo(collectible.getParentType(), collectible.getIdentifier()).removeSkin(skin)) {
+            Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
+                    owner.getUniqueId(),
+                    collectible.getParentType(),
+                    collectible.getIdentifier(),
+                    skin != null ? skin : "",
+                    CollectibleAction.LOCK,
+                    ""));
+            return true;
         }
         return false;
     }
@@ -143,16 +132,9 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
      * @return 1 for no collectible, 2 for already have, 3 for null
      */
     public int addSkin(Collectible collectible, String skin) {
-        if (collectible != null) {
-            if (!collectibleMap.containsKey(collectible.getParentType()) ||
-                    !collectibleMap.get(collectible.getParentType()).containsKey(collectible.getIdentifier())) {
-                if (collectible.isDefault(owner)) {
-                    add(collectible);
-                } else {
-                    return 1;
-                }
-            }
-            if (collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()).addSkin(skin, System.currentTimeMillis())) {
+        CollectibleInfo info = getInfo(collectible.getParentType(), collectible.getIdentifier());
+        if (info.isBaseUnlocked() || !collectible.getUnlockType().isBaseRequired()) {
+            if (info.addSkin(skin, System.currentTimeMillis())) {
                 Core.getInstance().sendPacket(new PacketSpigotPlayerCollectibleSkin(
                         owner.getUniqueId(),
                         collectible.getParentType(),
@@ -164,22 +146,18 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
             } else {
                 return 2;
             }
+        } else {
+            return 1;
         }
-        return 3;
     }
 
     public boolean contains(Collectible collectible) {
-        if (collectibleMap.containsKey(collectible.getParentType())) {
-            return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier()) != null;
-        }
-        return false;
+        CollectibleInfo info = getInfo(collectible);
+        return info.isBaseUnlocked() || !info.getOwnedSkins().isEmpty();
     }
 
     public CollectibleInfo getInfo(Collectible collectible) {
-        if (!contains(collectible)) {
-            add(collectible);
-        }
-        return collectibleMap.get(collectible.getParentType()).get(collectible.getIdentifier());
+        return super.getInfo(collectible.getParentType(), collectible.getIdentifier());
     }
 
     public boolean remove(Collectible collectible) {
@@ -253,7 +231,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         T collectible = getActive(clazz);
         CollectibleInfo info = getInfo(collectible);
         if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
-            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+            return collectible.getSkin(info.getSelectedSkin()).getFullDisplayName();
         } else {
             return collectible.getDisplayName();
         }
@@ -263,7 +241,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         T collectible = getActive(clazz, affix);
         CollectibleInfo info = getInfo(collectible);
         if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
-            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+            return collectible.getSkin(info.getSelectedSkin()).getFullDisplayName();
         } else {
             return collectible.getDisplayName();
         }
@@ -278,7 +256,7 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
         if (!contains(collectible)) return collectible.getDisplayName();
         CollectibleInfo info = getInfo(collectible);
         if (info.getSelectedSkin() != null && info.getSelectedSkin().length() > 0) {
-            return collectible.getDisplayName() + " (" + collectible.getSkin(info.getSelectedSkin()).getDisplayName() + ")";
+            return collectible.getSkin(info.getSelectedSkin()).getFullDisplayName();
         } else {
             return collectible.getDisplayName();
         }
@@ -458,25 +436,28 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 int i = 0;
                 Collectible active = cp.getCollectibles().getActive(clazz);
                 for (Collectible collectible : Vendorables.getAllSorted(clazz, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
-                    if (index == -1 && collectible.equals(active)) {
-                        index = i;
-                    }
-                    CorePlayer cvp = Core.getInstance().getPlayers().get(cp.getUniqueId());
-                    container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayName() : "Locked")
-                            .setDisplayItem(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
-                            .setDescription(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDescription() : "")
-                            .setAction(cp2 -> {
-                                if (collectible.isUnlocked(cvp)) {
+                    if (collectible.isUnlocked(cp)) {
+                        container2.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                .setName(collectible.getDisplayName())
+                                .setDisplayItem(collectible.getDisplayItem())
+                                .setDescription(collectible.getDescription())
+                                .setAction(cp2 -> {
                                     if (collectible.hasSkins()) {
                                         cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
                                         cp2.getMenu().setInventoryMenuItem(skinMenuItem);
                                     } else {
                                         cp2.getCollectibles().setActiveItem(collectible);
                                     }
-                                }
-                            })
-                            .setCloseOnAction(false));
+                                })
+                                .setCloseOnAction(false));
+                    } else if (collectible.getUnlockType().shouldShowLocked()) {
+                        container2.addMenuItem(InventoryMenuUtils.createLockedMenuItem());
+                    } else {
+                        continue;
+                    }
+                    if (index == -1 && collectible.equals(active)) {
+                        index = i;
+                    }
                     i++;
                 }
                 cp.getMenu().setPage(index / container.getPageItemTotal());
@@ -484,24 +465,26 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 String search = cp.getMenu().getMenuTag(COLLECTIBLE_SEARCH, String.class);
                 for (Collectible collectible : Vendorables.getAllSorted(clazz, Vendorables.SortType.CUSTOM_MODEL_DATA)) {
                     if (!collectible.getName().toLowerCase().contains(search.toLowerCase())) continue;
-                    CorePlayer cvp = Core.getInstance().getPlayers().get(cp.getUniqueId());
-                    container2.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                            .setName(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayName() : "Locked")
-                            .setDisplayItem(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDisplayItem() : InventoryMenuUtils.MenuIcon.LOCKED.getIconItem())
-                            .setDescription(cp2 -> collectible.isUnlocked(cvp) ? collectible.getDescription() : "")
-                            .setAction(cp2 -> {
-                                if (collectible.isUnlocked(cvp)) {
+
+                    if (collectible.isUnlocked(cp)) {
+                        container2.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                .setName(collectible.getDisplayName())
+                                .setDisplayItem(collectible.getDisplayItem())
+                                .setDescription(collectible.getDescription())
+                                .setAction(cp2 -> {
                                     if (collectible.hasSkins()) {
                                         cp2.getMenu().setMenuTag(COLLECTIBLE_SKIN, collectible.getIdentifier());
                                         cp2.getMenu().setInventoryMenuItem(skinMenuItem);
                                     } else {
                                         cp2.getCollectibles().setActiveItem(collectible);
                                     }
-                                }
-                            })
-                            .setCloseOnAction(false));
-                    cp.getMenu().removeMenuTag(COLLECTIBLE_SEARCH);
+                                })
+                                .setCloseOnAction(false));
+                    } else if (collectible.getUnlockType().shouldShowLocked()) {
+                        container2.addMenuItem(InventoryMenuUtils.createLockedMenuItem());
+                    }
                 }
+                cp.getMenu().removeMenuTag(COLLECTIBLE_SEARCH);
             }
         });
 
@@ -531,17 +514,22 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                     container.clearUnsorted();
                     Collectible collectible = Vendorables.get(clazz, cp.getMenu().getMenuTag(COLLECTIBLE_SKIN, String.class));
                     if (collectible == null) return;
-                    container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                            .setName(collectible.getDisplayName())
-                            .setDisplayItem(collectible.getDisplayItem())
-                            .setDescription(collectible.getDescription())
-                            .setAction(cp2 -> {
-                                cp2.getCollectibles().setActiveItem(collectible);
-                                cp2.getCollectibles().setSkin(collectible, "");
-                            })
-                            .setCloseOnAction(false));
+                    CollectibleInfo info = cp.getCollectibles().getInfo(collectible);
+                    if (info.isBaseUnlocked() || collectible.isDefault(cp)) {
+                        container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                .setName(collectible.getDisplayName())
+                                .setDisplayItem(collectible.getDisplayItem())
+                                .setDescription(collectible.getDescription())
+                                .setAction(cp2 -> {
+                                    cp2.getCollectibles().setActiveItem(collectible);
+                                    cp2.getCollectibles().setSkin(collectible, "");
+                                })
+                                .setCloseOnAction(false));
+                    } else {
+                        container.addMenuItem(InventoryMenuUtils.createLockedMenuItem());
+                    }
+                    Set<String> skins = info.getOwnedSkins().keySet();
                     for (String id : collectible.getSkinIds()) {
-                        Set<String> skins = cp.getCollectibles().getInfo(collectible).getOwnedSkins().keySet();
                         InventoryMenuItem skinItem;
                         if (skins.contains(id)) {
                             CollectibleSkin skin = collectible.getSkin(id);

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class ResetRequest extends BattleRequest {
 
     public ResetRequest(Battle<?> battle) {
-        super(battle, true, "reset");
+        super(battle, "reset", false, 1D);
     }
 
     @Override

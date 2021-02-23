@@ -39,6 +39,7 @@ public class MuteCommand extends CoreCommand {
         Infractions.mutePublic(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
 
+    /*
     @CommandAnnotation
     public void mutePublic(CommandSender sender,
                            @LiteralArg(value = "public") String l,
@@ -48,6 +49,7 @@ public class MuteCommand extends CoreCommand {
         System.out.println("Command sender");
         Infractions.mutePublic(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
+     */
 
     /**
      * Secret mute doesn't let the player know that
@@ -70,6 +72,7 @@ public class MuteCommand extends CoreCommand {
         Infractions.muteSecret(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
 
+    /*
     @CommandAnnotation
     public void muteSecret(CommandSender sender,
                            @LiteralArg(value = "secret") String l,
@@ -78,5 +81,6 @@ public class MuteCommand extends CoreCommand {
                            @Nullable String reason) {
         Infractions.muteSecret(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
+    */
 
 }

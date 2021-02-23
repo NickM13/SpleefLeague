@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class CollectibleInfo extends DBEntity {
 
-    @DBField Long collectDate;
+    @DBField Long collectDate = -1L;
     @DBField String selectedSkin = "";
     @DBField String name = null;
     Map<String, Long> ownedSkins = new HashMap<>();
@@ -26,13 +26,24 @@ public class CollectibleInfo extends DBEntity {
 
     }
 
-    /**
-     * For newly unlocked collectibles
-     *
-     * @param collectDate Time Collected (millis)
-     */
-    public CollectibleInfo(Long collectDate) {
-        this.collectDate = collectDate;
+    public boolean unlockBase() {
+        if (collectDate < 0) {
+            collectDate = System.currentTimeMillis();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean lockBase() {
+        if (collectDate > 0) {
+            collectDate = -1L;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isBaseUnlocked() {
+        return collectDate > 0;
     }
 
     public void setSelectedSkin(String skin) {

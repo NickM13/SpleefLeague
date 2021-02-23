@@ -17,7 +17,7 @@ public class PersonalWorld extends ProjectileWorld<PersonalWorldPlayer> {
 
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
-        return fakeBlocks.containsKey(pos);
+        return getFakeBlock(pos) != null;
     }
 
     /**
@@ -30,7 +30,7 @@ public class PersonalWorld extends ProjectileWorld<PersonalWorldPlayer> {
      */
     @Override
     protected boolean onItemUse(CorePlayer cp, BlockPosition pos, BlockPosition relative) {
-        return fakeBlocks.containsKey(pos);
+        return getFakeBlock(pos) != null;
     }
 
     @Override

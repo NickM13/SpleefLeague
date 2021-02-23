@@ -2,10 +2,7 @@ package com.spleefleague.core.util;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
-import com.comphenix.protocol.wrappers.WrappedBlockData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.*;
 import com.mojang.authlib.GameProfile;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CoreOfflinePlayer;
@@ -13,12 +10,12 @@ import com.spleefleague.core.util.packet.BlockPalette;
 import com.spleefleague.core.util.packet.ByteBufferReader;
 import com.spleefleague.core.util.packet.ChunkData;
 import com.spleefleague.core.util.packet.ChunkSection;
+import com.spleefleague.core.util.variable.MultiBlockChange;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeBlock;
 import net.minecraft.server.v1_15_R1.EnumGamemode;
 import net.minecraft.server.v1_15_R1.IChatBaseComponent;
 import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
-import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 
 import java.io.ByteArrayOutputStream;
@@ -71,28 +68,39 @@ public class PacketUtils {
         return null;
     }
 
-    public static PacketContainer createMultiBlockChangePacket(ChunkCoord chunkCoord, Map<Short, FakeBlock> fakeChunkBlocks) {
-        PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
+    public static PacketContainer createBlockChangePacket(BlockPosition blockPos, FakeBlock fakeBlock) {
+        PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.BLOCK_CHANGE);
 
-        packetContainer.getChunkCoordIntPairs().write(0, chunkCoord.toChunkCoordIntPair());
-
-        MultiBlockChangeInfo[] mbcia = new MultiBlockChangeInfo[fakeChunkBlocks.size()];
-        int i = 0;
-        for (Map.Entry<Short, FakeBlock> fakeBlock : fakeChunkBlocks.entrySet()) {
-            mbcia[i] = new MultiBlockChangeInfo(fakeBlock.getKey(),
-                    WrappedBlockData.createData(fakeBlock.getValue().getBlockData().getMaterial()),
-                    chunkCoord.toChunkCoordIntPair());
-            i++;
-        }
-
-        packetContainer.getMultiBlockChangeInfoArrays().write(0, mbcia);
+        packetContainer.getBlockPositionModifier().write(0, blockPos);
+        packetContainer.getBlockData().write(0, WrappedBlockData.createData(fakeBlock.getBlockData().getMaterial()));
 
         return packetContainer;
     }
 
-    public static void writeFakeChunkPacket(PacketContainer mapChunkPacket, Map<BlockPosition, FakeBlock> fakeBlocks) {
-        Map<Integer, Map<BlockPosition, FakeBlock>> sectionMap = toSectionMap(fakeBlocks);
-        if (sectionMap.isEmpty()) return;
+    public static PacketContainer createMultiBlockChangePacket(ChunkCoord chunkCoord, List<MultiBlockChange> fakeChunkBlocks) {
+        PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.MULTI_BLOCK_CHANGE);
+
+        ChunkCoordIntPair chunkCoordIntPair = chunkCoord.toChunkCoordIntPair();
+        packetContainer.getChunkCoordIntPairs().write(0, chunkCoordIntPair);
+
+        MultiBlockChangeInfo[] multiBlockChangeInfoArray = new MultiBlockChangeInfo[fakeChunkBlocks.size()];
+        int i = 0;
+        for (MultiBlockChange change : fakeChunkBlocks) {
+            multiBlockChangeInfoArray[i] = new MultiBlockChangeInfo(
+                    (short) (((change.pos & 0x000F) << 12) | ((change.pos & 0x00F0) << 4) | ((change.pos & 0xFF00) >> 8)),
+                    change.blockData,
+                    chunkCoordIntPair);
+            i++;
+        }
+
+        packetContainer.getMultiBlockChangeInfoArrays().write(0, multiBlockChangeInfoArray);
+
+        return packetContainer;
+    }
+
+    public static void writeFakeChunkDataPacket(PacketContainer mapChunkPacket, Map<Short, FakeBlock> fakeBlocks) {
+        if (fakeBlocks.isEmpty()) return;
+        Map<Integer, Map<Short, FakeBlock>> sectionMap = toSectionMap(fakeBlocks);
         try {
             byte[] bytes = mapChunkPacket.getByteArrays().read(0);
             int bitmask = mapChunkPacket.getIntegers().read(2);
@@ -100,7 +108,7 @@ public class PacketUtils {
             for (int i : sectionMap.keySet()) {
                 bitmask |= 1 << i;
             }
-            ChunkData chunkData = splitToChunkSections(bitmask, originalMask, bytes, true);
+            ChunkData chunkData = splitToChunkSections(bitmask, originalMask, bytes);
             insertFakeBlocks(chunkData.getSections(), sectionMap);
 
             byte[] data = toByteArray(chunkData);
@@ -153,29 +161,30 @@ public class PacketUtils {
         baos.write(blockdata);
     }
 
-    private static void insertFakeBlocks(ChunkSection[] sections, Map<Integer, Map<BlockPosition, FakeBlock>> blocks) {
-        for (Map.Entry<Integer, Map<BlockPosition, FakeBlock>> e : blocks.entrySet()) {
-            int id = e.getKey();
+    private static void insertFakeBlocks(ChunkSection[] sections, Map<Integer, Map<Short, FakeBlock>> blocks) {
+        for (Map.Entry<Integer, Map<Short, FakeBlock>> sectionEntry : blocks.entrySet()) {
+            int id = sectionEntry.getKey();
             ChunkSection section = sections[id];
-            for (Map.Entry<BlockPosition, FakeBlock> block : e.getValue().entrySet()) {
-                int relX = block.getKey().getX() & 15; //Actual positive modulo, in java % means remainder. Only works as replacement for mod of powers of two
-                int relZ = block.getKey().getZ() & 15; //Can be replaced with ((block.getZ() % 16) + 16) % 16
-                boolean previouslyAir = section.getBlockRelative(relX, block.getKey().getY() % 16, relZ).getMaterial() == Material.AIR;
-                section.setBlockRelative(block.getValue().getBlockData(), relX, block.getKey().getY() % 16, relZ);
+            short airChange = 0;
+            for (Map.Entry<Short, FakeBlock> blockEntry : sectionEntry.getValue().entrySet()) {
+                int sectionPos = blockEntry.getKey() & 0xFFF;
+                boolean previouslyAir = section.getBlockRelative(sectionPos).getMaterial().isAir();
+                section.setBlockRelative(blockEntry.getValue().getBlockData(), sectionPos);
                 if (previouslyAir) {
-                    if (block.getValue().getBlockData().getMaterial() != Material.AIR) {
-                        section.setNonAirCount((short) (section.getNonAirCount() + 1));
+                    if (!blockEntry.getValue().getBlockData().getMaterial().isAir()) {
+                        airChange++;
                     }
                 } else {
-                    if (block.getValue().getBlockData().getMaterial() == Material.AIR) {
-                        section.setNonAirCount((short) (section.getNonAirCount() - 1));
+                    if (blockEntry.getValue().getBlockData().getMaterial().isAir()) {
+                        airChange--;
                     }
                 }
             }
+            section.setNonAirCount((short) (section.getNonAirCount() + airChange));
         }
     }
 
-    private static ChunkData splitToChunkSections(int bitmask, int originalMask, byte[] data, boolean isOverworld) {
+    private static ChunkData splitToChunkSections(int bitmask, int originalMask, byte[] data) {
         ChunkSection[] sections = new ChunkSection[16];
         ByteBuffer buffer = ByteBuffer.wrap(data);
         ByteBufferReader bbr = new ByteBufferReader(buffer);
@@ -201,7 +210,7 @@ public class PacketUtils {
                     buffer.get(blockData);
                     sections[i] = new ChunkSection(blockData, nonAirCount, palette);
                 } else {
-                    sections[i] = new ChunkSection(isOverworld);
+                    sections[i] = new ChunkSection(true);
                 }
             }
         }
@@ -211,10 +220,10 @@ public class PacketUtils {
         return new ChunkData(sections, additional);
     }
 
-    private static Map<Integer, Map<BlockPosition, FakeBlock>> toSectionMap(Map<BlockPosition, FakeBlock> fakeBlocks) {
-        Map<Integer, Map<BlockPosition, FakeBlock>> sectionMap = new HashMap<>();
-        for (Map.Entry<BlockPosition, FakeBlock> fb : fakeBlocks.entrySet()) {
-            int section = fb.getKey().getY() / 16;
+    private static Map<Integer, Map<Short, FakeBlock>> toSectionMap(Map<Short, FakeBlock> fakeBlocks) {
+        Map<Integer, Map<Short, FakeBlock>> sectionMap = new HashMap<>();
+        for (Map.Entry<Short, FakeBlock> fb : fakeBlocks.entrySet()) {
+            int section = (fb.getKey() >> 12) & 0xF;
             if (!sectionMap.containsKey(section)) {
                 sectionMap.put(section, new HashMap<>());
             }

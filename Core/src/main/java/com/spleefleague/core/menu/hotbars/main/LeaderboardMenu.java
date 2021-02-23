@@ -8,13 +8,12 @@ package com.spleefleague.core.menu.hotbars.main;
 
 import com.spleefleague.core.Core;
 import com.spleefleague.core.game.BattleMode;
-import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
+import com.spleefleague.core.game.leaderboard.CoreLeaderboard;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
@@ -42,7 +41,7 @@ public class LeaderboardMenu {
     }
 
     public static void addLeaderboardMenu(BattleMode mode) {
-        LeaderboardCollection leaderboard = Core.getInstance().getLeaderboards().get(mode.getName());
+        CoreLeaderboard leaderboard = Core.getInstance().getLeaderboards().get(mode.getName());
 
         menuItem.getLinkedChest().addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(mode.getDisplayName())

@@ -6,6 +6,8 @@ import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyDBPlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.*;
 
 import javax.annotation.Nonnull;
@@ -21,7 +23,7 @@ public class ProxyChat {
 
     private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
-    private class FormattedPlayerMessage {
+    private static class FormattedPlayerMessage {
 
         TextComponent textComponent;
         boolean containsUrl;
@@ -31,6 +33,118 @@ public class ProxyChat {
             this.containsUrl = containsUrl;
         }
 
+    }
+
+    /**
+     * Replaces all &# with their associated colors and \n with newlines
+     *
+     * @param msg String to Colorize
+     * @return Colorized String
+     */
+    public static String colorize(String msg) {
+        StringBuilder newmsg = new StringBuilder();
+        int i;
+        Stack<com.spleefleague.coreapi.chat.ChatColor> colorStack = new Stack<>();
+        for (i = 0; i < msg.length() - 1; i++) {
+            if (msg.charAt(i) == '&' || msg.charAt(i) == '§') {
+                if (i >= msg.length() - 1) continue;
+                switch (msg.charAt(i + 1)) {
+                    case 'b':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.AQUA));
+                        break;
+                    case '0':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BLACK));
+                        break;
+                    case '9':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BLUE));
+                        break;
+                    case '3':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_AQUA));
+                        break;
+                    case '1':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_BLUE));
+                        break;
+                    case '8':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_GRAY));
+                        break;
+                    case '2':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_GREEN));
+                        break;
+                    case '5':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_PURPLE));
+                        break;
+                    case '4':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.DARK_RED));
+                        break;
+                    case '6':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GOLD));
+                        break;
+                    case '7':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GRAY));
+                        break;
+                    case 'a':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.GREEN));
+                        break;
+                    case 'd':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.LIGHT_PURPLE));
+                        break;
+                    case 'c':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.RED));
+                        break;
+                    case 'f':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.WHITE));
+                        break;
+                    case 'e':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.YELLOW));
+                        break;
+                    case 'l':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.BOLD));
+                        break;
+                    case 'i':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.ITALIC));
+                        break;
+                    case 'r':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.RESET));
+                        break;
+                    case 'n':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.UNDERLINE));
+                        break;
+                    case 'm':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.STRIKETHROUGH));
+                        break;
+                    case 'k':
+                        newmsg.append(colorStack.push(com.spleefleague.coreapi.chat.ChatColor.MAGIC));
+                        break;
+                    case 'u':
+                        if (colorStack.size() <= 1) {
+                            newmsg.append(com.spleefleague.coreapi.chat.ChatColor.RESET);
+                        } else {
+                            colorStack.pop();
+                            newmsg.append(colorStack.peek());
+                        }
+                        break;
+                    default:
+                        newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1))));
+                        break;
+                }
+                i++;
+            } else if (msg.charAt(i) == '\\') {
+                if (msg.charAt(i + 1) == 'n') {
+                    newmsg.append("\n");
+                } else if (msg.charAt(i + 1) == '\\') {
+                    newmsg.append("\\");
+                } else {
+                    newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))).concat(Character.toString(msg.charAt(i + 1))));
+                }
+                i++;
+            } else {
+                newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(i))));
+            }
+        }
+        if (i <= msg.length() - 1) {
+            newmsg = new StringBuilder(newmsg.toString().concat(Character.toString(msg.charAt(msg.length() - 1))));
+        }
+        return newmsg.toString();
     }
 
     private FormattedPlayerMessage formatPlayerMessage(String message, TextComponent baseFormat) {
@@ -126,6 +240,19 @@ public class ProxyChat {
         BASE_TELL.setItalic(true);
     }
 
+    public void sendReply(ProxyCorePlayer sender, String message) {
+        if (sender.getReply() == null) {
+            ProxyCore.getInstance().sendMessageError(sender, new TextComponent("No one to reply to"));
+            return;
+        }
+        ProxyCorePlayer receiver = ProxyCore.getInstance().getPlayers().get(sender.getReply());
+        if (receiver == null) {
+            ProxyCore.getInstance().sendMessageError(sender, new TextComponent("No one to reply to"));
+            return;
+        }
+        sendTell(sender, receiver, message);
+    }
+
     public void sendTell(@Nonnull ProxyCorePlayer sender, @Nonnull ProxyCorePlayer receiver, String message) {
         TextComponent senderComponent = new TextComponent();
 
@@ -146,23 +273,28 @@ public class ProxyChat {
 
         sender.getPlayer().sendMessage(senderComponent);
         receiver.getPlayer().sendMessage(receiverComponent);
+
+        receiver.setReply(sender.getUniqueId());
     }
 
     public void sendNotificationFriends(Set<UUID> uuids, ChatChannel channel, String message) {
         Set<ProxyCorePlayer> friends = new HashSet<>();
         List<ProxyCorePlayer> targets = new ArrayList<>();
         for (UUID uuid : uuids) {
-            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
             friends.addAll(pcp.getFriends().getOnline());
             targets.add(pcp);
+            for (ProxyCorePlayer pcp2 : pcp.getFriends().getOnline()) {
+                System.out.println(pcp2.getName());
+            }
         }
         friends.removeAll(targets);
 
         TextComponent textComponent = new TextComponent(TextComponent.fromLegacyText(message));
         for (ProxyCorePlayer friend : friends) {
-            //if (friend.getOptions().getBoolean("Friend:Notifications") && channel.isActive(friend)) {
+            if (friend.getOptions().getBoolean("Friend:Notifications")/* && channel.isActive(friend)*/) {
                 friend.getPlayer().sendMessage(textComponent);
-            //}
+            }
         }
     }
 
@@ -181,6 +313,34 @@ public class ProxyChat {
         text.addExtra(decline);
 
         ProxyCore.getInstance().sendMessage(receiver, text);
+    }
+
+    public static void sendTitle(ChatChannel channel, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        Title proxyTitle = ProxyServer.getInstance().createTitle()
+                .title(new TextComponent(title))
+                .subTitle(new TextComponent(subtitle))
+                .fadeIn(fadeIn)
+                .stay(stay)
+                .fadeOut(fadeOut);
+        for (ProxyCorePlayer pcp : ProxyCore.getInstance().getPlayers().getAll()) {
+            if (channel.isActive(pcp)) {
+                pcp.getPlayer().sendTitle(proxyTitle);
+            }
+        }
+    }
+
+    /**
+     * Send a title to all players, stay is based on how long message is
+     * Used by /broadcast command
+     *
+     * @param msg Message
+     */
+    public static void broadcast(String msg) {
+        String title, subtitle;
+        String[] msgs = msg.split("\\\\n");
+        title = msgs[0];
+        subtitle = msgs.length > 1 ? msgs[1] : "";
+        ProxyChat.sendTitle(ChatChannel.GLOBAL, Chat.BROADCAST + colorize(title), Chat.BROADCAST + colorize(subtitle), 5, msg.length() * 2 + 10, 15);
     }
 
 }

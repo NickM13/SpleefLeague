@@ -86,6 +86,26 @@ public class RankCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void rankEditCoinMultiply(CorePlayer sender,
+                                     @LiteralArg("edit") String l1,
+                                     @OptionArg(listName = "ranks") String rank,
+                                     @LiteralArg("coinMultiply") String l2,
+                                     @NumberArg(minValue = 0) Double multiplier) {
+        Core.getInstance().getRankManager().setCoinMultiplier(rank, multiplier);
+        success(sender, "Rank coin multiplier set to " + multiplier);
+    }
+
+    @CommandAnnotation
+    public void rankEditOreMultiply(CorePlayer sender,
+                                     @LiteralArg("edit") String l1,
+                                     @OptionArg(listName = "ranks") String rank,
+                                     @LiteralArg("oreMultiply") String l2,
+                                     @NumberArg(minValue = 0) Double multiplier) {
+        Core.getInstance().getRankManager().setOreMultiplier(rank, multiplier);
+        success(sender, "Rank ore multiplier set to " + multiplier);
+    }
+
+    @CommandAnnotation
     public void rankInfo(CorePlayer sender,
                          @LiteralArg("info") String l1,
                          @OptionArg(listName = "ranks") String rankName) {
@@ -95,6 +115,8 @@ public class RankCommand extends CoreCommand {
                 "ladder: " + rank.getLadder() + ", " +
                 "color: " + rank.getColor().name() + ", " +
                 "maxFriends: " + rank.getMaxFriends() + ", " +
+                "coinMultiplier: " + rank.getCoinMultiplier() + ", " +
+                "oreMultiplier: " + rank.getOreMultiplier() + ", " +
                 "hasOp: " + rank.getHasOp() + " }";
         success(sender, formatted);
     }

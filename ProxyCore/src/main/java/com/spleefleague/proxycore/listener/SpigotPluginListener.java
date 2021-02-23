@@ -51,6 +51,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.CHAT_GROUP, new SpigotListenerChatGroup());
         registeredListeners.put(PacketType.Spigot.CHAT_PLAYER, new SpigotListenerChatPlayer());
         registeredListeners.put(PacketType.Spigot.CHAT_TELL, new SpigotListenerChatTell());
+        registeredListeners.put(PacketType.Spigot.CHAT_BROADCAST, new SpigotListenerChatBroadcast());
         registeredListeners.put(PacketType.Spigot.FRIEND, new SpigotListenerFriend());
         registeredListeners.put(PacketType.Spigot.PARTY, new SpigotListenerParty());
         registeredListeners.put(PacketType.Spigot.PLAYER_COLLECTIBLE, new SpigotListenerPlayerCollectible());
@@ -61,6 +62,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.PLAYER_OPTIONS, new SpigotListenerPlayerOptions());
         registeredListeners.put(PacketType.Spigot.PLAYER_RANK, new SpigotListenerPlayerRank());
         registeredListeners.put(PacketType.Spigot.PLAYER_RATING, new SpigotListenerPlayerRating());
+        registeredListeners.put(PacketType.Spigot.PLAYER_STATISTICS, new SpigotListenerPlayerStatistics());
         registeredListeners.put(PacketType.Spigot.QUEUE_JOIN, new SpigotListenerQueueJoin());
         registeredListeners.put(PacketType.Spigot.QUEUE_LEAVE, new SpigotListenerQueueLeave());
         registeredListeners.put(PacketType.Spigot.QUEUE_REQUEUE, new SpigotListenerQueueRequeue());

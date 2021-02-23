@@ -194,12 +194,17 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                 } else {
                     if (remainingTeams.isEmpty()) {
                         startRound();
-                    } else {
+                    } else if (remainingTeams.size() == 1) {
                         endRoundTeam(remainingTeams.iterator().next());
                     }
                 }
             } else {
-                // Pew!
+                if (tbt.remaining.isEmpty()) {
+                    remainingTeams.remove(tbt);
+                    if (remainingTeams.size() == 1) {
+                        endRoundTeam(remainingTeams.iterator().next());
+                    }
+                }
             }
         }
     }
@@ -294,6 +299,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     public void endBattleTeam(TeamBattleTeam<BP> winner) {
         if (winner == null) {
             TextComponent text = new TextComponent();
+            text.setColor(ChatColor.GRAY.asBungee());
             text.addExtra("Battle between ");
             text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
             text.addExtra(" was peacefully concluded.");
@@ -332,7 +338,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
                 applyRewards(winner);
-                int change = applyEloChange(winner);
+                applyEloChange(winner);
 
                 /*
                 TextComponent text = new TextComponent();

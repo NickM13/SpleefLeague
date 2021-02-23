@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
@@ -168,10 +169,8 @@ public class DBEntity {
     }
 
     public void save(MongoCollection<Document> collection) {
-        //Document query = new Document("identifier", identifier);
-        //collection.updateOne(query, new Document("$set", toDocument()), new UpdateOptions().upsert(true).bypassDocumentValidation(true));
-        unsave(collection);
-        collection.insertOne(toDocument());
+        Document doc = toDocument();
+        collection.replaceOne(new Document("identifier", identifier), doc, new ReplaceOptions().upsert(true));
     }
 
     /**
@@ -308,22 +307,58 @@ public class DBEntity {
     }
 
     public boolean reloadField(Document doc, Set<String> fieldNames) {
-        Class<?> clazz = this.getClass();
-        while (clazz != null && DBEntity.class.isAssignableFrom(clazz) && !fieldNames.isEmpty()) {
-            for (Field field : clazz.getDeclaredFields()) {
-                DBField dbField = field.getAnnotation(DBField.class);
-                if (dbField != null && dbField.read()) {
-                    field.setAccessible(true);
-                    String fieldName = dbField.fieldName().length() > 0 ? dbField.fieldName() : field.getName();
-                    if (!fieldNames.contains(fieldName) ||
-                            !doc.containsKey(fieldName)) continue;
-                    loadField(field, doc.get(fieldName));
-                    fieldNames.remove(fieldName);
-                    if (fieldNames.isEmpty()) break;
-                }
+        Class<? extends DBEntity> clazz = this.getClass();
+        if (!entityFormMap.containsKey(clazz)) {
+            entityFormMap.put(clazz, new DBEntityForm(clazz));
+        }
+        DBEntityForm form = entityFormMap.get(clazz);
+        for (String fieldName : fieldNames) {
+            if (form.getReadFields().containsKey(fieldName)) {
+                loadField(form.getReadFields().get(fieldName), doc.get(fieldName));
             }
         }
         return true;
+    }
+
+    public boolean loadOnly(Document doc, Class<? extends DBEntity> clazz) {
+        if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
+        if (!entityFormMap.containsKey(clazz)) {
+            entityFormMap.put(clazz, new DBEntityForm(clazz));
+        }
+        DBEntityForm form = entityFormMap.get(clazz);
+        boolean fullSuccess = true;
+        for (Map.Entry<String, Field> entry : form.getReadTopFields().entrySet()) {
+            Object docObj = doc.get(entry.getKey());
+            if (docObj == null) continue;
+            if (!loadField(entry.getValue(), docObj)) {
+                fullSuccess = false;
+            }
+        }
+        for (Map.Entry<String, Method> entry : form.getReadTopMethods().entrySet()) {
+            String fieldName = entry.getKey();
+            Method method = entry.getValue();
+            try {
+                if (DBVariable.class.isAssignableFrom(method.getParameters()[0].getType())) {
+                    DBVariable<?> dbVariable = (DBVariable<?>) method.getParameters()[0].getType().getDeclaredConstructor().newInstance();
+                    Object docObj = doc.get(fieldName, method.getParameters()[0].getType());
+                    dbVariable.objLoad(docObj);
+                    method.invoke(this, dbVariable);
+                } else {
+                    Object docObj = doc.get(fieldName);
+                    if (docObj != null && method.getParameters()[0].getType().isAssignableFrom(docObj.getClass())) {
+                        method.invoke(this, doc.get(fieldName, method.getParameters()[0].getType()));
+                    }
+                }
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
+                e.printStackTrace();
+            }
+        }
+        afterLoad();
+        return fullSuccess;
+    }
+
+    public boolean load(Document doc) {
+        return load(doc, getClass());
     }
 
     /**
@@ -332,12 +367,12 @@ public class DBEntity {
      * @param doc Document
      * @return Success
      */
-    public boolean load(Document doc) {
+    public boolean load(Document doc, Class<? extends DBEntity> startClass) {
         if (doc.containsKey("_id")) _id = doc.getObjectId("_id");
-        if (!entityFormMap.containsKey(getClass())) {
-            entityFormMap.put(getClass(), new DBEntityForm(getClass()));
+        if (!entityFormMap.containsKey(startClass)) {
+            entityFormMap.put(startClass, new DBEntityForm(startClass));
         }
-        DBEntityForm form = entityFormMap.get(getClass());
+        DBEntityForm form = entityFormMap.get(startClass);
         boolean fullSuccess = true;
         for (Map.Entry<String, Field> entry : form.getReadFields().entrySet()) {
             Object docObj = doc.get(entry.getKey());
@@ -365,7 +400,9 @@ public class DBEntity {
                 e.printStackTrace();
             }
         }
-        afterLoad();
+        if (startClass.equals(getClass())) {
+            afterLoad();
+        }
         return fullSuccess;
     }
     

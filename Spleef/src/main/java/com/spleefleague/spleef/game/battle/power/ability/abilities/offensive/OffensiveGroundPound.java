@@ -49,7 +49,7 @@ public class OffensiveGroundPound extends AbilityOffensive {
                         10);
         getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
         for (BlockPosition pos : blocks) {
-            getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), Material.AIR.createBlockData(), (long) pos.toVector().length() * 3 + 8);
+            //getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), Material.AIR.createBlockData(), (long) pos.toVector().length() * 3 + 8);
         }
         return true;
     }

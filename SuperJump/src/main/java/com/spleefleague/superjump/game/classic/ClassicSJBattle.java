@@ -30,23 +30,20 @@ public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
     }
 
     protected void setupScoreboard() {
-        this.chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + this.getMode().getDisplayName());
-        this.chatGroup.addTeam("time", "00:00:00:000");
+        chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + this.getMode().getDisplayName());
+        chatGroup.addTeam("arena", ChatColor.GREEN + "  " + arena.getName());
+        chatGroup.addTeam("time", "00:00:00:000");
 
         for(int i = 0; i < this.sortedBattlers.size(); i++) {
-            this.chatGroup.addTeam("p" + i, "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(i).getCorePlayer().getName());
-            this.chatGroup.addTeam("p" + i + "falls", "");
+            chatGroup.addTeam("p" + i, "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(i).getCorePlayer().getName());
+            chatGroup.addTeam("p" + i + "falls", ChatColor.RED + "Falls: ");
         }
 
-        this.updateScoreboard();
+        updateScoreboard();
     }
 
     public void updateScoreboard() {
-        this.chatGroup.setTeamDisplayName("time", Chat.DEFAULT + this.getRuntimeString());
-
-        for(int i = 0; i < this.sortedBattlers.size(); i++) {
-            this.chatGroup.setTeamDisplayName("p" + i + "falls", "" + sortedBattlers.get(i).getFalls());
-        }
+        chatGroup.setTeamDisplayName("time", Chat.DEFAULT + this.getRuntimeString());
     }
     
     @Override
@@ -62,6 +59,9 @@ public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
     protected void failBattler(CorePlayer cp) {
         battlers.get(cp).addFall();
         battlers.get(cp).respawn();
+        for(int i = 0; i < this.sortedBattlers.size(); i++) {
+            chatGroup.setTeamDisplayName("p" + i + "falls", ChatColor.RED + "Falls: " + sortedBattlers.get(i).getFalls());
+        }
     }
     
     @Override

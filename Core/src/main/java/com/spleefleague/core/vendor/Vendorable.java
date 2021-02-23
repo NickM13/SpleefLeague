@@ -54,18 +54,20 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
 
     public enum UnlockType {
 
-        DEFAULT(true, false),
-        HIDDEN(false, false),
-        EVENT(false, false),
-        SHOP(true, true),
-        EXPLORE(true, false);
+        DEFAULT(true, true,  true),
+        HIDDEN(false, false, false),
+        EVENT(false,  false, false),
+        SHOP(true,    true,  false),
+        EXPLORE(true, true,  true);
 
         private final boolean showLocked;
         private final boolean rolled;
+        private final boolean requiresBase;
 
-        UnlockType(boolean showLocked, boolean rolled) {
+        UnlockType(boolean showLocked, boolean rolled, boolean requiresBase) {
             this.showLocked = showLocked;
             this.rolled = rolled;
+            this.requiresBase = requiresBase;
         }
 
         public boolean shouldShowLocked() {
@@ -74,6 +76,10 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
 
         public boolean isRolled() {
             return rolled;
+        }
+
+        public boolean isBaseRequired() {
+            return requiresBase;
         }
 
     }
@@ -325,6 +331,10 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
         return unlockType;
     }
 
+    public final void setMaterial(Material material) {
+        this.material = material;
+    }
+
     /**
      * Gets the display material for this item
      *
@@ -375,7 +385,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
     }
 
     public boolean isDefault(CorePlayer cp) {
-        return false;
+        return unlockType.equals(UnlockType.DEFAULT);
     }
 
     public abstract void saveChanges();

@@ -69,16 +69,12 @@ public class Rating extends DBEntity {
     @DBField protected Division division;
     @DBField protected Integer wins;
     @DBField protected Integer losses;
-    @DBField protected Long lastPlayed;
-    @DBField protected Long lastDecay;
 
     public Rating() {
         elo = BASE_ELO;
         division = Division.SILVER3;
         wins = 0;
         losses = 0;
-        lastPlayed = 0L;
-        lastDecay = 0L;
     }
 
     /**
@@ -88,8 +84,6 @@ public class Rating extends DBEntity {
     public void afterLoad() {
         wins = wins == null ? 0 : wins;
         losses = losses == null ? 0 : losses;
-        wins = wins == null ? 0 : wins;
-        wins = wins == null ? 0 : wins;
     }
 
     private boolean updateDivision() {
@@ -119,7 +113,6 @@ public class Rating extends DBEntity {
         } else {
             losses++;
         }
-        lastPlayed = System.currentTimeMillis();
         return elo;
     }
 
@@ -149,24 +142,6 @@ public class Rating extends DBEntity {
 
     public void addLoss() {
         this.losses++;
-    }
-
-    public boolean isDecaying() {
-        return System.currentTimeMillis() - lastPlayed > 1000 * 60 * 60 * 24 * 7;
-    }
-
-    /**
-     * @return Decayed
-     */
-    public boolean checkDecay() {
-        if (division.getDecay() > 0
-                && isDecaying()
-                && System.currentTimeMillis() - lastDecay > 1000 * 60 * 60 * 24) {
-            elo -= division.getDecay();
-            lastDecay = System.currentTimeMillis();
-            return true;
-        }
-        return false;
     }
 
 }

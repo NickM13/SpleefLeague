@@ -18,7 +18,7 @@ public class SpigotListenerPlayerRating extends SpigotListener<PacketSpigotPlaye
     @Override
     protected void receive(Connection sender, PacketSpigotPlayerRating packet) {
         RatedPlayerInfo rpi = packet.rpi;
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(rpi.uuid);
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(rpi.uuid);
         switch (rpi.action) {
             case SET:
                 pcp.getRatings().setRating(packet.mode, packet.season, rpi.elo);

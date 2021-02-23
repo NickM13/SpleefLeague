@@ -5,6 +5,7 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.listener.bungee.BungeeListener;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleRejoin;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -18,7 +19,9 @@ public class BungeeListenerBattleRejoin extends BungeeListener<PacketBungeeBattl
         Core.getInstance().getPlayers().addPlayerJoinAction(packet.sender, cp -> {
             Battle<?> battle = battleMode.getOngoingBattles().get(battleId);
             if (battle.isOngoing()) {
-                battle.rejoinBattler(cp);
+                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                    battle.rejoinBattler(cp);
+                }, 20L);
             } else {
                 Core.getInstance().returnToHub(cp);
             }

@@ -1,8 +1,10 @@
 package com.spleefleague.core.player.collectible;
 
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
+import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -11,10 +13,8 @@ import org.bukkit.inventory.ItemStack;
 public class CollectibleSkin extends DBEntity {
 
     private final Collectible parent;
-    @DBField
-    private Integer cmd;
-    @DBField
-    private String displayName;
+    @DBField private Integer cmd;
+    @DBField private String displayName;
 
     private ItemStack displayItem;
 
@@ -28,6 +28,11 @@ public class CollectibleSkin extends DBEntity {
         this.displayName = displayName;
 
         this.displayItem = InventoryMenuUtils.createCustomItem(parent.getMaterial(), cmd);
+    }
+
+    @Override
+    public void afterLoad() {
+        displayName = ChatColor.stripColor(Chat.colorize(displayName));
     }
 
     public void updateDisplayItem() {
@@ -48,6 +53,10 @@ public class CollectibleSkin extends DBEntity {
         return displayName;
     }
 
+    public String getFullDisplayName() {
+        return parent.getDisplayName() + " (" + displayName + ")";
+    }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         parent.saveChanges();
@@ -55,6 +64,10 @@ public class CollectibleSkin extends DBEntity {
 
     public ItemStack getDisplayItem() {
         return displayItem;
+    }
+
+    public Collectible getParent() {
+        return parent;
     }
 
 }

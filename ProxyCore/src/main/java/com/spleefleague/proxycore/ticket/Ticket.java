@@ -1,11 +1,15 @@
 package com.spleefleague.proxycore.ticket;
 
 import com.spleefleague.coreapi.chat.Chat;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ChatChannel;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import java.util.ArrayList;
@@ -63,17 +67,15 @@ public class Ticket extends DBEntity {
     public void checkTimeout() {
         if (open && System.currentTimeMillis() > timeout) {
             open = false;
-            ProxyCore.getInstance().sendMessage(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + "Your ticket has timed out.");
+            ProxyCore.getInstance().sendMessage(getSenderPlayer(), Chat.TICKET_PREFIX + "[Ticket]" + Chat.TICKET_ISSUE + " Your ticket has timed out.");
         }
     }
 
     protected TextComponent formatSender(String issue) {
-        TextComponent msg = new TextComponent();
+        TextComponent msg = new TextComponent(Chat.TICKET_PREFIX + "[Ticket: " + ChatColor.YELLOW + getSenderPlayer().getName() + Chat.TICKET_PREFIX + "] ");
 
-        msg.addExtra(Chat.TICKET_PREFIX + "[Ticket");
-        msg.addExtra(Chat.TICKET_PREFIX + ": ");
-        msg.addExtra(getSenderPlayer().getChatName());
-        msg.addExtra(Chat.TICKET_PREFIX + "] ");
+        msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/ticketreply " + ProxyCore.getInstance().getPlayers().getOffline(sender).getName() + " "));
+        msg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder().append("Click to respond").create()));
         msg.addExtra(Chat.TICKET_ISSUE + issue);
 
         return msg;

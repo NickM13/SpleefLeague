@@ -1,7 +1,9 @@
 package com.spleefleague.core.game.request;
 
+import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.coreapi.chat.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import javax.annotation.Nullable;
@@ -14,18 +16,19 @@ import java.util.Set;
  */
 public abstract class BattleRequest {
 
-    private static final double REQUIRED = 0.65D;
 
     protected final Battle<?> battle;
     protected String chatName, scoreboardName;
-    protected final boolean battlerRequest;
+    protected final boolean requireLiving;
+    protected final double required;
     protected final String requestName;
     protected final Set<CorePlayer> requestingPlayers = new HashSet<>();
 
-    protected BattleRequest(Battle<?> battle, boolean isBattlerRequest, String requestName) {
+    protected BattleRequest(Battle<?> battle, String requestName, boolean requireLiving, double required) {
         this.battle = battle;
-        this.battlerRequest = isBattlerRequest;
         this.requestName = requestName;
+        this.requireLiving = requireLiving;
+        this.required = required;
     }
 
     public final String getRequestName() {
@@ -40,13 +43,8 @@ public abstract class BattleRequest {
         return scoreboardName;
     }
 
-    /**
-     * Whether this request requires the player to be a battler or in the battle
-     *
-     * @return Battler Request
-     */
-    public boolean isBattlerRequest() {
-        return battlerRequest;
+    public final boolean isRequireLiving() {
+        return requireLiving;
     }
 
     public boolean isOngoing() {
@@ -60,7 +58,7 @@ public abstract class BattleRequest {
             } else {
                 startRequestMessage(cp);
                 battle.getChatGroup().addTeam(requestName, getScoreboardName());
-                addRequester(cp, total);
+                addRequester(cp, total, false);
             }
         } else {
             battle.getPlugin().sendMessage(cp, "Not a valid requested value!");
@@ -74,6 +72,7 @@ public abstract class BattleRequest {
         text.addExtra(getChatName());
         text.addExtra(" was started by ");
         text.addExtra(cp.getChatName());
+        text.addExtra(".");
         battle.getChatGroup().sendMessage(text);
     }
 
@@ -83,11 +82,12 @@ public abstract class BattleRequest {
      * @param cp    Battle Player
      * @param total Total Possible Request Players
      */
-    public void addRequester(CorePlayer cp, int total) {
-        battle.getPlugin().sendMessage(cp, "You requested to " + getChatName());
+    public void addRequester(CorePlayer cp, int total, boolean personalConfirmation) {
         requestingPlayers.add(cp);
-        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": " + (int) (getPercent(total) * 100) + "%");
-        checkRequired(total);
+        battle.getChatGroup().setTeamDisplayName(requestName, getScoreboardName() + ": [" + BattleUtils.toRequestSquares(getPercent(total) / required) + ChatColor.WHITE + "]");
+        if (!checkRequired(total) && personalConfirmation) {
+            battle.getPlugin().sendMessage(cp, "You requested to " + getChatName() + ".");
+        }
     }
 
     /**
@@ -95,8 +95,10 @@ public abstract class BattleRequest {
      *
      * @param cp Battle Player
      */
-    public void removeRequester(CorePlayer cp) {
-        battle.getPlugin().sendMessage(cp, "You are no longer requesting to " + getChatName());
+    public void removeRequester(CorePlayer cp, boolean confirmation) {
+        if (confirmation) {
+            battle.getPlugin().sendMessage(cp, "You are no longer requesting to " + getChatName() + ".");
+        }
         requestingPlayers.remove(cp);
         if (requestingPlayers.isEmpty()) {
             battle.getChatGroup().removeTeam(requestName);
@@ -138,9 +140,9 @@ public abstract class BattleRequest {
      * @return Requirement Met
      */
     public boolean checkRequired(int total) {
-        if (getPercent(total) >= REQUIRED) {
+        if (getPercent(total) >= required) {
             meetsRequirement();
-            battle.getChatGroup().sendMessage("Request to " + getChatName() + " has passed");
+            battle.getChatGroup().sendMessage("Request to " + getChatName() + " has passed.");
             clear();
             return true;
         }

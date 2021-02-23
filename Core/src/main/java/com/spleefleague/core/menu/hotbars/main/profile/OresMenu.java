@@ -27,9 +27,9 @@ public class OresMenu {
                 .setName(cp -> "Gold Coins [" + cp.getPurse().getCurrency(CoreCurrency.COIN) + "]")
                 .setDisplayItem(CoreCurrency.COIN.displayItem)
                 .setDescription(CoreCurrency.COIN.description)
-                .setCloseOnAction(false), 4, 0);
+                .setCloseOnAction(false), 0, 0);
 
-        createDigitMenu(container, 0, 0, 4, cp -> cp.getPurse().getCurrency(CoreCurrency.COIN));
+        InventoryMenuUtils.createDigitMenu(container, 1, 0, 4, cp -> cp.getPurse().getCurrency(CoreCurrency.COIN), false);
 
         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> "Common Ore [" + cp.getPurse().getCurrency(CoreCurrency.ORE_COMMON) + "]")
@@ -78,23 +78,6 @@ public class OresMenu {
                 .setDisplayItem(CoreCurrency.FRAGMENT_LEGENDARY.displayItem)
                 .setDescription(CoreCurrency.FRAGMENT_LEGENDARY.description)
                 .setCloseOnAction(false), 3, 4);
-    }
-
-    private static void createDigitMenu(InventoryMenuContainerChest container, int startX, int startY, int count, Function<CorePlayer, Integer> function) {
-        for (int i = 0; i < count; i++) {
-            int finalI = (int) Math.pow(10, count - i - 1);
-            container.addMenuItem(InventoryMenuAPI.createItemDynamic()
-                    .setName(cp -> {
-                        int num = (function.apply(cp) / finalI) % 10;
-                        return "" + num;
-                    })
-                    .setDisplayItem(cp -> {
-                        int num = (function.apply(cp) / finalI) % 10;
-                        if (num == 0) num = 10;
-                        return InventoryMenuUtils.createCustomItem(Material.DIAMOND, num);
-                    })
-                    .setCloseOnAction(false), startX + i, startY);
-        }
     }
 
     /**

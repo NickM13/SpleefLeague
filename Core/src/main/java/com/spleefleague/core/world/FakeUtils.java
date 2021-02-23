@@ -55,9 +55,9 @@ public class FakeUtils {
             FakeWorld<?> fakeWorld = fit.next();
             Iterator<BlockPosition> posit = blockPositions.iterator();
             while (posit.hasNext()) {
-                FakeBlock fb = fakeWorld.getFakeBlocks().get(posit.next());
-                if (fb != null) {
-                    if (fb.getBlockData().getMaterial().isBlock()) {
+                FakeBlock fakeBlock = fakeWorld.getFakeBlock(posit.next());
+                if (fakeBlock != null) {
+                    if (fakeBlock.getBlockData().getMaterial().isBlock()) {
                         return true;
                     } else {
                         posit.remove();
@@ -74,8 +74,8 @@ public class FakeUtils {
             Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
             while (fit.hasNext()) {
                 FakeWorld<?> fakeWorld = fit.next();
-                FakeBlock fb = fakeWorld.getFakeBlocks().get(pos);
-                if (fb != null && !fb.getBlockData().getMaterial().isAir()) {
+                FakeBlock fakeBlock = fakeWorld.getFakeBlock(pos);
+                if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) {
                     return pos;
                 }
             }
@@ -93,7 +93,7 @@ public class FakeUtils {
             Iterator<FakeWorld<?>> fit = cp.getFakeWorlds();
             while (fit.hasNext()) {
                 FakeWorld<?> fakeWorld = fit.next();
-                FakeBlock fb = fakeWorld.getFakeBlocks().get(pos);
+                FakeBlock fb = fakeWorld.getFakeBlock(pos);
                 if (fb != null && !fb.getBlockData().getMaterial().isAir()) {
                     return pos;
                 }

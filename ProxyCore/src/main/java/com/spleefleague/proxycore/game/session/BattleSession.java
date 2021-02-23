@@ -19,17 +19,19 @@ public class BattleSession extends DBEntity {
     @DBField private final String mode;
     @DBField private final String serverName;
     @DBField private final List<UUID> players = new ArrayList<>();
+    @DBField private final Boolean spectatable;
 
     private final Droplet droplet;
 
     private long lastPing;
 
-    public BattleSession(UUID battleId, String mode, Droplet droplet, List<UUID> players) {
+    public BattleSession(UUID battleId, String mode, Droplet droplet, List<UUID> players, boolean spectatable) {
         this.battleId = battleId;
         this.identifier = battleId.toString();
         this.mode = mode;
         this.serverName = droplet.getName();
         this.players.addAll(players);
+        this.spectatable = spectatable;
 
         this.droplet = droplet;
         lastPing = System.currentTimeMillis();
@@ -53,6 +55,10 @@ public class BattleSession extends DBEntity {
 
     public Droplet getDroplet() {
         return droplet;
+    }
+
+    public boolean isSpectatable() {
+        return spectatable;
     }
 
     public void ping() {

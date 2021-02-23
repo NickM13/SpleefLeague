@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,31 +16,39 @@ import java.util.Map;
  */
 public class BattleSessionManager {
 
-    private MongoCollection<Document> battleSessionCol;
+    private MongoCollection<Document> battleSessionColl;
 
     private final Map<String, Integer> ongoingModeMap = new HashMap<>();
 
     private BukkitTask refreshTask;
 
     public void init() {
-        battleSessionCol = Core.getInstance().getPluginDB().getCollection("BattleSessions");
+        battleSessionColl = Core.getInstance().getPluginDB().getCollection("BattleSessions");
 
         refreshTask = Bukkit.getScheduler().runTaskTimer(Core.getInstance(), this::refresh, 20L, 100L);
     }
 
     public void close() {
-
+        refreshTask.cancel();
     }
 
     public void refresh() {
         ongoingModeMap.clear();
     }
 
-    public int getOngoing(String mode) {
-        if (!ongoingModeMap.containsKey(mode)) {
-            ongoingModeMap.put(mode, (int) battleSessionCol.countDocuments(new Document("mode", mode)));
+    public int getOngoing(String... modes) {
+        int total = 0;
+        for (String mode : modes) {
+            if (!ongoingModeMap.containsKey(mode)) {
+                int count = 0;
+                for (Document doc : battleSessionColl.find(new Document("mode", mode))) {
+                    count += doc.get("players", List.class).size();
+                }
+                ongoingModeMap.put(mode, count);
+            }
+            total += ongoingModeMap.get(mode);
         }
-        return ongoingModeMap.get(mode);
+        return total;
     }
 
 }

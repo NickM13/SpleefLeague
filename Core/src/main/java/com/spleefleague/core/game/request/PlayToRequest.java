@@ -15,7 +15,7 @@ public class PlayToRequest extends BattleRequest {
     private int playToValue;
 
     public PlayToRequest(Battle<?> battle) {
-        super(battle, true, "playto");
+        super(battle, "playto", false, 0.65D);
     }
 
     @Override

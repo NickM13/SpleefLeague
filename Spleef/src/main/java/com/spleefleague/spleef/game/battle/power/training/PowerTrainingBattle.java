@@ -15,6 +15,7 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
@@ -210,7 +211,7 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
         Map<BlockPosition, FakeBlock> transformed = FakeUtils.translateBlocks(platform.getFakeBlocks(), pos);
         getGameWorld().setBlocks(transformed);
         for (Map.Entry<BlockPosition, FakeBlock> entry : transformed.entrySet()) {
-            getGameWorld().setBlockDelayed(entry.getKey(), Material.AIR.createBlockData(), 6 * 20);
+            getGameWorld().setBlockDelayed(entry.getKey(), FakeWorld.AIR, 6 * 20);
         }
         return pos;
     }
@@ -231,9 +232,9 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
         battlers.get(cp).respawn();
 
         for (Map.Entry<BlockPosition, FakeBlock> baseBlock : gameWorld.getBaseBlocks().entrySet()) {
-            if (!gameWorld.getFakeBlocks().containsKey(baseBlock.getKey()) ||
-                    gameWorld.getFakeBlocks().get(baseBlock.getKey()).getBlockData().getMaterial() != baseBlock.getValue().getBlockData().getMaterial()) {
-                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue().getBlockData(), (int) (Math.random() * 60));
+            FakeBlock fakeBlock = gameWorld.getFakeBlock(baseBlock.getKey());
+            if (fakeBlock == null || fakeBlock.getBlockData().getMaterial() != baseBlock.getValue().getBlockData().getMaterial()) {
+                gameWorld.setBlockDelayed(baseBlock.getKey(), baseBlock.getValue(), (int) (Math.random() * 60));
             }
         }
     }

@@ -16,6 +16,7 @@ import com.spleefleague.core.player.rank.CorePermanentRank;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.player.rank.CoreTempRank;
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerRank;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -65,10 +66,6 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
         permRank.setRank(CoreRank.DEFAULT);
     }
 
-    public Player getPlayer() {
-        return Bukkit.getPlayer(uuid);
-    }
-
     /**
      * CorePlayer::init is called when a player comes online
      */
@@ -97,6 +94,18 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
     @Override
     public void close() {
 
+    }
+
+    @Override
+    public boolean onResync(List<PacketBungeePlayerResync.Field> fields) {
+        for (PacketBungeePlayerResync.Field field : fields) {
+            if (field == PacketBungeePlayerResync.Field.PERM_RANK ||
+                    field == PacketBungeePlayerResync.Field.TEMP_RANKS) {
+                updateRank();
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateChatNames() {
@@ -159,21 +168,21 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
      * @return Name of player as TextComponent to allow for quick /tell
      */
     public TextComponent getChatName() {
-        return chatName;
+        return (TextComponent) chatName.duplicate();
     }
 
     /**
      * @return Name of player as TextComponent to allow for quick /tell
      */
     public TextComponent getChatNamePossessive() {
-        return chatNamePossessive;
+        return (TextComponent) chatNamePossessive.duplicate();
     }
 
     /**
      * @return Name of player as TextComponent to allow for quick /tell
      */
     public TextComponent getChatNameRanked() {
-        return chatNameRanked;
+        return (TextComponent) chatNameRanked.duplicate();
     }
 
     /**
@@ -290,44 +299,6 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
         super.setOnline(state);
     }
 
-    /**
-     * Send unformatted message to player
-     *
-     * @param string Message
-     */
-    public void sendMessage(String string) {
-        getPlayer().sendMessage(string);
-    }
-
-    /**
-     * Send BaseComponent message to player
-     *
-     * @param message BaseComponent
-     */
-    public void sendMessage(BaseComponent... message) {
-        getPlayer().spigot().sendMessage(message);
-    }
-
-    /**
-     * Send a title to player (Large text in middle of screen)
-     *
-     * @param title    Title
-     * @param subtitle Subtitle
-     * @param fadeIn   Ticks
-     * @param stay     Ticks
-     * @param fadeOut  Ticks
-     */
-    public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
-    }
-
-    public void sendHotbarText(String text) {
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
-        packet.getChatTypes().write(0, EnumWrappers.ChatType.GAME_INFO);
-        packet.getChatComponents().write(0, WrappedChatComponent.fromText(text));
-        Core.sendPacket(this, packet);
-    }
-
     public final boolean isOnline() {
         return onlineState != OnlineState.OFFLINE;
     }
@@ -341,37 +312,6 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
             return System.currentTimeMillis();
         }
         return lastOnline;
-    }
-
-    /**
-     * Used to get the inventory of a player, if they have a
-     * pregameState saved (are ingame) then return their previous
-     * inventory
-     *
-     * @return ItemStacks
-     * @deprecated Under construction, pregameState is not a shared player variable
-     */
-    @Deprecated
-    public final ItemStack[] getInventory() {
-        return getPlayer().getInventory().getContents();
-    }
-
-    /**
-     * Returns item in main hand
-     *
-     * @return ItemStack
-     */
-    public final ItemStack getHeldItem() {
-        return getPlayer().getInventory().getItemInMainHand();
-    }
-
-    /**
-     * Sets an item the player's main hand
-     *
-     * @param itemStack Held Item
-     */
-    public final void setHeldItem(ItemStack itemStack) {
-        getPlayer().getInventory().setItemInMainHand(itemStack);
     }
 
     @Override

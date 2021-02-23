@@ -35,11 +35,13 @@ public class BanCommand extends CoreCommand {
         Infractions.ban(sender, op, reason == null ? "" : reason);
     }
 
+    /*
     @CommandAnnotation
     public void ban(CommandSender sender,
                     OfflinePlayer op,
                     @Nullable String reason) {
         Infractions.ban(null, op, reason == null ? "" : reason);
     }
+    */
 
 }

@@ -105,7 +105,7 @@ public abstract class BattlePlayer {
         if (checkpoint != -1) {
             player.teleport(battle.getCheckpoint(checkpoint));
         } else if (spawn != null) {
-            player.teleport(spawn);
+            player.teleport(spawn.clone().add(0, 0.2, 0));
         }
     }
 

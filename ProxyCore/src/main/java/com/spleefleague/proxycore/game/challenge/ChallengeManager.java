@@ -31,8 +31,22 @@ public class ChallengeManager {
     }
 
     private void checkTimeouts() {
-        for (Map.Entry<UUID, Map<UUID, Challenge>> entry : challengeMap.entrySet()) {
-            entry.getValue().entrySet().removeIf(entry2 -> entry2.getValue().isTimedOut());
+        for (Map.Entry<UUID, Map<UUID, Challenge>> receiver : challengeMap.entrySet()) {
+            Iterator<Map.Entry<UUID, Challenge>> it = receiver.getValue().entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<UUID, Challenge> sender = it.next();
+                if (sender.getValue().isTimedOut()) {
+                    it.remove();
+
+                    ProxyCorePlayer pcpReceiver = ProxyCore.getInstance().getPlayers().get(receiver.getKey());
+                    ProxyCorePlayer pcpSender = ProxyCore.getInstance().getPlayers().get(sender.getKey());
+                    TextComponent component = new TextComponent();
+                    component.addExtra("Challenge from ");
+                    component.addExtra(pcpSender.getChatName());
+                    component.addExtra(" has expired.");
+                    ProxyCore.getInstance().sendMessage(pcpReceiver, component);
+                }
+            }
         }
     }
 
@@ -60,7 +74,7 @@ public class ChallengeManager {
             if (!challengeMap.containsKey(receiver)) {
                 challengeMap.put(receiver, new HashMap<>());
             }
-            challengeMap.get(receiver).put(sender, new ChallengeSolo(mode, query));
+            challengeMap.get(receiver).putIfAbsent(sender, new ChallengeSolo(mode, query));
             String arenaText = ProxyCore.getInstance().getQueueManager().formatArenaQuery(mode, query);
 
             component = new TextComponent();

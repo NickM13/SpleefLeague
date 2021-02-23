@@ -20,7 +20,8 @@ public class ProxyRank extends Rank {
             VIP,
             DONOR_1,
             DONOR_2,
-            DONOR_3;
+            DONOR_3,
+            DONOR_4;
 
     public ProxyRank() {
 

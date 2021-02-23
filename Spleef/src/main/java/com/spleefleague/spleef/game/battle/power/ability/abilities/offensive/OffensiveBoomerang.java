@@ -4,6 +4,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
+import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.core.world.game.projectile.FakeEntitySnowball;
@@ -42,22 +43,23 @@ public class OffensiveBoomerang extends AbilityOffensive {
 
         @Override
         protected void blockChange(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
+            FakeBlock fakeBlock;
             if (getBukkitEntity().getTicksLived() > 2) {
-                if (projectileWorld.getFakeBlocks().containsKey(blockRaycastResult.getBlockPos()) &&
-                        !projectileWorld.getFakeBlocks().get(blockRaycastResult.getBlockPos()).getBlockData().getMaterial().isAir()) {
-                    projectileWorld.breakBlocks(blockRaycastResult.getBlockPos(), 1, 1);
+                fakeBlock = projectileWorld.getFakeBlock(blockRaycastResult.getBlockPos());
+                if (fakeBlock != null) {
+                    projectileWorld.breakBlock(blockRaycastResult.getBlockPos(), cpShooter);
                 }
-                if (projectileWorld.getFakeBlocks().containsKey(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -2, 0))) &&
-                        !projectileWorld.getFakeBlocks().get(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -2, 0))).getBlockData().getMaterial().isAir()) {
-                    projectileWorld.breakBlocks(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -2, 0)), 1, 1);
+                fakeBlock = projectileWorld.getFakeBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -2, 0)));
+                if (fakeBlock != null) {
+                    projectileWorld.breakBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -2, 0)), cpShooter);
                 }
-                if (projectileWorld.getFakeBlocks().containsKey(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -1, 0))) &&
-                        !projectileWorld.getFakeBlocks().get(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -1, 0))).getBlockData().getMaterial().isAir()) {
-                    projectileWorld.breakBlocks(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -1, 0)), 1, 1);
+                fakeBlock = projectileWorld.getFakeBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -1, 0)));
+                if (fakeBlock != null) {
+                    projectileWorld.breakBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, -1, 0)), cpShooter);
                 }
-                if (projectileWorld.getFakeBlocks().containsKey(blockRaycastResult.getBlockPos().add(new BlockPosition(0, 1, 0))) &&
-                        !projectileWorld.getFakeBlocks().get(blockRaycastResult.getBlockPos().add(new BlockPosition(0, 1, 0))).getBlockData().getMaterial().isAir()) {
-                    projectileWorld.breakBlocks(blockRaycastResult.getBlockPos().add(new BlockPosition(0, 1, 0)), 1, 1);
+                fakeBlock = projectileWorld.getFakeBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, 1, 0)));
+                if (fakeBlock != null) {
+                    projectileWorld.breakBlock(blockRaycastResult.getBlockPos().add(new BlockPosition(0, 1, 0)), cpShooter);
                 }
             }
         }

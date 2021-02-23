@@ -6,6 +6,7 @@
 
 package com.spleefleague.superjump.commands;
 
+import com.google.common.collect.Sets;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.annotation.HelperArg;
@@ -19,6 +20,7 @@ import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import com.spleefleague.superjump.game.conquest.ConquestPack;
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * @author NickM13
@@ -29,35 +31,38 @@ public class SuperJumpCommand extends CoreCommand {
         super("superjump", CoreRank.DEFAULT);
         addAlias("sj");
         setUsage("/sj <mode>");
-        setOptions("conquestPacks", (cp) -> ConquestPack.getPackNames());
-        setOptions("shuffleArenas", (cp) -> Arenas.getAll(SJMode.SHUFFLE.getBattleMode()).keySet());
-        setOptions("proArenas", (cp) -> Arenas.getAll(SJMode.PRO.getBattleMode()).keySet());
+        this.setOptions("gamemodes", pi -> enabledModes);
+        setOptions("conquestPacks", pi -> ConquestPack.getPackNames());
+        setOptions("shuffleArenas", pi -> Arenas.getAll(SJMode.SHUFFLE.getBattleMode()).keySet());
+        setOptions("proArenas", pi -> Arenas.getAll(SJMode.PRO.getBattleMode()).keySet());
     }
+
+    private static final Set<String> enabledModes = Sets.newHashSet(SJMode.CLASSIC.name().toLowerCase());
     
     @CommandAnnotation
     public void sj(CorePlayer sender) {
         sender.getMenu().setInventoryMenuItem(SuperJump.getInstance().getSJMenuItem());
     }
-    
+
     @CommandAnnotation
     public void sjClassic(CorePlayer sender, @LiteralArg(value="classic") String l, @Nullable @OptionArg(listName="shuffleArenas") String arenaName) {
         Arena arena = Arenas.get(arenaName, SJMode.CLASSIC.getBattleMode());
         SuperJump.getInstance().queuePlayer(SJMode.CLASSIC.getBattleMode(), sender, arena);
     }
-    
-    @CommandAnnotation
+
+    @CommandAnnotation(disabled = true)
     public void sjShuffle(CorePlayer sender, @LiteralArg(value="shuffle") String l, @Nullable @OptionArg(listName="shuffleArenas") String arenaName) {
         Arena arena = Arenas.get(arenaName, SJMode.SHUFFLE.getBattleMode());
         SuperJump.getInstance().queuePlayer(SJMode.SHUFFLE.getBattleMode(), sender, arena);
     }
-    
-    @CommandAnnotation
+
+    @CommandAnnotation(disabled = true)
     public void sjPro(CorePlayer sender, @LiteralArg(value="pro") String l, @Nullable @OptionArg(listName="proArenas") String arenaName) {
         Arena arena = Arenas.get(arenaName, SJMode.PRO.getBattleMode());
         SuperJump.getInstance().queuePlayer(SJMode.PRO.getBattleMode(), sender, arena);
     }
-    
-    @CommandAnnotation
+
+    @CommandAnnotation(disabled = true)
     public void sjConquest(CorePlayer sender, @LiteralArg(value="conquest") String l, @OptionArg(listName="conquestPacks") String packName) {
         ConquestPack pack = ConquestPack.getPack(packName);
         if (pack != null) {
@@ -65,12 +70,12 @@ public class SuperJumpCommand extends CoreCommand {
         }
     }
 
-    @CommandAnnotation
+    @CommandAnnotation(disabled = true)
     public void sjEndless(CorePlayer sender, @LiteralArg(value="endless") String l) {
         SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getBattleMode(), sender);
     }
 
-    @CommandAnnotation(minRank = "DEVELOPER")
+    @CommandAnnotation(disabled = true, minRank = "DEVELOPER")
     public void sjEndless(CorePlayer sender, @LiteralArg(value="endless") String l, @HelperArg("[level]") Integer level) {
         sender.getStatistics().setHigher("superjump", "endless:level", level);
         SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getBattleMode(), sender);

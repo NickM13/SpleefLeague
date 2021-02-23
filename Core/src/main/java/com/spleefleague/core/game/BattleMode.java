@@ -15,6 +15,7 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.settings.Settings;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -213,8 +214,9 @@ public class BattleMode {
         return battleClass;
     }
 
+    @Deprecated
     public String getSeason() {
-        return Core.getInstance().getLeaderboards().get(name).getActive().getSeason();
+        return Settings.getCurrentSeason();
     }
 
     public InventoryMenuContainerChest createEditMenu() {

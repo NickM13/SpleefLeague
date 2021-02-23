@@ -16,32 +16,17 @@ public class PersonalTablist {
 
     private final CorePlayer owner;
     private final List<UUID> currentList = new ArrayList<>();
-    private final Map<UUID, CorePlayer> targetList = new HashMap<>();
 
     public PersonalTablist(CorePlayer owner) {
         this.owner = owner;
         updateHeaderFooter();
     }
 
-    public void addPlayer(CorePlayer cp) {
-        targetList.put(cp.getUniqueId(), cp);
-    }
-
-    public void removePlayer(UUID uuid) {
-        Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(Lists.newArrayList(uuid)), 0L);
-    }
-
-    public void clear() {
-        if (currentList.isEmpty()) return;
-        Core.sendPacketSilently(owner.getPlayer(), PacketUtils.createRemovePlayerPacket(currentList), 0L);
-        currentList.clear();
-    }
-
     public void updateHeaderFooter() {
         PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         packetContainer.getChatComponents().write(0, WrappedChatComponent.fromText(
                 ChatColor.GOLD + "" + ChatColor.BOLD + "SpleefLeague\n" +
-                        ChatColor.GRAY + "Online: " + ChatColor.GREEN + Core.getInstance().getPlayers().getAllLocal().size() + "\n" +
+                        ChatColor.GRAY + "Online: " + ChatColor.GREEN + Core.getInstance().getPlayers().getAllOnline().size() + "\n" +
                         ChatColor.GRAY + "Ping: " + owner.getPingFormatted() + "\n" +
                         ChatColor.GRAY + "==================="));
         packetContainer.getChatComponents().write(1, WrappedChatComponent.fromText(

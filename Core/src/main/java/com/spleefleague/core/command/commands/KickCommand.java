@@ -35,6 +35,7 @@ public class KickCommand extends CoreCommand {
         Infractions.kick(sender, op, "");
     }
 
+    /*
     @CommandAnnotation
     public void kick(CommandSender sender, OfflinePlayer op, String reason) {
         Infractions.kick(null, op, reason);
@@ -44,5 +45,6 @@ public class KickCommand extends CoreCommand {
     public void kick(CommandSender sender, OfflinePlayer op) {
         Infractions.kick(null, op, "");
     }
+    */
 
 }

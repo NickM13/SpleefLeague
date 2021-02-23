@@ -6,6 +6,7 @@ import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
@@ -99,7 +100,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         Map<BlockPosition, FakeBlock> transformed = FakeUtils.translateBlocks(platform.getFakeBlocks(), pos);
         getBattle().getGameWorld().setBlocks(transformed);
         for (Map.Entry<BlockPosition, FakeBlock> entry : transformed.entrySet()) {
-            getBattle().getGameWorld().setBlockDelayed(entry.getKey(), Material.AIR.createBlockData(), 6 * 20);
+            getBattle().getGameWorld().setBlockDelayed(entry.getKey(), FakeWorld.AIR, 6 * 20);
         }
         Location spawn = pos.toLocation(getPlayer().getWorld()).add(0.5, 0, 0.5);
         spawn.setYaw(getSpawn().getYaw());
@@ -221,8 +222,8 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         updateAbilities(Ability.Type.UTILITY);
 
         getCorePlayer().sendHotbarText(
-                toHotbarString(ChatColor.RED + "" + ChatColor.BOLD + "" + ChatColor.ITALIC, offensive) + "  " +
-                        toHotbarString(ChatColor.BLUE + "" + ChatColor.BOLD + "" + ChatColor.ITALIC, utility) + "  " +
+                        toHotbarString(ChatColor.RED   + "" + ChatColor.BOLD + "" + ChatColor.ITALIC, offensive) + "  " +
+                        toHotbarString(ChatColor.BLUE  + "" + ChatColor.BOLD + "" + ChatColor.ITALIC, utility)   + "  " +
                         toHotbarString(ChatColor.GREEN + "" + ChatColor.BOLD + "" + ChatColor.ITALIC, mobility));
     }
 

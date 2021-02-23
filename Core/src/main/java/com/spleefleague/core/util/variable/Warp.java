@@ -119,7 +119,7 @@ public class Warp extends DBEntity {
      * @return Warp Name Set
      */
     public static Set<Warp> getWarps(String folderName) {
-        return folders.get(folderName).stream().map(warps::get).collect(Collectors.toCollection(TreeSet::new));
+        return folders.get(folderName).stream().map(warps::get).collect(Collectors.toSet());
     }
 
     /**

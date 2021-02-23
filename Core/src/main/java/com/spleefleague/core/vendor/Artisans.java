@@ -87,6 +87,13 @@ public class Artisans {
         save(artisan);
     }
 
+    public static void setBorder(String identifier, String border) {
+        Artisan artisan = artisans.get(identifier);
+        if (artisan == null) return;
+        artisan.setBorder(border);
+        save(artisan);
+    }
+
     public static void setCoinCost(String identifier, int coin) {
         Artisan artisan = artisans.get(identifier);
         if (artisan == null) return;

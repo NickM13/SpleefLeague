@@ -4,6 +4,7 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
+import com.spleefleague.core.command.error.CoreError;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.world.build.BuildStructure;
@@ -177,20 +178,6 @@ public class BuildCommand extends CoreCommand {
         }
     }
 
-    @CommandAnnotation(confirmation = true)
-    public void buildShift(CorePlayer sender,
-                           @LiteralArg("shift") String l,
-                           @HelperArg("<x>") Integer x,
-                           @HelperArg("<y>") Integer y,
-                           @HelperArg("<z>") Integer z) {
-        if (sender.isInBuildWorld()) {
-            sender.getBuildWorld().shift(new BlockPosition(x, y, z));
-            success(sender, "Structure has been moved");
-        } else {
-            error(sender, "You aren't in a build world!");
-        }
-    }
-
     @CommandAnnotation
     public void buildPos1(CorePlayer sender,
                           @LiteralArg("pos1") String l) {
@@ -246,6 +233,7 @@ public class BuildCommand extends CoreCommand {
                     (r, s) -> {
                         sender.getBuildWorld().worldify(bwp.getPosBox());
                         success(sender, "Structure has been worldified");
+                        //error(sender, CoreError.SETUP);
                     },
                     new TextComponent("Are you sure you want to send the selected area to the real world?  This will overwrite current blocks, no undoing!"));
         } else {

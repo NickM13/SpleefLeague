@@ -1,12 +1,15 @@
 package com.spleefleague.core.world.build;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.variable.Dimension;
+import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.FakeWorld;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -108,7 +111,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         this.structure = structure;
         this.structure.setUnderConstruction(this);
         for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
-            if (!setBlock(entry.getKey().add(origin), entry.getValue().getBlockData())) {
+            if (!setBlock(entry.getKey().add(origin), entry.getValue())) {
                 BlockPosition fail = entry.getKey().add(origin);
                 CoreLogger.logError("Build World failed at " + fail.toString());
                 loadFail = true;
@@ -170,13 +173,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     protected boolean onItemUse(CorePlayer cp, BlockPosition blockPosition, BlockPosition blockRelative) {
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (heldItem.getType().isBlock()) {
-            if (cp.getPlayer().isSneaking()) {
-
-            }
             placeBlock(blockRelative, heldItem.getType(), cp);
-        } else {
-            cp.getPlayer().sendBlockChange(blockPosition.toLocation(getWorld()),
-                    blockPosition.toLocation(getWorld()).getBlock().getBlockData());
         }
         return true;
     }
@@ -194,7 +191,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         cp.refreshHotbar();
         PLAYER_BUILD_WORLDS.put(cp.getUniqueId(), this);
 
-        if (!fakeBlocks.isEmpty()) {
+        if (!fakeChunks.isEmpty()) {
             cp.getPlayer().teleport(origin.toLocation(getWorld()).add(0.5D, 0D, 0.5D));
         }
     }
@@ -215,8 +212,9 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         return super.removePlayer(cp);
     }
 
-    public boolean setBlock(BlockPosition pos, BlockData blockData) {
-        if (fakeBlocks.isEmpty()) {
+    @Override
+    public boolean setBlock(BlockPosition pos, FakeBlock fakeBlock) {
+        if (fakeChunks.isEmpty() || lowest == null || highest == null) {
             lowest = pos;
             highest = pos;
         } else {
@@ -229,13 +227,19 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                     Math.max(pos.getY(), highest.getY()),
                     Math.max(pos.getZ(), highest.getZ()));
         }
-        return super.setBlock(pos, blockData);
+        return super.setBlock(pos, fakeBlock);
     }
 
     public void saveToStructure() {
         structure.getFakeBlocks().clear();
-        for (Map.Entry<BlockPosition, FakeBlock> entry : fakeBlocks.entrySet()) {
-            structure.setBlock(entry.getKey().subtract(origin), entry.getValue());
+        for (Map.Entry<ChunkCoord, Map<Short, FakeBlock>> chunkEntry : fakeChunks.entrySet()) {
+            for (Map.Entry<Short, FakeBlock> blockEntry : chunkEntry.getValue().entrySet()) {
+                BlockPosition pos = new BlockPosition(
+                        chunkEntry.getKey().x * 16 + (blockEntry.getKey() & 0xF),
+                        (blockEntry.getKey() & 0xFF00) >> 8,
+                        chunkEntry.getKey().z * 16 + ((blockEntry.getKey() & 0xF0) >> 4));
+                structure.setBlock(pos.subtract(origin), blockEntry.getValue());
+            }
         }
         BuildStructures.save(structure);
     }
@@ -248,11 +252,6 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         BlockPosition shift = this.origin.subtract(origin);
         this.origin = origin;
         structure.shiftOrigin(shift);
-    }
-
-    public void shift(BlockPosition shift) {
-        Map<BlockPosition, FakeBlock> shiftedBlocks = FakeUtils.translateBlocks(new HashMap<>(fakeBlocks), shift);
-        overwriteBlocks(shiftedBlocks);
     }
 
     public void fill(Dimension fillBox, Material material) {
@@ -283,7 +282,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                 }
             }
         }
-        setBlocks(fillBlocks);
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> setBlocksForced(fillBlocks), 20L);
     }
 
     /**
@@ -297,7 +296,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         for (int x = (int) fillBox.getLow().x; x <= fillBox.getHigh().x; x++) {
             for (int y = (int) fillBox.getLow().y; y <= fillBox.getHigh().y; y++) {
                 for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
-                    FakeBlock fb2 = fakeBlocks.get(new BlockPosition(x, y, z));
+                    FakeBlock fb2 = getFakeBlock(new BlockPosition(x, y, z));
                     if (fb2 != null) {
                         getWorld().getBlockAt(x, y, z).setBlockData(fb2.getBlockData());
                         fillBlocks.put(new BlockPosition(x, y, z), fb);

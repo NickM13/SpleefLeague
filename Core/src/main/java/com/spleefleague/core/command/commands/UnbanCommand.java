@@ -33,6 +33,7 @@ public class UnbanCommand extends CoreCommand {
         Infractions.unban(sender, op, "");
     }
 
+    /*
     @CommandAnnotation
     public void unban(CommandSender sender, OfflinePlayer op, String reason) {
         Infractions.unban(null, op, reason);
@@ -42,5 +43,6 @@ public class UnbanCommand extends CoreCommand {
     public void unban(CommandSender sender, OfflinePlayer op) {
         Infractions.unban(null, op, "");
     }
+    */
 
 }

@@ -38,9 +38,15 @@ public class PacketManager {
         PacketSpigotBundleOut packetOut = new PacketSpigotBundleOut();
 
         Iterator<byte[]> it2 = packetList.iterator();
+        int total = 0;
         while (it2.hasNext()) {
-            packetOut.addPacket(it2.next());
+            byte[] data = it2.next();
+            packetOut.addPacket(data);
             it2.remove();
+            total += data.length;
+            if (total > 20000) {
+                break;
+            }
         }
 
         Player sender = Iterables.getFirst(Bukkit.getOnlinePlayers(), null);

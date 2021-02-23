@@ -66,6 +66,8 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
 
     @DBField private UUID currentBattle = null;
 
+    @DBField private UUID reply = null;
+
     private boolean online = false;
 
     private long url = 0;
@@ -84,6 +86,7 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
     public void init() {
         online = true;
         updateTempRanks();
+        friends.checkOnline();
     }
 
     @Override
@@ -101,14 +104,14 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
     public void updateTempRanks() {
         if (tempRanks.removeIf(proxyTempRank -> System.currentTimeMillis() > proxyTempRank.getExpireTime())) {
             ProxyCore.getInstance().getPlayers().save(this);
-            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.RANK)));
+            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.PERM_RANK, PacketBungeePlayerResync.Field.TEMP_RANKS)));
         }
     }
 
     public void setPermRank(ProxyRank permRank) {
         this.permRank.setRank(permRank);
         ProxyCore.getInstance().getPlayers().save(this);
-        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.RANK)));
+        ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.PERM_RANK, PacketBungeePlayerResync.Field.TEMP_RANKS)));
     }
 
     public void addTempRank(String rankName, long duration) {
@@ -118,7 +121,7 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
             // TODO: Add temp rank message here maybe
             tempRanks.add(tempRank);
             ProxyCore.getInstance().getPlayers().save(this);
-            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.RANK)));
+            ProxyCore.getInstance().getPacketManager().sendPacket(new PacketBungeePlayerResync(getUniqueId(), Lists.newArrayList(PacketBungeePlayerResync.Field.PERM_RANK, PacketBungeePlayerResync.Field.TEMP_RANKS)));
         }
     }
 
@@ -332,6 +335,14 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
     public void setChatChannel(ChatChannel chatChannel) {
         this.chatChannel = chatChannel;
         ProxyCore.getInstance().sendMessage(this, new TextComponent("Chat Channel set to " + chatChannel.getDisplayName()));
+    }
+
+    public void setReply(UUID uuid) {
+        this.reply = uuid;
+    }
+
+    public UUID getReply() {
+        return reply;
     }
 
 }

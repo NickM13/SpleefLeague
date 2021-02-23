@@ -15,6 +15,8 @@ import com.spleefleague.core.player.rank.CoreRank;
 
 import java.util.regex.Pattern;
 
+import com.spleefleague.coreapi.infraction.Infraction;
+import com.spleefleague.coreapi.infraction.InfractionType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -37,6 +39,16 @@ public class ChatListener implements Listener {
         if (cp == null) {
             e.getPlayer().sendMessage("Error sending your message");
             e.setCancelled(true);
+            return;
+        }
+
+        if (cp.isMuted()) {
+            Infraction infraction = cp.getMute();
+            if (infraction.getType() == InfractionType.MUTE_SECRET) {
+                Chat.sendFakeMessage(cp, cp.getChatChannel(), e.getMessage());
+            } else {
+                Core.getInstance().sendMessage(cp, "You're muted!");
+            }
             return;
         }
 

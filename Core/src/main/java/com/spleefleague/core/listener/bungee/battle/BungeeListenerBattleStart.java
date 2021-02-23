@@ -36,6 +36,7 @@ public class BungeeListenerBattleStart extends BungeeListener<PacketBungeeBattle
             Battle<?> battle = mode.getBattleClass()
                     .getDeclaredConstructor(UUID.class, List.class, Arena.class)
                     .newInstance(packet.battleId, packet.players, arena);
+            battle.setForced(packet.challenge);
             Core.getInstance().getBattleManager(mode).startMatch(battle);
             mode.addBattle(battle);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception) {

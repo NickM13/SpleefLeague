@@ -74,14 +74,7 @@ public abstract class BattleManager {
      * and updating the field and experience bar for timers
      */
     public void init() {
-        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
-            Iterator<? extends Battle<?>> bit = battles.iterator();
-            Battle<?> b;
-            while (bit.hasNext()) {
-                b = bit.next();
-                b.ping();
-            }
-        }, 0L, 30 * 20L);
+        Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> battles.forEach(Battle::ping), 0L, 30 * 20L);
         Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
             Iterator<? extends Battle<?>> bit = battles.iterator();
             Battle<?> b;

@@ -838,6 +838,11 @@ public class CoreCommand extends Command {
                                 if (!param.getAnnotation(LiteralArg.class).value().toLowerCase().startsWith(arg.toLowerCase())) {
                                     invalidArg = true;
                                     continue;
+                                } else {
+                                    params.add(param.getAnnotation(LiteralArg.class).value());
+                                    strParams.add(param.getAnnotation(LiteralArg.class).value());
+                                    ai++;
+                                    continue;
                                 }
                             } else if (param.isAnnotationPresent(OptionArg.class)) {
                                 if (param.getAnnotation(OptionArg.class).force()) {
@@ -1100,6 +1105,10 @@ public class CoreCommand extends Command {
                             if (!param.getAnnotation(LiteralArg.class).value().toLowerCase().startsWith(arg.toLowerCase())) {
                                 invalidArg = true;
                                 continue;
+                            } else {
+                                strParams.add(param.getAnnotation(LiteralArg.class).value());
+                                ai++;
+                                continue;
                             }
                         } else if (param.isAnnotationPresent(OptionArg.class)) {
                             if (param.getAnnotation(OptionArg.class).force()) {
@@ -1109,6 +1118,7 @@ public class CoreCommand extends Command {
                                 for (String o : optionSet) {
                                     if (/*o.toUpperCase().startsWith(arg.toUpperCase()) || */o.equalsIgnoreCase(arg)) {
                                         invalidArg = false;
+                                        arg = o;
                                         break;
                                     } else if (possibleMatch == null
                                             && (o.toLowerCase().startsWith(arg.toLowerCase())
@@ -1159,13 +1169,15 @@ public class CoreCommand extends Command {
                         } else {
                             cpCollection = Core.getInstance().getPlayers().getAll();
                         }
-                        for (CorePlayer cp2 : cpCollection) {
-                            if (cp != null && cpa != null && !cpa.allowSelf()) {
-                                if (!cp.getName().equalsIgnoreCase(cp2.getName())) {
+                        if (cpCollection.size() < 50 || lastArg.length() >= 1) {
+                            for (CorePlayer cp2 : cpCollection) {
+                                if (cp != null && cpa != null && !cpa.allowSelf()) {
+                                    if (!cp.getName().equalsIgnoreCase(cp2.getName())) {
+                                        addOption(options, cp2.getName(), lastArg);
+                                    }
+                                } else {
                                     addOption(options, cp2.getName(), lastArg);
                                 }
-                            } else {
-                                addOption(options, cp2.getName(), lastArg);
                             }
                         }
                         if (cpa == null || cpa.allowSelf()) {

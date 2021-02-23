@@ -23,39 +23,40 @@ public class QueueManager {
 
     private final Map<String, QueueContainerDynamic> queueContainerDynamicMap = new HashMap<>();
     private ScheduledTask queueTask;
-    private MongoCollection<Document> queueStatsCol;
 
     public void init() {
-        addQueueContainer("spleef:classic", "Classic Spleef", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("spleef:power", "Power Spleef", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("spleef:power_training", "Power Training", QueueContainer.TeamStyle.SOLO);
-        addQueueContainer("spleef:team", "Team Spleef", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("spleef:multi", "Multispleef", QueueContainer.TeamStyle.DYNAMIC);
-        addQueueContainer("spleef:bonanza", "Bonanza Spleef", QueueContainer.TeamStyle.BONANZA);
+        addQueueContainer("spleef:classic",         "Classic Spleef",       QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("spleef:power",           "Power Spleef",         QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("spleef:power_training",  "Power Training",       QueueContainer.TeamStyle.SOLO, false);
+        addQueueContainer("spleef:team",            "Team Spleef",          QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC, true, false);
+        addQueueContainer("spleef:bonanza",         "Bonanza Spleef",       QueueContainer.TeamStyle.BONANZA, false);
 
-        addQueueContainer("splegg:versus", "Splegg Versus", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("splegg:multi", "Multisplegg", QueueContainer.TeamStyle.DYNAMIC);
+        addQueueContainer("splegg:versus",          "Splegg Versus",        QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("splegg:multi",           "Multisplegg",          QueueContainer.TeamStyle.DYNAMIC, true, false);
 
-        addQueueContainer("sj:classic", "SuperJump: Classic", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("sj:shuffle", "SuperJump: Shuffle", QueueContainer.TeamStyle.VERSUS);
-        addQueueContainer("sj:conquest", "SuperJump: Conquest", QueueContainer.TeamStyle.SOLO);
-        addQueueContainer("sj:endless", "SuperJump: Endless", QueueContainer.TeamStyle.SOLO);
-
-        queueStatsCol = ProxyCore.getInstance().getDatabase().getCollection("QueueStats");
+        addQueueContainer("sj:classic",             "SuperJump: Classic",   QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("sj:shuffle",             "SuperJump: Shuffle",   QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("sj:conquest",            "SuperJump: Conquest",  QueueContainer.TeamStyle.SOLO, true);
+        addQueueContainer("sj:endless",             "SuperJump: Endless",   QueueContainer.TeamStyle.SOLO, true);
 
         queueTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             for (QueueContainerDynamic queue : queueContainerDynamicMap.values()) {
                 queue.checkQueue();
             }
-        }, 5, 5, TimeUnit.SECONDS);
+        }, 3, 3, TimeUnit.SECONDS);
     }
 
     public void close() {
         queueTask.cancel();
     }
 
-    public void addQueueContainer(String identifier, String displayName, QueueContainer.TeamStyle teamStyle) {
-        queueContainerDynamicMap.put(identifier, new QueueContainerDynamic(identifier, displayName, teamStyle));
+    public void addQueueContainer(String identifier, String displayName, QueueContainer.TeamStyle teamStyle, boolean spectatable) {
+        queueContainerDynamicMap.put(identifier, new QueueContainerDynamic(identifier, displayName, teamStyle, spectatable, true));
+    }
+
+    public void addQueueContainer(String identifier, String displayName, QueueContainer.TeamStyle teamStyle, boolean spectatable, boolean enabled) {
+        queueContainerDynamicMap.put(identifier, new QueueContainerDynamic(identifier, displayName, teamStyle, spectatable, enabled));
     }
 
     public QueueContainerDynamic getQueue(String identifier) {
@@ -64,7 +65,7 @@ public class QueueManager {
 
     public void forceStart(String mode, String query, List<UUID> players) {
         if (queueContainerDynamicMap.containsKey(mode)) {
-            queueContainerDynamicMap.get(mode).startMatch(players, query);
+            queueContainerDynamicMap.get(mode).startMatch(players, query, true);
         }
     }
 
@@ -129,13 +130,21 @@ public class QueueManager {
         return "";
     }
 
+    private static final String ALL_ARENA_TEMP = "arena:*";
+
     public void joinQueue(UUID uuid, String mode, String query) {
+        query = ALL_ARENA_TEMP;
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
         ProxyParty party = pcp.getParty();
 
         QueueContainerDynamic queueContainerDynamic = queueContainerDynamicMap.get(mode);
         if (queueContainerDynamic == null) {
             System.out.println("Queue doesn't exist!");
+            return;
+        }
+
+        if (!queueContainerDynamic.isEnabled()) {
+            ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Sorry, that queue is temporarily disabled"));
             return;
         }
 

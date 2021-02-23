@@ -74,16 +74,12 @@ public class CorePlayerCrates extends PlayerCrates {
                             continue;
                         }
                         if (parts.length > 2) {
-                            if (!owner.getCollectibles().contains(collectible)) {
-                                owner.getCollectibles().add(collectible);
+                            String skin = parts[2];
+                            if (owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin)) {
+                                // Roll fragment
                             } else {
-                                String skin = parts[2];
-                                if (owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin)) {
-                                    // Roll fragment
-                                } else {
-                                    crateLoot.collectibleSkins.add(collectible.getSkin(skin));
-                                    owner.getCollectibles().addSkin(collectible, skin);
-                                }
+                                crateLoot.collectibleSkins.add(collectible.getSkin(skin));
+                                owner.getCollectibles().addSkin(collectible, skin);
                             }
                         } else {
                             if (owner.getCollectibles().contains(collectible)) {

@@ -140,7 +140,7 @@ public class MobilityHookshot extends AbilityMobility {
         projectileStats.lifeTicks = 4;
         projectileStats.fireRange = 10D;
         projectileStats.collidable = true;
-        projectileStats.size = 0.5;
+        projectileStats.size = 1.2D;
         projectileStats.noClip = true;
         projectileStats.bounces = 2;
         projectileStats.customModelDatas = Lists.newArrayList(29);

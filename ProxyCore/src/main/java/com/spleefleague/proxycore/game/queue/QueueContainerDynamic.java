@@ -33,18 +33,24 @@ public class QueueContainerDynamic extends QueueContainer {
     protected int maxPartySize = 1;
     protected boolean allowSolo = true;
     protected boolean allowPartySplit = true;
+    protected boolean spectatable = true;
+    protected boolean enabled = true;
 
     protected final TeamStyle teamStyle;
 
-    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle, int minTeams, int maxTeams) {
+    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle, int minTeams, int maxTeams, boolean spectatable, boolean enabled) {
         super(identifier, displayName, minTeams, maxTeams);
         this.teamStyle = teamStyle;
+        this.spectatable = spectatable;
+        this.enabled = enabled;
         initTeamSizes();
     }
 
-    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle) {
+    public QueueContainerDynamic(String identifier, String displayName, TeamStyle teamStyle, boolean spectatable, boolean enabled) {
         super(identifier, displayName, teamStyle.minSize, teamStyle.maxSize);
         this.teamStyle = teamStyle;
+        this.spectatable = spectatable;
+        this.enabled = enabled;
         initTeamSizes();
     }
 
@@ -84,6 +90,10 @@ public class QueueContainerDynamic extends QueueContainer {
         } else {
             return sizeIndexHash.containsKey(party.getPlayerCount()) ? 0 : 2;
         }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     /**
@@ -174,24 +184,33 @@ public class QueueContainerDynamic extends QueueContainer {
         return null;
     }
 
-    protected boolean matchAfter(int start, QueuedChunk queueChunk) {
-        if (queueChunk.filledTeams.size() <= 0) return true;
-        if (start >= queuedEntities.size()) return false;
-        ListIterator<QueueEntity> pit = queuedEntities.listIterator(start);
-        while (pit.hasNext()) {
-            QueueEntity qp = pit.next();
-            if (!queueChunk.join(qp, teamStyle.compareRating)) {
-                continue;
-            }
-            if (matchAfter(pit.nextIndex(), queueChunk)) {
-                return true;
+    protected QueuedChunk matchAfter(int start, QueuedChunk queueChunk) {
+        if (queueChunk.filledTeams.size() >= maxTeams) return queueChunk;
+        if (start >= queuedEntities.size()) {
+            if (queueChunk.filledTeams.size() >= reqTeams) {
+                return queueChunk;
+            } else {
+                return null;
             }
         }
-        return false;
+        ListIterator<QueueEntity> pit = queuedEntities.listIterator(start);
+        while (pit.hasNext()) {
+            QueueEntity queueEntity = pit.next();
+            if (!queueChunk.join(queueEntity, teamStyle.compareRating)) {
+                continue;
+            }
+            QueuedChunk result;
+            if ((result = matchAfter(pit.nextIndex(), new QueuedChunk(queueChunk))) != null) {
+                return result;
+            }
+        }
+        if (queueChunk.filledTeams.size() >= reqTeams) {
+            return queueChunk;
+        }
+        return null;
     }
 
     public QueuedChunk getMatchedPlayers() {
-        QueuedChunk queueChunk = new QueuedChunk();
         ListIterator<QueueEntity> pit = queuedEntities.listIterator();
         while (pit.hasNext()) {
             QueueEntity queueEntity = pit.next();
@@ -214,12 +233,9 @@ public class QueueContainerDynamic extends QueueContainer {
             }
             if (startIndex < 0) continue;
             for (int i = startIndex; i < teamSizes.size(); i++) {
-                queueChunk.start(queueEntity, teamSizes.get(i), teamStyle.maxSize);
-                if (matchAfter(pit.nextIndex(), queueChunk)) {
-                    return queueChunk;
-                }
-                if (queueChunk.filledTeams.size() >= reqTeams) {
-                    return queueChunk;
+                QueuedChunk result;
+                if ((result = matchAfter(pit.nextIndex(), new QueuedChunk(queueEntity, teamSizes.get(i), teamStyle.maxSize))) != null) {
+                    return result;
                 }
             }
         }
@@ -227,23 +243,24 @@ public class QueueContainerDynamic extends QueueContainer {
     }
 
     public void checkQueue() {
+        queuedEntities.forEach(QueueEntity::calcRatings);
         while (delayStart < System.currentTimeMillis() && delayStart >= 0) {
             QueuedChunk chunk = getMatchedPlayers();
-            if (chunk == null || !startMatch(chunk)) break;
+            if (chunk == null || !startMatch(chunk, false)) break;
             delayStart = -1;
             checkDelayedStart();
         }
     }
 
-    private boolean startMatch(QueuedChunk chunk) {
+    private boolean startMatch(QueuedChunk chunk, boolean challenge) {
         List<UUID> players = new ArrayList<>();
         for (QueueTeam team : chunk.filledTeams) {
             players.addAll(team.players);
         }
-        return startMatch(players, chunk.query.toString());
+        return startMatch(players, chunk.query.toString(), challenge);
     }
 
-    public boolean startMatch(List<UUID> players, String query) {
+    public boolean startMatch(List<UUID> players, String query, boolean challenge) {
         Droplet droplet = ProxyCore.getInstance().getDropletManager().getAvailable(DropletType.MINIGAME);
         if (droplet == null) {
             ProxyCore.getInstance().getLogger().warning("There are no minigame servers available right now!");
@@ -254,14 +271,15 @@ public class QueueContainerDynamic extends QueueContainer {
             return false;
         }
 
-        Set<ProxyParty> blacklist = new HashSet<>();
-
+        boolean failed = false;
         for (UUID uuid : players) {
-            ProxyParty party = ProxyCore.getInstance().getPartyManager().getParty(uuid);
-            if (blacklist.add(party)) {
-                ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
+            ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+            if (pcp == null || pcp.isBattling()) {
+                ProxyCore.getInstance().getQueueManager().leaveAllQueues(uuid);
+                failed = true;
             }
         }
+        if (failed) return true;
 
         UUID battleId = UUID.randomUUID();
 
@@ -275,9 +293,9 @@ public class QueueContainerDynamic extends QueueContainer {
             pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, query));
         }
 
-        BattleSessionManager.createBattleSession(battleId, identifier, droplet, players);
+        BattleSessionManager.createBattleSession(battleId, identifier, droplet, players, spectatable);
 
-        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players));
+        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players, challenge));
 
         return true;
     }

@@ -13,8 +13,9 @@ public class BungeeListenerBattleSpectate extends BungeeListener<PacketBungeeBat
     protected void receive(Player sender, PacketBungeeBattleSpectate packet) {
         Core.getInstance().getPlayers().addPlayerJoinAction(packet.spectator, spectator -> {
             CorePlayer target = Core.getInstance().getPlayers().get(packet.target);
-            if (target.isInBattle()) {
-                target.getBattle().addSpectator(spectator, target);
+            if (!target.isInBattle() || !target.getBattle().addSpectator(spectator, target)) {
+                Core.getInstance().sendMessage(spectator, "There was a problem spectating this game!");
+                Core.getInstance().returnToHub(spectator);
             }
         }, true);
     }

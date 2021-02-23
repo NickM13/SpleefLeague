@@ -14,10 +14,7 @@ public class SpigotListenerBattlePing extends SpigotListener<PacketSpigotBattleP
 
     @Override
     protected void receive(Connection sender, PacketSpigotBattlePing packet) {
-        BattleSession battleSession = BattleSessionManager.getSession(packet.battleId);
-        if (battleSession != null) {
-            battleSession.ping();
-        }
+        BattleSessionManager.onPing(packet.battleId);
     }
 
 }

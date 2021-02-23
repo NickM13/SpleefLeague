@@ -12,6 +12,7 @@ import com.spleefleague.proxycore.droplet.Droplet;
 import com.spleefleague.proxycore.game.session.BattleSessionManager;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -93,13 +94,19 @@ public class ConnectionListener implements Listener {
         TextComponent text = new TextComponent();
         text.addExtra(pcp.getChatName());
         text.addExtra(" has logged in");
-        for (UUID uuid : pcp.getFriends().getAll()) {
-            ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
-            if (friend != null) {
-                //if (friend.getOptions().getBoolean("Friend:Connection")) {
-                    ProxyCore.getInstance().sendMessage(friend, text);
-                //}
-                friend.getFriends().onPlayerJoin(pcp);
+        if (pcp.getRank().equals(ProxyRank.DONOR_4)) {
+            for (ProxyCorePlayer pcp2 : ProxyCore.getInstance().getPlayers().getAll()) {
+                ProxyCore.getInstance().sendMessage(pcp2, text);
+            }
+        } else {
+            for (UUID uuid : pcp.getFriends().getAll()) {
+                ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
+                if (friend != null) {
+                    if (friend.getOptions().getBoolean("Friend:Connection")) {
+                        ProxyCore.getInstance().sendMessage(friend, text);
+                    }
+                    friend.getFriends().onPlayerJoin(pcp);
+                }
             }
         }
 
@@ -140,9 +147,9 @@ public class ConnectionListener implements Listener {
         for (UUID uuid : pcp.getFriends().getAll()) {
             ProxyCorePlayer friend = ProxyCore.getInstance().getPlayers().get(uuid);
             if (friend != null) {
-                //if (friend.getOptions().getBoolean("Friend:Connection")) {
+                if (friend.getOptions().getBoolean("Friend:Connection")) {
                     ProxyCore.getInstance().sendMessage(friend, text);
-                //}
+                }
                 friend.getFriends().onPlayerLeave(pcp);
             }
         }

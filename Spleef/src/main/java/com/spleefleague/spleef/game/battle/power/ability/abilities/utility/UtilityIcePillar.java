@@ -68,11 +68,12 @@ public class UtilityIcePillar extends AbilityUtility {
                     (int) Math.round(getPlayer().getLocation().getX()),
                     getPlayer().getLocation().getBlockY(),
                     (int) Math.round(getPlayer().getLocation().getZ()));
+            gameWorld.playSound(getPlayer().getLocation(), Sound.ENTITY_TURTLE_DEATH_BABY, 1.f, 0.7f);
+            AbilityUtils.breakAbove(getUser(), 3);
             for (Map.Entry<BlockPosition, FakeBlock> entry : structure.getFakeBlocks().entrySet()) {
-                gameWorld.setBlockDelayed(entry.getKey().add(blockPos), entry.getValue().getBlockData(), entry.getKey().getY() * 2L + 8);
+                gameWorld.setBlockDelayed(entry.getKey().add(blockPos), entry.getValue(), entry.getKey().getY() * 2L + 12);
                 gameWorld.addBlockDelayed(entry.getKey().add(blockPos), Material.AIR.createBlockData(), ((5 - entry.getKey().getY()) * 2L) + (int) (DURATION * 20));
             }
-            gameWorld.playSound(getPlayer().getLocation(), Sound.ENTITY_TURTLE_DEATH_BABY, 1.f, 0.7f);
             AbilityUtils.startFling(getUser(), new Vector(0, 0.6, 0), 0.4);
             return true;
         }

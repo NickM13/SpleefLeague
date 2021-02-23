@@ -56,13 +56,20 @@ public class PacketManager {
                 PacketBungeeBundleOut packetOut = new PacketBungeeBundleOut();
 
                 Iterator<byte[]> it2 = entry.getValue().iterator();
+                int total = 0;
                 while (it2.hasNext()) {
-                    packetOut.addPacket(it2.next());
+                    byte[] data = it2.next();
+                    packetOut.addPacket(data);
                     it2.remove();
+                    total += data.length;
+                    if (total > 20000) {
+                        break;
+                    }
                 }
 
-                if (serverInfoMap.containsKey(entry.getKey())) {
-                    serverInfoMap.get(entry.getKey()).sendData("slcore:bungee", packetOut.toByteArray());
+                ServerInfo info = serverInfoMap.get(entry.getKey());
+                if (info != null) {
+                    info.sendData("slcore:bungee", packetOut.toByteArray());
                 } else {
                     it.remove();
                 }

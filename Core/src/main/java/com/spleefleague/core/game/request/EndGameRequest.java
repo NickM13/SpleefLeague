@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class EndGameRequest extends BattleRequest {
 
     public EndGameRequest(Battle<?> battle) {
-        super(battle, true, "endgame");
+        super(battle, "endgame", false, 1D);
     }
 
     @Override

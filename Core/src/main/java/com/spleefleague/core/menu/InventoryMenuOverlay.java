@@ -22,7 +22,8 @@ public class InventoryMenuOverlay {
 
     protected static String WHITESPACE_FIRST = "临";
     protected static String WHITESPACE_SECOND = "丵";
-    protected String background = "嗰";
+    protected static String WHITESPACE_THIRD = "丵";
+    protected String titlePrefix = "嗰";
 
     public InventoryMenuOverlay() {
         setPageBoundaries(0, 6, 0, 9);
@@ -45,8 +46,8 @@ public class InventoryMenuOverlay {
         return this;
     }
 
-    public InventoryMenuOverlay setBackground(String background) {
-        this.background = WHITESPACE_FIRST + background + WHITESPACE_SECOND;
+    public InventoryMenuOverlay setTitlePrefix(String border, String background) {
+        this.titlePrefix = WHITESPACE_FIRST + background + WHITESPACE_SECOND + border + WHITESPACE_THIRD;
         return this;
     }
 
@@ -63,7 +64,7 @@ public class InventoryMenuOverlay {
     }
 
     public String getTitlePrefix() {
-        return background;
+        return titlePrefix;
     }
 
     public void openOverlay(Inventory inventory, CorePlayer cp, InventoryMenuContainerChest currentScreen) {

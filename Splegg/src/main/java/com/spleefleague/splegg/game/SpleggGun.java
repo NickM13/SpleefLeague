@@ -82,11 +82,6 @@ public class SpleggGun extends Holdable {
                         && cp.getBattle() instanceof MultiSpleggBattle);
     }
 
-    public static SpleggGun getDefault() {
-        Collection<SpleggGun> collection = Vendorables.getAll(SpleggGun.class).values();
-        return collection.iterator().next();
-    }
-
     public static SpleggGun getRandom(SpleggGun blacklist) {
         Set<SpleggGun> collection = Sets.newHashSet(Vendorables.getAll(SpleggGun.class).values());
         if (blacklist != null) collection.remove(blacklist);
@@ -169,7 +164,9 @@ public class SpleggGun extends Holdable {
 
         menuItem.getLinkedChest()
                 .setItemBuffer(2)
+                .addDeadSpace(0, 0)
                 .addDeadSpace(2, 2)
+                .addDeadSpace(0, 4)
                 .addStaticItem(createActiveSpleggGunMenuItem(affix), 6, 2);
 
         menuItem.getLinkedChest().addStaticItem(InventoryMenuAPI.createItemDynamic()

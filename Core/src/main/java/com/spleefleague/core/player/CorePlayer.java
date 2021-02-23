@@ -1,5 +1,9 @@
 package com.spleefleague.core.player;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -10,6 +14,7 @@ import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
+import com.spleefleague.core.infraction.CoreInfractionManager;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.crates.CorePlayerCrates;
@@ -31,7 +36,11 @@ import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
 import com.spleefleague.coreapi.database.annotation.DBField;
+import com.spleefleague.coreapi.infraction.Infraction;
+import com.spleefleague.coreapi.infraction.InfractionManager;
+import com.spleefleague.coreapi.infraction.InfractionType;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatChannelJoin;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.Bukkit;
@@ -40,6 +49,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
@@ -60,7 +70,6 @@ public class CorePlayer extends CoreOfflinePlayer {
      * Non-database variables
      */
     // Current party the player belongs to
-    private CoreParty party;
     private Boolean ghosting = false;
 
     @DBField private String gameMode = "ADVENTURE";
@@ -69,7 +78,7 @@ public class CorePlayer extends CoreOfflinePlayer {
     @DBField private final CorePlayerCrates crates = new CorePlayerCrates(this);
     @DBField private final CoreFriendsList friends = new CoreFriendsList(this);
     @DBField private final CorePlayerRatings ratings = new CorePlayerRatings(this);
-    @DBField private final CorePlayerStatistics statistics = new CorePlayerStatistics();
+    @DBField private final CorePlayerStatistics statistics = new CorePlayerStatistics(this);
     @DBField private final CorePlayerOptions options = new CorePlayerOptions(this);
 
     // Current selected chat channel to send messages in
@@ -86,14 +95,11 @@ public class CorePlayer extends CoreOfflinePlayer {
     private CoreLocation lastLocation;
     private Checkpoint checkpoint;
 
-    /**
-     * Non-database variables
-     */
-    private Player replyPlayer = null;
+    private Infraction mute = null;
 
     private PermissionAttachment permissions;
 
-    private final Set<FakeWorld<?>> fakeWorlds = new TreeSet<>((left, right) -> right.getPriority() - left.getPriority());
+    private final List<FakeWorld<?>> fakeWorlds = new ArrayList<>();
     private Battle<?> battle;
     private BattleState battleState;
 
@@ -109,7 +115,6 @@ public class CorePlayer extends CoreOfflinePlayer {
         this.afkWarned = false;
         this.lastLocation = null;
         this.checkpoint = null;
-        this.party = null;
         this.battle = null;
         this.battleState = BattleState.NONE;
     }
@@ -121,17 +126,20 @@ public class CorePlayer extends CoreOfflinePlayer {
 
     @Override
     public void init() {
-        username = getPlayer().getName();
-        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> PersonalScoreboard.initPlayerScoreboard(this), 2L);
-        Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
-            permissions = getPlayer().addAttachment(Core.getInstance());
-            super.init();
-            FakeWorld.getGlobalFakeWorld().addPlayer(this);
-            getPlayer().setGravity(true);
-            getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
-            setGameMode(GameMode.valueOf(gameMode));
-            refreshHotbar();
-        });
+        permissions = getPlayer().addAttachment(Core.getInstance());
+        super.init();
+        FakeWorld.getGlobalFakeWorld().addPlayer(this);
+        getPlayer().setCollidable(false);
+        getPlayer().setGravity(true);
+        getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
+        setGameMode(GameMode.valueOf(gameMode));
+        refreshHotbar();
+        updateMute();
+    }
+
+    @Override
+    public void preInit() {
+        super.init();
     }
 
     @Override
@@ -169,12 +177,20 @@ public class CorePlayer extends CoreOfflinePlayer {
         }
     }
 
-    public CoreParty getParty() {
-        return party;
+    public void updateMute() {
+        mute = Core.getInstance().getInfractionManager().getMute(getUniqueId());
     }
 
-    public void setParty(CoreParty party) {
-        this.party = party;
+    public Infraction getMute() {
+        return mute;
+    }
+
+    public boolean isMuted() {
+        return mute != null && mute.getType() != InfractionType.UNMUTE && mute.getRemainingTime() > 0;
+    }
+
+    public CoreParty getParty() {
+        return Core.getInstance().getPartyManager().getParty(getUniqueId());
     }
 
     public Boolean getGhosting() {
@@ -238,7 +254,10 @@ public class CorePlayer extends CoreOfflinePlayer {
             setAfk(false);
             statistics.add("general", "afkTime", System.currentTimeMillis() - lastAction);
         } else {
-            statistics.add("general", "playTime", System.currentTimeMillis() - lastAction);
+            statistics.add("general", "activeTime", System.currentTimeMillis() - lastAction);
+            if (battleState == BattleState.BATTLER) {
+                statistics.add("general", "gameTime", System.currentTimeMillis() - lastAction);
+            }
         }
         lastAction = System.currentTimeMillis();
         afkWarned = false;
@@ -256,8 +275,8 @@ public class CorePlayer extends CoreOfflinePlayer {
             afk = state;
             if (afk && getRank().equals(CoreRank.DEFAULT)) {
                 // TODO: Removed temporarily to keep Sudofox's alts from being kicked
-                //getPlayer().kickPlayer("Kicked for AFK!");
-                //return;
+                getPlayer().kickPlayer("Kicked for AFK!");
+                return;
             }
             Core.getInstance().sendMessage(this, "You are " + (afk ? "now afk" : "no longer afk"));
             refreshHotbar();
@@ -376,11 +395,15 @@ public class CorePlayer extends CoreOfflinePlayer {
     }
 
     public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
+        for (FakeWorld<?> fw : fakeWorlds) {
+            if (fw.getWorldId() == fakeWorld.getWorldId()) return;
+        }
         fakeWorlds.add(fakeWorld);
+        fakeWorlds.sort(Comparator.comparingInt(FakeWorld::getPriority));
     }
 
     public final void leaveFakeWorld(FakeWorld<?> fakeWorld) {
-        fakeWorlds.remove(fakeWorld);
+        fakeWorlds.removeIf(fw -> fw.getWorldId() == fakeWorld.getWorldId());
     }
 
     /**
@@ -482,14 +505,6 @@ public class CorePlayer extends CoreOfflinePlayer {
     public boolean isGhosting() {
         return ghosting;
     }
-
-    /**
-     * @return In Party
-     */
-    public boolean isInParty() {
-        return party != null;
-    }
-
 
     /**
      * Returns the coordinates of the chunk the player is in
@@ -640,20 +655,6 @@ public class CorePlayer extends CoreOfflinePlayer {
     }
 
     /**
-     * @param player Player to reply to (/reply)
-     */
-    public void setReply(Player player) {
-        replyPlayer = player;
-    }
-
-    /**
-     * @return Player to reply to (/reply)
-     */
-    public Player getReply() {
-        return replyPlayer;
-    }
-
-    /**
      * Returns player's location, or if they're offline their lastLocation (/back)
      * Not really that useful for offline players atm
      *
@@ -712,6 +713,8 @@ public class CorePlayer extends CoreOfflinePlayer {
     @Override
     public void updateRank() {
         if (getPlayer() == null) return;
+
+        super.updateRank();
         PersonalScoreboard.updatePlayerRank(this);
         getPlayer().setOp(getRank().getHasOp());
 
@@ -735,8 +738,76 @@ public class CorePlayer extends CoreOfflinePlayer {
         }
 
         getPlayer().updateCommands();
-
-        super.updateRank();
     }
+
+    /**
+     * Send unformatted message to player
+     *
+     * @param string Message
+     */
+    public void sendMessage(String string) {
+        getPlayer().sendMessage(string);
+    }
+
+    /**
+     * Send BaseComponent message to player
+     *
+     * @param message BaseComponent
+     */
+    public void sendMessage(BaseComponent... message) {
+        getPlayer().spigot().sendMessage(message);
+    }
+
+    /**
+     * Send a title to player (Large text in middle of screen)
+     *
+     * @param title    Title
+     * @param subtitle Subtitle
+     * @param fadeIn   Ticks
+     * @param stay     Ticks
+     * @param fadeOut  Ticks
+     */
+    public void sendTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        getPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+    }
+
+    public void sendHotbarText(String text) {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
+        packet.getChatTypes().write(0, EnumWrappers.ChatType.GAME_INFO);
+        packet.getChatComponents().write(0, WrappedChatComponent.fromText(text));
+        Core.sendPacket(this, packet);
+    }
+
+    /**
+     * Used to get the inventory of a player, if they have a
+     * pregameState saved (are ingame) then return their previous
+     * inventory
+     *
+     * @return ItemStacks
+     * @deprecated Under construction, pregameState is not a shared player variable
+     */
+    @Deprecated
+    public final ItemStack[] getInventory() {
+        return getPlayer().getInventory().getContents();
+    }
+
+    /**
+     * Returns item in main hand
+     *
+     * @return ItemStack
+     */
+    public final ItemStack getHeldItem() {
+        return getPlayer().getInventory().getItemInMainHand();
+    }
+
+    /**
+     * Sets an item the player's main hand
+     *
+     * @param itemStack Held Item
+     */
+    public final void setHeldItem(ItemStack itemStack) {
+        getPlayer().getInventory().setItemInMainHand(itemStack);
+    }
+
 
 }

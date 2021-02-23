@@ -40,9 +40,8 @@ public class UtilityArena extends AbilityUtility {
             blockPos = new BlockPosition(blockPos.getX(), getUser().getCorePlayer().getLocation().getBlockY(), blockPos.getZ());
         }
         Set<BlockPosition> blockPositions = FakeUtils.createCylinderShell(5, 4);
-        Map<BlockPosition, FakeBlock> blocks = new HashMap<>();
         for (BlockPosition pos : blockPositions) {
-            getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), Material.SNOW_BLOCK.createBlockData(), (pos.getY() + 1) * BUILD_TIME);
+            getUser().getBattle().getGameWorld().setBlockDelayed(pos.add(blockPos), new FakeBlock(Material.SNOW_BLOCK.createBlockData()), (pos.getY() + 1) * BUILD_TIME);
             getUser().getBattle().getGameWorld().addBlockDelayed(pos.add(blockPos), Material.AIR.createBlockData(), REMAIN_TIME * 20L - pos.getY() * DECAY_TIME);
         }
         getUser().getBattle().getGameWorld().spawnParticles(Particle.REDSTONE,

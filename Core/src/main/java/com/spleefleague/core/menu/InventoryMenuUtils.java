@@ -1,5 +1,6 @@
 package com.spleefleague.core.menu;
 
+import com.spleefleague.core.player.CorePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,6 +14,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * Quick access functions for creating various specific types
@@ -64,13 +66,15 @@ public class InventoryMenuUtils {
         return BACK_BUTTON;
     }
 
+    private static final InventoryMenuItem DEFAULT_LOCKED = createLockedMenuItem("Locked");
+
     /**
      * Creates a "locked" menu item with the display name of "Locked"
      *
      * @return Locked InventoryMenuItem
      */
     public static InventoryMenuItem createLockedMenuItem() {
-        return createLockedMenuItem("Locked");
+        return DEFAULT_LOCKED;
     }
 
     /**
@@ -80,7 +84,7 @@ public class InventoryMenuUtils {
      * @return Locked InventoryMenuItem
      */
     public static InventoryMenuItem createLockedMenuItem(String displayName) {
-        return InventoryMenuAPI.createItemDynamic()
+        return InventoryMenuAPI.createItemStatic()
                 .setName(displayName)
                 .setDisplayItem(MenuIcon.LOCKED.getIconItem())
                 .setCloseOnAction(false);
@@ -179,6 +183,28 @@ public class InventoryMenuUtils {
 
     public static ItemStack createCustomSkullOrDefault(UUID uuid) {
         return InventoryMenuSkullManager.getPlayerSkull(uuid);
+    }
+
+    public static void createDigitMenu(InventoryMenuContainerChest container, int startX, int startY, int count, Function<CorePlayer, Integer> function, boolean isStatic) {
+        for (int i = 0; i < count; i++) {
+            int finalI = (int) Math.pow(10, count - i - 1);
+            InventoryMenuItemDynamic item = InventoryMenuAPI.createItemDynamic()
+                    .setName(cp -> {
+                        int num = (function.apply(cp) / finalI) % 10;
+                        return "" + num;
+                    })
+                    .setDisplayItem(cp -> {
+                        int num = (function.apply(cp) / finalI) % 10;
+                        if (num == 0) num = 10;
+                        return InventoryMenuUtils.createCustomItem(Material.DIAMOND, num);
+                    })
+                    .setCloseOnAction(false);
+            if (isStatic) {
+                container.addStaticItem(item, startX + i, startY);
+            } else {
+                container.addMenuItem(item, startX + i, startY);
+            }
+        }
     }
 
 }

@@ -37,6 +37,7 @@ public class TempBanCommand extends CoreCommand {
         Infractions.tempban(sender, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
 
+    /*
     @CommandAnnotation
     public void tempban(CommandSender sender,
                         OfflinePlayer op,
@@ -44,5 +45,6 @@ public class TempBanCommand extends CoreCommand {
                         @Nullable String reason) {
         Infractions.tempban(null, op, TimeUtils.toMillis(time), reason == null ? "" : reason);
     }
+     */
 
 }

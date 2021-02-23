@@ -41,7 +41,7 @@ public class BattleUtils {
         return defeatedSynonyms[r.nextInt(defeatedSynonyms.length)];
     }
 
-    private static char[] POINT_ANIM = {/*'─', */'═', '╪', '▓', '█'};
+    private static final char[] POINT_ANIM = {/*'─', */'═', '╪', '▓', '█'};
 
     public static String toScoreSquares(BattlePlayer bp, int playToPoints) {
         if (playToPoints > 5) {
@@ -64,6 +64,26 @@ public class BattleUtils {
         }
     }
 
+    private static final int RESET_SQUARES = 4;
+
+    public static String toRequestSquares(double percent) {
+        percent *= RESET_SQUARES;
+        int filledSquares = (int) Math.floor(percent);
+        int emptySquares = (int) Math.ceil(percent);
+        StringBuilder stringBuilder = new StringBuilder(Chat.SCORE);
+        for (int i = 0; i < RESET_SQUARES; i++) {
+            if (i >= emptySquares) {
+                stringBuilder.append(Chat.DEFAULT).append('─');
+            } else if (i < filledSquares) {
+                stringBuilder.append('█');
+            } else {
+                stringBuilder.append(POINT_ANIM[(int) (percent % 1) * POINT_ANIM.length]);
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    @SuppressWarnings("unused")
     public static String toScoreSquares(TeamBattleTeam<? extends TeamBattlePlayer> bp, int playToPoints) {
         if (playToPoints > 5) {
             return (Chat.SCORE + bp.getRoundWins() + "/" + playToPoints);
@@ -82,58 +102,6 @@ public class BattleUtils {
                 stringBuilder.append("─");
             }
             return stringBuilder.toString();
-        }
-    }
-
-    /**
-     * Returns a list of blocks that would be in the dome area around a location
-     *
-     * @param loc Feet
-     * @return List of Block Pos
-     */
-    private static List<BlockPosition> getDomeBlocks(Location loc) {
-        BlockPosition origin = new BlockPosition(loc.toVector());
-        List<BlockPosition> blockPositions = new ArrayList<>();
-        blockPositions.add(origin.add(new BlockPosition(-1, 0, 0)));
-        blockPositions.add(origin.add(new BlockPosition(1, 0, 0)));
-        blockPositions.add(origin.add(new BlockPosition(0, 0, -1)));
-        blockPositions.add(origin.add(new BlockPosition(0, 0, 1)));
-        blockPositions.add(origin.add(new BlockPosition(-1, 1, 0)));
-        blockPositions.add(origin.add(new BlockPosition(1, 1, 0)));
-        blockPositions.add(origin.add(new BlockPosition(0, 1, -1)));
-        blockPositions.add(origin.add(new BlockPosition(0, 1, 1)));
-        blockPositions.add(origin.add(new BlockPosition(0, 2, 0)));
-        return blockPositions;
-    }
-
-    /**
-     * Fill an area around a list of locations
-     *
-     * @param gameWorld Game World
-     * @param material  Material
-     * @param positions Positions
-     */
-    public static void fillDome(GameWorld gameWorld, Material material, List<Position> positions) {
-        for (Position pos : positions) {
-            BuildStructure dome = BuildStructures.get("StartDome");
-            for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
-                gameWorld.setBlock(entry.getKey().add(pos.toBlockPosition()), entry.getValue().getBlockData());
-            }
-        }
-    }
-
-    /**
-     * Remove an area around a list of locations
-     *
-     * @param gameWorld Game World
-     * @param positions Positions
-     */
-    public static void clearDome(GameWorld gameWorld, List<Position> positions) {
-        for (Position pos : positions) {
-            BuildStructure dome = BuildStructures.get("StartDome");
-            for (Map.Entry<BlockPosition, FakeBlock> entry : dome.getFakeBlocks().entrySet()) {
-                gameWorld.breakBlock(entry.getKey().add(pos.toBlockPosition()), null);
-            }
         }
     }
 

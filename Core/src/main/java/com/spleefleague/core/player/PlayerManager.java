@@ -266,16 +266,16 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
             return p;
         }
         try {
-            ONLINE p = onlinePlayerClass.getDeclaredConstructor().newInstance();
             Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
+            ONLINE online = onlinePlayerClass.getDeclaredConstructor().newInstance();
             if (pdoc != null) {
-                p.load(pdoc);
-                p.setUsername(username);
+                online.load(pdoc);
+                online.setUsername(username);
             } else {
-                p.newPlayer(uuid, username);
+                online.newPlayer(uuid, username);
             }
-            p.setOnline(DBPlayer.OnlineState.OTHER);
-            onlinePlayerMap.put(uuid, p);
+            online.setOnline(DBPlayer.OnlineState.OTHER);
+            onlinePlayerMap.put(uuid, online);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             Logger.getLogger(PlayerManager.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -286,6 +286,11 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
     public void resync(UUID uuid, List<PacketBungeePlayerResync.Field> fields) {
         if (!onlinePlayerMap.containsKey(uuid)) {
             CoreLogger.logWarning("Attempted to reload field of offline player");
+        } else {
+            onlinePlayerMap.get(uuid).reloadField(
+                    playerCol.find(new Document("identifier", uuid.toString())).first(),
+                    fields.stream().map(PacketBungeePlayerResync.Field::getFieldName).collect(Collectors.toSet()));
+            onlinePlayerMap.get(uuid).onResync(fields);
         }
     }
 
@@ -349,16 +354,19 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
     public void onPlayerJoin(Player player) {
         ONLINE p = load(player.getUniqueId(), player.getName());
         if (p != null) {
-            p.init(player);
+            p.setPlayer(player);
+            p.init();
             p.setOnline(DBPlayer.OnlineState.HERE);
             localPlayerMap.put(p.getUniqueId(), p);
 
-            if (joinActions.containsKey(p.getUniqueId())) {
-                for (Consumer<ONLINE> action : joinActions.get(p.getUniqueId())) {
-                    action.accept(p);
+            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                if (joinActions.containsKey(p.getUniqueId())) {
+                    for (Consumer<ONLINE> action : joinActions.get(p.getUniqueId())) {
+                        action.accept(p);
+                    }
+                    joinActions.remove(p.getUniqueId());
                 }
-                joinActions.remove(p.getUniqueId());
-            }
+            }, 10L);
         } else {
             CoreLogger.logError(new NullPointerException());
         }

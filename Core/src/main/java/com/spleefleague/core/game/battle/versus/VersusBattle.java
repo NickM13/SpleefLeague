@@ -67,6 +67,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     protected void setupScoreboard() {
         chatGroup.setScoreboardName(ChatColor.GOLD + "" + ChatColor.BOLD + getMode().getDisplayName());
         chatGroup.addTeam("time", "00:00:00:000");
+        chatGroup.addTeam("arena", ChatColor.GREEN + "  " + arena.getName());
         for (int i = 0; i < sortedBattlers.size(); i++) {
             chatGroup.addTeam("p" + i, "  " + Chat.PLAYER_NAME + "" + ChatColor.BOLD + sortedBattlers.get(i).getCorePlayer().getName());
             chatGroup.addTeam("p" + i + "score", BattleUtils.toScoreSquares(sortedBattlers.get(i), playToPoints));
@@ -205,6 +206,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     }
 
     protected int applyEloChange(BP winner) {
+        if (forced) return 0;
         int avgRating = 0;
         int winnerRating = winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
 
@@ -234,6 +236,9 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             text.addExtra(")");
             bp.getCorePlayer().sendMessage(text);
         }
+
+        applyRewards(winner);
+
         return eloChange;
     }
 
@@ -248,6 +253,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     public void endBattle(BP winner) {
         if (winner == null) {
             TextComponent text = new TextComponent();
+            text.setColor(ChatColor.GRAY.asBungee());
             text.addExtra("Battle between ");
             text.addExtra(CoreUtils.mergePlayerNames(battlers.keySet()));
             text.addExtra(" was peacefully concluded.");
@@ -285,10 +291,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                     }
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
-                applyRewards(winner);
                 applyEloChange(winner);
 
                 TextComponent text = new TextComponent();
+                text.setColor(ChatColor.GRAY.asBungee());
                 text.addExtra(winner.getCorePlayer().getChatName());
                 text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
                 text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");

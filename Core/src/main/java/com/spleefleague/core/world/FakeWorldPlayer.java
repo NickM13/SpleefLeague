@@ -9,18 +9,20 @@ import org.bukkit.entity.Player;
  */
 public abstract class FakeWorldPlayer {
 
-    private final CorePlayer cp;
+    private final CorePlayer corePlayer;
+    private final Player player;
 
-    public FakeWorldPlayer(CorePlayer cp) {
-        this.cp = cp;
+    public FakeWorldPlayer(CorePlayer corePlayer) {
+        this.corePlayer = corePlayer;
+        this.player = corePlayer.getPlayer();
     }
 
     public CorePlayer getCorePlayer() {
-        return cp;
+        return corePlayer;
     }
 
     public Player getPlayer() {
-        return cp.getPlayer();
+        return player;
     }
 
 }

@@ -13,6 +13,7 @@ import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatTell;
 import org.bukkit.entity.Player;
 
 /**
@@ -28,18 +29,11 @@ public class ReplyCommand extends CoreCommand {
 
     @CommandAnnotation
     public void reply(CorePlayer sender, String message) {
-        Player player = sender.getReply();
-        if (player == null) {
-            error(sender, "No player to reply to!");
+        if (sender.isMuted()) {
+            Core.getInstance().sendMessage(sender, "You're muted!");
+            return;
         }
-        CorePlayer receiver = Core.getInstance().getPlayers().get(player);
-        if (receiver == null) {
-            error(sender, "Issue replying to player!");
-        } else if (receiver.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
-            error(sender, receiver.getDisplayName() + " is offline!");
-        } else {
-            Chat.sendTell(sender, receiver, message);
-        }
+        Core.getInstance().sendPacket(new PacketSpigotChatTell(sender.getUniqueId(), null, message));
     }
 
 }

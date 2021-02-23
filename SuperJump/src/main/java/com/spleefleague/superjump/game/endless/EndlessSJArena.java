@@ -6,12 +6,8 @@
 
 package com.spleefleague.superjump.game.endless;
 
-import com.spleefleague.core.Core;
-import com.spleefleague.core.game.leaderboard.LeaderboardCollection;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
-import com.spleefleague.core.menu.hotbars.main.LeaderboardMenu;
 import com.spleefleague.superjump.SuperJump;
 import com.spleefleague.superjump.game.SJMode;
 import org.bukkit.ChatColor;
@@ -46,19 +42,6 @@ public class EndlessSJArena {
                 .setAction(cp -> SuperJump.getInstance().queuePlayer(SJMode.ENDLESS.getBattleMode(), cp));
         
         SuperJump.getInstance().getSJMenuItem().getLinkedChest().addStaticItem(menuItem, x, y);
-    }
-    
-    public static void initLeaderboard(int x, int y) {
-        LeaderboardCollection bestLevelLeaderboard = Core.getInstance().getLeaderboards().get(SJMode.ENDLESS.getName());
-        InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName("SuperJump Endless")
-                .setDescription("View the top players of SuperJump Endless!")
-                .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)
-                .setLinkedContainer(bestLevelLeaderboard.createMenuContainer());
-        
-        LeaderboardMenu.getItem()
-                .getLinkedChest()
-                .addMenuItem(menuItem, x, y);
     }
     
 }

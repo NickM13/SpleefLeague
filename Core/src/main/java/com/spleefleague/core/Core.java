@@ -7,7 +7,6 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Lists;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.chat.ticket.Tickets;
@@ -18,7 +17,8 @@ import com.spleefleague.core.game.BattleSessionManager;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.team.TeamInfo;
 import com.spleefleague.core.game.history.GameHistoryManager;
-import com.spleefleague.core.game.leaderboard.Leaderboards;
+import com.spleefleague.core.game.leaderboard.LeaderboardManager;
+import com.spleefleague.core.infraction.CoreInfractionManager;
 import com.spleefleague.core.listener.*;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuSkullManager;
@@ -76,7 +76,7 @@ public class Core extends CorePlugin {
     private static Core instance;
     public static World DEFAULT_WORLD;
     private QueueManager queueManager;
-    private final Leaderboards leaderboards = new Leaderboards();
+    private final LeaderboardManager leaderboards = new LeaderboardManager();
     private final CommandManager commandManager = new CommandManager();
 
     // For packet managing
@@ -92,6 +92,7 @@ public class Core extends CorePlugin {
     private final PacketManager packetManager = new PacketManager();
     private final BattleSessionManager battleSessionManager = new BattleSessionManager();
     private PlayerManager<CorePlayer, CoreOfflinePlayer> playerManager;
+    private final CoreInfractionManager coreInfractionManager = new CoreInfractionManager();
 
     /**
      * Called when the plugin is enabling
@@ -123,6 +124,7 @@ public class Core extends CorePlugin {
         GameHistoryManager.init();
 
         // Initialize manager
+        coreInfractionManager.init();
         playerManager = new PlayerManager<>(CorePlayer.class, CoreOfflinePlayer.class, getPluginDB().getCollection("Players"));
         crateManager.init();
         packetManager.init();
@@ -167,6 +169,7 @@ public class Core extends CorePlugin {
         leaderboards.close();
         NoteBlockMusic.close();
         GameHistoryManager.close();
+        coreInfractionManager.close();
         playerManager.close();
         packetManager.close();
         battleSessionManager.close();
@@ -201,7 +204,7 @@ public class Core extends CorePlugin {
     }
 
     protected void refresh(Set<UUID> players) {
-        leaderboards.refresh(players);
+
     }
 
     public void updateServerList(PacketBungeeRefreshServerList packet) {
@@ -417,6 +420,10 @@ public class Core extends CorePlugin {
         return playerManager;
     }
 
+    public final CoreInfractionManager getInfractionManager() {
+        return coreInfractionManager;
+    }
+
     /**
      * Sends a packet to a single player
      *
@@ -425,13 +432,11 @@ public class Core extends CorePlugin {
      */
     public static void sendPacket(@Nonnull Player p, PacketContainer packet) {
         if (packet == null) return;
-        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-            try {
-                protocolManager.sendServerPacket(p, packet);
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }, 1L);
+        try {
+            protocolManager.sendServerPacket(p, packet);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -440,36 +445,39 @@ public class Core extends CorePlugin {
      * @param cp     Core Player
      * @param packet Packet Container
      */
-    public static void sendPacket(CoreOfflinePlayer cp, PacketContainer packet) {
-        sendPacket(cp, packet, 1L);
+    public static void sendPacket(CorePlayer cp, PacketContainer packet) {
+        if (packet == null) return;
+        Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
+            try {
+                if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
+            } catch (InvocationTargetException e) {
+                CoreLogger.logError(e);
+            }
+        });
     }
 
-    public static void sendPacket(CoreOfflinePlayer cp, PacketContainer packet, long delay) {
+    public static void sendPacket(CorePlayer cp, PacketContainer packet, long delay) {
         if (packet == null) return;
-        if (delay > 0) {
-            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                try {
-                    if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
-                } catch (InvocationTargetException e) {
-                    CoreLogger.logError(e);
-                }
-            }, delay);
-        } else {
-            Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
-                try {
-                    if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
-                } catch (InvocationTargetException e) {
-                    CoreLogger.logError(e);
-                }
-            });
-        }
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+            try {
+                if (cp.getPlayer() != null) protocolManager.sendServerPacket(cp.getPlayer(), packet);
+            } catch (InvocationTargetException e) {
+                CoreLogger.logError(e);
+            }
+        }, delay);
     }
 
     public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet) {
-        sendPacketSilently(p, packet, 1L);
+        if (packet == null) return;
+        try {
+            protocolManager.sendServerPacket(p, packet, null, false);
+        } catch (InvocationTargetException e) {
+            CoreLogger.logError(e);
+        }
     }
 
     public static void sendPacketSilently(@Nonnull Player p, PacketContainer packet, long delay) {
+        if (packet == null) return;
         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
             try {
                 protocolManager.sendServerPacket(p, packet, null, false);
@@ -486,7 +494,7 @@ public class Core extends CorePlugin {
      */
     public static void sendPacketAll(PacketContainer packet) {
         if (packet == null) return;
-        for (CoreOfflinePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
+        for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
             sendPacket(cp, packet);
         }
     }
@@ -533,7 +541,7 @@ public class Core extends CorePlugin {
         return queueManager;
     }
 
-    public Leaderboards getLeaderboards() {
+    public LeaderboardManager getLeaderboards() {
         return leaderboards;
     }
 

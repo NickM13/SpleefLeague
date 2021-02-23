@@ -7,6 +7,7 @@ import com.spleefleague.core.listener.bungee.battle.BungeeListenerBattleRejoin;
 import com.spleefleague.core.listener.bungee.connection.BungeeListenerConnection;
 import com.spleefleague.core.listener.bungee.friend.BungeeListenerFriend;
 import com.spleefleague.core.listener.bungee.party.BungeeListenerParty;
+import com.spleefleague.core.listener.bungee.player.BungeeListenerPlayerMute;
 import com.spleefleague.core.listener.bungee.player.BungeeListenerPlayerResync;
 import com.spleefleague.core.listener.bungee.refresh.*;
 import com.spleefleague.core.listener.bungee.server.BungeeListenerServerKill;
@@ -23,7 +24,7 @@ import java.util.Map;
 
 public class BungeePluginListener implements PluginMessageListener {
 
-    private Map<PacketType.Bungee, BungeeListener<?>> registeredListeners = new HashMap();
+    private final Map<PacketType.Bungee, BungeeListener<?>> registeredListeners = new HashMap<>();
 
     public BungeePluginListener() {
         registeredListeners.put(PacketType.Bungee.BATTLE_REJOIN, new BungeeListenerBattleRejoin());
@@ -32,6 +33,7 @@ public class BungeePluginListener implements PluginMessageListener {
         registeredListeners.put(PacketType.Bungee.CONNECTION, new BungeeListenerConnection());
         registeredListeners.put(PacketType.Bungee.FRIEND, new BungeeListenerFriend());
         registeredListeners.put(PacketType.Bungee.PARTY, new BungeeListenerParty());
+        registeredListeners.put(PacketType.Bungee.PLAYER_MUTE, new BungeeListenerPlayerMute());
         registeredListeners.put(PacketType.Bungee.PLAYER_RESYNC, new BungeeListenerPlayerResync());
         registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new BungeeListenerRefreshAll());
         registeredListeners.put(PacketType.Bungee.REFRESH_PARTY, new BungeeListenerRefreshParty());

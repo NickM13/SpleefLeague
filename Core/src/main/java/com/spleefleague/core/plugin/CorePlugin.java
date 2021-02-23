@@ -304,6 +304,7 @@ public abstract class CorePlugin extends JavaPlugin {
      */
     public static boolean spectatePlayerGlobal(CorePlayer spectator, CorePlayer target) {
         if (target == null) return false;
+        /*
         switch (target.getOnlineState()) {
             case OFFLINE:
                 Core.getInstance().sendMessage(spectator, Chat.PLAYER_NAME + target.getDisplayName() + Chat.ERROR + " is not online");
@@ -317,9 +318,10 @@ public abstract class CorePlugin extends JavaPlugin {
                 }
                 break;
             case OTHER:
-                Core.getInstance().sendPacket(new PacketSpigotBattleSpectate(spectator, target));
                 break;
         }
+        */
+        Core.getInstance().sendPacket(new PacketSpigotBattleSpectate(spectator, target));
         return false;
     }
 

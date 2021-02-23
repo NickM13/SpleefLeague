@@ -33,6 +33,7 @@ public class WarnCommand extends CoreCommand {
         Infractions.warn(sender, op, "");
     }
 
+    /*
     @CommandAnnotation
     public void warn(CommandSender sender, OfflinePlayer op, String reason) {
         Infractions.warn(null, op, reason);
@@ -42,5 +43,6 @@ public class WarnCommand extends CoreCommand {
     public void warn(CommandSender sender, OfflinePlayer op) {
         Infractions.warn(null, op, "");
     }
+    */
 
 }

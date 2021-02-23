@@ -34,28 +34,28 @@ public enum SJMode {
     
     public static void init() {
         BattleMode.createArenaMode(CLASSIC.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Classic")
-                .setDescription("A Very Classy GameMode.")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Classic")
+                .setDescription("Race against another opponent on a selection of pre-built courses in this fast paced mode!")
                 .setDisplayItem(Material.DIAMOND_AXE, 22)
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
                 .setBattleClass(ClassicSJBattle.class);
 
         BattleMode.createArenaMode(SHUFFLE.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Shuffle")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Shuffle")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 24)
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
                 .setBattleClass(ShuffleSJBattle.class);
 
         BattleMode.createArenaMode(CONQUEST.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Conquest")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Conquest")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 21)
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)
                 .setBattleClass(ConquestSJBattle.class);
 
         BattleMode.createArenaMode(ENDLESS.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Endless")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Endless")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)
@@ -63,21 +63,21 @@ public enum SJMode {
                 .setForceRandom(true);
 
         BattleMode.createArenaMode(PARTY.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Party")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Party")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .setTeamStyle(BattleMode.TeamStyle.TEAM)
                 .setBattleClass(PartySJBattle.class);
 
         BattleMode.createArenaMode(PRACTICE.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Practice")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Practice")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 20)
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)
                 .setBattleClass(PracticeSJBattle.class);
 
         BattleMode.createArenaMode(PRO.getName())
-                .setDisplayName(ChatColor.AQUA + "" + ChatColor.BOLD + "SuperJump: Pro")
+                .setDisplayName(ChatColor.BLUE + "" + ChatColor.BOLD + "SuperJump: Pro")
                 .setDescription("A Very Classy GameMode.")
                 .setDisplayItem(Material.DIAMOND_AXE, 23)
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)

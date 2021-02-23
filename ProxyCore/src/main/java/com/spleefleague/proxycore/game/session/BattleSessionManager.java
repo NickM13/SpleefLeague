@@ -36,8 +36,8 @@ public class BattleSessionManager {
         hangedSessionTask.cancel();
     }
 
-    public static void createBattleSession(UUID battleId, String mode, Droplet droplet, List<UUID> players) {
-        BattleSession battleSession = new BattleSession(battleId, mode, droplet, players);
+    public static void createBattleSession(UUID battleId, String mode, Droplet droplet, List<UUID> players, boolean spectatable) {
+        BattleSession battleSession = new BattleSession(battleId, mode, droplet, players, spectatable);
         battleSessionCol.insertOne(battleSession.toDocument());
         sessionMap.put(battleId, battleSession);
     }
@@ -61,6 +61,7 @@ public class BattleSessionManager {
 
     public static void clearEndedSessions() {
         battleSessionCol.deleteMany(new Document("identifier", new Document("$in", endedSessions)));
+        endedSessions.clear();
     }
 
     public static void onPing(UUID battleId) {
@@ -72,7 +73,14 @@ public class BattleSessionManager {
     public static void clearHangedSessions() {
         // Add functionality
         // Probably receive updates every 30 seconds or so from server to ensure a battle is still ongoing
-        sessionMap.entrySet().removeIf(uuidBattleSessionEntry -> uuidBattleSessionEntry.getValue().isHanged());
+        Iterator<Map.Entry<UUID, BattleSession>> it = sessionMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, BattleSession> entry = it.next();
+            if (entry.getValue().isHanged()) {
+                endedSessions.add(entry.getValue().getBattleId().toString());
+                it.remove();
+            }
+        }
     }
 
 }

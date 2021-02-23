@@ -8,6 +8,7 @@ import com.spleefleague.core.menu.InventoryMenuSkullManager;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.party.CoreParty;
+import com.spleefleague.coreapi.chat.ChatColor;
 import org.bukkit.Material;
 
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class PartyMenu {
 
     public static void init() {
         menuItem = InventoryMenuAPI.createItemDynamic()
-                .setName("Party")
+                .setName(ChatColor.BLUE + "" + ChatColor.BOLD + "Party")
                 .setDisplayItem(Material.CAKE, 1)
                 .setSelectedItem(Material.CAKE, 2)
                 .setDescription("View your current party")
