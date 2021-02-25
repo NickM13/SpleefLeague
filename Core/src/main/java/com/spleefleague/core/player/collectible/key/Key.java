@@ -26,7 +26,7 @@ public class Key extends Holdable {
 
     }
 
-    private static final Material DEFAULT_KEY_MAT = Material.BARRIER;
+    private static final Material DEFAULT_KEY_MAT = Material.GHAST_TEAR;
 
     /**
      * Constructor for DB loading

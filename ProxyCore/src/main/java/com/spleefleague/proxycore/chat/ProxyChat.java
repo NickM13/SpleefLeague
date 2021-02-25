@@ -2,6 +2,7 @@ package com.spleefleague.proxycore.chat;
 
 import com.spleefleague.coreapi.chat.Chat;
 import com.spleefleague.coreapi.chat.ChatEmoticons;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerSound;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyDBPlayer;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
@@ -273,27 +274,28 @@ public class ProxyChat {
 
         sender.getPlayer().sendMessage(senderComponent);
         receiver.getPlayer().sendMessage(receiverComponent);
+        ProxyCore.getInstance().getPacketManager().sendPacket(receiver, new PacketBungeePlayerSound(receiver.getUniqueId(), "ENTITY_EXPERIENCE_ORB_PICKUP"));
 
         receiver.setReply(sender.getUniqueId());
     }
 
-    public void sendNotificationFriends(Set<UUID> uuids, ChatChannel channel, String message) {
+    public void sendNotificationFriends(Set<UUID> uuids, String message) {
+        sendNotificationFriends(uuids, new TextComponent(TextComponent.fromLegacyText(message)));
+    }
+
+    public void sendNotificationFriends(Set<UUID> uuids, TextComponent component) {
         Set<ProxyCorePlayer> friends = new HashSet<>();
         List<ProxyCorePlayer> targets = new ArrayList<>();
         for (UUID uuid : uuids) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
             friends.addAll(pcp.getFriends().getOnline());
             targets.add(pcp);
-            for (ProxyCorePlayer pcp2 : pcp.getFriends().getOnline()) {
-                System.out.println(pcp2.getName());
-            }
         }
         friends.removeAll(targets);
 
-        TextComponent textComponent = new TextComponent(TextComponent.fromLegacyText(message));
         for (ProxyCorePlayer friend : friends) {
             if (friend.getOptions().getBoolean("Friend:Notifications")/* && channel.isActive(friend)*/) {
-                friend.getPlayer().sendMessage(textComponent);
+                friend.getPlayer().sendMessage(component);
             }
         }
     }

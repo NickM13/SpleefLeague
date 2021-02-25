@@ -29,11 +29,6 @@ public class PartySJBattle extends DynamicBattle<PartySJPlayer> {
     }
 
     @Override
-    protected void applyRewards(PartySJPlayer partySJPlayer, boolean winner) {
-
-    }
-
-    @Override
     protected void sendEndMessage(PartySJPlayer partySJPlayer) {
 
     }

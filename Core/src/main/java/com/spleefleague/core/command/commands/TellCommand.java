@@ -23,6 +23,7 @@ public class TellCommand extends CoreCommand {
 
     public TellCommand() {
         super("tell", CoreRank.DEFAULT);
+        addAlias("t");
         addAlias("msg");
         addAlias("whisper");
     }

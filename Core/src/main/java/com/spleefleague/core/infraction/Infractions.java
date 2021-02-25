@@ -1,19 +1,13 @@
 package com.spleefleague.core.infraction;
 
-import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.infraction.Infraction;
-import com.spleefleague.coreapi.infraction.InfractionManager;
 import com.spleefleague.coreapi.infraction.InfractionType;
 import com.spleefleague.coreapi.utils.TimeUtils;
-import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerInfraction;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bson.Document;
 import org.bukkit.OfflinePlayer;
-
-import java.util.UUID;
 
 /**
  * @author NickM13

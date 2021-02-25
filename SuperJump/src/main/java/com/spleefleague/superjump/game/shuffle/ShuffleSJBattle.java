@@ -30,11 +30,6 @@ public class ShuffleSJBattle extends VersusBattle<ShuffleSJPlayer> {
     }
 
     @Override
-    protected void applyRewards(ShuffleSJPlayer shuffleSJPlayer) {
-
-    }
-
-    @Override
     protected void setupBaseSettings() {
     
     }

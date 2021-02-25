@@ -84,6 +84,10 @@ public class QueueContainerDynamic extends QueueContainer {
         return allowSolo;
     }
 
+    public boolean isTeamQueue() {
+        return maxPartySize > 2;
+    }
+
     public int isValidParty(ProxyParty party) {
         if (allowPartySplit) {
             return party.getPlayerCount() <= maxPartySize ? 0 : 1;
@@ -105,10 +109,13 @@ public class QueueContainerDynamic extends QueueContainer {
      * @return Player In Queue State (0 or 1 = in queue, -1 = left)
      */
     public int join(ProxyCorePlayer pcp, String query) {
+        if (pcp.getParty() != null && contains(pcp.getParty())) {
+            return 2;
+        }
         QueuePlayer replaced = leave(pcp);
-        QueuePlayer qp = new QueuePlayer(pcp, query, ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getRatings().getElo(identifier, SEASON));
-        if (qp.query.equals("arena:*") && replaced != null) return -1;
-        queuedEntities.add(qp);
+        QueuePlayer queuePlayer = new QueuePlayer(pcp, query, ProxyCore.getInstance().getPlayers().get(pcp.getUniqueId()).getRatings().getElo(identifier, SEASON));
+        if (queuePlayer.query.equals("arena:*") && replaced != null) return -1;
+        queuedEntities.add(queuePlayer);
         queueSize++;
         checkDelayedStart();
         return replaced != null ? 1 : 0;
@@ -116,10 +123,13 @@ public class QueueContainerDynamic extends QueueContainer {
 
     public int join(ProxyParty party, String query) {
         QueueParty replaced = leave(party);
-        QueueParty qp = new QueueParty(party, query, party.getAvgRating(identifier, SEASON));
-        if (qp.query.equals("arena:*") && replaced != null) return -1;
-        queuedEntities.add(qp);
-        queueSize += qp.size;
+        QueueParty queueParty = new QueueParty(party, query, party.getAvgRating(identifier, SEASON));
+        if (queueParty.query.equals("arena:*") && replaced != null) return -1;
+        queuedEntities.add(queueParty);
+        queueSize += queueParty.size;
+        for (UUID uuid : party.getPlayerList()) {
+            leave(ProxyCore.getInstance().getPlayers().getOffline(uuid));
+        }
         checkDelayedStart();
         return replaced != null ? 1 : 0;
     }
@@ -184,6 +194,19 @@ public class QueueContainerDynamic extends QueueContainer {
         return null;
     }
 
+    public boolean contains(ProxyParty party) {
+        Iterator<QueueEntity> qit = queuedEntities.iterator();
+        while (qit.hasNext()) {
+            QueueEntity qe = qit.next();
+            if (qe instanceof QueueParty && ((QueueParty) qe).party == party) {
+                qit.remove();
+                queueSize -= qe.size;
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected QueuedChunk matchAfter(int start, QueuedChunk queueChunk) {
         if (queueChunk.filledTeams.size() >= maxTeams) return queueChunk;
         if (start >= queuedEntities.size()) {
@@ -245,19 +268,38 @@ public class QueueContainerDynamic extends QueueContainer {
     public void checkQueue() {
         queuedEntities.forEach(QueueEntity::calcRatings);
         while (delayStart < System.currentTimeMillis() && delayStart >= 0) {
+            if (getQueueSize() > 0) {
+                System.out.println("Checking queue: " + getDisplayName() + " [" + getQueueSize() + "]");
+            }
             QueuedChunk chunk = getMatchedPlayers();
-            if (chunk == null || !startMatch(chunk, false)) break;
+            if (chunk == null || !startMatch(chunk)) break;
             delayStart = -1;
             checkDelayedStart();
         }
     }
 
-    private boolean startMatch(QueuedChunk chunk, boolean challenge) {
+    private boolean startMatch(QueuedChunk chunk) {
         List<UUID> players = new ArrayList<>();
+        Set<UUID> used = new HashSet<>();
+        boolean playerReused = false;
         for (QueueTeam team : chunk.filledTeams) {
+            for (UUID uuid : team.players) {
+                if (!used.add(uuid)) {
+                    playerReused = true;
+                    ProxyCore.getInstance().getQueueManager().leaveAllQueues(uuid);
+                    ProxyParty party = ProxyCore.getInstance().getPartyManager().getParty(uuid);
+                    if (party != null) {
+                        ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
+                        party.sendMessage(new TextComponent("Your party has been removed from all queues! Please try again!"));
+                    }
+                }
+            }
             players.addAll(team.players);
         }
-        return startMatch(players, chunk.query.toString(), challenge);
+        if (playerReused) {
+            return true;
+        }
+        return startMatch(players, chunk.query.toString(), false);
     }
 
     public boolean startMatch(List<UUID> players, String query, boolean challenge) {

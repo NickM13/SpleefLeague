@@ -19,6 +19,7 @@ import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
+import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.splegg.Splegg;
@@ -30,10 +31,7 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author NickM13
@@ -165,6 +163,7 @@ public class SpleggGun extends Holdable {
         menuItem.getLinkedChest()
                 .setItemBuffer(2)
                 .addDeadSpace(0, 0)
+                .addDeadSpace(4, 0)
                 .addDeadSpace(2, 2)
                 .addDeadSpace(0, 4)
                 .addStaticItem(createActiveSpleggGunMenuItem(affix), 6, 2);
@@ -198,19 +197,27 @@ public class SpleggGun extends Holdable {
         return menuItem;
     }
 
-    @DBField
-    private ProjectileStats projectileStats;
-    
+    @DBField private ProjectileStats projectileStats;
+    private ProjectileStats safeProjectileStats;
+
+    @SuppressWarnings("unused")
     public SpleggGun() {
         super();
     }
 
+    @SuppressWarnings("unused")
     public SpleggGun(String identifier, String displayName) {
         super();
         this.material = Material.DIAMOND_SHOVEL;
         this.identifier = identifier;
         this.name = displayName;
         this.projectileStats = new ProjectileStats();
+    }
+
+    @Override
+    public void afterLoad() {
+        safeProjectileStats = new ProjectileStats();
+        safeProjectileStats.customModelDatas = new ArrayList<>(projectileStats.customModelDatas);
     }
 
     public void resetStats() {
@@ -224,28 +231,11 @@ public class SpleggGun extends Holdable {
     
     @Override
     public void onRightClick(CorePlayer corePlayer) {
-        corePlayer.getPlayer().getWorld().spawn(corePlayer.getPlayer().getEyeLocation(), Snowball.class, entity -> {
-            entity.setVelocity(corePlayer.getPlayer().getLocation().getDirection().normalize().multiply(projectileStats.fireRange * 0.25f));
-        });
+        GlobalWorld.getGlobalFakeWorld().shootProjectile(corePlayer, safeProjectileStats);
     }
 
     @Override
     public String getDescription() {
-        /*
-        StringBuilder debugDesc = new StringBuilder("");
-        for (Field field : ProjectileStats.class.getFields()) {
-            try {
-                if (field.isAnnotationPresent(Deprecated.class)) {
-                    debugDesc.append("(disabled) " + field.getName() + ": " + field.get(getProjectileStats()) + "\n");
-                } else {
-                    debugDesc.append(field.getName() + ": " + field.get(getProjectileStats()) + "\n");
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return debugDesc.toString();
-        */
         return description;
     }
     

@@ -237,12 +237,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             bp.getCorePlayer().sendMessage(text);
         }
 
-        applyRewards(winner);
+        applyRewards(winner, true);
 
         return eloChange;
     }
-
-    protected abstract void applyRewards(BP winner);
 
     /**
      * End a battle with a determined winner

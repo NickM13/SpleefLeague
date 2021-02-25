@@ -42,7 +42,7 @@ public enum ChatChannel {
     PARTY("Party",
             ChatColor.AQUA,
             pcp -> pcp.getParty() != null,
-            null,
+            "&b",
             (sender, receiver) -> {
                 return sender.getParty().getPlayerSet().contains(receiver);
             }),
@@ -53,7 +53,7 @@ public enum ChatChannel {
     STAFF("Staff",
             ChatColor.LIGHT_PURPLE,
             pcp -> pcp.getRank().hasPermission(ProxyRank.MODERATOR),
-            null),
+            "&a"),
     SUPERJUMP("SuperJump",
             ChatColor.GOLD,
             null,
@@ -61,20 +61,22 @@ public enum ChatChannel {
     TICKET("Ticket",
             ChatColor.GOLD,
             pcp -> pcp.getRank().hasPermission(ProxyRank.MODERATOR),
-            null),
+            null,
+            null,
+            false),
     VIP("VIP",
             ChatColor.DARK_PURPLE,
             pcp -> pcp.getRank().hasPermission(ProxyRank.VIP),
-            null);
+            "&d");
 
     private final String displayName;
     private final ChatColor tagColor;
     private final Function<ProxyCorePlayer, Boolean> available;
-    private final String playerChatColor;
     private final BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive;
 
     private final TextComponent tagComponent;
     private final TextComponent playerMessageComponent;
+    private final boolean showBaseTag;
 
     ChatChannel(String name,
                 ChatColor tagColor,
@@ -88,10 +90,20 @@ public enum ChatChannel {
                 Function<ProxyCorePlayer, Boolean> available,
                 String playerChatColor,
                 BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive) {
+        this(name, tagColor, available, playerChatColor, receive, true);
+    }
+
+    ChatChannel(String name,
+                ChatColor tagColor,
+                Function<ProxyCorePlayer, Boolean> available,
+                String playerChatColor,
+                BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive,
+                boolean showBaseTag) {
+        this.showBaseTag = showBaseTag;
         this.displayName = name;
         this.tagColor = tagColor;
         this.available = available;
-        this.playerChatColor = playerChatColor == null ? Chat.PLAYER_CHAT : playerChatColor;
+        playerChatColor = playerChatColor == null ? Chat.PLAYER_CHAT : playerChatColor;
         this.receive = receive;
 
         if (tagColor != null) {
@@ -101,7 +113,7 @@ public enum ChatChannel {
         }
 
         playerMessageComponent = new TextComponent();
-        for (com.spleefleague.coreapi.chat.ChatColor chatColor : com.spleefleague.coreapi.chat.ChatColor.getChatColors(this.playerChatColor)) {
+        for (com.spleefleague.coreapi.chat.ChatColor chatColor : com.spleefleague.coreapi.chat.ChatColor.getChatColors(playerChatColor)) {
             switch (chatColor) {
                 case RESET:
                     break;
@@ -122,6 +134,7 @@ public enum ChatChannel {
                     break;
                 default:
                     playerMessageComponent.setColor(net.md_5.bungee.api.ChatColor.getByChar(chatColor.getChar()));
+                    break;
             }
         }
     }
@@ -159,6 +172,10 @@ public enum ChatChannel {
 
     public TextComponent getPlayerMessageBase() {
         return playerMessageComponent.duplicate();
+    }
+
+    public boolean isBaseTagEnabled() {
+        return showBaseTag;
     }
 
 }

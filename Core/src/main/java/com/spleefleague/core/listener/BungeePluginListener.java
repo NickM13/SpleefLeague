@@ -9,6 +9,7 @@ import com.spleefleague.core.listener.bungee.friend.BungeeListenerFriend;
 import com.spleefleague.core.listener.bungee.party.BungeeListenerParty;
 import com.spleefleague.core.listener.bungee.player.BungeeListenerPlayerMute;
 import com.spleefleague.core.listener.bungee.player.BungeeListenerPlayerResync;
+import com.spleefleague.core.listener.bungee.player.BungeeListenerPlayerSound;
 import com.spleefleague.core.listener.bungee.refresh.*;
 import com.spleefleague.core.listener.bungee.server.BungeeListenerServerKill;
 import com.spleefleague.core.logger.CoreLogger;
@@ -35,6 +36,7 @@ public class BungeePluginListener implements PluginMessageListener {
         registeredListeners.put(PacketType.Bungee.PARTY, new BungeeListenerParty());
         registeredListeners.put(PacketType.Bungee.PLAYER_MUTE, new BungeeListenerPlayerMute());
         registeredListeners.put(PacketType.Bungee.PLAYER_RESYNC, new BungeeListenerPlayerResync());
+        registeredListeners.put(PacketType.Bungee.PLAYER_SOUND, new BungeeListenerPlayerSound());
         registeredListeners.put(PacketType.Bungee.REFRESH_ALL, new BungeeListenerRefreshAll());
         registeredListeners.put(PacketType.Bungee.REFRESH_PARTY, new BungeeListenerRefreshParty());
         registeredListeners.put(PacketType.Bungee.REFRESH_SCORE, new BungeeListenerRefreshScore());

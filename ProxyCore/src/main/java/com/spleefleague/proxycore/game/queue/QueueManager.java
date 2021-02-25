@@ -29,11 +29,11 @@ public class QueueManager {
         addQueueContainer("spleef:power",           "Power Spleef",         QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("spleef:power_training",  "Power Training",       QueueContainer.TeamStyle.SOLO, false);
         addQueueContainer("spleef:team",            "Team Spleef",          QueueContainer.TeamStyle.VERSUS, true);
-        addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC, true, false);
+        addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC, true);
         addQueueContainer("spleef:bonanza",         "Bonanza Spleef",       QueueContainer.TeamStyle.BONANZA, false);
 
         addQueueContainer("splegg:versus",          "Splegg Versus",        QueueContainer.TeamStyle.VERSUS, true);
-        addQueueContainer("splegg:multi",           "Multisplegg",          QueueContainer.TeamStyle.DYNAMIC, true, false);
+        addQueueContainer("splegg:multi",           "Multisplegg",          QueueContainer.TeamStyle.DYNAMIC, true);
 
         addQueueContainer("sj:classic",             "SuperJump: Classic",   QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("sj:shuffle",             "SuperJump: Shuffle",   QueueContainer.TeamStyle.VERSUS, true);
@@ -130,10 +130,7 @@ public class QueueManager {
         return "";
     }
 
-    private static final String ALL_ARENA_TEMP = "arena:*";
-
     public void joinQueue(UUID uuid, String mode, String query) {
-        query = ALL_ARENA_TEMP;
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
         ProxyParty party = pcp.getParty();
 
@@ -150,10 +147,14 @@ public class QueueManager {
 
         if (party != null) {
             if (!party.getOwner().equals(uuid)) {
-                ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("You are not the party leader"));
+                if (!queueContainerDynamic.canQueueSolo() || queueContainerDynamic.isTeamQueue()) {
+                    ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("You are not the party leader"));
+                    return;
+                }
             } else {
                 if (!party.isQueueReady()) {
                     ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Someone from your party is currently unavailable"));
+                    return;
                 }
                 switch (queueContainerDynamic.isValidParty(party)) {
                     case 0:
@@ -175,50 +176,58 @@ public class QueueManager {
                                         + displayName + arenaAffix));
                                 break;
                         }
-                        break;
+                        return;
                     case 1:
-                        ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Your party is too big for that gamemode"));
+                        if (!queueContainerDynamic.canQueueSolo()) {
+                            ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("Your party is too big for that gamemode"));
+                            return;
+                        }
                         break;
                     case 2:
-                        ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("TODO: Party size does not match any arenas"));
+                        if (!queueContainerDynamic.canQueueSolo()) {
+                            ProxyCore.getInstance().sendMessageError(pcp, new TextComponent("TODO: Party size does not match any arena team sizes"));
+                            return;
+                        }
                         break;
                 }
             }
-        } else {
-            if (!queueContainerDynamic.canQueueSolo()) {
-                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                        "You aren't in a party!");
-            } else {
-                String arenaAffix = formatArenaQuery(mode, query);
-                int result = queueContainerDynamic.join(pcp, query);
-                String displayName = queueContainerDynamic.getDisplayName();
+        } else if (!queueContainerDynamic.canQueueSolo()) {
+            ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                    "You aren't in a party!");
+            return;
+        }
+        String arenaAffix = formatArenaQuery(mode, query);
+        int result = queueContainerDynamic.join(pcp, query);
+        String displayName = queueContainerDynamic.getDisplayName();
 
-                switch (result) {
-                    case -1:
-                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                                "You have left the queue for " +
-                                        displayName);
-                        break;
-                    case 0:
-                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                                "You have joined the queue for " +
-                                        displayName +
-                                        arenaAffix);
-                        break;
-                    case 1:
-                        ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
-                                "You have rejoined the queue for " +
-                                        displayName +
-                                        arenaAffix);
-                        break;
-                }
-            }
+        switch (result) {
+            case -1:
+                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                        "You have left the queue for " +
+                                displayName);
+                break;
+            case 0:
+                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                        "You have joined the queue for " +
+                                displayName +
+                                arenaAffix);
+                break;
+            case 1:
+                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                        "You have rejoined the queue for " +
+                                displayName +
+                                arenaAffix);
+                break;
+            case 2:
+                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                        "Your party is already in queue for " + displayName);
+                break;
         }
     }
 
     public boolean leaveAllQueues(UUID uuid) {
         boolean hasLeft = false;
-        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
+        ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
         for (QueueContainerDynamic queueContainer : queueContainerDynamicMap.values()) {
             hasLeft |= queueContainer.leave(pcp) != null;
         }

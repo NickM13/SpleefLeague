@@ -67,28 +67,6 @@ public class MultiSpleefBattle extends DynamicBattle<MultiSpleefPlayer> {
     }
 
     @Override
-    protected void applyRewards(MultiSpleefPlayer player, boolean winner) {
-        int common = 0, rare = 0, epic = 0, legendary = 0;
-        int coins = getRandomCoins(player.getCorePlayer(),
-                winner,
-                0, 20);
-        Battle.OreType ore = getRandomOre(player.getCorePlayer(),
-                winner,
-                0.050, 0.02, 0.01, 0.002);
-        switch (ore) {
-            case COMMON: common++; break;
-            case RARE: rare++; break;
-            case EPIC: epic++; break;
-            case LEGENDARY: legendary++; break;
-        }
-        if (coins > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-        if (common > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-        if (rare > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-        if (epic > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-        if (legendary > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
-    }
-
-    @Override
     public void reset() {
         fillField();
     }

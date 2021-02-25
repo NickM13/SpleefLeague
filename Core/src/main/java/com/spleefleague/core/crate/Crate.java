@@ -17,37 +17,26 @@ import java.util.Map;
  */
 public class Crate extends DBEntity {
 
-    @DBField
-    private String displayName = "";
-    @DBField
-    private String description = "";
-    @DBField
-    private Material material = Material.CHEST;
-    @DBField
-    private Integer closedCmd = 1;
-    @DBField
-    private Integer openedCmd = 2;
-    @DBField
-    private Integer priority = -1;
-    @DBField
-    private String style = "";
-    @DBField
-    private Boolean hidden = true;
-    @DBField
-    private Map<String, Double> currencyWeights = new HashMap<>();
-    @DBField
-    private Map<String, Double> collectibleWeights = new HashMap<>();
-    @DBField
-    private Double collectibleMin = 1D;
-    @DBField
-    private Double collectibleMax = 1D;
-    @DBField
-    private Double currencyMin = 0D;
-    @DBField
-    private Double currencyMax = 0D;
+    @DBField private String displayName = "";
+    @DBField private String description = "";
+    @DBField private Material material = Material.CHEST;
+    @DBField private Integer closedCmd = 1;
+    @DBField private Integer openedCmd = 2;
+    @DBField private Material artisanMaterial = Material.CHEST;
+    @DBField private Integer artisanCmd = 1;
+    @DBField private Integer priority = -1;
+    @DBField private String style = "";
+    @DBField private Boolean hidden = true;
+    @DBField private Map<String, Double> currencyWeights = new HashMap<>();
+    @DBField private Map<String, Double> collectibleWeights = new HashMap<>();
+    @DBField private Double collectibleMin = 1D;
+    @DBField private Double collectibleMax = 1D;
+    @DBField private Double currencyMin = 0D;
+    @DBField private Double currencyMax = 0D;
 
     private ItemStack closedItem;
     private ItemStack openedItem;
+    private ItemStack artisanItem;
     private double totalCollectibleWeight;
     private double totalCurrencyWeight;
 
@@ -71,6 +60,7 @@ public class Crate extends DBEntity {
     private void updateItems() {
         closedItem = InventoryMenuUtils.createCustomItem(material, closedCmd);
         openedItem = InventoryMenuUtils.createCustomItem(material, openedCmd);
+        artisanItem = InventoryMenuUtils.createCustomItem(artisanMaterial, artisanCmd);
     }
 
     private void calculateWeights() {
@@ -116,6 +106,12 @@ public class Crate extends DBEntity {
         updateItems();
     }
 
+    public void setArtisanItem(Material material, int cmd) {
+        this.artisanMaterial = material;
+        this.artisanCmd = cmd;
+        updateItems();
+    }
+
     public void setStyle(String style) {
         this.style = style != null ? style : "";
     }
@@ -132,9 +128,12 @@ public class Crate extends DBEntity {
         return openedItem;
     }
 
+    public ItemStack getArtisan() {
+        return artisanItem;
+    }
+
     public void setPriority(int priority) {
         this.priority = priority;
-
     }
 
     public int getPriority() {

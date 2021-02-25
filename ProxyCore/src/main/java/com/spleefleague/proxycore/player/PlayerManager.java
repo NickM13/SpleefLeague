@@ -40,8 +40,10 @@ public class PlayerManager <P extends ProxyDBPlayer> {
             Iterator<Map.Entry<UUID, P>> it = offlinePlayers.entrySet().iterator();
             while (it.hasNext()) {
                 P pcp = it.next().getValue();
-                it.remove();
                 save(pcp);
+                if (pcp.getLastOfflineLoad() < System.currentTimeMillis() - 5000) {
+                    it.remove();
+                }
                 System.out.println("Auto saving " + pcp.getName());
             }
         }, 30L, 30L, TimeUnit.SECONDS);
@@ -124,6 +126,7 @@ public class PlayerManager <P extends ProxyDBPlayer> {
 
     public P getOffline(UUID uuid) {
         if (offlinePlayers.containsKey(uuid)) {
+            offlinePlayers.get(uuid).initOffline();
             return offlinePlayers.get(uuid);
         } else if (onlinePlayers.containsKey(uuid)) {
             return onlinePlayers.get(uuid);

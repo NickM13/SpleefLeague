@@ -19,6 +19,7 @@ import com.spleefleague.core.game.request.BattleRequest;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
@@ -716,6 +717,30 @@ public abstract class Battle<BP extends BattlePlayer> {
 
     protected enum OreType {
         NONE, COMMON, RARE, EPIC, LEGENDARY;
+    }
+
+    protected final void applyRewards(BattlePlayer battlePlayer, boolean winner) {
+        if (!battleMode.hasRewards() || battlePlayer.getCorePlayer() == null) return;
+        int coins;
+        int common = 0, rare = 0, epic = 0, legendary = 0;
+        Battle.OreType ore;
+        coins = getRandomCoins(battlePlayer.getCorePlayer(),
+                winner,
+                battleMode.getMinCoins(), battleMode.getMaxCoins());
+        ore = getRandomOre(battlePlayer.getCorePlayer(),
+                winner,
+                battleMode.getCommonWeight(), battleMode.getRareWeight(), battleMode.getEpicWeight(), battleMode.getLegendaryWeight());
+        switch (ore) {
+            case COMMON: common++; break;
+            case RARE: rare++; break;
+            case EPIC: epic++; break;
+            case LEGENDARY: legendary++; break;
+        }
+        if (coins > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
+        if (common > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
+        if (rare > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
+        if (epic > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
+        if (legendary > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
     }
 
     /**

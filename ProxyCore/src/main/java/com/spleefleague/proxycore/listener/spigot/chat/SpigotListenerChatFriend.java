@@ -14,7 +14,7 @@ public class SpigotListenerChatFriend extends SpigotListener<PacketSpigotChatFri
 
     @Override
     protected void receive(Connection sender, PacketSpigotChatFriend packet) {
-        ProxyCore.getInstance().getChat().sendNotificationFriends(packet.targets, ChatChannel.valueOf(packet.channel), packet.message);
+        ProxyCore.getInstance().getChat().sendNotificationFriends(packet.targets, packet.message);
     }
 
 }

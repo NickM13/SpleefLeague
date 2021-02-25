@@ -98,7 +98,7 @@ public enum ChatColor {
         List<ChatColor> colors = new ArrayList<>();
         for (int i = 0; i < str.length() - 1; i++) {
             char c = str.charAt(i);
-            if (c == 167) {
+            if (c == '&' || c == '§') {
                 c = str.charAt(i + 1);
                 if (c >= 'A' && c <= 'Z') {
                     c += 32;

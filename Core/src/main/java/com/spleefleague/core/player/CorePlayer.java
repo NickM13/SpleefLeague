@@ -5,6 +5,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.mongodb.lang.NonNull;
@@ -126,6 +127,7 @@ public class CorePlayer extends CoreOfflinePlayer {
 
     @Override
     public void init() {
+        getPlayer().addAttachment(Core.getInstance());
         permissions = getPlayer().addAttachment(Core.getInstance());
         super.init();
         FakeWorld.getGlobalFakeWorld().addPlayer(this);
@@ -619,6 +621,7 @@ public class CorePlayer extends CoreOfflinePlayer {
     public void gotoSpawn() {
         refreshHotbar();
         teleport(getSpawnLocation());
+        getPlayer().setHealth(20);
     }
 
     /**
@@ -705,6 +708,11 @@ public class CorePlayer extends CoreOfflinePlayer {
         return canBuild() && !(getPlayer().getInventory().getItemInMainHand().getType().toString().toLowerCase().contains("sword"));
     }
 
+    private static final Set<String> disabledPerms = Sets.newHashSet(
+            "minecraft.command.me",
+            "minecraft.command.tell"
+    );
+
     /**
      * Updates all online player scoreboards of this player's rank
      * Updates tab list via sending packets
@@ -721,6 +729,10 @@ public class CorePlayer extends CoreOfflinePlayer {
         getPlayer().setPlayerListName(getTabName());
 
         permissions.getPermissions().clear();
+
+        for (String perm : disabledPerms) {
+            permissions.setPermission(perm, false);
+        }
 
         for (String p : CoreCommand.getAllPermissions()) {
             boolean has = false;

@@ -5,6 +5,7 @@ import com.spleefleague.core.Core;
 import com.spleefleague.core.game.season.SeasonManager;
 import com.spleefleague.core.settings.Settings;
 import org.bson.Document;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
@@ -25,14 +26,24 @@ public class LeaderboardManager {
     public void init() {
         SeasonManager.init();
         leaderboardCol = Core.getInstance().getPluginDB().getCollection("Leaderboards");
-        refresh();
-    }
-
-    public void refresh() {
         for (Document doc : leaderboardCol.find(new Document("season", SeasonManager.getCurrentSeason().getIdentifier()))) {
             CoreLeaderboard leaderboard = new CoreLeaderboard();
             leaderboard.load(doc);
             LEADERBOARDS.put(leaderboard.getName(), leaderboard);
+        }
+        Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), this::refresh, 200L, 200L);
+    }
+
+    public void refresh() {
+        for (Document doc : leaderboardCol.find(new Document("season", SeasonManager.getCurrentSeason().getIdentifier()))) {
+            String name = doc.getString("name");
+            if (LEADERBOARDS.containsKey(name)) {
+                LEADERBOARDS.get(name).loadPlayers(doc.get("players", Document.class));
+            } else {
+                CoreLeaderboard leaderboard = new CoreLeaderboard();
+                leaderboard.load(doc);
+                LEADERBOARDS.put(leaderboard.getName(), leaderboard);
+            }
         }
     }
 

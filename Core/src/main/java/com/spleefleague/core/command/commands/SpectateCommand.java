@@ -43,9 +43,10 @@ public class SpectateCommand extends CoreCommand {
             error(sender, CoreError.INGAME);
         } else {
             if (sender.isInBattle()) {
-                sender.getBattle().leavePlayer(sender);
+                error(sender, CoreError.INGAME);
+            } else {
+                CorePlugin.spectatePlayerGlobal(sender, target);
             }
-            CorePlugin.spectatePlayerGlobal(sender, target);
         }
     }
 

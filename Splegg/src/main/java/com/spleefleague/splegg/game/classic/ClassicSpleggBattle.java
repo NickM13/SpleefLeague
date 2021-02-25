@@ -7,10 +7,7 @@
 package com.spleefleague.splegg.game.classic;
 
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.battle.Battle;
-import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
-import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.splegg.Splegg;
@@ -18,7 +15,6 @@ import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -28,6 +24,15 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
     
     public ClassicSpleggBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Splegg.getInstance(), battleId, players, arena, ClassicSpleggPlayer.class, SpleggMode.VERSUS.getBattleMode());
+    }
+
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (ClassicSpleggPlayer battler : battlers.values()) {
+            gameHistory.addPlayerAdditional(battler.getCorePlayer().getUniqueId(), "splegg:gun1", battler.getGun1().getIdentifier());
+            gameHistory.addPlayerAdditional(battler.getCorePlayer().getUniqueId(), "splegg:gun2", battler.getGun2().getIdentifier());
+        }
     }
     
     /**
@@ -71,30 +76,6 @@ public class ClassicSpleggBattle extends VersusBattle<ClassicSpleggPlayer> {
             csp.updateAbilities();
         }
         gameWorld.performBaseBreakRegen();
-    }
-
-    @Override
-    protected void applyRewards(ClassicSpleggPlayer winner) {
-        for (BattlePlayer bp : battlers.values()) {
-            int common = 0, rare = 0, epic = 0, legendary = 0;
-            int coins = getRandomCoins(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
-                    0, 10);
-            Battle.OreType ore = getRandomOre(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
-                    0.025, 0.01, 0.005, 0.001);
-            switch (ore) {
-                case COMMON: common++; break;
-                case RARE: rare++; break;
-                case EPIC: epic++; break;
-                case LEGENDARY: legendary++; break;
-            }
-            if (coins > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-            if (common > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-            if (rare > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-            if (epic > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-            if (legendary > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
-        }
     }
 
 }

@@ -110,7 +110,7 @@ public class ConnectionListener implements Listener {
             }
         }
 
-        TextComponent textComponent = new TextComponent("Welcome to SpleefLeague, ");
+        TextComponent textComponent = new TextComponent("Welcome to " + ChatColor.GOLD + "SpleefLeague" + ChatColor.GRAY + ", ");
         textComponent.addExtra(pcp.getChatName());
         textComponent.addExtra("!");
         ProxyCore.getInstance().sendMessage(pcp, textComponent);
@@ -154,7 +154,8 @@ public class ConnectionListener implements Listener {
             }
         }
 
-        ProxyCore.getInstance().getPartyManager().onDisconnect(event.getPlayer().getUniqueId());
+        ProxyCore.getInstance().getQueueManager().leaveAllQueues(pp.getUniqueId());
+        ProxyCore.getInstance().getPartyManager().onDisconnect(pp.getUniqueId());
     }
 
     @EventHandler

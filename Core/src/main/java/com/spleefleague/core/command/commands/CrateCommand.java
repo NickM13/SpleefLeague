@@ -137,6 +137,17 @@ public class CrateCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void crateSetArtisanItem(CorePlayer sender,
+                               @LiteralArg("set") String l1,
+                               @LiteralArg("artisanItem") String l2,
+                               @OptionArg(listName = "crates") String identifier,
+                               @EnumArg Material material,
+                               @HelperArg("customModelData") Integer cmd) {
+        Core.getInstance().getCrateManager().setArtisanItem(identifier, material, cmd);
+        success(sender, "Set Crate " + identifier + " artisan item set to " + material + ":" + cmd);
+    }
+
+    @CommandAnnotation
     public void crateSetHide(CorePlayer sender,
                              @LiteralArg("set") String l1,
                              @LiteralArg("hidden") String l2,

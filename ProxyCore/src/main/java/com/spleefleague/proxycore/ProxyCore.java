@@ -298,7 +298,8 @@ public class ProxyCore extends Plugin {
     }
 
     public void sendMessage(ChatChannel channel, TextComponent text) {
-        TextComponent component = new TextComponent(getChatTag());
+        TextComponent component = new TextComponent();
+        if (channel.isBaseTagEnabled()) component.addExtra(getChatTag());
         component.setColor(ChatColor.GRAY);
         component.addExtra(text);
         playerManager.getAll().forEach(pcp -> {

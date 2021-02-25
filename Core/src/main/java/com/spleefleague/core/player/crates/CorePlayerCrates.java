@@ -62,6 +62,7 @@ public class CorePlayerCrates extends PlayerCrates {
                     Vendorable.Rarity rarity = Vendorable.Rarity.valueOf(entry.getKey());
                     if (available.get(rarity).isEmpty()) {
                         Core.getInstance().sendMessage(owner, "Uh oh, something went wrong with your roll!");
+                        return crateLoot;
                     } else {
                         int roll2 = random.nextInt(available.get(rarity).size());
                         String str = available.get(rarity).remove(roll2);
@@ -76,14 +77,50 @@ public class CorePlayerCrates extends PlayerCrates {
                         if (parts.length > 2) {
                             String skin = parts[2];
                             if (owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin)) {
-                                // Roll fragment
+                                switch (collectible.getRarity()) {
+                                    case COMMON:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        break;
+                                    case RARE:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_RARE, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_RARE, 1);
+                                        break;
+                                    case EPIC:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        break;
+                                    case LEGENDARY:
+                                    case MYTHIC:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                        break;
+                                }
                             } else {
                                 crateLoot.collectibleSkins.add(collectible.getSkin(skin));
                                 owner.getCollectibles().addSkin(collectible, skin);
                             }
                         } else {
                             if (owner.getCollectibles().contains(collectible)) {
-                                // Roll fragment
+                                switch (collectible.getRarity()) {
+                                    case COMMON:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        break;
+                                    case RARE:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_RARE, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_RARE, 1);
+                                        break;
+                                    case EPIC:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        break;
+                                    case LEGENDARY:
+                                    case MYTHIC:
+                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                        break;
+                                }
                             } else {
                                 crateLoot.collectibles.add(collectible);
                                 owner.getCollectibles().add(collectible);

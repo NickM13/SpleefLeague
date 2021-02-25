@@ -12,16 +12,23 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCur
  */
 public class CorePlayerPurse extends PlayerPurse {
 
-    private CorePlayer owner;
+    private final CorePlayer owner;
 
     public CorePlayerPurse(CorePlayer owner) {
         this.owner = owner;
     }
 
     public void addCurrency(CoreCurrency currency, int amount) {
+        this.addCurrency(currency, amount, false);
+    }
+
+    public void addCurrency(CoreCurrency currency, int amount, boolean sendMessage) {
         super.addCurrency(currency.name(), amount);
         PacketSpigotPlayerCurrency packet = new PacketSpigotPlayerCurrency(owner.getUniqueId(), NumAction.CHANGE, currency.packetType, amount);
         Core.getInstance().sendPacket(packet);
+        if (sendMessage) {
+            Core.getInstance().sendMessage(owner, "You've received " + currency.color + amount + " " + currency.displayName + (amount != 1 ? "s" : ""));
+        }
     }
 
     public int getCurrency(CoreCurrency currency) {

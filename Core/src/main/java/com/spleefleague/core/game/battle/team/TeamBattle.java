@@ -252,6 +252,7 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
     }
 
     protected int applyEloChange(TeamBattleTeam<BP> winner) {
+        if (forced) return 0;
         int avgRating = 0;
         int winnerRating = winner.getRating();
 
@@ -266,11 +267,13 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
 
         int eloChange = (int) (0.00001f * d * d + 0.014f * d + 20.f);
 
-        for (BP bp : battlers.values()) {
-            boolean isWinner = teamBattleTeamMap.get(bp).equals(winner);
-            int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
+        for (BP battler : battlers.values()) {
+            boolean isWinner = teamBattleTeamMap.get(battler).equals(winner);
+            applyRewards(battler, isWinner);
+
+            int initialElo = battler.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             int toChange = isWinner ? eloChange : -eloChange;
-            bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
+            battler.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));
@@ -280,13 +283,9 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
             text.addExtra("->");
             text.addExtra(ChatColor.GREEN + "" + (initialElo + toChange));
             text.addExtra(")");
-            bp.getCorePlayer().sendMessage(text);
+            battler.getCorePlayer().sendMessage(text);
         }
         return eloChange;
-    }
-
-    protected void applyRewards(TeamBattleTeam<BP> winner) {
-
     }
 
     protected abstract void sendEndMessage(TeamBattleTeam<BP> winner);
@@ -337,7 +336,6 @@ public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP>
                     }
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
-                applyRewards(winner);
                 applyEloChange(winner);
 
                 /*

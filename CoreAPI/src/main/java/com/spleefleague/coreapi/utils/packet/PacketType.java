@@ -7,7 +7,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleSta
 import com.spleefleague.coreapi.utils.packet.bungee.connection.PacketBungeeConnection;
 import com.spleefleague.coreapi.utils.packet.bungee.friend.PacketBungeeFriend;
 import com.spleefleague.coreapi.utils.packet.bungee.party.PacketBungeeParty;
-import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
+import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerSound;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerMute;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerResync;
 import com.spleefleague.coreapi.utils.packet.bungee.refresh.*;
@@ -44,9 +44,9 @@ public class PacketType {
         CONNECTION(PacketBungeeConnection.class),
         FRIEND(PacketBungeeFriend.class),
         PARTY(PacketBungeeParty.class),
-        PLAYER_KICK(PacketBungeePlayerKick.class),
         PLAYER_MUTE(PacketBungeePlayerMute.class),
         PLAYER_RESYNC(PacketBungeePlayerResync.class),
+        PLAYER_SOUND(PacketBungeePlayerSound.class),
         REFRESH_ALL(PacketBungeeRefreshAll.class),
         REFRESH_PARTY(PacketBungeeRefreshParty.class),
         REFRESH_QUEUE(PacketBungeeRefreshQueue.class),

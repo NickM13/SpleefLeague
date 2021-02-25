@@ -33,7 +33,7 @@ public class ChatEmoticons {
         EMOTICONS.put("skull", String.valueOf(Character.toChars(21019)));
         EMOTICONS.put("sleep", String.valueOf(Character.toChars(21020)));
         EMOTICONS.put("sob", String.valueOf(Character.toChars(21021)));
-        EMOTICONS.put("star_1", String.valueOf(Character.toChars(21022)));
+        EMOTICONS.put("star", String.valueOf(Character.toChars(21022)));
         EMOTICONS.put("sunglasses", String.valueOf(Character.toChars(21024)));
         EMOTICONS.put("vomit", String.valueOf(Character.toChars(21025)));
         EMOTICONS.put("wonder", String.valueOf(Character.toChars(21026)));

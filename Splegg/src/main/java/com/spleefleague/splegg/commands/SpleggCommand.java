@@ -65,6 +65,15 @@ public class SpleggCommand extends CoreCommand {
         sender.getMenu().setInventoryMenuItem(Splegg.getInstance().getSpleggMenu());
     }
 
+    @CommandAnnotation
+    public void spleggChallenge(CorePlayer sender,
+                                @LiteralArg("challenge") String l,
+                                @LiteralArg("versus") String mode,
+                                @OptionArg(listName = "arenas") String arenaName,
+                                @CorePlayerArg(allowCrossServer = true, allowSelf = false) CorePlayer target) {
+        Splegg.getInstance().challengePlayer(sender, target, SpleggMode.VERSUS.getBattleMode(), arenaName);
+    }
+
     @CommandAnnotation(minRank="DEVELOPER")
     public void spleggMatch(CorePlayer sender,
                             @LiteralArg("match") String l,

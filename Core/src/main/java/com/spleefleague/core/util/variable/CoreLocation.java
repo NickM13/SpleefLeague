@@ -16,6 +16,7 @@ import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -34,7 +35,7 @@ public class CoreLocation extends DBVariable<List<?>> {
     public double z;
     public long yaw;
     public long pitch;
-    public UUID worldUuid;
+    public String worldName;
 
     public CoreLocation() {
     }
@@ -44,7 +45,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         this.y = y;
         this.z = z;
         this.yaw = this.pitch = 0;
-        this.worldUuid = Core.DEFAULT_WORLD.getUID();
+        this.worldName = Core.DEFAULT_WORLD.getName();
     }
 
     public CoreLocation(double x, double y, double z, long yaw, long pitch) {
@@ -53,7 +54,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
-        this.worldUuid = Core.DEFAULT_WORLD.getUID();
+        this.worldName = Core.DEFAULT_WORLD.getName();
     }
 
     public CoreLocation(Location loc) {
@@ -62,7 +63,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         z = Math.round(loc.getZ() * 4) / 4D;
         yaw = Math.round(loc.getYaw() / 15) * 15L;
         pitch = Math.round(loc.getPitch() / 15) * 15L;
-        worldUuid = loc.getWorld().getUID();
+        worldName = Objects.requireNonNull(loc.getWorld()).getName();
     }
 
     public CoreLocation(Location loc, double roundDivisor) {
@@ -71,7 +72,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         z = Math.round(loc.getZ() * roundDivisor) / roundDivisor;
         yaw = (long) (Math.round(loc.getYaw() / (90 / roundDivisor)) * (90 / roundDivisor));
         pitch = (long) (Math.round(loc.getPitch() / (90 / roundDivisor)) * (90 / roundDivisor));
-        worldUuid = loc.getWorld().getUID();
+        worldName = Objects.requireNonNull(loc.getWorld()).getName();
     }
 
     public CoreLocation(List<?> list) {
@@ -138,9 +139,9 @@ public class CoreLocation extends DBVariable<List<?>> {
             yaw = (long) doublefy(doc, 3);
             pitch = (long) doublefy(doc, 4);
             if (doc.size() > 5) {
-                worldUuid = UUID.fromString((String) doc.get(5));
+                worldName = (String) doc.get(5);
             } else {
-                worldUuid = Core.DEFAULT_WORLD.getUID();
+                worldName = Core.DEFAULT_WORLD.getName();
             }
         } else {
             CoreLogger.logError(null, new IndexOutOfBoundsException("" + doc.size()));
@@ -156,13 +157,13 @@ public class CoreLocation extends DBVariable<List<?>> {
         list.add(z);
         list.add((double) yaw);
         list.add((double) pitch);
-        list.add(worldUuid.toString());
+        list.add(worldName);
 
         return list;
     }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(worldUuid), x, y, z, (float) yaw, (float) pitch);
+        return new Location(Bukkit.getWorld(worldName), x, y, z, (float) yaw, (float) pitch);
     }
 
     @Override

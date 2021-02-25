@@ -321,6 +321,22 @@ public class EnvironmentListener implements Listener {
     }
 
     /**
+     * Handle certain player entity interactions such
+     * as interacting with vendors
+     *
+     * @param event Event
+     */
+    @EventHandler
+    public void onEntityInteractEntity(PlayerInteractEntityEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!cp.canBuild()) {
+            if (!interactableEntities.contains(event.getRightClicked().getType())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    /**
      * Prevent player food from dropping
      *
      * @param event Event

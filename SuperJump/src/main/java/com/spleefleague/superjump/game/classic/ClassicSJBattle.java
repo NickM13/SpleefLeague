@@ -51,11 +51,6 @@ public class ClassicSJBattle extends VersusBattle<ClassicSJPlayer> {
 
     }
 
-    @Override
-    protected void applyRewards(ClassicSJPlayer classicSJPlayer) {
-
-    }
-
     protected void failBattler(CorePlayer cp) {
         battlers.get(cp).addFall();
         battlers.get(cp).respawn();

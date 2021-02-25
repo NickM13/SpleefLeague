@@ -122,7 +122,7 @@ public class Ticket extends DBEntity {
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(staff);
         if (responseTimeout < System.currentTimeMillis() || pcp == null) {
             TextComponent formatted = formatStaff2(pcp, msg);
-            ProxyCore.getInstance().sendMessage(getSenderPlayer(), formatted);
+            getSenderPlayer().getPlayer().sendMessage(formatted);
             ProxyCore.getInstance().sendMessage(ChatChannel.TICKET, formatted);
             responseTimeout = System.currentTimeMillis() + 10000;
             resetTimeout();
@@ -137,7 +137,7 @@ public class Ticket extends DBEntity {
             TextComponent formatted = formatSender(msg);
             resetTimeout();
             messages.add(formatted.toPlainText());
-            ProxyCore.getInstance().sendMessage(getSenderPlayer(), formatted);
+            getSenderPlayer().getPlayer().sendMessage(formatted);
             ProxyCore.getInstance().sendMessage(ChatChannel.TICKET, formatted);
         } else {
             ProxyCore.getInstance().sendMessage(getSenderPlayer(), "Try again in " + (int) ((responseTimeout - System.currentTimeMillis()) / 1000) + " seconds");

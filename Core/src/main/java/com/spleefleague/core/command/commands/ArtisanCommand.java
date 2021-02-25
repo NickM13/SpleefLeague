@@ -97,7 +97,7 @@ public class ArtisanCommand extends CoreCommand {
                                  @LiteralArg(value = "border") String l2,
                                  @OptionArg(listName = "artisans") String artisan,
                                  String background) {
-        Artisans.setBackground(artisan, background);
+        Artisans.setBorder(artisan, background);
         StringBuilder builder = new StringBuilder();
         for (char c : background.toCharArray()) {
             builder.append((int) c);

@@ -2,25 +2,16 @@ package com.spleefleague.splegg.game.multi;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.game.Arena;
-import com.spleefleague.core.game.battle.Battle;
-import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.dynamic.DynamicBattle;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.coreapi.chat.ChatColor;
-import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
 import com.spleefleague.splegg.Splegg;
 import com.spleefleague.splegg.game.SpleggMode;
 import com.spleefleague.splegg.util.SpleggUtils;
-import org.bukkit.Material;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -33,6 +24,15 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
 
     public MultiSpleggBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Splegg.getInstance(), battleId, players, arena, MultiSpleggPlayer.class, SpleggMode.MULTI.getBattleMode());
+    }
+
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (MultiSpleggPlayer battler : battlers.values()) {
+            gameHistory.addPlayerAdditional(battler.getCorePlayer().getUniqueId(), "splegg:gun1", battler.getGun1().getIdentifier());
+            gameHistory.addPlayerAdditional(battler.getCorePlayer().getUniqueId(), "splegg:gun2", battler.getGun2().getIdentifier());
+        }
     }
 
     /**
@@ -70,28 +70,6 @@ public class MultiSpleggBattle extends DynamicBattle<MultiSpleggPlayer> {
         for (MultiSpleggPlayer msp : battlers.values()) {
             msp.respawn();
         }
-    }
-
-    @Override
-    protected void applyRewards(MultiSpleggPlayer player, boolean winner) {
-            int common = 0, rare = 0, epic = 0, legendary = 0;
-            int coins = getRandomCoins(player.getCorePlayer(),
-                    winner,
-                    0, 15);
-            Battle.OreType ore = getRandomOre(player.getCorePlayer(),
-                    winner,
-                    0.050, 0.02, 0.01, 0.002);
-            switch (ore) {
-                case COMMON: common++; break;
-                case RARE: rare++; break;
-                case EPIC: epic++; break;
-                case LEGENDARY: legendary++; break;
-            }
-            if (coins > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-            if (common > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-            if (rare > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-            if (epic > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-            if (legendary > 0) player.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
     }
 
     @Override

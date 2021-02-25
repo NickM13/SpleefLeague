@@ -5,13 +5,10 @@ import com.spleefleague.coreapi.infraction.Infraction;
 import com.spleefleague.coreapi.infraction.InfractionManager;
 import com.spleefleague.coreapi.infraction.InfractionType;
 import com.spleefleague.coreapi.utils.TimeUtils;
-import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerKick;
 import com.spleefleague.coreapi.utils.packet.bungee.player.PacketBungeePlayerMute;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
-import com.spleefleague.proxycore.utils.CoreUtils;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.bson.Document;
 
 import java.util.UUID;
@@ -67,16 +64,6 @@ public class ProxyInfractionManager extends InfractionManager {
 
         ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(infraction.getTarget());
 
-        ProxiedPlayer player = ProxyCore.getInstance().getProxy().getPlayer(infraction.getPunisher());
-        if (player != null) {
-            ProxyCorePlayer sender = ProxyCore.getInstance().getPlayers().get(player.getUniqueId());
-            if (sender != null) {
-                ProxyCore.getInstance().sendMessage(sender, infraction.getType().getName() + " sent to " +
-                        ProxyCore.getInstance().getPlayers().getOffline(infraction.getTarget()).getName() +
-                        " for " + TimeUtils.gcdTimeToString(infraction.getDuration()));
-                ProxyCore.getInstance().sendMessage(sender, infraction.getReason());
-            }
-        }
         if (pcp != null) {
             TextComponent kickMessage = new TextComponent();
             switch (infraction.getType()) {
@@ -93,24 +80,12 @@ public class ProxyInfractionManager extends InfractionManager {
                 case UNBAN:
                     return;
                 case BAN:
-                    ProxyCore.getInstance().getPacketManager().sendPacket(
-                            pcp.getUniqueId(),
-                            new PacketBungeePlayerKick(pcp.getUniqueId(), "You have been banned: " + infraction.getReason()));
                     kickMessage.addExtra("You have been banned: ");
                     break;
                 case KICK:
-                    ProxyCore.getInstance().getPacketManager().sendPacket(
-                            pcp.getUniqueId(),
-                            new PacketBungeePlayerKick(pcp.getUniqueId(), "You have been kicked: " + infraction.getReason()));
                     kickMessage.addExtra("You have been kicked: ");
                     break;
                 case TEMPBAN:
-                    ProxyCore.getInstance().getPacketManager().sendPacket(
-                            pcp.getUniqueId(),
-                            new PacketBungeePlayerKick(pcp.getUniqueId(),
-                                    "You have been banned: " +
-                                            infraction.getReason() + "\n" +
-                                            TimeUtils.timeToString(infraction.getDuration())));
                     kickMessage.addExtra("You have been temp-banned: ");
                     break;
             }
@@ -118,9 +93,6 @@ public class ProxyInfractionManager extends InfractionManager {
             if (infraction.getDuration() > 0) {
                 kickMessage.addExtra("\n" + TimeUtils.timeToString(infraction.getDuration()));
             }
-            ProxyCore.getInstance().getPacketManager().sendPacket(
-                    pcp.getUniqueId(),
-                    new PacketBungeePlayerKick(pcp.getUniqueId(), ""));
             pcp.getPlayer().disconnect(kickMessage);
         }
     }

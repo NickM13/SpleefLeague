@@ -7,6 +7,7 @@
 package com.spleefleague.spleef.game.battle.power;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleUtils;
@@ -175,36 +176,6 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             getGameWorld().setBlockDelayed(entry.getKey(), FakeWorld.AIR, 6 * 20);
         }
         return pos;
-    }
-
-    @Override
-    protected void applyRewards(PowerSpleefPlayer winner) {
-        if (winner.getRoundWins() < 5) {
-            // No rewards for less than 5 round games
-            return;
-        }
-        for (BattlePlayer bp : battlers.values()) {
-            int coins;
-            int common = 0, rare = 0, epic = 0, legendary = 0;
-            Battle.OreType ore;
-            coins = getRandomCoins(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
-                    0, 4);
-            ore = getRandomOre(bp.getCorePlayer(),
-                    bp.getPlayer().equals(winner.getPlayer()),
-                    0.025, 0.01, 0.005, 0.001);
-            switch (ore) {
-                case COMMON: common++; break;
-                case RARE: rare++; break;
-                case EPIC: epic++; break;
-                case LEGENDARY: legendary++; break;
-            }
-            if (coins > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-            if (common > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-            if (rare > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-            if (epic > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-            if (legendary > 0) bp.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
-        }
     }
 
     @Override

@@ -27,14 +27,16 @@ public enum SpleggMode {
                 .setDisplayItem(Material.EGG, 1)
                 .setDescription("Test your might against another player in this 1v1 competition of precision and movement.")
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
-                .setBattleClass(ClassicSpleggBattle.class);
+                .setBattleClass(ClassicSpleggBattle.class)
+                .setRewards(0, 10, 0.025, 0.01, 0.005, 0.001);
 
         BattleMode.createArenaMode(MULTI.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Multisplegg")
                 .setDisplayItem(Material.EGG, 2)
                 .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!")
                 .setTeamStyle(BattleMode.TeamStyle.DYNAMIC)
-                .setBattleClass(MultiSpleggBattle.class);
+                .setBattleClass(MultiSpleggBattle.class)
+                .setRewards(0, 15, 0.05, 0.02, 0.01, 0.002);
     }
     
     public String getName() {

@@ -422,8 +422,8 @@ public class CoreCommand extends Command {
                         Entity e = it.next();
                         if (!e.getWorld().equals(loc.getWorld())
                                 || (bound.max >= 0
-                                && e.getLocation().distance(loc) > bound.max)
-                                || e.getLocation().distance(loc) < bound.min) {
+                                && e.getLocation().toVector().distance(vec) > bound.max)
+                                || e.getLocation().toVector().distance(vec) < bound.min) {
                             it.remove();
                         }
                     }
@@ -545,26 +545,30 @@ public class CoreCommand extends Command {
 
         class EntityDistanced {
             final Entity entity;
-            final Integer distance;
+            final Double distance;
 
-            public EntityDistanced(Entity entity, Integer distance) {
+            public EntityDistanced(Entity entity, Double distance) {
                 this.entity = entity;
                 this.distance = distance;
+            }
+
+            public double getDistance() {
+                return distance;
             }
         }
 
         ArrayList<EntityDistanced> entityDistancedList = new ArrayList<>();
-        for (Entity e : entitySet) {
-            entityDistancedList.add(new EntityDistanced(e, (int) vec.distance(e.getLocation().toVector())));
+        for (Entity entity : entitySet) {
+            entityDistancedList.add(new EntityDistanced(entity, vec.distance(entity.getLocation().toVector())));
         }
 
         if (sort != SortType.ARBITRARY) {
             switch (sort) {
                 case NEAREST:
-                    entityDistancedList.sort(Comparator.comparingInt(e -> e.distance));
+                    entityDistancedList.sort(Comparator.comparingDouble(EntityDistanced::getDistance));
                     break;
                 case FURTHEST:
-                    entityDistancedList.sort((e1, e2) -> e2.distance - e1.distance);
+                    entityDistancedList.sort(Comparator.comparingDouble(EntityDistanced::getDistance).reversed());
                     break;
                 case RANDOM:
                     Random random = new Random();

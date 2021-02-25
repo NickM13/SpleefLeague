@@ -3,7 +3,6 @@ package com.spleefleague.splegg.game;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.util.SoundUtils;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.splegg.Splegg;
 import joptsimple.internal.Strings;
@@ -18,35 +17,36 @@ public class SpleggBattlePlayer extends BattlePlayer {
     
     private int knockouts;
     private int knockoutStreak;
-    protected SpleggGun spleggGun1, spleggGun2;
-    private double cooldown1 = 0., cooldown2 = 0.;
-    private double charge1 = -1, charge2 = -1;
+    private final SpleggGun[] spleggGun = new SpleggGun[2];
+    private final double[] cooldown = new double[2];
+    private final double[] charge = {-1D, -1D};
     private int lastTick = -1;
+    private final boolean[] fireOffCd = new boolean[2];
 
     public SpleggBattlePlayer(CorePlayer cp, Battle<?> battle, SpleggGun gun1, SpleggGun gun2) {
         super(cp, battle);
         this.knockouts = 0;
         this.knockoutStreak = 0;
         if (gun1 == null) {
-            this.spleggGun1 = SpleggGun.getRandom(gun2);
-            Splegg.getInstance().sendMessage(cp, "Random Main Splegg Gun selected: " + spleggGun1.getDisplayName());
+            this.spleggGun[0] = SpleggGun.getRandom(gun2);
+            Splegg.getInstance().sendMessage(cp, "Random Primary Splegg Gun selected: " + spleggGun[0].getDisplayName());
         } else {
-            this.spleggGun1 = gun1;
+            this.spleggGun[0] = gun1;
         }
-        if (gun2 == null || gun2.equals(this.spleggGun1)) {
-            this.spleggGun2 = SpleggGun.getRandom(this.spleggGun1);
-            Splegg.getInstance().sendMessage(cp, "Random Secondary Splegg Gun selected: " + spleggGun2.getDisplayName());
+        if (gun2 == null || gun2.equals(this.spleggGun[0])) {
+            this.spleggGun[1] = SpleggGun.getRandom(this.spleggGun[0]);
+            Splegg.getInstance().sendMessage(cp, "Random Secondary Splegg Gun selected: " + spleggGun[1].getDisplayName());
         } else {
-            this.spleggGun2 = gun2;
+            this.spleggGun[1] = gun2;
         }
     }
 
     public SpleggGun getGun1() {
-        return spleggGun1;
+        return spleggGun[0];
     }
 
     public SpleggGun getGun2() {
-        return spleggGun2;
+        return spleggGun[1];
     }
     
     @Override
@@ -58,7 +58,7 @@ public class SpleggBattlePlayer extends BattlePlayer {
     @Override
     public void onSlotChange(int newSlot) {
         getBattle().getGameWorld().stopFutureShots(getCorePlayer());
-        charge1 = charge2 = -1;
+        charge[0] = charge[1] = -1;
         getPlayer().removePotionEffect(PotionEffectType.SLOW);
     }
 
@@ -72,69 +72,48 @@ public class SpleggBattlePlayer extends BattlePlayer {
         getBattle().getGameWorld().stopFutureShots(getCorePlayer());
     }
 
-    private void shoot1() {
-        if (spleggGun1 == null) return;
-        if (spleggGun1.getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
-            if (cooldown1 <= getBattle().getRoundTime()) {
-                cooldown1 = getBattle().getRoundTime() + spleggGun1.getProjectileStats().fireCooldown / 20.;
-                getBattle().getGameWorld().shootProjectile(getCorePlayer(), spleggGun1.getProjectileStats());
-            }
-        } else if (spleggGun1.getProjectileStats().fireSystem == ProjectileStats.FireSystem.CHARGE) {
-            if (cooldown1 <= getBattle().getRoundTime()) {
-                if (charge1 >= 0) {
-                    double chargePercent = Math.min(1, Math.floor(5 * (getBattle().getRoundTime() - charge1) / (spleggGun1.getProjectileStats().chargeTime / 20.)) / 5.);
+    private final double GLOBAL_BUFFER = 0.25D;
+
+    private void shoot(int gun) {
+        if (spleggGun[gun] == null) {
+            Thread.dumpStack();
+            return;
+        }
+        if (cooldown[gun] <= getBattle().getRoundTime()) {
+            if (spleggGun[gun].getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
+                cooldown[gun] = getBattle().getRoundTime() + spleggGun[gun].getProjectileStats().fireCooldown / 20.;
+                getBattle().getGameWorld().shootProjectile(getCorePlayer(), spleggGun[gun].getProjectileStats());
+            } else if (spleggGun[gun].getProjectileStats().fireSystem == ProjectileStats.FireSystem.CHARGE) {
+                if (charge[gun] >= 0) {
+                    double chargePercent = Math.min(1, Math.floor(5 * (getBattle().getRoundTime() - charge[gun]) / (spleggGun[gun].getProjectileStats().chargeTime / 20.)) / 5.);
                     if (chargePercent >= 0.2) {
-                        cooldown1 = getBattle().getRoundTime() + spleggGun1.getProjectileStats().fireCooldown / 20.;
+                        cooldown[gun] = getBattle().getRoundTime() + spleggGun[gun].getProjectileStats().fireCooldown / 20.;
                         getPlayer().removePotionEffect(PotionEffectType.SLOW);
                         getBattle().getGameWorld().shootProjectileCharged(getCorePlayer(),
-                                spleggGun1.getProjectileStats(),
+                                spleggGun[gun].getProjectileStats(),
                                 chargePercent);
-                        charge1 = -1;
+                        charge[gun] = -1;
                     }
                 } else {
-                    charge1 = getBattle().getRoundTime();
+                    charge[gun] = getBattle().getRoundTime();
                 }
             }
+        } else if (cooldown[gun] <= getBattle().getRoundTime() + GLOBAL_BUFFER) {
+            fireOffCd[gun] = true;
+            return;
         }
-    }
-
-    private void shoot2() {
-        if (spleggGun2 == null) return;
-        if (spleggGun2.getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
-            if (cooldown2 <= getBattle().getRoundTime()) {
-                cooldown2 = getBattle().getRoundTime() + spleggGun2.getProjectileStats().fireCooldown / 20.;
-                getBattle().getGameWorld().shootProjectile(getCorePlayer(), spleggGun2.getProjectileStats());
-            }
-        } else if (spleggGun2.getProjectileStats().fireSystem == ProjectileStats.FireSystem.CHARGE) {
-            if (charge2 >= 0) {
-                double chargePercent = Math.min(1, Math.floor(5 * (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.)) / 5.);
-                if (chargePercent >= 0.2) {
-                    cooldown2 = getBattle().getRoundTime() + spleggGun2.getProjectileStats().fireCooldown / 20.;
-                    getPlayer().removePotionEffect(PotionEffectType.SLOW);
-                    getBattle().getGameWorld().shootProjectileCharged(getCorePlayer(),
-                            spleggGun2.getProjectileStats(),
-                            chargePercent);
-                    charge2 = -1;
-                }
-            } else {
-                charge2 = getBattle().getRoundTime();
-            }
-        }
+        fireOffCd[gun] = false;
     }
 
     @Override
     public void onRightClick() {
         if (getBattle().isRoundStarted() && !isFallen()) {
-            if (getPlayer().getInventory().getHeldItemSlot() == 0) {
-                shoot1();
-            } else if (getPlayer().getInventory().getHeldItemSlot() == 1) {
-                shoot2();
-            }
+            shoot(getPlayer().getInventory().getHeldItemSlot());
         }
     }
 
     private static final int HOTBAR_LEN = 5;
-    private static char[] CD_ANIM = {'─', '═', '╪', '▓', '█'};
+    private static final char[] CD_ANIM = {'─', '═', '╪', '▓', '█'};
 
     private static String getHotbarString(double percent) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -150,71 +129,74 @@ public class SpleggBattlePlayer extends BattlePlayer {
     }
 
     private static final String CD_OUTER = ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC;
+    private static final String FIRST_COLOR = ChatColor.RED + "" + ChatColor.BOLD + "" + ChatColor.ITALIC;
+    private static final String SECOND_COLOR = ChatColor.BLUE + "" + ChatColor.BOLD + "" + ChatColor.ITALIC;
 
     public String getHotbarString() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (spleggGun1 != null) {
-            stringBuilder.append(CD_OUTER + " [");
+        if (spleggGun[0] != null) {
+            stringBuilder.append(CD_OUTER).append(" [");
             double percent1;
-            if (spleggGun1.getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
-                percent1 = Math.max(0, (cooldown1 - getBattle().getRoundTime()) / (spleggGun1.getProjectileStats().fireCooldown / 20.));
+            if (spleggGun[0].getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
+                percent1 = Math.max(0, (cooldown[0] - getBattle().getRoundTime()) / (spleggGun[0].getProjectileStats().fireCooldown / 20.));
                 if (percent1 > 0) {
                     stringBuilder.append(getHotbarString(percent1));
                 } else {
-                    stringBuilder.append(ChatColor.RED + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + Strings.repeat('█', HOTBAR_LEN));
+                    stringBuilder.append(FIRST_COLOR).append(Strings.repeat('█', HOTBAR_LEN));
                 }
             } else {
-                percent1 = Math.max(0, (cooldown1 - getBattle().getRoundTime()) / (spleggGun1.getProjectileStats().fireCooldown / 20.));
+                percent1 = Math.max(0, (cooldown[0] - getBattle().getRoundTime()) / (spleggGun[0].getProjectileStats().fireCooldown / 20.));
                 if (percent1 <= 0) {
-                    if (charge1 < 0) stringBuilder.append(Strings.repeat(' ', HOTBAR_LEN * 2));
+                    if (charge[0] < 0) stringBuilder.append(Strings.repeat(' ', HOTBAR_LEN * 2));
                     else {
-                        percent1 = 1.f - Math.min(1, (getBattle().getRoundTime() - charge1) / (spleggGun1.getProjectileStats().chargeTime / 20.));
-                        stringBuilder.append(ChatColor.RED + "" + ChatColor.BOLD + "" + ChatColor.ITALIC
-                                + (percent1 > 0 ? getHotbarString(percent1) : Strings.repeat('█', HOTBAR_LEN)));
+                        percent1 = 1.f - Math.min(1, (getBattle().getRoundTime() - charge[0]) / (spleggGun[0].getProjectileStats().chargeTime / 20.));
+                        stringBuilder.append(FIRST_COLOR).append(percent1 > 0 ? getHotbarString(percent1) : Strings.repeat('█', HOTBAR_LEN));
                     }
                 } else {
                     stringBuilder.append(getHotbarString(1. - percent1));
                 }
             }
-            stringBuilder.append(CD_OUTER + "] ");
+            stringBuilder.append(CD_OUTER).append("] ");
         }
-        if (spleggGun2 != null) {
-            stringBuilder.append(CD_OUTER + " [");
+        if (spleggGun[1] != null) {
+            stringBuilder.append(CD_OUTER).append(" [");
             double percent2;
-            if (spleggGun2.getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
-                percent2 = Math.max(0, (cooldown2 - getBattle().getRoundTime()) / (spleggGun2.getProjectileStats().fireCooldown / 20.));
+            if (spleggGun[1].getProjectileStats().fireSystem == ProjectileStats.FireSystem.DEFAULT) {
+                percent2 = Math.max(0, (cooldown[1] - getBattle().getRoundTime()) / (spleggGun[1].getProjectileStats().fireCooldown / 20.));
                 if (percent2 > 0) {
                     stringBuilder.append(getHotbarString(percent2));
                 } else {
-                    stringBuilder.append(ChatColor.BLUE + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + Strings.repeat('█', HOTBAR_LEN));
+                    stringBuilder.append(SECOND_COLOR).append(Strings.repeat('█', HOTBAR_LEN));
                 }
             } else {
-                percent2 = Math.max(0, (cooldown2 - getBattle().getRoundTime()) / (spleggGun2.getProjectileStats().fireCooldown / 20.));
+                percent2 = Math.max(0, (cooldown[1] - getBattle().getRoundTime()) / (spleggGun[1].getProjectileStats().fireCooldown / 20.));
                 if (percent2 <= 0) {
-                    if (charge2 < 0) stringBuilder.append(Strings.repeat(' ', HOTBAR_LEN * 2));
+                    if (charge[1] < 0) stringBuilder.append(Strings.repeat(' ', HOTBAR_LEN * 2));
                     else {
-                        percent2 = 1.f - Math.min(1, (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.));
-                        stringBuilder.append(ChatColor.BLUE + "" + ChatColor.BOLD + "" + ChatColor.ITALIC
-                                + (percent2 > 0 ? getHotbarString(percent2) : Strings.repeat('█', HOTBAR_LEN)));
+                        percent2 = 1.f - Math.min(1, (getBattle().getRoundTime() - charge[1]) / (spleggGun[1].getProjectileStats().chargeTime / 20.));
+                        stringBuilder.append(SECOND_COLOR).append(percent2 > 0 ? getHotbarString(percent2) : Strings.repeat('█', HOTBAR_LEN));
                     }
                 } else {
                     stringBuilder.append(getHotbarString(1. - percent2));
                 }
             }
-            stringBuilder.append(CD_OUTER + "] ");
+            stringBuilder.append(CD_OUTER).append("] ");
         }
         return stringBuilder.toString();
     }
 
+    @SuppressWarnings("unused")
     public int getKnockouts() {
         return knockouts;
     }
-    
+
+    @SuppressWarnings("unused")
     public void addKnockouts(int knockouts) {
         this.knockouts += knockouts;
         knockoutStreak += knockouts;
     }
-    
+
+    @SuppressWarnings("unused")
     public int getKnockoutStreak() {
         return knockoutStreak;
     }
@@ -222,34 +204,34 @@ public class SpleggBattlePlayer extends BattlePlayer {
     public void updateAbilities() {
         getCorePlayer().sendHotbarText(getHotbarString());
         int higherCharge = (int) (Math.min(1, Math.max(
-                charge1 >= 0 ? (getBattle().getRoundTime() - charge1) / (spleggGun1.getProjectileStats().chargeTime / 20.) : -1,
-                charge2 >= 0 ? (getBattle().getRoundTime() - charge2) / (spleggGun2.getProjectileStats().chargeTime / 20.) : -1)) * 5) - 1;
+                charge[0] >= 0 ? (getBattle().getRoundTime() - charge[0]) / (spleggGun[0].getProjectileStats().chargeTime / 20.) : -1,
+                charge[1] >= 0 ? (getBattle().getRoundTime() - charge[1]) / (spleggGun[1].getProjectileStats().chargeTime / 20.) : -1)) * 5) - 1;
         if (higherCharge >= 0) {
             if (lastTick != higherCharge) {
                 lastTick = higherCharge;
-                if (charge1 > charge2) {
+                if (charge[0] > charge[1]) {
                     if (lastTick == 4) {
                         getBattle().getGameWorld().playSound(getPlayer().getLocation(),
-                                spleggGun1.getProjectileStats().chargedSoundEffect,
-                                spleggGun1.getProjectileStats().chargedSoundVolume.floatValue(),
-                                spleggGun1.getProjectileStats().chargedSoundPitch.floatValue());
+                                spleggGun[0].getProjectileStats().chargedSoundEffect,
+                                spleggGun[0].getProjectileStats().chargedSoundVolume.floatValue(),
+                                spleggGun[0].getProjectileStats().chargedSoundPitch.floatValue());
                     } else {
                         getBattle().getGameWorld().playSound(getPlayer().getLocation(),
-                                spleggGun1.getProjectileStats().chargingSoundEffect,
-                                spleggGun1.getProjectileStats().chargingSoundVolume.floatValue(),
-                                spleggGun1.getProjectileStats().chargingSoundPitch.floatValue());
+                                spleggGun[0].getProjectileStats().chargingSoundEffect,
+                                spleggGun[0].getProjectileStats().chargingSoundVolume.floatValue(),
+                                spleggGun[0].getProjectileStats().chargingSoundPitch.floatValue());
                     }
                 } else {
                     if (lastTick == 4) {
                         getBattle().getGameWorld().playSound(getPlayer().getLocation(),
-                                spleggGun2.getProjectileStats().chargedSoundEffect,
-                                spleggGun2.getProjectileStats().chargedSoundVolume.floatValue(),
-                                spleggGun2.getProjectileStats().chargedSoundPitch.floatValue());
+                                spleggGun[1].getProjectileStats().chargedSoundEffect,
+                                spleggGun[1].getProjectileStats().chargedSoundVolume.floatValue(),
+                                spleggGun[1].getProjectileStats().chargedSoundPitch.floatValue());
                     } else {
                         getBattle().getGameWorld().playSound(getPlayer().getLocation(),
-                                spleggGun2.getProjectileStats().chargingSoundEffect,
-                                spleggGun2.getProjectileStats().chargingSoundVolume.floatValue(),
-                                spleggGun2.getProjectileStats().chargingSoundPitch.floatValue());
+                                spleggGun[1].getProjectileStats().chargingSoundEffect,
+                                spleggGun[1].getProjectileStats().chargingSoundVolume.floatValue(),
+                                spleggGun[1].getProjectileStats().chargingSoundPitch.floatValue());
                     }
                 }
             }
@@ -257,11 +239,13 @@ public class SpleggBattlePlayer extends BattlePlayer {
         } else {
             lastTick = -1;
         }
+        if (fireOffCd[0]) shoot(0);
+        if (fireOffCd[1]) shoot(1);
     }
 
     public void resetAbilities() {
-        cooldown1 = cooldown2 = 0;
-        charge1 = charge2 = -1;
+        cooldown[0] = cooldown[1] = 0;
+        charge[0] = charge[1] = -1;
         getPlayer().removePotionEffect(PotionEffectType.SLOW);
     }
     

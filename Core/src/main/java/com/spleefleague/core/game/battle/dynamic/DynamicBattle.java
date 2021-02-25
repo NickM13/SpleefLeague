@@ -190,8 +190,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
         applyEloChange(winner, 0);
     }
 
-    protected abstract void applyRewards(BP battler, boolean winner);
-
     /**
      * End a battle with a determined winner
      *

@@ -52,6 +52,10 @@ public class BattleMode {
     protected Class<? extends Battle<?>> battleClass = null;
     protected final Map<UUID, Battle<?>> ongoingBattles = new HashMap<>();
 
+    protected boolean hasRewards = false;
+    protected int minCoins = 0, maxCoins = 0;
+    protected double commonWeight = 0, rareWeight = 0, epicWeight = 0, legendaryWeight = 0;
+
     private BattleMode(String name) {
         this.name = name;
     }
@@ -141,6 +145,45 @@ public class BattleMode {
     public BattleMode setBattleClass(Class<? extends Battle<?>> clazz) {
         this.battleClass = clazz;
         return this;
+    }
+
+    public BattleMode setRewards(int minCoins, int maxCoins, double commonWeight, double rareWeight, double epicWeight, double legendaryWeight) {
+        this.hasRewards = true;
+        this.minCoins = minCoins;
+        this.maxCoins = maxCoins;
+        this.commonWeight = commonWeight;
+        this.rareWeight = rareWeight;
+        this.epicWeight = epicWeight;
+        this.legendaryWeight = legendaryWeight;
+        return this;
+    }
+
+    public boolean hasRewards() {
+        return hasRewards;
+    }
+
+    public int getMinCoins() {
+        return minCoins;
+    }
+
+    public int getMaxCoins() {
+        return maxCoins;
+    }
+
+    public double getCommonWeight() {
+        return commonWeight;
+    }
+
+    public double getRareWeight() {
+        return rareWeight;
+    }
+
+    public double getEpicWeight() {
+        return epicWeight;
+    }
+
+    public double getLegendaryWeight() {
+        return legendaryWeight;
     }
 
     public Map<UUID, Battle<?>> getOngoingBattles() {

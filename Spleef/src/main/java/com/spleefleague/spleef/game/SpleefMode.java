@@ -51,7 +51,8 @@ public enum SpleefMode {
                         " Dig out blocks from under your opponent before they are able to do the same to you!" +
                         "\n\n&6Current Affixes: &7" + ClassicSpleefAffixes.getActiveDisplayNames())
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
-                .setBattleClass(ClassicSpleefBattle.class);
+                .setBattleClass(ClassicSpleefBattle.class)
+                .setRewards(0, 10, 0.05, 0.02, 0.01, 0.002);
 
         BattleMode.createArenaMode(MULTI.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Multispleef")
@@ -60,14 +61,16 @@ public enum SpleefMode {
                 .setTeamStyle(BattleMode.TeamStyle.DYNAMIC)
                 .setBattleClass(MultiSpleefBattle.class)
                 .setJoinOngoing(true)
-                .setForceRandom(true);
+                .setForceRandom(true)
+                .setRewards(0, 20, 0.05, 0.02, 0.01, 0.002);
 
         BattleMode.createArenaMode(POWER.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Power Spleef")
                 .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
                 .setDescription("A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!")
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
-                .setBattleClass(PowerSpleefBattle.class);
+                .setBattleClass(PowerSpleefBattle.class)
+                .setRewards(0, 4, 0.025, 0.01, 0.005, 0.001);
 
         BattleMode.createArenaMode(POWER_TRAINING.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Power Training")
@@ -82,7 +85,8 @@ public enum SpleefMode {
                 .setDisplayItem(Material.LEATHER_HELMET, 56)
                 .setDescription("United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode.")
                 .setTeamStyle(BattleMode.TeamStyle.TEAM)
-                .setBattleClass(TeamSpleefBattle.class);
+                .setBattleClass(TeamSpleefBattle.class)
+                .setRewards(0, 15, 0.05, 0.02, 0.01, 0.002);
     }
     
     public String getName() {

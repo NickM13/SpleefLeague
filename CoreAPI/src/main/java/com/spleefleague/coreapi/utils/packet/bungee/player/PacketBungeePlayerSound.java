@@ -10,24 +10,24 @@ import java.util.UUID;
  * @author NickM13
  * @since 2/7/2021
  */
-public class PacketBungeePlayerKick extends PacketBungee {
+public class PacketBungeePlayerSound extends PacketBungee {
 
     public UUID target;
-    public String reason;
+    public String sound;
 
-    public PacketBungeePlayerKick() {
+    public PacketBungeePlayerSound() {
 
     }
 
-    public PacketBungeePlayerKick(UUID target, String reason) {
+    public PacketBungeePlayerSound(UUID target, String sound) {
         this.target = target;
-        this.reason = reason;
+        this.sound = sound;
     }
 
     @Nonnull
     @Override
     public PacketType.Bungee getBungeeTag() {
-        return PacketType.Bungee.PLAYER_KICK;
+        return PacketType.Bungee.PLAYER_SOUND;
     }
 
 }

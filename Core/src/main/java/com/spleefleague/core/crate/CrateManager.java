@@ -124,6 +124,14 @@ public class CrateManager {
         return true;
     }
 
+    public boolean setArtisanItem(String identifier, Material material, Integer cmd) {
+        if (!crateMap.containsKey(identifier)) return false;
+        Crate crate = crateMap.get(identifier);
+        crate.setArtisanItem(material, cmd);
+        saveChanges(crate);
+        return true;
+    }
+
     public boolean setStyle(String identifier, String style) {
         if (!crateMap.containsKey(identifier)) return false;
         Crate crate = crateMap.get(identifier);

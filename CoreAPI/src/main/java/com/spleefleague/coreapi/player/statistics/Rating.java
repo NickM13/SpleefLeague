@@ -14,38 +14,36 @@ import java.util.Map;
  */
 public class Rating extends DBEntity {
 
-    protected static final Map<Integer, Division> DIVISIONS = new HashMap<>();
-
     public enum Division {
 
-        MASTER(    "Master I",     ChatColor.LIGHT_PURPLE + "", 2800, 30),
-        DIAMOND1(  "Diamond I",    ChatColor.BLUE + "",         2600, 20),
-        DIAMOND2(  "Diamond II",   ChatColor.BLUE + "",         2450, 20),
-        DIAMOND3(  "Diamond III",  ChatColor.BLUE + "",         2300, 20),
-        PLATINUM1( "Platinum I",   ChatColor.AQUA + "",         2150, 10),
-        PLATINUM2( "Platinum II",  ChatColor.AQUA + "",         2000, 10),
-        PLATINUM3( "Platinum III", ChatColor.AQUA + "",         1850, 10),
-        GOLD1(     "Gold I",       ChatColor.GOLD + "",         1700, 0),
-        GOLD2(     "Gold II",      ChatColor.GOLD + "",         1550, 0),
-        GOLD3(     "Gold III",     ChatColor.GOLD + "",         1400, 0),
-        SILVER1(   "Silver I",     ChatColor.GRAY + "",         1250, 0),
-        SILVER2(   "Silver II",    ChatColor.GRAY + "",         1100, 0),
-        SILVER3(   "Silver III",   ChatColor.GRAY + "",         950,  0),
-        BRONZE1(   "Bronze I",     ChatColor.DARK_RED + "",     800,  0),
-        BRONZE2(   "Bronze II",    ChatColor.DARK_RED + "",     650,  0),
-        BRONZE3(   "Bronze III",   ChatColor.DARK_RED + "",     0,    0);
+        //MASTER(    "Master I",     ChatColor.LIGHT_PURPLE + "", 2000, Integer.MAX_VALUE, 30),
+        DIAMOND1(  "Diamond I",    ChatColor.BLUE + "",         2600, 2800, 20),
+        DIAMOND2(  "Diamond II",   ChatColor.BLUE + "",         2450, 2650, 20),
+        DIAMOND3(  "Diamond III",  ChatColor.BLUE + "",         2300, 2500, 20),
+        PLATINUM1( "Platinum I",   ChatColor.AQUA + "",         2150, 2350, 10),
+        PLATINUM2( "Platinum II",  ChatColor.AQUA + "",         2000, 2200, 10),
+        PLATINUM3( "Platinum III", ChatColor.AQUA + "",         1850, 2050, 10),
+        GOLD1(     "Gold I",       ChatColor.GOLD + "",         1700, 1900, 0),
+        GOLD2(     "Gold II",      ChatColor.GOLD + "",         1550, 1750, 0),
+        GOLD3(     "Gold III",     ChatColor.GOLD + "",         1400, 1600, 0),
+        SILVER1(   "Silver I",     ChatColor.GRAY + "",         1250, 1450, 0),
+        SILVER2(   "Silver II",    ChatColor.GRAY + "",         1100, 1300, 0),
+        SILVER3(   "Silver III",   ChatColor.GRAY + "",         950,  1150, 0),
+        BRONZE1(   "Bronze I",     ChatColor.DARK_RED + "",     800,  1000, 0),
+        BRONZE2(   "Bronze II",    ChatColor.DARK_RED + "",     650,  850,  0),
+        BRONZE3(   "Bronze III",   ChatColor.DARK_RED + "",     0,    700,  0);
 
         protected String displayName;
         protected String scorePrefix;
         protected int lower, upper;
         protected int decay;
 
-        Division(String displayName, String scorePrefix, int lower, int decay) {
+        Division(String displayName, String scorePrefix, int lower, int upper, int decay) {
             this.displayName = displayName;
             this.scorePrefix = scorePrefix;
             this.lower = lower;
+            this.upper = upper;
             this.decay = decay;
-            DIVISIONS.put(lower, this);
         }
 
         public String getDisplayName() {
@@ -56,8 +54,8 @@ public class Rating extends DBEntity {
             return scorePrefix;
         }
 
-        public boolean isWithin(int elo) {
-            return elo >= lower && elo <= upper;
+        public int isWithin(int elo) {
+            return (elo < lower ? -1 : (elo > upper ? 1 : 0));
         }
 
         public int getDecay() { return decay; }
@@ -86,28 +84,36 @@ public class Rating extends DBEntity {
         losses = losses == null ? 0 : losses;
     }
 
-    private boolean updateDivision() {
-        if (!division.isWithin(elo)) {
+    public int updateDivision() {
+        int result = division.isWithin(elo);
+        if (result != 0) {
             for (Division div : Division.values()) {
-                if (div.isWithin(elo)) {
+                if (div.isWithin(elo) == 0) {
                     division = div;
-                    return true;
+                    return result;
                 }
             }
         }
-        return false;
+        return 0;
+    }
+
+    /**
+     * Only use this for when players enter Masters ranks and someone needs to drop
+     *
+     * @param division Division
+     */
+    public void setDivision(Division division) {
+        this.division = division;
     }
 
     public boolean setElo(int value) {
         boolean increase = value > elo;
         elo = value;
-        updateDivision();
         return increase;
     }
 
     public int addElo(int value) {
         elo += value;
-        boolean divisionChange = updateDivision();
         if (value > 0) {
             wins++;
         } else {
