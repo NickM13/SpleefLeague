@@ -157,12 +157,16 @@ public class InventoryMenuItemDynamic extends InventoryMenuItem {
     public ItemStack createItem(CorePlayer cp, boolean selected) {
         ItemStack item;
         if (selected && selectedItemFun != null) {
-            item = selectedItemFun.apply(cp).clone();
+            item = selectedItemFun.apply(cp);
         } else if (displayItemFun != null) {
-            item = displayItemFun.apply(cp).clone();
+            item = displayItemFun.apply(cp);
         } else {
             return null;
         }
+        if (item == null) {
+            return null;
+        }
+        item = item.clone();
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             if (nameFun != null) {

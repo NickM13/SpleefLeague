@@ -28,9 +28,26 @@ import java.util.*;
  */
 public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
 
+    private static final Map<String, GlobalWorld> GLOBAL_WORLDS = new HashMap<>();
+
+    public static GlobalWorld getGlobalWorld(World world) {
+        GlobalWorld globalWorld = GLOBAL_WORLDS.get(world.getName());
+        if (globalWorld == null) {
+            return createAndStore(world);
+        }
+        return GLOBAL_WORLDS.get(world.getName());
+    }
+
     public static void init() {
         GlobalVehicle.init();
         GlobalLock.init();
+        Bukkit.getWorlds().forEach(GlobalWorld::createAndStore);
+    }
+
+    public static GlobalWorld createAndStore(World world) {
+        GlobalWorld globalWorld = new GlobalWorld(world);
+        GLOBAL_WORLDS.put(world.getName(), globalWorld);
+        return globalWorld;
     }
 
     // 32 * 128
@@ -168,7 +185,7 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
 
     private final BukkitTask rotatingItemTask;
 
-    public GlobalWorld(World world) {
+    protected GlobalWorld(World world) {
         super(-1, world, GlobalWorldPlayer.class);
         rotatingItemTask = Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
             rotatingItemMap.entrySet().removeIf(entry -> !entry.getValue().onTick());

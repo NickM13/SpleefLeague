@@ -74,7 +74,8 @@ import java.util.logging.Logger;
 public class Core extends CorePlugin {
 
     private static Core instance;
-    public static World DEFAULT_WORLD;
+    public static World OVERWORLD;
+    public static World LEVIATHON;
     private QueueManager queueManager;
     private final LeaderboardManager leaderboards = new LeaderboardManager();
     private final CommandManager commandManager = new CommandManager();
@@ -101,7 +102,9 @@ public class Core extends CorePlugin {
     public void init() {
         instance = this;
 
-        DEFAULT_WORLD = Bukkit.getWorlds().get(0);
+        OVERWORLD = Bukkit.getWorlds().get(0);
+        System.out.println(Bukkit.getWorlds());
+        LEVIATHON = Bukkit.getWorld("world_the_end");
         protocolManager = ProtocolLibrary.getProtocolManager();
 
         CorePlugin.initMongo();
@@ -125,7 +128,7 @@ public class Core extends CorePlugin {
 
         // Initialize manager
         coreInfractionManager.init();
-        playerManager = new PlayerManager<>(CorePlayer.class, CoreOfflinePlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(this, CorePlayer.class, CoreOfflinePlayer.class, getPluginDB().getCollection("Players"));
         crateManager.init();
         packetManager.init();
         battleSessionManager.init();

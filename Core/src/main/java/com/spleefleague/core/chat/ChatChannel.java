@@ -6,11 +6,13 @@
 
 package com.spleefleague.core.chat;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.coreapi.chat.Chat;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
@@ -19,68 +21,80 @@ import java.util.function.Function;
 public enum ChatChannel {
 
     ADMIN("Admin",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.RED,
             cp -> cp.getRank().hasPermission(CoreRank.ADMIN),
             null),
     BUILD("Build",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.GREEN,
             cp -> cp.getRank().hasPermission(CoreRank.BUILDER),
             null),
     GAMES("Games",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.AQUA,
             null,
             null),
     GLOBAL("Global",
-            false,
+            (corePlayer -> {
+                if (corePlayer.isInBattle()) {
+                    return corePlayer.getBattle().getPlayers();
+                } else {
+                    return Core.getInstance().getPlayers().getAllLocal();
+                }
+            }),
             null,
             null,
             null),
     LOCAL("Local",
-            false,
+            (corePlayer -> {
+                if (corePlayer.isInBattle()) {
+                    return corePlayer.getBattle().getPlayers();
+                } else {
+                    return Core.getInstance().getPlayers().getAllLocal();
+                }
+            }),
             net.md_5.bungee.api.ChatColor.GRAY,
             cp -> cp.getRank().hasPermission(CoreRank.ADMIN),
             null),
     LOGIN("Login",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.GRAY,
             cp -> cp.getRank().hasPermission(CoreRank.ADMIN),
             null),
     PARTY("Party",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.AQUA,
             cp -> cp.getParty() != null,
             null),
     SPLEEF("Spleef",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.GOLD,
             null,
             null),
     STAFF("Staff",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.LIGHT_PURPLE,
             cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD),
             null),
     SUPERJUMP("SuperJump",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.GOLD,
             null,
             null),
     TICKET("Ticket",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.GOLD,
             cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD),
             null),
     VIP("VIP",
-            true,
+            null,
             net.md_5.bungee.api.ChatColor.DARK_PURPLE,
             cp -> cp.getRank().hasPermission(CoreRank.VIP),
             null);
 
     private final String name;
-    private final boolean global;
+    private final Function<CorePlayer, Collection<CorePlayer>> playerFunc;
     private final net.md_5.bungee.api.ChatColor tagColor;
     private final Function<CorePlayer, Boolean> available;
     private final String playerChatColor;
@@ -88,9 +102,9 @@ public enum ChatChannel {
     private final TextComponent tagComponent;
     private final TextComponent playerMessageComponent;
 
-    ChatChannel(String name, boolean global, net.md_5.bungee.api.ChatColor tagColor, Function<CorePlayer, Boolean> available, String playerChatColor) {
+    ChatChannel(String name, Function<CorePlayer, Collection<CorePlayer>> playerFunc, net.md_5.bungee.api.ChatColor tagColor, Function<CorePlayer, Boolean> available, String playerChatColor) {
         this.name = name;
-        this.global = global;
+        this.playerFunc = playerFunc;
         this.tagColor = tagColor;
         this.available = available;
         this.playerChatColor = playerChatColor == null ? Chat.PLAYER_CHAT : playerChatColor;
@@ -132,7 +146,11 @@ public enum ChatChannel {
     }
 
     public boolean isGlobal() {
-        return global;
+        return playerFunc == null;
+    }
+
+    public Function<CorePlayer, Collection<CorePlayer>> getPlayerFunc() {
+        return playerFunc;
     }
 
     public net.md_5.bungee.api.ChatColor getTagColor() {

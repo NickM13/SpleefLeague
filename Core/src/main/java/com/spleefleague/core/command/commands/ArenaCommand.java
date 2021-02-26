@@ -139,7 +139,7 @@ public class ArenaCommand extends CoreCommand {
                           @LiteralArg("goto") String l1,
                           @OptionArg(listName = "arenas") String arenaName) {
         Arena arena = Arenas.get(arenaName);
-        sender.teleport(arena.getOrigin().toLocation(Core.DEFAULT_WORLD));
+        sender.teleport(arena.getOrigin().toLocation(Core.OVERWORLD));
         success(sender, "Teleported to arena " + arena.getName());
     }
 

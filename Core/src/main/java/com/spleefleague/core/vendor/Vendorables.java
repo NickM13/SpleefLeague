@@ -155,10 +155,10 @@ public class Vendorables {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Vendorable> T get(Class<T> clazz, ItemStack item) {
+    public static <T extends Vendorable> T get(Class<T> clazz, ItemStack itemStack) {
         String typeName = Vendorable.getParentTypeName(clazz);
         if (VENDORABLE_MAP.containsKey(typeName)) {
-            return (T) VENDORABLE_MAP.get(typeName).get(Vendorables.getIdentifierNbt(item));
+            return (T) VENDORABLE_MAP.get(typeName).get(Vendorables.getIdentifierNbt(itemStack));
         }
         return null;
     }

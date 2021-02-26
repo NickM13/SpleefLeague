@@ -30,6 +30,30 @@ public class HoldableCommand extends CollectibleCommand {
      *
      * @param sender     Command Sender
      * @param l          holding
+     * @param target     Target List
+     * @param identifier Key Identifier
+     * @return Success
+     */
+    @CommandAnnotation
+    public boolean collectibleHolding(CommandSender sender,
+                                      @LiteralArg("holding") String l,
+                                      CorePlayer target,
+                                      @OptionArg(listName = "collectibles") String identifier,
+                                      @HelperArg("playerCount") @NumberArg(minValue = 1, defaultValue = 1) @Nullable Integer playerCount) {
+        Holdable holdable = Vendorables.get(holdableClazz, identifier);
+        if (holdable == null) {
+            sender.sendMessage("Holdable not valid " + identifier);
+            return false;
+        }
+        Vendorable vendorable = Vendorables.get(target.getHeldItem());
+        return vendorable != null && vendorable.equalsSoft(holdable);
+    }
+
+    /**
+     * Returns whether a player in the list is holding a key
+     *
+     * @param sender     Command Sender
+     * @param l          holding
      * @param targets    Target List
      * @param identifier Key Identifier
      * @return Success

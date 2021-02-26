@@ -26,7 +26,12 @@ public class TpCoord {
     }
 
     public static TpCoord create(String str) {
-        TpOrigin origin = (str.charAt(0) == '~' ? TpOrigin.RELATIVE : (str.charAt(0) == '^' ? TpOrigin.DIRECTIONAL : TpOrigin.NONE));
+        TpOrigin origin;
+        if (str.length() > 0) {
+            origin = (str.charAt(0) == '~' ? TpOrigin.RELATIVE : (str.charAt(0) == '^' ? TpOrigin.DIRECTIONAL : TpOrigin.NONE));
+        } else {
+            origin = TpOrigin.NONE;
+        }
         Double value = null;
         try {
             if (origin.equals(TpOrigin.NONE)) {

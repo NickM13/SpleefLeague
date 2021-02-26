@@ -73,7 +73,7 @@ public class Arena extends DBEntity {
     @DBField
     protected Boolean paused = false;
 
-    protected World world = Core.DEFAULT_WORLD;
+    protected World world = Core.OVERWORLD;
 
     @DBField
     protected Integer teamCount = 1;
@@ -406,7 +406,7 @@ public class Arena extends DBEntity {
      * @return World
      */
     public World getWorld() {
-        return world == null ? Core.DEFAULT_WORLD : world;
+        return world == null ? Core.OVERWORLD : world;
     }
 
     /**

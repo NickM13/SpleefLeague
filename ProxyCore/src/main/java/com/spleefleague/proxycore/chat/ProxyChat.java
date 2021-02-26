@@ -255,6 +255,14 @@ public class ProxyChat {
     }
 
     public void sendTell(@Nonnull ProxyCorePlayer sender, @Nonnull ProxyCorePlayer receiver, String message) {
+        if (!receiver.getOptions().getBoolean("Friend:Messages")) {
+            TextComponent component = new TextComponent();
+            component.addExtra(receiver.getChatName());
+            component.addExtra(" has messaging disabled");
+            ProxyCore.getInstance().sendMessageError(sender, component);
+            return;
+        }
+
         TextComponent senderComponent = new TextComponent();
 
         senderComponent.addExtra(ChatColor.GRAY + "[me -> ");
@@ -340,9 +348,16 @@ public class ProxyChat {
     public static void broadcast(String msg) {
         String title, subtitle;
         String[] msgs = msg.split("\\\\n");
-        title = msgs[0];
-        subtitle = msgs.length > 1 ? msgs[1] : "";
-        ProxyChat.sendTitle(ChatChannel.GLOBAL, Chat.BROADCAST + colorize(title), Chat.BROADCAST + colorize(subtitle), 5, msg.length() * 2 + 10, 15);
+        title = Chat.BROADCAST + colorize(msgs[0]);
+        subtitle = Chat.BROADCAST + colorize(msgs.length > 1 ? msgs[1] : "");
+        ProxyChat.sendTitle(ChatChannel.GLOBAL, title, subtitle, 5, msg.length() * 2 + 20, 15);
+        TextComponent component = new TextComponent();
+        component.addExtra(Chat.TAG_BRACE + "[" + title + Chat.TAG_BRACE + "] " + subtitle);
+        for (ProxyCorePlayer pcp : ProxyCore.getInstance().getPlayers().getAll()) {
+            if (ChatChannel.GLOBAL.isActive(pcp)) {
+                pcp.getPlayer().sendMessage(component);
+            }
+        }
     }
 
 }

@@ -200,10 +200,10 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
 
     @Override
     public void callAction(CorePlayer cp) {
+        super.callAction(cp);
         if (getLinkedChest() != null) {
             cp.getMenu().setInventoryMenuChest(getLinkedChest(), true);
         }
-        super.callAction(cp);
     }
 
 }

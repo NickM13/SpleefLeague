@@ -325,7 +325,7 @@ public class Chat {
             textComponent.addExtra(net.md_5.bungee.api.ChatColor.GRAY + ": ");
             textComponent.addExtra(playerMessage.textComponent);
 
-            for (CorePlayer cp : Core.getInstance().getPlayers().getAllLocal()) {
+            for (CorePlayer cp : channel.getPlayerFunc().apply(sender)) {
                 if (channel.isActive(cp)) {
                     cp.sendMessage(textComponent);
                 }

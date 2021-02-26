@@ -608,7 +608,7 @@ public class CoreCommand extends Command {
             listener = cbcs.getWrapper();
             loc = bcs.getBlock().getLocation().clone().add(0.5, 0.5, 0.5);
         } else {
-            loc = new Location(Core.DEFAULT_WORLD, 0, 0, 0);
+            loc = new Location(Core.OVERWORLD, 0, 0, 0);
         }
         if (cp == null
                 || this.getPermission() == null

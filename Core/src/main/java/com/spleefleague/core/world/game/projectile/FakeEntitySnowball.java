@@ -164,8 +164,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                 List<Entity> entities = new ArrayList<>();
                 for (ProjectileWorldPlayer pwp : projectileWorld.getPlayerMap().values()) {
                     if (pwp.getCorePlayer().getBattleState() == BattleState.BATTLER &&
-                            (!pwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10) &&
-                            pwp.hit()) {
+                            (!pwp.getCorePlayer().equals(cpShooter) || craftEntity.getTicksLived() > 10)) {
                         entities.add(pwp.getPlayer());
                     }
                 }

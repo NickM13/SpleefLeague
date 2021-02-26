@@ -8,10 +8,7 @@ package com.spleefleague.superjump.commands;
 
 import com.google.common.collect.Sets;
 import com.spleefleague.core.command.CoreCommand;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.HelperArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
-import com.spleefleague.core.command.annotation.OptionArg;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.player.CorePlayer;
@@ -48,6 +45,15 @@ public class SuperJumpCommand extends CoreCommand {
     public void sjClassic(CorePlayer sender, @LiteralArg(value="classic") String l, @Nullable @OptionArg(listName="shuffleArenas") String arenaName) {
         Arena arena = Arenas.get(arenaName, SJMode.CLASSIC.getBattleMode());
         SuperJump.getInstance().queuePlayer(SJMode.CLASSIC.getBattleMode(), sender, arena);
+    }
+
+    @CommandAnnotation
+    public void sjChallenge(CorePlayer sender,
+                            @LiteralArg("challenge") String l,
+                            @LiteralArg("classic") String mode,
+                            @OptionArg(listName = "arenas") String arenaName,
+                            @CorePlayerArg(allowCrossServer = true, allowSelf = false) CorePlayer target) {
+        SuperJump.getInstance().challengePlayer(sender, target, SJMode.CLASSIC.getBattleMode(), arenaName);
     }
 
     @CommandAnnotation(disabled = true)

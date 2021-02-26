@@ -95,7 +95,7 @@ public abstract class Collectible extends Vendorable {
     public static void close() {
         Hat.close();
         Key.close();
-        Pet.close();
+        //Pet.close();
         MenuBackground.close();
         FieldGeneration.close();
         Song.close();

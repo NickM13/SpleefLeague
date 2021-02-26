@@ -122,13 +122,14 @@ public class Point extends DBVariable<List<Double>> {
         double px = x < 0 ? x + -Math.floor(x) : x;
         double py = y < 0 ? y + -Math.floor(y) : y;
         double pz = z < 0 ? z + -Math.floor(z) : z;
+
         double distX = direction.getX() > 0 ? (1 - (px % 1)) : (px % 1);
         double distY = direction.getY() > 0 ? (1 - (py % 1)) : (py % 1);
         double distZ = direction.getZ() > 0 ? (1 - (pz % 1)) : (pz % 1);
 
-        double requiredX = Math.abs(direction.getX()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getX());
-        double requiredY = Math.abs(direction.getY()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getY());
-        double requiredZ = Math.abs(direction.getZ()) <= 0.001D ? 1000 : 1D / Math.abs(direction.getZ());
+        double requiredX = Math.abs(direction.getX()) <= 0.00001D ? 100000 : 1D / Math.abs(direction.getX());
+        double requiredY = Math.abs(direction.getY()) <= 0.00001D ? 100000 : 1D / Math.abs(direction.getY());
+        double requiredZ = Math.abs(direction.getZ()) <= 0.00001D ? 100000 : 1D / Math.abs(direction.getZ());
 
         double remainX = distX * requiredX;
         double remainY = distY * requiredY;
@@ -138,14 +139,18 @@ public class Point extends DBVariable<List<Double>> {
 
         BlockPosition cPos = new BlockPosition((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
         double cDist = 0;
-        int axis = 0;
+        int axis;
         BlockFace face = BlockFace.SELF;
 
         // Distance to faces for initial axis
         // Closer to 0 is closer to face
-        double fx = 1.0 - (Math.abs(Math.abs(x) - 0.5) * 2);
-        double fy = 1.0 - (Math.abs(Math.abs(y) - 0.5) * 2);
-        double fz = 1.0 - (Math.abs(Math.abs(z) - 0.5) * 2);
+        double faceDistX = (((x % 1) + 1) % 1);
+        double faceDistY = (((y % 1) + 1) % 1);
+        double faceDistZ = (((z % 1) + 1) % 1);
+
+        double fx = requiredX * faceDistX;
+        double fy = requiredY * faceDistY;
+        double fz = requiredZ * faceDistZ;
         if (fx < fy) {
             if (fx < fz) {
                 axis = 1;
@@ -199,7 +204,7 @@ public class Point extends DBVariable<List<Double>> {
             } else {
                 // Smallest remainder is Z
                 minRemain = remainZ;
-                remainZ = requiredZ;
+                remainZ += requiredZ;
                 cPos = cPos.add(new BlockPosition(0, 0, direction.getZ() > 0 ? 1 : -1));
                 axis = 3;
                 if (direction.getZ() > 0)

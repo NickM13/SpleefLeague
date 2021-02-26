@@ -4,10 +4,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.mongodb.lang.NonNull;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.ChatChannel;
@@ -15,7 +12,6 @@ import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.bonanza.BonanzaBattle;
-import com.spleefleague.core.infraction.CoreInfractionManager;
 import com.spleefleague.core.menu.InventoryMenuItemHotbar;
 import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.crates.CorePlayerCrates;
@@ -29,25 +25,19 @@ import com.spleefleague.core.player.ratings.CorePlayerRatings;
 import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.core.player.statistics.CorePlayerStatistics;
 import com.spleefleague.core.plugin.CorePlugin;
-import com.spleefleague.core.util.variable.Checkpoint;
-import com.spleefleague.core.util.variable.CoreLocation;
-import com.spleefleague.core.util.variable.TpCoord;
-import com.spleefleague.core.util.variable.Warp;
+import com.spleefleague.core.util.variable.*;
 import com.spleefleague.core.world.ChunkCoord;
 import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildWorld;
+import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.infraction.Infraction;
-import com.spleefleague.coreapi.infraction.InfractionManager;
 import com.spleefleague.coreapi.infraction.InfractionType;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.PacketSpigotChatChannelJoin;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
@@ -103,6 +93,7 @@ public class CorePlayer extends CoreOfflinePlayer {
     private final List<FakeWorld<?>> fakeWorlds = new ArrayList<>();
     private Battle<?> battle;
     private BattleState battleState;
+    private World world;
 
     private final Map<Integer, ChatGroup> chatGroups = new HashMap<>();
 
@@ -130,7 +121,8 @@ public class CorePlayer extends CoreOfflinePlayer {
         getPlayer().addAttachment(Core.getInstance());
         permissions = getPlayer().addAttachment(Core.getInstance());
         super.init();
-        FakeWorld.getGlobalFakeWorld().addPlayer(this);
+        this.world = getPlayer().getWorld();
+        GlobalWorld.getGlobalWorld(world).addPlayer(this);
         getPlayer().setCollidable(false);
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
@@ -155,10 +147,7 @@ public class CorePlayer extends CoreOfflinePlayer {
             battle.onDisconnect(this);
         }
 
-        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
-        for (FakeWorld<?> fakeWorld : fakeWorldList) {
-            fakeWorld.removePlayer(this);
-        }
+        leaveAllFakeWorlds();
 
         PersonalScoreboard.closePlayerScoreboard(this);
 
@@ -396,7 +385,7 @@ public class CorePlayer extends CoreOfflinePlayer {
         return fakeWorlds.iterator();
     }
 
-    public final void joinFakeWorld(FakeWorld<?> fakeWorld) {
+    public final void onFakeWorldJoin(FakeWorld<?> fakeWorld) {
         for (FakeWorld<?> fw : fakeWorlds) {
             if (fw.getWorldId() == fakeWorld.getWorldId()) return;
         }
@@ -404,8 +393,30 @@ public class CorePlayer extends CoreOfflinePlayer {
         fakeWorlds.sort(Comparator.comparingInt(FakeWorld::getPriority));
     }
 
-    public final void leaveFakeWorld(FakeWorld<?> fakeWorld) {
+    public final void onFakeWorldLeave(FakeWorld<?> fakeWorld) {
         fakeWorlds.removeIf(fw -> fw.getWorldId() == fakeWorld.getWorldId());
+    }
+
+    protected final void leaveAllFakeWorlds() {
+        List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+        for (FakeWorld<?> fakeWorld : fakeWorldList) {
+            fakeWorld.removePlayer(this);
+        }
+    }
+
+    public final GlobalWorld getGlobalWorld() {
+        return GlobalWorld.getGlobalWorld(world);
+    }
+
+    public final void onTeleport(World world) {
+        if (!this.world.equals(world)) {
+            List<FakeWorld<?>> fakeWorldList = new ArrayList<>(fakeWorlds);
+            for (FakeWorld<?> fakeWorld : fakeWorldList) {
+                if (fakeWorld instanceof GlobalWorld) fakeWorld.removePlayer(this);
+            }
+            this.world = world;
+            GlobalWorld.getGlobalWorld(world).addPlayer(this);
+        }
     }
 
     /**
@@ -414,7 +425,7 @@ public class CorePlayer extends CoreOfflinePlayer {
      * @param battle      Battle
      * @param battleState Battle State
      */
-    public final void joinBattle(Battle<?> battle, BattleState battleState) {
+    public final void onJoinBattle(Battle<?> battle, BattleState battleState) {
         this.battle = battle;
         this.battleState = battleState;
         CorePlugin.addIngamePlayerName(this);
@@ -425,7 +436,7 @@ public class CorePlayer extends CoreOfflinePlayer {
      *
      * @param exitLocation Location to attempt to teleport player to
      */
-    public final void leaveBattle(Location exitLocation) {
+    public final void onLeaveBattle(Location exitLocation) {
         BattleState temp = battleState;
         this.battle = null;
         this.battleState = BattleState.NONE;
@@ -603,16 +614,13 @@ public class CorePlayer extends CoreOfflinePlayer {
      * @return Location
      */
     public Location getSpawnLocation() {
-        /*
         Set<Warp> warps = Warp.getWarps("spawn");
         if (!warps.isEmpty()) {
             Random random = new Random();
             return ((Warp) warps.toArray()[(random.nextInt(warps.size()))]).getLocation();
         } else {
-            return Core.DEFAULT_WORLD.getSpawnLocation().clone();
+            return Core.OVERWORLD.getSpawnLocation().clone();
         }
-        */
-        return Core.DEFAULT_WORLD.getSpawnLocation().clone();
     }
 
     /**
@@ -710,7 +718,40 @@ public class CorePlayer extends CoreOfflinePlayer {
 
     private static final Set<String> disabledPerms = Sets.newHashSet(
             "minecraft.command.me",
-            "minecraft.command.tell"
+            "minecraft.command.tell",
+            "minecraft.command.advancement",
+            "minecraft.command.ban",
+            "minecraft.command.ban-ip",
+            "minecraft.command.banlist",
+            "minecraft.command.debug",
+            "minecraft.command.defaultgamemode",
+            "minecraft.command.deop",
+            "minecraft.command.difficulty",
+            "minecraft.command.enchant",
+            "minecraft.command.gamemode",
+            "minecraft.command.gamerule",
+            "minecraft.command.give",
+            "minecraft.command.kick",
+            "minecraft.command.kill",
+            "minecraft.command.op",
+            "minecraft.command.pardon",
+            "minecraft.command.pardon-ip",
+            "minecraft.command.playsound",
+            "minecraft.command.save-all",
+            "minecraft.command.save-off",
+            "minecraft.command.save-on",
+            "minecraft.command.say",
+            "minecraft.command.scoreboard",
+            "minecraft.command.fill",
+            "minecraft.command.setworldspawn",
+            "minecraft.command.spawnpoint",
+            "minecraft.command.stop",
+            "minecraft.command.testfor",
+            "minecraft.command.testforblock",
+            "minecraft.command.toggledownfall",
+            "minecraft.command.teleport",
+            "minecraft.command.weather",
+            "minecraft.command.xp"
     );
 
     /**
@@ -821,5 +862,31 @@ public class CorePlayer extends CoreOfflinePlayer {
         getPlayer().getInventory().setItemInMainHand(itemStack);
     }
 
+    public enum ResultWhitelist {
+        SOLID,
+        ALL
+    }
+
+    public final BlockRaycastResult raycastToBlock(Vector direction, double distance, ResultWhitelist whitelist) {
+        Point point = new Point(getPlayer().getEyeLocation());
+        List<BlockRaycastResult> results = point.castBlocks(direction, distance);
+        switch (whitelist) {
+            case ALL:
+                for (BlockRaycastResult result : results) {
+                    if (!FakeWorld.getPriorityBlock(result.getBlockPos(), this).getMaterial().isAir()) {
+                        return result;
+                    }
+                }
+                break;
+            case SOLID:
+                for (BlockRaycastResult result : results) {
+                    if (FakeWorld.getPriorityBlock(result.getBlockPos(), this).getMaterial().isSolid()) {
+                        return result;
+                    }
+                }
+                break;
+        }
+        return null;
+    }
 
 }

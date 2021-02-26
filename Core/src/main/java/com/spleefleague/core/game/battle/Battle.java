@@ -12,7 +12,6 @@ import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.chat.ChatGroup;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleMode;
-import com.spleefleague.core.game.BattleUtils;
 import com.spleefleague.core.game.history.GameHistory;
 import com.spleefleague.core.game.history.GameHistoryManager;
 import com.spleefleague.core.game.request.BattleRequest;
@@ -262,7 +261,7 @@ public abstract class Battle<BP extends BattlePlayer> {
         if (battlersOriginal.containsKey(cp)) {
             BP bp = battlersOriginal.get(cp);
             bp.setCorePlayer(cp);
-            cp.joinBattle(this, BattleState.BATTLER);
+            cp.onJoinBattle(this, BattleState.BATTLER);
             players.add(cp);
             battlers.put(cp, bp);
             battlerUuids.add(cp.getUniqueId());
@@ -674,7 +673,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             players.add(cp);
             gameWorld.addPlayer(cp);
             chatGroup.addPlayer(cp);
-            cp.joinBattle(this, battleState);
+            cp.onJoinBattle(this, battleState);
             cp.getPlayer().getInventory().setHeldItemSlot(0);
             cp.getPlayer().getInventory().clear();
             return true;
@@ -693,7 +692,7 @@ public abstract class Battle<BP extends BattlePlayer> {
             chatGroup.removePlayer(cp);
             gameWorld.removePlayer(cp);
             players.remove(cp);
-            cp.leaveBattle(arena.getPostGameWarp());
+            cp.onLeaveBattle(arena.getPostGameWarp());
 
             Core.getInstance().returnToHub(cp);
             return true;

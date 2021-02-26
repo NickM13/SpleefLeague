@@ -119,6 +119,7 @@ public class Warp extends DBEntity {
      * @return Warp Name Set
      */
     public static Set<Warp> getWarps(String folderName) {
+        if (!folders.containsKey(folderName)) return Collections.EMPTY_SET;
         return folders.get(folderName).stream().map(warps::get).collect(Collectors.toSet());
     }
 

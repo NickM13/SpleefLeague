@@ -11,6 +11,9 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
+import org.bukkit.command.CommandSender;
+
+import java.util.List;
 
 /**
  * @author NickM13
@@ -22,11 +25,21 @@ public class NpcCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void npc(CorePlayer sender,
+    public void npc(CommandSender sender,
+                    CorePlayer target,
                     String profile,
                     String name,
                     String message) {
-        Chat.sendNpcMessage(profile, name, message);
+        Chat.sendNpcMessage(target, profile, name, message);
+    }
+
+    @CommandAnnotation
+    public void npc(CommandSender sender,
+                    List<CorePlayer> targets,
+                    String profile,
+                    String name,
+                    String message) {
+        targets.forEach(target -> Chat.sendNpcMessage(target, profile, name, message));
     }
 
 }

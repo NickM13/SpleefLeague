@@ -69,7 +69,7 @@ public class CrateMenu {
                                     .setAction(cp2 -> {
                                         CrateLoot loot = cp.getCrates().openCrate(crate.getIdentifier());
                                         int delay = 0;
-                                        GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, crate.getOpened());
+                                        GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, crate.getOpened());
                                         for (Collectible collectible : loot.collectibles) {
                                             container.addMenuItem(InventoryMenuAPI.createItemStatic()
                                                     .setDisplayItem(collectible.getDisplayItem())
@@ -81,7 +81,7 @@ public class CrateMenu {
                                                 if (collectible.getParentType().equalsIgnoreCase("Shovel")) {
                                                     height += 0.2;
                                                 }
-                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, collectible.getDisplayItem(), height);
+                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, collectible.getDisplayItem(), height);
                                             }, delay += 20);
                                         }
                                         for (CollectibleSkin skin : loot.collectibleSkins) {
@@ -95,7 +95,7 @@ public class CrateMenu {
                                                 if (skin.getParent().getParentType().equalsIgnoreCase("Shovel")) {
                                                     height += 0.2;
                                                 }
-                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, skin.getDisplayItem(), height);
+                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, skin.getDisplayItem(), height);
                                             }, delay += 20);
                                         }
                                         for (Map.Entry<CoreCurrency, Integer> entry : loot.currencies.entrySet()) {
@@ -108,7 +108,7 @@ public class CrateMenu {
                                                 Core.getInstance().sendMessage(cp,
                                                         ChatColor.GRAY + "You've received " + entry.getKey().color + entry.getValue() + " " +
                                                                 entry.getKey().displayName + (entry.getValue() != 1 ? "s" : "") + ChatColor.GRAY + "!");
-                                                GlobalWorld.getGlobalFakeWorld().addRotationItem(cp, entry.getKey().displayItem, -0.05);
+                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, entry.getKey().displayItem, -0.05);
                                             }, delay += 20);
                                         }
                                         //cp2.getMenu().setMenuTag("openedCrate", crate.getIdentifier());

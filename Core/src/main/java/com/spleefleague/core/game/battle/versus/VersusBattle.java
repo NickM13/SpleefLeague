@@ -196,7 +196,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             onScorePoint(winner);
             startRound();
             if (winner.getRoundWins() == playToPoints - 1) {
-                chatGroup.sendTitle(ChatColor.GOLD + "Match Point: " + winner.getCorePlayer().getName(), "", 5, 50, 5);
+                chatGroup.sendTitle(ChatColor.GOLD + "Match Point", ChatColor.GOLD + winner.getCorePlayer().getName(), 5, 50, 5);
                 matchPointing = true;
             }
         } else {
@@ -205,7 +205,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
     }
 
-    protected int applyEloChange(BP winner) {
+    protected int applyEloChange(BP winner, BP loser) {
         if (forced) return 0;
         int avgRating = 0;
         int winnerRating = winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
@@ -225,9 +225,16 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
             int toChange = bp.equals(winner) ? eloChange : -eloChange;
             bp.getCorePlayer().getRatings().addRating(getMode().getName(), getMode().getSeason(), toChange);
+            TextComponent component = new TextComponent();
+            component.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
-            text.addExtra(" You have " + (toChange >= 0 ? "gained " : "lost "));
+            text.addExtra("You have " + (toChange >= 0 ? "defeated " : "been defeated by "));
+            if (bp.equals(winner)) text.addExtra(loser.getCorePlayer().getChatName());
+            else text.addExtra(winner.getCorePlayer().getChatName());
+            if (bp.equals(winner)) text.addExtra(" " + winner.getRoundWins() + "-" + loser.getRoundWins());
+            else text.addExtra(" " + loser.getRoundWins() + "-" + winner.getRoundWins());
+            text.addExtra(" and " + (toChange >= 0 ? "gained " : "lost "));
             text.addExtra(ChatColor.GREEN + "" + eloChange);
             text.addExtra(" Rating Points (");
             text.addExtra(ChatColor.RED + "" + initialElo);
@@ -289,21 +296,22 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                     }
                     bp.getCorePlayer().sendMessage(linebreak.toString());
                 }
-                applyEloChange(winner);
+                applyEloChange(winner, loser);
 
-                TextComponent text = new TextComponent();
-                text.setColor(ChatColor.GRAY.asBungee());
-                text.addExtra(winner.getCorePlayer().getChatName());
-                text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
-                text.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
-                text.addExtra(loser.getCorePlayer().getChatName());
-                text.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
-                text.addExtra(" (");
-                text.addExtra(Chat.SCORE + winner.getRoundWins());
-                text.addExtra("-");
-                text.addExtra(Chat.SCORE + loser.getRoundWins());
-                text.addExtra(")");
-                sendNotification(text);
+                TextComponent component = new TextComponent();
+                component = new TextComponent();
+                component.setColor(ChatColor.GRAY.asBungee());
+                component.addExtra(winner.getCorePlayer().getChatName());
+                component.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                component.addExtra(" has " + BattleUtils.randomDefeatSynonym() + " ");
+                component.addExtra(loser.getCorePlayer().getChatName());
+                component.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+                component.addExtra(" (");
+                component.addExtra(Chat.SCORE + winner.getRoundWins());
+                component.addExtra("-");
+                component.addExtra(Chat.SCORE + loser.getRoundWins());
+                component.addExtra(")");
+                sendNotification(component);
                 gameHistory.setPlayerStats(winner.getPlayer().getUniqueId(), 0, winner.getRoundWins());
                 gameHistory.setPlayerStats(loser.getPlayer().getUniqueId(), 1, loser.getRoundWins());
             }

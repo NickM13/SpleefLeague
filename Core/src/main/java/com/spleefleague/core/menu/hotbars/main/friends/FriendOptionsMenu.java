@@ -53,6 +53,19 @@ public class FriendOptionsMenu {
                                 .setEnabledFun(cp -> cp.getOptions().getBoolean("Friend:Notifications"))
                                 .setAction(cp -> cp.getOptions().toggle("Friend:Notifications")),
                         1, 2);
+
+        menuItem.getLinkedChest()
+                .addMenuItem(InventoryMenuAPI.createItemStatic()
+                                .setName("Non-Friend Messages")
+                                .setDisplayItem(Material.BIRCH_SIGN, 1)
+                                .setDescription("Receive messages from non-friends"),
+                        0, 3);
+
+        menuItem.getLinkedChest()
+                .addMenuItem(InventoryMenuAPI.createItemToggle()
+                                .setEnabledFun(cp -> cp.getOptions().getBoolean("Friend:Messages"))
+                                .setAction(cp -> cp.getOptions().toggle("Friend:Messages")),
+                        1, 3);
     }
 
     /**

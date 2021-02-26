@@ -37,7 +37,7 @@ public class ProfileMenu {
             //menuItem.getLinkedChest().addStaticItem(PartyMenu.getItem(), 3, 4);
             //menuItem.getLinkedChest().addStaticItem(AchievementsMenu.getItem(), 2, 4);
             //menuItem.getLinkedChest().addStaticItem(QuestsMenu.getItem(), 3, 4);
-            menuItem.getLinkedChest().addStaticItem(GoldenLeavesMenu.getItem(), 5, 4);
+            //menuItem.getLinkedChest().addStaticItem(GoldenLeavesMenu.getItem(), 5, 4);
             menuItem.getLinkedChest().addStaticItem(OresMenu.getItem(), 6, 4);
             //menuItem.getLinkedChest().addStaticItem(StatisticsMenu.getItem(), 6, 4);
         }

@@ -9,6 +9,7 @@ package com.spleefleague.core.command.commands;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.error.CoreError;
+import com.spleefleague.core.menu.overlays.SLMainOverlay;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.util.variable.Warp;
@@ -45,7 +46,7 @@ public class WarpCommand extends CoreCommand {
 
     @CommandAnnotation
     public void warp(CorePlayer sender) {
-        sender.getMenu().setInventoryMenuChest(Warp.createMenuContainer(null), true);
+        sender.getMenu().setInventoryMenuChest(SLMainOverlay.getOverlay(), Warp.createMenuContainer(null), true);
     }
 
 }

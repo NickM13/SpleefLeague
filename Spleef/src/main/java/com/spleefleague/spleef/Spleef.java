@@ -57,7 +57,7 @@ public class Spleef extends CorePlugin {
         Shovel.init();
         
         // Initialize player manager
-        playerManager = new PlayerManager<>(SpleefPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(this, SpleefPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
         
         // Load Spleef gamemodes
         SpleefMode.init();

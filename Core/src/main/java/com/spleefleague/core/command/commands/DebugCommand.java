@@ -6,6 +6,7 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.command.CoreCommand;
@@ -14,6 +15,8 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.core.world.FakeBlock;
+import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.global.GlobalWorld;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -50,10 +53,50 @@ public class DebugCommand extends CoreCommand {
     }
 
     @CommandAnnotation
+    public void debugBlockStep(CorePlayer sender,
+                           @LiteralArg("block") String l1,
+                           @LiteralArg("step") String l2,
+                           @EnumArg Material material) {
+        sender.getPlayer().playSound(sender.getLocation(), new FakeBlock(material.createBlockData()).getStepSound(), 1, 1);
+    }
+
+    @CommandAnnotation
+    public void debugBlockBreak(CorePlayer sender,
+                           @LiteralArg("block") String l1,
+                           @LiteralArg("break") String l2,
+                           @EnumArg Material material) {
+        sender.getPlayer().playSound(sender.getLocation(), new FakeBlock(material.createBlockData()).getBreakSound(), 1, 1);
+    }
+
+    @CommandAnnotation
+    public void debugBlockPlace(CorePlayer sender,
+                                @LiteralArg("block") String l1,
+                                @LiteralArg("place") String l2,
+                                @EnumArg Material material) {
+        sender.getPlayer().playSound(sender.getLocation(), new FakeBlock(material.createBlockData()).getPlaceSound(), 1, 1);
+    }
+
+    @CommandAnnotation
+    public void debugBlockHit(CorePlayer sender,
+                                @LiteralArg("block") String l1,
+                                @LiteralArg("hit") String l2,
+                                @EnumArg Material material) {
+        sender.getPlayer().playSound(sender.getLocation(), new FakeBlock(material.createBlockData()).getHitSound(), 1, 1);
+    }
+
+    @CommandAnnotation
+    public void debugBlockFall(CorePlayer sender,
+                                @LiteralArg("block") String l1,
+                                @LiteralArg("fall") String l2,
+                                @EnumArg Material material) {
+        sender.getPlayer().playSound(sender.getLocation(), new FakeBlock(material.createBlockData()).getFallSound(), 1, 1);
+    }
+
+    @CommandAnnotation
     public void debugItem(CorePlayer sender,
                           @LiteralArg("item") String l) {
         Random random = new Random();
-        GlobalWorld.getGlobalFakeWorld().addRotationItem(
+        sender.getGlobalWorld().addRotationItem(
                 sender,
                 InventoryMenuUtils.createCustomItem(Material.DIAMOND_SHOVEL, random.nextInt(50) * 100));
     }

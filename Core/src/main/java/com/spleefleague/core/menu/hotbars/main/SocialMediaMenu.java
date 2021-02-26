@@ -82,7 +82,7 @@ public class SocialMediaMenu {
 
     private static void sendDiscord(CorePlayer corePlayer) {
         Core.getInstance().sendMessage(corePlayer, ChatColor.WHITE + "" + ChatColor.BOLD + "Join us on Discord:");
-        Core.getInstance().sendMessage(corePlayer, toUrl("https://discord.spleef.gg/"));
+        Core.getInstance().sendMessage(corePlayer, toUrl(Settings.getDiscord().getUrl()));
     }
 
     private static void sendTwitter(CorePlayer corePlayer) {

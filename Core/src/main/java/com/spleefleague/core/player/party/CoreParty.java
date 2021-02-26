@@ -7,6 +7,7 @@
 package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.player.CorePlayer;
@@ -102,6 +103,12 @@ public class CoreParty extends Party {
     }
 
     public boolean leave(UUID uuid) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(uuid);
+        if (cp != null) {
+            if (cp.getChatChannel() == ChatChannel.PARTY) {
+                cp.setChatChannel(ChatChannel.GLOBAL);
+            }
+        }
         return removePlayer(uuid);
     }
 

@@ -91,8 +91,7 @@ public class PlayerManager <P extends ProxyDBPlayer> {
                 return null;
             }
         }
-        pcp.init();
-        System.out.println("Saving " + pp.getUniqueId() + "..." + pcp);
+        pcp.init(pp);
         onlinePlayers.put(pp.getUniqueId(), pcp);
         return pcp;
     }
@@ -125,11 +124,11 @@ public class PlayerManager <P extends ProxyDBPlayer> {
     }
 
     public P getOffline(UUID uuid) {
-        if (offlinePlayers.containsKey(uuid)) {
+        if (onlinePlayers.containsKey(uuid)) {
+            return onlinePlayers.get(uuid);
+        } else if (offlinePlayers.containsKey(uuid)) {
             offlinePlayers.get(uuid).initOffline();
             return offlinePlayers.get(uuid);
-        } else if (onlinePlayers.containsKey(uuid)) {
-            return onlinePlayers.get(uuid);
         } else {
             try {
                 Document doc = playerColl.find(new Document("identifier", uuid.toString())).first();

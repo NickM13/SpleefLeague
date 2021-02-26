@@ -1,6 +1,7 @@
 package com.spleefleague.core.player.party;
 
 import com.spleefleague.core.Core;
+import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.party.PartyAction;
 import com.spleefleague.coreapi.party.PartyManager;
@@ -47,6 +48,11 @@ public class CorePartyManager extends PartyManager<CoreParty> {
     public void removeParty(CoreParty party) {
         for (CorePlayer cp : party.getPlayerSet()) {
             partyMap.remove(cp.getUniqueId());
+            if (cp.isOnline()) {
+                if (cp.getChatChannel() == ChatChannel.PARTY) {
+                    cp.setChatChannel(ChatChannel.GLOBAL);
+                }
+            }
         }
     }
 

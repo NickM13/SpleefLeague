@@ -45,6 +45,12 @@ public class CorePlayerMenu {
 
     private int invSwap = 0;
 
+    public void setInventoryMenuChest(InventoryMenuOverlay overlay, InventoryMenuContainerChest inventoryMenuChest, boolean initialize) {
+        this.overlay = overlay;
+
+        setInventoryMenuChest(inventoryMenuChest, initialize);
+    }
+
     /**
      * Set player's current InventoryMenuContainer
      *
@@ -246,7 +252,7 @@ public class CorePlayerMenu {
     public void onPagePrevious() {
         if (hasPagePrevious()) {
             setMenuTag("page", getMenuTag("page", Integer.class) - 1);
-            refreshInventoryMenuContainer();
+            //refreshInventoryMenuContainer();
         }
     }
 
@@ -257,7 +263,7 @@ public class CorePlayerMenu {
     public void onPageNext() {
         if (hasPageNext()) {
             setMenuTag("page", getMenuTag("page", Integer.class) + 1);
-            refreshInventoryMenuContainer();
+            //refreshInventoryMenuContainer();
         }
     }
 

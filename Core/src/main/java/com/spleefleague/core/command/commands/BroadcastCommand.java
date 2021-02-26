@@ -27,7 +27,7 @@ public class BroadcastCommand extends CoreCommand {
     }
 
     @CommandAnnotation
-    public void broadcast(CorePlayer sender, @HelperArg(value = "<title \\n subtitle>") String message) {
+    public void broadcast(CorePlayer sender, @HelperArg(value = "title \\n subtitle") String message) {
         Core.getInstance().sendPacket(new PacketSpigotChatBroadcast(message));
     }
 

@@ -197,7 +197,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
         FakeBlock fakeBlock = getFakeBlock(pos);
-        if (fakeBlock == null || fakeBlock.getBlockData().getMaterial().isAir()) return false;
+        if (fakeBlock == null || fakeBlock.getBlockData().getMaterial().isAir()) return true;
         ItemStack heldItem = cp.getPlayer().getInventory().getItemInMainHand();
         if (editable
                 && breakables.contains(fakeBlock.getBlockData().getMaterial())
@@ -230,7 +230,7 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
         return false;
     }
 
-    private static final FakeBlock CORRODE_BLOCK = new FakeBlock(Material.MAGENTA_CONCRETE.createBlockData());
+    private static final FakeBlock CORRODE_BLOCK = new FakeBlock(Material.MAGENTA_CONCRETE_POWDER.createBlockData());
 
     /**
      * Corrodes blocks in a radius
@@ -552,28 +552,30 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
     }
 
     protected void updateFutureBlocks() {
-        for (Map.Entry<BlockPosition, SortedSet<FutureBlock>> futureList : futureBlocks.entrySet()) {
-            Iterator<FutureBlock> fbit = futureList.getValue().iterator();
-            while (fbit.hasNext()) {
-                FutureBlock futureBlock = fbit.next();
-                FakeBlock fakeBlock = getFakeBlock(futureList.getKey());
-                futureBlock.delay -= 2;
-                if (futureBlock.delay <= 0) {
-                    setBlock(futureList.getKey(), futureBlock.fakeBlock);
-                    fbit.remove();
-                } else if (futureBlock.delay < 7) {
-                    Material futureMat = futureBlock.fakeBlock.getBlockData().getMaterial();
-                    if (futureMat.equals(Material.SNOW_BLOCK)) {
-                        Snow snow = (Snow) Material.SNOW.createBlockData();
-                        snow.setLayers((int) (8 - futureBlock.delay));
-                        setBlock(futureList.getKey(), new FakeBlock(snow));
-                    } else {
-                        if (fakeBlock != null) {
-                            Material fakeMat = fakeBlock.getBlockData().getMaterial();
-                            if (futureMat.isAir() && (fakeMat.equals(Material.SNOW) || fakeMat.equals(Material.SNOW_BLOCK))) {
-                                Snow snow = (Snow) Material.SNOW.createBlockData();
-                                snow.setLayers((int) (futureBlock.delay));
-                                setBlock(futureList.getKey(), new FakeBlock(snow));
+        synchronized (futureBlocks) {
+            for (Map.Entry<BlockPosition, SortedSet<FutureBlock>> futureList : futureBlocks.entrySet()) {
+                Iterator<FutureBlock> fbit = futureList.getValue().iterator();
+                while (fbit.hasNext()) {
+                    FutureBlock futureBlock = fbit.next();
+                    FakeBlock fakeBlock = getFakeBlock(futureList.getKey());
+                    futureBlock.delay -= 2;
+                    if (futureBlock.delay <= 0) {
+                        setBlock(futureList.getKey(), futureBlock.fakeBlock);
+                        fbit.remove();
+                    } else if (futureBlock.delay < 7) {
+                        Material futureMat = futureBlock.fakeBlock.getBlockData().getMaterial();
+                        if (futureMat.equals(Material.SNOW_BLOCK)) {
+                            Snow snow = (Snow) Material.SNOW.createBlockData();
+                            snow.setLayers((int) (8 - futureBlock.delay));
+                            setBlock(futureList.getKey(), new FakeBlock(snow));
+                        } else {
+                            if (fakeBlock != null) {
+                                Material fakeMat = fakeBlock.getBlockData().getMaterial();
+                                if (futureMat.isAir() && (fakeMat.equals(Material.SNOW) || fakeMat.equals(Material.SNOW_BLOCK))) {
+                                    Snow snow = (Snow) Material.SNOW.createBlockData();
+                                    snow.setLayers((int) (futureBlock.delay));
+                                    setBlock(futureList.getKey(), new FakeBlock(snow));
+                                }
                             }
                         }
                     }

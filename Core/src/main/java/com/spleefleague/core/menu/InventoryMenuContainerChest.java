@@ -194,6 +194,14 @@ public class InventoryMenuContainerChest extends InventoryMenuContainer {
         unsortedItems.clear();
     }
 
+    public void clearStatic() {
+        controlItems.clear();
+    }
+
+    public void clearDeadSpace() {
+        deadSpaces.clear();
+    }
+
     public InventoryMenuContainerChest setParent(InventoryMenuContainer parentContainer) {
         this.parentContainer = parentContainer;
         return this;

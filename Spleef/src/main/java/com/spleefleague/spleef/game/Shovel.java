@@ -82,6 +82,8 @@ public class Shovel extends Holdable {
         HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 0, 2);
     }
 
+    @DBField private ShovelEffect shovelEffect = new ShovelEffect();
+
     public Shovel() {
         super();
         this.material = Material.DIAMOND_SHOVEL;
@@ -92,6 +94,14 @@ public class Shovel extends Holdable {
         this.identifier = identifier;
         this.name = displayName;
         this.material = Material.DIAMOND_SHOVEL;
+    }
+
+    public void clearEffect() {
+
+    }
+
+    public void setEffect() {
+
     }
 
     @Override
@@ -111,7 +121,7 @@ public class Shovel extends Holdable {
      */
     @Override
     public void onRightClick(CorePlayer corePlayer) {
-
+        shovelEffect.activate(corePlayer);
     }
 
     /**

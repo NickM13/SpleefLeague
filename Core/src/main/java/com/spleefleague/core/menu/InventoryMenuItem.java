@@ -124,7 +124,9 @@ public abstract class InventoryMenuItem {
     }
 
     public void callAction(CorePlayer cp) {
-        if (action != null && isAvailable(cp)) action.accept(cp);
+        if (action != null && isAvailable(cp)) {
+            action.accept(cp);
+        }
     }
 
     public InventoryMenuItem build() {

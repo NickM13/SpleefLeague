@@ -12,12 +12,10 @@ import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Essentially a Location without the world variable
@@ -45,7 +43,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         this.y = y;
         this.z = z;
         this.yaw = this.pitch = 0;
-        this.worldName = Core.DEFAULT_WORLD.getName();
+        this.worldName = Core.OVERWORLD.getName();
     }
 
     public CoreLocation(double x, double y, double z, long yaw, long pitch) {
@@ -54,7 +52,7 @@ public class CoreLocation extends DBVariable<List<?>> {
         this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
-        this.worldName = Core.DEFAULT_WORLD.getName();
+        this.worldName = Core.OVERWORLD.getName();
     }
 
     public CoreLocation(Location loc) {
@@ -141,7 +139,7 @@ public class CoreLocation extends DBVariable<List<?>> {
             if (doc.size() > 5) {
                 worldName = (String) doc.get(5);
             } else {
-                worldName = Core.DEFAULT_WORLD.getName();
+                worldName = Core.OVERWORLD.getName();
             }
         } else {
             CoreLogger.logError(null, new IndexOutOfBoundsException("" + doc.size()));

@@ -49,7 +49,7 @@ public class SuperJump extends CorePlugin {
 
         initCommands();
         
-        playerManager = new PlayerManager<>(SuperJumpPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
+        playerManager = new PlayerManager<>(this, SuperJumpPlayer.class, CoreDBPlayer.class, getPluginDB().getCollection("Players"));
         
         SJUtils.init();
         SJMode.init();

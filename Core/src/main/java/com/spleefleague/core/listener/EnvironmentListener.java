@@ -29,6 +29,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffectType;
@@ -96,7 +98,7 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onPlayerMoveSign(PlayerMoveEvent event) {
         if (event.getTo() == null) return;
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
         for (Block block : getBlocksBelow(event.getTo().getBlock())) {
             BlockState state = block.getState();
             if (state instanceof CraftSign) {
@@ -136,23 +138,23 @@ public class EnvironmentListener implements Listener {
                         }
                         break;
                     case "[teleport]":
-                        cp.teleport(getSignVector(sign));
+                        corePlayer.teleport(getSignVector(sign));
                         break;
                     case "[min-rank]":
                         // TODO: Would be cool if FakeWorld was incorporated to set fake block walls
-                        if (!cp.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
+                        if (!corePlayer.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;
                     case "[max-rank]":
-                        if (cp.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
+                        if (corePlayer.getRank().hasPermission(Core.getInstance().getRankManager().getRank(sign.getLine(1)))) {
                             stopHorizontalMovement(event);
                         }
                         break;
                     case "[warp]":
                         Warp warp = Warp.getWarp(sign.getLine(1));
                         if (warp != null) {
-                            cp.warp(warp);
+                            corePlayer.warp(warp);
                         }
                         break;
                     case "[effect]":
@@ -198,20 +200,29 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onDropItem(PlayerDropItemEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!cp.canBuild()) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!corePlayer.canBuild()) {
             event.setCancelled(true);
-            Block block = cp.getPlayer().getTargetBlockExact(5, FluidCollisionMode.ALWAYS);
+            Block block = corePlayer.getPlayer().getTargetBlockExact(5, FluidCollisionMode.ALWAYS);
             if (block != null
                     && block.getType().equals(Material.WATER)
-                    && SLMainHotbar.getItemHotbar().createItem(cp).equals(event.getItemDrop().getItemStack())) {
+                    && SLMainHotbar.getItemHotbar().createItem(corePlayer).equals(event.getItemDrop().getItemStack())) {
                 Random rand = new Random();
-                Core.getInstance().sendMessage(cp, WISHES.get(rand.nextInt(WISHES.size())));
+                Core.getInstance().sendMessage(corePlayer, WISHES.get(rand.nextInt(WISHES.size())));
             }
         } else {
             if (InventoryMenuItemHotbar.isHotbarItem(event.getItemDrop().getItemStack())) {
                 event.getItemDrop().remove();
             }
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer().getUniqueId());
+        Location loc = event.getTo();
+        if (loc != null) {
+            corePlayer.onTeleport(loc.getWorld());
         }
     }
 
@@ -221,7 +232,7 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onPlayerDismount(EntityDismountEvent event) {
         if (event.getEntity() instanceof Player) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity().getUniqueId());
+            CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getEntity().getUniqueId());
             GlobalVehicle.remove(event.getDismounted().getEntityId());
         }
     }
@@ -241,12 +252,6 @@ public class EnvironmentListener implements Listener {
         }
     }
 
-    private static final Set<EntityDamageEvent.DamageCause> ALLOWED_PLAYER_DAMAGE = Sets.newHashSet(
-            EntityDamageEvent.DamageCause.DROWNING,
-            EntityDamageEvent.DamageCause.THORNS,
-            EntityDamageEvent.DamageCause.LAVA
-    );
-
     /**
      * Perform effects based on the type of damage
      * a player takes
@@ -256,10 +261,31 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
-            if (ALLOWED_PLAYER_DAMAGE.contains(event.getCause())) {
-                event.setDamage(event.getDamage() / 2);
-            } else {
-                event.getEntity().setFireTicks(0);
+            switch (event.getCause()) {
+                case DROWNING:
+                case THORNS:
+                    event.setDamage(event.getDamage() / 2);
+                    break;
+                case LAVA:
+                    event.setDamage(event.getDamage() * 2);
+                    break;
+                case VOID:
+                case SUICIDE:
+                case CUSTOM:
+                    break;
+                default:
+                    event.getEntity().setFireTicks(0);
+                    event.setCancelled(true);
+                    break;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
+        if (event.getRemover() instanceof Player) {
+            CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getRemover().getUniqueId());
+            if (corePlayer == null || !corePlayer.canBuild()) {
                 event.setCancelled(true);
             }
         }
@@ -309,8 +335,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onEntityInteractEntity(PlayerInteractAtEntityEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!cp.canBuild()) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!corePlayer.canBuild()) {
             if (!interactableEntities.contains(event.getRightClicked().getType())) {
                 event.setCancelled(true);
             }
@@ -328,8 +354,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onEntityInteractEntity(PlayerInteractEntityEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!cp.canBuild()) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!corePlayer.canBuild()) {
             if (!interactableEntities.contains(event.getRightClicked().getType())) {
                 event.setCancelled(true);
             }
@@ -358,9 +384,9 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity());
-        cp.saveLastLocation();
-        event.setDeathMessage(cp.getDisplayName() + " somehow died on SpleefLeague?  Seems kinda sus.  Oh well, here's the real reason: " + event.getDeathMessage());
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getEntity());
+        corePlayer.saveLastLocation();
+        event.setDeathMessage(corePlayer.getDisplayName() + " somehow died on SpleefLeague?  Seems kinda sus.  Oh well, here's the real reason: " + event.getDeathMessage());
         Core.getInstance().sendMessage(event.getDeathMessage());
     }
 
@@ -391,8 +417,8 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onItemPickup(EntityPickupItemEvent event) {
         if (event.getEntityType().equals(EntityType.PLAYER)) {
-            CorePlayer cp = Core.getInstance().getPlayers().get(event.getEntity().getName());
-            if (!cp.canBuild()) {
+            CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getEntity().getName());
+            if (!corePlayer.canBuild()) {
                 event.setCancelled(true);
             }
         }
@@ -417,8 +443,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBlockBreak(BlockBreakEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!cp.canBreak()) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!corePlayer.canBreak()) {
             event.setCancelled(true);
         } else {
             event.setDropItems(false);
@@ -433,9 +459,9 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBlockPlace(BlockPlaceEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
 
-        if (!cp.canBuild()) {
+        if (!corePlayer.canBuild()) {
             event.setCancelled(true);
         }
     }
@@ -469,8 +495,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (cp == null || !event.getNewGameMode().equals(cp.getGameMode())) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (corePlayer == null || !event.getNewGameMode().equals(corePlayer.getGameMode())) {
             event.setCancelled(true);
         }
     }
@@ -483,8 +509,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        event.setRespawnLocation(cp.getSpawnLocation());
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        event.setRespawnLocation(corePlayer.getSpawnLocation());
     }
 
     /**
@@ -520,8 +546,8 @@ public class EnvironmentListener implements Listener {
         if (event.isGliding()
                 && event.getEntityType().equals(EntityType.PLAYER)) {
             Player p = (Player) event.getEntity();
-            CorePlayer cp = Core.getInstance().getPlayers().get(p);
-            if (!cp.getGameMode().equals(GameMode.CREATIVE)) {
+            CorePlayer corePlayer = Core.getInstance().getPlayers().get(p);
+            if (!corePlayer.getGameMode().equals(GameMode.CREATIVE)) {
                 event.setCancelled(true);
             }
         }
@@ -560,8 +586,8 @@ public class EnvironmentListener implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!cp.canBuild()) {
+        CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
+        if (!corePlayer.canBuild()) {
             if (event.getClickedBlock() != null) {
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     if (!interactables.contains(event.getClickedBlock().getType())

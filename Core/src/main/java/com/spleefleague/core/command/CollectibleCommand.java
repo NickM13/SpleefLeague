@@ -1,5 +1,6 @@
 package com.spleefleague.core.command;
 
+import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
@@ -8,6 +9,7 @@ import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.lang.reflect.Field;
@@ -221,8 +223,11 @@ public class CollectibleCommand extends CoreCommand {
                                @LiteralArg("add") String l,
                                CorePlayer target,
                                @OptionArg(listName = "collectibles") String identifier) {
-        if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
+        if (target.getCollectibles().add(collectible)) {
             sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
+            Core.getInstance().sendMessage(target,
+                    ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
         } else {
             sender.sendMessage(target.getDisplayName() + " already had " + identifier);
         }
@@ -241,9 +246,12 @@ public class CollectibleCommand extends CoreCommand {
                                 @LiteralArg("add") String l,
                                 List<CorePlayer> targets,
                                 @OptionArg(listName = "collectibles") String identifier) {
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
         for (CorePlayer target : targets) {
-            if (target.getCollectibles().add(Vendorables.get(collectibleClass, identifier))) {
+            if (target.getCollectibles().add(collectible)) {
                 sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
+                Core.getInstance().sendMessage(target,
+                        ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
             } else {
                 sender.sendMessage(target.getDisplayName() + " already had " + identifier);
             }

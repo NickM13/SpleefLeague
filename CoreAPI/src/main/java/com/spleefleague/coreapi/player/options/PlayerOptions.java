@@ -70,12 +70,26 @@ public class PlayerOptions extends DBEntity {
         return optionMap.getString(option);
     }
 
+    public Integer addInteger(String option, int value) {
+        if (optionMap.getInteger(option) == null) optionMap.put(option, 0D);
+        int newVal = optionMap.getInteger(option) + value;
+        optionMap.put(option, newVal);
+        return newVal;
+    }
+
     public Integer addInteger(String option, int value, int min, int max) {
         if (optionMap.getInteger(option) == null) optionMap.put(option, 0D);
         int newVal = optionMap.getInteger(option) + value;
         if (newVal > max) newVal = min;
         else if (newVal < min) newVal = max;
         return (Integer) optionMap.put(option, newVal);
+    }
+
+    public Double addDouble(String option, double value) {
+        if (optionMap.getDouble(option) == null) optionMap.put(option, 0D);
+        double newVal = optionMap.getDouble(option) + value;
+        optionMap.put(option, newVal);
+        return newVal;
     }
 
     public Double addDouble(String option, double value, double min, double max) {

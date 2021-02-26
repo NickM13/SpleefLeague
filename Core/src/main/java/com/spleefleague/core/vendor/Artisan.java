@@ -10,6 +10,8 @@ import com.spleefleague.core.player.CorePlayer;
 import java.util.UUID;
 
 import com.spleefleague.core.player.purse.CoreCurrency;
+import com.spleefleague.coreapi.chat.Chat;
+import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.Bukkit;
@@ -55,8 +57,7 @@ public class Artisan extends DBEntity {
      * @param cp Core Player
      */
     public void openShop(CorePlayer cp) {
-        cp.getMenu().setOverlay(overlay);
-        cp.getMenu().setInventoryMenuChest(getShopContainer(), true);
+        cp.getMenu().setInventoryMenuChest(overlay, getShopContainer(), true);
     }
 
     /**
@@ -92,13 +93,15 @@ public class Artisan extends DBEntity {
     }
 
     private void playCraftAnimation(CorePlayer cp) {
-        cp.getPlayer().playSound(cp.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR, 1, 1);
+        cp.getPlayer().playSound(cp.getLocation(), Sound.BLOCK_ANVIL_USE, 1, 0.75f);
+        Core.getInstance().sendMessage(cp, "The Artisan takes your ores and crafts a " + Chat.MENU_NAME + Core.getInstance().getCrateManager().get(crate).getDisplayName() + ChatColor.GRAY + "!");
     }
 
     private void attemptCraft(CorePlayer cp) {
         if (cp.getPurse().getCurrency(currency) >= 3) {
             cp.getCrates().changeCrateCount(crate, 1);
             cp.getPurse().addCurrency(currency, -3);
+            cp.getPurse().addCurrency(CoreCurrency.COIN, -coinCost);
             playCraftAnimation(cp);
         }
     }

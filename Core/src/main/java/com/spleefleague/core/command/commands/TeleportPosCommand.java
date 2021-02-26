@@ -24,7 +24,7 @@ import org.bukkit.command.CommandSender;
 public class TeleportPosCommand extends CoreCommand {
 
     public TeleportPosCommand() {
-        super("tppos", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("tppos", CoreRank.TEMP_MOD);
     }
     
     /*
@@ -55,7 +55,7 @@ public class TeleportPosCommand extends CoreCommand {
         cp.teleport(x, y, z, pitch, yaw);
     }
 
-    @CommandAnnotation
+    @CommandAnnotation(minRank = "DEVELOPER")
     public void tpposPlayers(CommandSender sender,
                              List<CorePlayer> cps,
                              @HelperArg(value = "x") TpCoord x,

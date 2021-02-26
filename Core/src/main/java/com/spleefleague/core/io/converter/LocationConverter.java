@@ -43,7 +43,7 @@ public class LocationConverter {
         }
 
         // Read world from list if size is divisible by 2 (4, 6, etc)
-        World world = (list.size() % 2 == 0) ? Bukkit.getWorld((String) list.get(list.size() - 1)) : Core.DEFAULT_WORLD;
+        World world = (list.size() % 2 == 0) ? Bukkit.getWorld((String) list.get(list.size() - 1)) : Core.OVERWORLD;
         return list.size() < 5 ? new Location(world, x, y, z) : new Location(world, x, y, z, pitch, yaw);
     }
 
@@ -57,7 +57,7 @@ public class LocationConverter {
             list.add(v.getYaw());
             list.add(v.getPitch());
         }
-        if (v.getWorld() != null && v.getWorld() != Core.DEFAULT_WORLD) {
+        if (v.getWorld() != null && v.getWorld() != Core.OVERWORLD) {
             list.add(v.getWorld().getName());
         }
         return list;

@@ -263,7 +263,7 @@ public class FakeUtils {
 
     private static final ProtocolManager protocolManager = Core.getProtocolManager();
     private static final UUID unused = UUID.randomUUID();
-    private static final EntityArmorStand armorStand = new EntityArmorStand(((CraftWorld) Core.DEFAULT_WORLD).getHandle(), 0, 0, 0);
+    private static final EntityArmorStand armorStand = new EntityArmorStand(((CraftWorld) Core.OVERWORLD).getHandle(), 0, 0, 0);
     private static final DataWatcher dataWatcher;
 
     static {

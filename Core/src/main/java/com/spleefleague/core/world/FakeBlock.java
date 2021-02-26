@@ -7,6 +7,9 @@
 package com.spleefleague.core.world;
 
 import com.google.common.collect.Lists;
+import net.minecraft.server.v1_15_R1.IBlockData;
+import net.minecraft.server.v1_15_R1.MinecraftKey;
+import net.minecraft.server.v1_15_R1.SoundEffect;
 import net.minecraft.server.v1_15_R1.SoundEffectType;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -14,6 +17,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_15_R1.block.data.CraftBlockData;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,39 +28,75 @@ import java.util.Map;
 public class FakeBlock {
 
     private static final Map<Material, Sound> breakSoundMap = new HashMap<>();
+    private static final Map<Material, Sound> stepSoundMap = new HashMap<>();
     private static final Map<Material, Sound> placeSoundMap = new HashMap<>();
+    private static final Map<Material, Sound> hitSoundMap = new HashMap<>();
+    private static final Map<Material, Sound> fallSoundMap = new HashMap<>();
+
+    private static Field fieldBreakSound;
+    private static Field fieldStepSound;
+    private static Field fieldPlaceSound;
+    private static Field fieldHitSound;
+    private static Field fieldFallSound;
+
+    private static Field fieldMinecraftKey;
 
     private static List<Sound> getSounds(Material material) {
+        List<Sound> list = new ArrayList<>();
         try {
             BlockData blockData = material.createBlockData();
-            net.minecraft.server.v1_15_R1.IBlockData nmsBlockData = ((CraftBlockData) blockData).getState();
-            net.minecraft.server.v1_15_R1.SoundEffectType nmsSoundEffectType = nmsBlockData.r();
+            IBlockData nmsBlockData = ((CraftBlockData) blockData).getState();
+            SoundEffectType nmsSoundEffectType = nmsBlockData.r();
 
-            net.minecraft.server.v1_15_R1.SoundEffect nmsBreakSound = nmsSoundEffectType.d();
+            SoundEffect breakSoundEffect =  (SoundEffect) fieldBreakSound.get(nmsSoundEffectType);
+            SoundEffect stepSoundEffect =   (SoundEffect) fieldStepSound.get(nmsSoundEffectType);
+            SoundEffect placeSoundEffect =  (SoundEffect) fieldPlaceSound.get(nmsSoundEffectType);
+            SoundEffect hitSoundEffect =    (SoundEffect) fieldHitSound.get(nmsSoundEffectType);
+            SoundEffect fallSoundEffect =   (SoundEffect) fieldFallSound.get(nmsSoundEffectType);
 
-            net.minecraft.server.v1_15_R1.SoundEffect nmsPlaceSound = nmsSoundEffectType.e();
+            list.add(Sound.valueOf(((MinecraftKey) fieldMinecraftKey.get(breakSoundEffect)).getKey().replace('.', '_').toUpperCase()));
+            list.add(Sound.valueOf(((MinecraftKey) fieldMinecraftKey.get(stepSoundEffect)).getKey().replace('.', '_').toUpperCase()));
+            list.add(Sound.valueOf(((MinecraftKey) fieldMinecraftKey.get(placeSoundEffect)).getKey().replace('.', '_').toUpperCase()));
+            list.add(Sound.valueOf(((MinecraftKey) fieldMinecraftKey.get(hitSoundEffect)).getKey().replace('.', '_').toUpperCase()));
+            list.add(Sound.valueOf(((MinecraftKey) fieldMinecraftKey.get(fallSoundEffect)).getKey().replace('.', '_').toUpperCase()));
+        } catch (IllegalArgumentException | IllegalAccessException ignored) {
 
-            Field keyField = net.minecraft.server.v1_15_R1.SoundEffect.class.getDeclaredField("a");
-            keyField.setAccessible(true);
-
-            net.minecraft.server.v1_15_R1.MinecraftKey nmsBreakString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsBreakSound);
-            net.minecraft.server.v1_15_R1.MinecraftKey nmsPlaceString = (net.minecraft.server.v1_15_R1.MinecraftKey) keyField.get(nmsPlaceSound);
-
-            return Lists.newArrayList(Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()),
-                    Sound.valueOf(nmsBreakString.getKey().replace(".", "_").toUpperCase()));
-        } catch (IllegalArgumentException | NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
         }
-        return null;
+        return list;
     }
 
     public static void init() {
+        try {
+            fieldBreakSound = SoundEffectType.class.getDeclaredField("z");
+            fieldBreakSound.setAccessible(true);
+
+            fieldStepSound = SoundEffectType.class.getDeclaredField("A");
+            fieldStepSound.setAccessible(true);
+
+            fieldPlaceSound = SoundEffectType.class.getDeclaredField("B");
+            fieldPlaceSound.setAccessible(true);
+
+            fieldHitSound = SoundEffectType.class.getDeclaredField("C");
+            fieldHitSound.setAccessible(true);
+
+            fieldFallSound = SoundEffectType.class.getDeclaredField("D");
+            fieldFallSound.setAccessible(true);
+
+            fieldMinecraftKey = SoundEffect.class.getDeclaredField("a");
+            fieldMinecraftKey.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
         for (Material material : Material.values()) {
             if (material.isBlock()) {
                 List<Sound> sounds = getSounds(material);
-                if (sounds != null) {
+                if (!sounds.isEmpty()) {
                     breakSoundMap.put(material, sounds.get(0));
-                    placeSoundMap.put(material, sounds.get(1));
+                    stepSoundMap.put(material, sounds.get(1));
+                    placeSoundMap.put(material, sounds.get(2));
+                    hitSoundMap.put(material, sounds.get(2));
+                    fallSoundMap.put(material, sounds.get(2));
                 }
             }
         }
@@ -72,12 +112,24 @@ public class FakeBlock {
         return blockData;
     }
 
+    public Sound getStepSound() {
+        return stepSoundMap.get(blockData.getMaterial());
+    }
+
     public Sound getBreakSound() {
         return breakSoundMap.get(blockData.getMaterial());
     }
 
     public Sound getPlaceSound() {
         return placeSoundMap.get(blockData.getMaterial());
+    }
+
+    public Sound getHitSound() {
+        return hitSoundMap.get(blockData.getMaterial());
+    }
+
+    public Sound getFallSound() {
+        return fallSoundMap.get(blockData.getMaterial());
     }
 
 }

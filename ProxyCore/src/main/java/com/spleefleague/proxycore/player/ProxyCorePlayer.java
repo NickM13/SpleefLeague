@@ -98,6 +98,7 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
 
     @Override
     public void close() {
+        chatChannel = ChatChannel.GLOBAL;
         lastOnline = System.currentTimeMillis();
     }
 

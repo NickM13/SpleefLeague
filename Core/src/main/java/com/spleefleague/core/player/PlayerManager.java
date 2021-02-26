@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.plugin.CorePlugin;
@@ -24,6 +25,7 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * Manager for custom DBPlayer objects based on Player UUIDs
@@ -42,16 +44,19 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
     protected SortedSet<ONLINE> playerListSorted;
     protected final Class<ONLINE> onlinePlayerClass;
     protected final Class<OFFLINE> offlinePlayerClass;
-    protected final MongoCollection<Document> playerCol;
+    protected final MongoCollection<Document> playerColl;
     protected boolean saving = false;
+    protected BukkitTask autosaveTask = null;
+    protected final CorePlugin plugin;
 
-    public PlayerManager(Class<ONLINE> onlineClass, Class<OFFLINE> offlineClass, MongoCollection<Document> collection) {
+    public PlayerManager(CorePlugin plugin, Class<ONLINE> onlineClass, Class<OFFLINE> offlineClass, MongoCollection<Document> collection) {
+        this.plugin = plugin;
         this.localPlayerMap = new HashMap<>();
         this.onlinePlayerMap = new HashMap<>();
         this.offlinePlayerList = new HashMap<>();
         this.onlinePlayerClass = onlineClass;
         this.offlinePlayerClass = offlineClass;
-        this.playerCol = collection;
+        this.playerColl = collection;
         this.playerListSorted = new TreeSet<>(Comparator.comparing(ONLINE::getName));
         CorePlugin.registerPlayerManager(this);
     }
@@ -61,7 +66,14 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
     }
 
     public void enableSaving() {
-        saving = true;
+        if (!saving) {
+            saving = true;
+            autosaveTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                for (ONLINE pcp : onlinePlayerMap.values()) {
+                    save(pcp);
+                }
+            }, 60L, 60L);
+        }
     }
 
     public void setSortingComparible(Comparator<ONLINE> comparator) {
@@ -167,7 +179,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
                 return op;
             }
             op = offlinePlayerClass.getDeclaredConstructor().newInstance();
-            Document doc = playerCol.find(new Document("identifier", uniqueId.toString())).first();
+            Document doc = playerColl.find(new Document("identifier", uniqueId.toString())).first();
             if (doc != null) {
                 op.load(doc);
                 op.init();
@@ -247,7 +259,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
      * @return Exists
      */
     public boolean hasPlayedBefore(UUID uniqueId) {
-        return playerCol.find(new Document("identifier", uniqueId.toString())).first() != null;
+        return playerColl.find(new Document("identifier", uniqueId.toString())).first() != null;
     }
 
     /**
@@ -266,7 +278,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
             return p;
         }
         try {
-            Document pdoc = playerCol.find(new Document("identifier", uuid.toString())).first();
+            Document pdoc = playerColl.find(new Document("identifier", uuid.toString())).first();
             ONLINE online = onlinePlayerClass.getDeclaredConstructor().newInstance();
             if (pdoc != null) {
                 online.load(pdoc);
@@ -288,7 +300,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
             CoreLogger.logWarning("Attempted to reload field of offline player");
         } else {
             onlinePlayerMap.get(uuid).reloadField(
-                    playerCol.find(new Document("identifier", uuid.toString())).first(),
+                    playerColl.find(new Document("identifier", uuid.toString())).first(),
                     fields.stream().map(PacketBungeePlayerResync.Field::getFieldName).collect(Collectors.toSet()));
             onlinePlayerMap.get(uuid).onResync(fields);
         }
@@ -309,25 +321,11 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
      *
      * @param player Player
      */
-    /*
-    public void save(P player) {
-        try {
-            playerCol.replaceOne(new Document("identifier", player.getUniqueId().toString()), player.toDocument(), new ReplaceOptions().upsert(true));
-        } catch (NoClassDefFoundError | IllegalAccessError exception) {
-            CoreLogger.logError("Jar files updated, unable to save player " + player.getName(), null);
-        } catch (IllegalArgumentException exception) {
-            CoreLogger.logError(null, exception);
-        }
+    public void save(ONLINE player) {
+        //Document query = new Document("identifier", player.getUniqueId().toString());
+        //playerColl.replaceOne(query, player.toDocument(), new ReplaceOptions().upsert(true));
+        player.save(playerColl);
     }
-
-    public void saveForTransfer(UUID uuid) {
-        P p = herePlayerListAll.get(uuid);
-        if (p != null) {
-            save(p);
-            p.setPresaved();
-        }
-    }
-    */
 
     /**
      * Remove a DBPlayer from the player list
@@ -339,7 +337,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
             p.setOnline(DBPlayer.OnlineState.OTHER);
             p.close();
             if (saving) {
-                p.save(playerCol);
+                p.save(playerColl);
             }
         } else {
             if (onlinePlayerMap.containsKey(uuid)) {
@@ -392,7 +390,7 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
      * @return ? extends DBPlayer
      */
     public ONLINE createFakePlayer(String username) {
-        Document pdoc = playerCol.find(new Document("username", username)).first();
+        Document pdoc = playerColl.find(new Document("username", username)).first();
         if (pdoc == null || onlinePlayerMap.containsKey(UUID.fromString(pdoc.get("identifier", String.class)))) {
             try {
                 ONLINE p = onlinePlayerClass.getDeclaredConstructor().newInstance();
@@ -425,7 +423,9 @@ public class PlayerManager<ONLINE extends OFFLINE, OFFLINE extends CoreDBPlayer>
      * Save all DBPlayer
      */
     public void close() {
-
+        if (saving) {
+            autosaveTask.cancel();
+        }
     }
 
     public void onBungeeConnect(OfflinePlayer op) {

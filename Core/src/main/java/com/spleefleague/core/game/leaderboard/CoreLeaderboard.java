@@ -53,7 +53,7 @@ public class CoreLeaderboard extends Leaderboard {
                 .setRefreshAction((container, cp) -> {
                     int page = cp.getMenu().getPage();
                     int skip = container.getPageItemTotal() * page;
-                    container.setForcedPageCount(getPlayerCount() / container.getPageItemTotal() + 1);
+                    container.setForcedPageCount((getPlayerCount() - 1) / container.getPageItemTotal() + 1);
                     container.setForcedPageStart(page * container.getPageItemTotal());
                     container.clearUnsorted();
                     List<LeaderboardEntry> players = getPlayers(skip, container.getPageItemTotal());
@@ -66,7 +66,7 @@ public class CoreLeaderboard extends Leaderboard {
                                         + ChatColor.GRAY + "Losses: " + ChatColor.RED + leaderboardEntry.getLosses() + "\n"
                                         + ChatColor.GRAY + "Win Rate: " + formatWinPercent(leaderboardEntry.getWins(), leaderboardEntry.getLosses()))
                                 .setDisplayItem(InventoryMenuUtils.createCustomSkullOrDefault(leaderboardEntry.getUniqueId()))
-                                .setCloseOnAction(false));
+                                .setCloseOnAction(false), i + skip);
                     }
                 });
 

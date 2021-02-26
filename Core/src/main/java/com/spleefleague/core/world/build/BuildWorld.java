@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -160,6 +161,8 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
      */
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
+        FakeBlock fakeBlock = getFakeBlock(pos);
+        if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) return false;
         return breakBlock(pos, cp);
     }
 
@@ -277,8 +280,11 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
         for (int x = (int) fillBox.getLow().x; x <= fillBox.getHigh().x; x++) {
             for (int y = (int) fillBox.getLow().y; y <= fillBox.getHigh().y; y++) {
                 for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
-                    fillBlocks.put(new BlockPosition(x, y, z), new FakeBlock(getWorld().getBlockAt(x, y, z).getBlockData()));
-                    getWorld().getBlockAt(x, y, z).setType(Material.AIR);
+                    Block block = getWorld().getBlockAt(x, y, z);
+                    if (!block.getType().isAir()) {
+                        fillBlocks.put(new BlockPosition(x, y, z), new FakeBlock(getWorld().getBlockAt(x, y, z).getBlockData()));
+                        block.setType(Material.AIR);
+                    }
                 }
             }
         }

@@ -22,10 +22,10 @@ public class MobilityEnderRift extends AbilityMobility {
                 .setCustomModelData(4)
                 .setName("Ender Rift")
                 .setDescription("Return to your location up to %REVERSE_TIME% seconds in the past. May be reactivated to stop travel early.")
-                .setUsage(10D);
+                .setUsage(15D);
     }
 
-    private static final double REVERSE_TIME = 5D;
+    private static final double REVERSE_TIME = 3D;
     private static final int REVERSE_SPEED = 10;
 
     private List<Location> riftLocs = new ArrayList<>();

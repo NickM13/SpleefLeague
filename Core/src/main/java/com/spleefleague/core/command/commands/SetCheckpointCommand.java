@@ -19,7 +19,7 @@ import java.util.List;
 public class SetCheckpointCommand extends CoreCommand {
 
     public SetCheckpointCommand() {
-        super("setcheckpoint", CoreRank.TEMP_MOD);
+        super("setcheckpoint", CoreRank.DEVELOPER);
     }
 
 }

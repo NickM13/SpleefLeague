@@ -189,10 +189,7 @@ public class InventoryMenuUtils {
         for (int i = 0; i < count; i++) {
             int finalI = (int) Math.pow(10, count - i - 1);
             InventoryMenuItemDynamic item = InventoryMenuAPI.createItemDynamic()
-                    .setName(cp -> {
-                        int num = (function.apply(cp) / finalI) % 10;
-                        return "" + num;
-                    })
+                    .setName(cp -> String.valueOf(function.apply(cp)))
                     .setDisplayItem(cp -> {
                         int num = (function.apply(cp) / finalI) % 10;
                         if (num == 0) num = 10;

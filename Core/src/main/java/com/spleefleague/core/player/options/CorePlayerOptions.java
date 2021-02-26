@@ -50,9 +50,25 @@ public class CorePlayerOptions extends PlayerOptions {
     }
 
     @Override
+    public Integer addInteger(String option, int value) {
+        super.addInteger(option, value);
+        int val = getInteger(option);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerOptions(owner.getUniqueId(), option, val));
+        return val;
+    }
+
+    @Override
     public Integer addInteger(String option, int value, int min, int max) {
         super.addInteger(option, value, min, max);
         int val = getInteger(option);
+        Core.getInstance().sendPacket(new PacketSpigotPlayerOptions(owner.getUniqueId(), option, val));
+        return val;
+    }
+
+    @Override
+    public Double addDouble(String option, double value) {
+        super.addDouble(option, value);
+        double val = getDouble(option);
         Core.getInstance().sendPacket(new PacketSpigotPlayerOptions(owner.getUniqueId(), option, val));
         return val;
     }

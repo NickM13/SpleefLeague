@@ -34,13 +34,9 @@ public class WarpOtherCommand extends CoreCommand {
                           CorePlayer cp,
                           @OptionArg(listName = "warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
-        if (warp != null) {
-            if (cp.warp(warp)) {
-                success(cp, "You were warped to " + warp.getIdentifier());
-                success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
-            } else {
-
-            }
+        if (warp != null && cp.warp(warp)) {
+            success(cp, "You were warped to " + warp.getIdentifier());
+            success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
         }
     }
 
@@ -49,17 +45,13 @@ public class WarpOtherCommand extends CoreCommand {
                           CorePlayer cp,
                           @OptionArg(listName = "warpList") String warpName) {
         Warp warp = Warp.getWarp(warpName);
-        if (warp != null) {
-            if (cp.warp(warp)) {
-                success(cp, "You were warped to " + warp.getIdentifier());
-                success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
-            } else {
-
-            }
+        if (warp != null && cp.warp(warp)) {
+            success(cp, "You were warped to " + warp.getIdentifier());
+            success(cs, "Warped " + cp.getDisplayName() + " to " + warp.getIdentifier());
         }
     }
 
-    @CommandAnnotation
+    @CommandAnnotation(minRank = "DEVELOPER")
     public void warpOther(CommandSender cs,
                           List<CorePlayer> cps,
                           @OptionArg(listName = "warpList") String warpName) {

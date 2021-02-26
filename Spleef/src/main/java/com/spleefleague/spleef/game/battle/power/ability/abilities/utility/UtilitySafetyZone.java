@@ -31,6 +31,8 @@ public class UtilitySafetyZone extends AbilityUtility {
     private static final double RANGE = 4D;
     private static final double DURATION = 3D;
 
+    private static final FakeBlock SAFE_BLOCK = new FakeBlock(Material.CYAN_CONCRETE.createBlockData());
+
     /**
      * This is called when a player uses an ability that isn't on cooldown.
      */
@@ -41,7 +43,7 @@ public class UtilitySafetyZone extends AbilityUtility {
                 getPlayer().getLocation().getBlockY(),
                 getPlayer().getLocation().getBlockZ()));
         GameWorld gameWorld = getUser().getBattle().getGameWorld();
-        Map<BlockPosition, FakeBlock> changedBlocks = gameWorld.replaceBlocks(blocks, new FakeBlock(Material.CYAN_CONCRETE.createBlockData()));
+        Map<BlockPosition, FakeBlock> changedBlocks = gameWorld.replaceBlocks(blocks, SAFE_BLOCK);
         getUser().getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
             for (Map.Entry<BlockPosition, FakeBlock> entry : changedBlocks.entrySet()) {
                 gameWorld.setBlock(entry.getKey(), gameWorld.getBaseBlock(entry.getKey()));

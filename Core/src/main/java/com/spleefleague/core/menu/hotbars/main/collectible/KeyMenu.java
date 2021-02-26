@@ -23,7 +23,7 @@ public class KeyMenu {
         menuItem = CorePlayerCollectibles.createCollectibleContainer(Key.class,
                 InventoryMenuAPI.createItemDynamic()
                         .setName("Keys")
-                        .setDisplayItem(Material.IRON_HELMET, 1)
+                        .setDisplayItem(Material.ITEM_FRAME, 1)
                         .setDescription("Keys for opening doors!"));
 
         InventoryMenuAPI.createItemHotbar(6, "Key")

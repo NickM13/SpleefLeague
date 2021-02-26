@@ -21,7 +21,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.ticket.PacketSpigotTicketRep
 public class TicketReplyCommand extends CoreCommand {
 
     public TicketReplyCommand() {
-        super("ticketr", CoreRank.MODERATOR);
+        super("ticketr", CoreRank.TEMP_MOD);
         addAlias("ticketreply");
     }
 

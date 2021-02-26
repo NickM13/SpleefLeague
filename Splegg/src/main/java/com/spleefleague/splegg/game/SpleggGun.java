@@ -216,6 +216,7 @@ public class SpleggGun extends Holdable {
 
     @Override
     public void afterLoad() {
+        super.afterLoad();
         safeProjectileStats = new ProjectileStats();
         safeProjectileStats.customModelDatas = new ArrayList<>(projectileStats.customModelDatas);
     }
@@ -231,7 +232,7 @@ public class SpleggGun extends Holdable {
     
     @Override
     public void onRightClick(CorePlayer corePlayer) {
-        GlobalWorld.getGlobalFakeWorld().shootProjectile(corePlayer, safeProjectileStats);
+        corePlayer.getGlobalWorld().shootProjectile(corePlayer, safeProjectileStats);
     }
 
     @Override
