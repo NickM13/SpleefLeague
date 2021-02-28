@@ -31,6 +31,7 @@ public class ShovelEffect extends DBEntity {
     @DBField private ShovelEffectCastType castType = ShovelEffectCastType.SELF;
     @DBField private ShovelEffectDesign design = ShovelEffectDesign.BOMB;
     @DBField private Particle particle = Particle.WATER_BUBBLE;
+    @DBField private Integer tickSpace = 4;
     @DBField private Integer delayIn = 10;
     @DBField private Integer remain = 20;
     @DBField private Double radius = 5D;
@@ -64,6 +65,15 @@ public class ShovelEffect extends DBEntity {
 
     public ShovelEffect setParticle(Particle particle) {
         this.particle = particle;
+        return this;
+    }
+
+    public Integer getTickSpace() {
+        return tickSpace;
+    }
+
+    public ShovelEffect setTickSpace(Integer tickSpace) {
+        this.tickSpace = tickSpace;
         return this;
     }
 
@@ -109,9 +119,10 @@ public class ShovelEffect extends DBEntity {
         globalWorld.addRepeatingTask(() -> {
             if (i.getAndIncrement() >= delayIn) {
                 Vector vec = corePlayer.getLocation().toVector();
+                System.out.println(particle + ", " + vec + ", " + count);
                 globalWorld.spawnParticles(particle, vec.getX(), vec.getY(), vec.getZ(), count);
             }
-        }, remain, 4);
+        }, remain, tickSpace);
     }
 
     private void performLaunch(CorePlayer corePlayer) {

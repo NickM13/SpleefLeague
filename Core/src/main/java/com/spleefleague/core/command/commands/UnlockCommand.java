@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 public class UnlockCommand extends CoreCommand {
 
     public UnlockCommand() {
-        super("unlock", CoreRank.DEVELOPER, CoreRank.BUILDER);
+        super("unlock", CoreRank.DEVELOPER);
     }
 
     @CommandAnnotation

@@ -108,7 +108,7 @@ public class InventoryMenuContainerAnvil extends InventoryMenuContainer {
                         return AnvilGUI.Response.text(failText);
                     }
                 })
-                .text("Enter name here")
+                .text("Enter here")
                 .itemLeft(SEARCH_ICON)
                 .title(titleFunc.apply(cp))
                 .plugin(Core.getInstance())

@@ -9,6 +9,7 @@ import com.spleefleague.core.listener.bungee.BungeeListener;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.coreapi.utils.packet.bungee.battle.PacketBungeeBattleStart;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,13 +26,21 @@ public class BungeeListenerBattleStart extends BungeeListener<PacketBungeeBattle
         boolean success = false;
         for (SubQuery sq : subQueries) {
             if (sq.type.equals("arena")) {
-                arena = Arenas.getByQuery(sq, mode);
+                arena = Arenas.getByQuery(sq, mode, packet.teamSize);
                 success = true;
                 break;
             }
         }
         if (!success) return;
-        if (arena == null) Arenas.getRandom(mode);
+        if (arena == null) Arenas.getRandom(mode, packet.teamSize);
+        if (arena == null) {
+            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                for (UUID uuid : packet.players) {
+                    Core.getInstance().returnToHub(Core.getInstance().getPlayers().get(uuid));
+                }
+            }, 100L);
+            return;
+        }
         try {
             Battle<?> battle = mode.getBattleClass()
                     .getDeclaredConstructor(UUID.class, List.class, Arena.class)

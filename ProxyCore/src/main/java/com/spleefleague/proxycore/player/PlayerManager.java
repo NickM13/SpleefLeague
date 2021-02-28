@@ -3,7 +3,6 @@ package com.spleefleague.proxycore.player;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOptions;
 import com.spleefleague.proxycore.ProxyCore;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import org.bson.Document;
@@ -27,6 +26,9 @@ public class PlayerManager <P extends ProxyDBPlayer> {
     private final ScheduledTask autosaveTask;
     private final ScheduledTask offlineAutosaveTask;
 
+    private static final Long OFFLINE_SAVE_REPEAT = 30000L;
+    private static final Long ONLINE_SAVE_REPEAT = 5000L;
+
     public PlayerManager(Class<P> playerClass, MongoCollection<Document> collection) {
         this.playerClass = playerClass;
         playerColl = collection;
@@ -35,18 +37,19 @@ public class PlayerManager <P extends ProxyDBPlayer> {
             for (P pcp : onlinePlayers.values()) {
                 save(pcp);
             }
-        }, 5L, 5L, TimeUnit.SECONDS);
+        }, ONLINE_SAVE_REPEAT, ONLINE_SAVE_REPEAT, TimeUnit.MILLISECONDS);
         offlineAutosaveTask = ProxyCore.getInstance().getProxy().getScheduler().schedule(ProxyCore.getInstance(), () -> {
             Iterator<Map.Entry<UUID, P>> it = offlinePlayers.entrySet().iterator();
             while (it.hasNext()) {
                 P pcp = it.next().getValue();
-                save(pcp);
-                if (pcp.getLastOfflineLoad() < System.currentTimeMillis() - 5000) {
+                if (pcp.getLastOfflineLoad() >= System.currentTimeMillis() - OFFLINE_SAVE_REPEAT) {
+                    save(pcp);
+                    System.out.println("Auto saving " + pcp.getName());
+                } else if (pcp.getLastOfflineLoad() < System.currentTimeMillis() - OFFLINE_SAVE_REPEAT / 2) {
                     it.remove();
                 }
-                System.out.println("Auto saving " + pcp.getName());
             }
-        }, 30L, 30L, TimeUnit.SECONDS);
+        }, OFFLINE_SAVE_REPEAT, OFFLINE_SAVE_REPEAT, TimeUnit.MILLISECONDS);
     }
 
     public void close() {
@@ -59,6 +62,21 @@ public class PlayerManager <P extends ProxyDBPlayer> {
             save(pcp);
         }
         onlinePlayers.clear();
+    }
+
+    /**
+     * For modifying all player data, eg when a collectible is removed from the game
+     *
+     * @return
+     */
+    public Set<UUID> getAllOfflineUuids() {
+        Set<UUID> uuids = new HashSet<>();
+        for (Document doc : playerColl.find()) {
+            uuids.add(UUID.fromString(doc.getString("identifier")));
+        }
+        uuids.addAll(onlinePlayers.keySet());
+        uuids.addAll(offlinePlayers.keySet());
+        return uuids;
     }
 
     public P onPlayerJoin(ProxiedPlayer pp) {

@@ -45,4 +45,24 @@ public class CoreInfractionManager extends InfractionManager {
         return infraction;
     }
 
+    public Infraction getBan(UUID uuid) {
+        Document findQuery = new Document("identifier", uuid.toString());
+        Document doc = infractionCollection.find(findQuery).first();
+        if (doc == null) return null;
+
+        Document latestDoc = doc.get("latest", Document.class);
+
+        if (latestDoc == null) return null;
+
+        Document recentDoc = latestDoc.get(InfractionType.BAN.getLatestId(), Document.class);
+
+        if (recentDoc == null) {
+            return null;
+        }
+
+        Infraction infraction = new Infraction();
+        infraction.load(recentDoc);
+        return infraction;
+    }
+
 }

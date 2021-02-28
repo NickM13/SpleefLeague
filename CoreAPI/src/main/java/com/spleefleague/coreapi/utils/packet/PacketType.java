@@ -16,6 +16,7 @@ import com.spleefleague.coreapi.utils.packet.bungee.server.PacketBungeeServerPin
 import com.spleefleague.coreapi.utils.packet.spigot.PacketSpigot;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.*;
 import com.spleefleague.coreapi.utils.packet.spigot.chat.*;
+import com.spleefleague.coreapi.utils.packet.spigot.removal.PacketSpigotRemovalCollectible;
 import com.spleefleague.coreapi.utils.packet.spigot.friend.PacketSpigotFriend;
 import com.spleefleague.coreapi.utils.packet.spigot.party.PacketSpigotParty;
 import com.spleefleague.coreapi.utils.packet.spigot.player.*;
@@ -101,6 +102,7 @@ public class PacketType {
         QUEUE_JOIN(PacketSpigotQueueJoin.class),
         QUEUE_LEAVE(PacketSpigotQueueLeave.class),
         QUEUE_REQUEUE(PacketSpigotQueueRequeue.class),
+        REMOVAL_COLLECTIBLE(PacketSpigotRemovalCollectible.class),
         SERVER_DIRECT(PacketSpigotServerDirect.class),
         SERVER_HUB(PacketSpigotServerHub.class),
         SERVER_PING(PacketSpigotServerPing.class),

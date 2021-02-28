@@ -19,7 +19,7 @@ import org.bukkit.command.CommandSender;
 public class TeleportCommand extends CoreCommand {
 
     public TeleportCommand() {
-        super("tp", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("tp", CoreRank.TEMP_MOD);
         setUsage("/tp <player> [player2]");
     }
 

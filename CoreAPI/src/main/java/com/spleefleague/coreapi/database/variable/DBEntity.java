@@ -37,6 +37,7 @@ public class DBEntity {
         noConvertSet.add(Double.class);
         noConvertSet.add(String.class);
         noConvertSet.add(Document.class);
+        noConvertSet.add(Date.class);
     }
     
     protected ObjectId _id;
@@ -92,7 +93,7 @@ public class DBEntity {
             return obj;
         }
 
-        if (clazz == float.class) {
+        if (clazz == float.class || clazz == Float.class) {
             return ((Double) obj).floatValue();
         } else if (Enum.class.isAssignableFrom(clazz)) {
             return ((Enum<?>) obj).name();
@@ -186,7 +187,7 @@ public class DBEntity {
         try {
             if (noConvertSet.contains(clazz)) {
                 return obj;
-            } else if (clazz == float.class) {
+            } else if (clazz == float.class || clazz == Float.class) {
                 return ((Double) obj).floatValue();
             } else if (clazz.equals(UUID.class)) {
                 return UUID.fromString((String) obj);

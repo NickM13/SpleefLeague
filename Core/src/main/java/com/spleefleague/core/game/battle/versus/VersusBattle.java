@@ -206,7 +206,24 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
     }
 
     protected int applyEloChange(BP winner, BP loser) {
-        if (forced) return 0;
+        if (forced) {
+            TextComponent text = new TextComponent();
+            text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+            text.addExtra("You have defeated ");
+            text.addExtra(loser.getCorePlayer().getChatName());
+            text.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+            text.addExtra(" " + winner.getRoundWins() + "-" + loser.getRoundWins());
+            winner.getCorePlayer().sendMessage(text);
+
+            text = new TextComponent();
+            text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+            text.addExtra("You have been defeated by ");
+            text.addExtra(winner.getCorePlayer().getChatName());
+            text.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+            text.addExtra(" " + loser.getRoundWins() + "-" + winner.getRoundWins());
+            loser.getCorePlayer().sendMessage(text);
+            return 0;
+        }
         int avgRating = 0;
         int winnerRating = winner.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());
 
@@ -230,8 +247,14 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
             TextComponent text = new TextComponent();
             text.setColor(net.md_5.bungee.api.ChatColor.GRAY);
             text.addExtra("You have " + (toChange >= 0 ? "defeated " : "been defeated by "));
-            if (bp.equals(winner)) text.addExtra(loser.getCorePlayer().getChatName());
-            else text.addExtra(winner.getCorePlayer().getChatName());
+            if (bp.equals(winner)) {
+                text.addExtra(loser.getCorePlayer().getChatName());
+                component.addExtra(loser.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+            }
+            else {
+                text.addExtra(winner.getCorePlayer().getChatName());
+                component.addExtra(winner.getCorePlayer().getRatings().getDisplayElo(getMode().getName(), getMode().getSeason()));
+            }
             if (bp.equals(winner)) text.addExtra(" " + winner.getRoundWins() + "-" + loser.getRoundWins());
             else text.addExtra(" " + loser.getRoundWins() + "-" + winner.getRoundWins());
             text.addExtra(" and " + (toChange >= 0 ? "gained " : "lost "));
@@ -298,7 +321,7 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
                 }
                 applyEloChange(winner, loser);
 
-                TextComponent component = new TextComponent();
+                TextComponent component;
                 component = new TextComponent();
                 component.setColor(ChatColor.GRAY.asBungee());
                 component.addExtra(winner.getCorePlayer().getChatName());

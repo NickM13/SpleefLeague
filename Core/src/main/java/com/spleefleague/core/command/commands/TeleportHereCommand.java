@@ -20,7 +20,7 @@ import java.util.List;
 public class TeleportHereCommand extends CoreCommand {
 
     public TeleportHereCommand() {
-        super("tphere", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("tphere", CoreRank.TEMP_MOD);
     }
 
     @CommandAnnotation

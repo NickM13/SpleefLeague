@@ -13,6 +13,7 @@ import com.spleefleague.proxycore.listener.spigot.player.*;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueJoin;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueLeave;
 import com.spleefleague.proxycore.listener.spigot.queue.SpigotListenerQueueRequeue;
+import com.spleefleague.proxycore.listener.spigot.removal.SpigotListenerRemovalCollectible;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerDirect;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerHub;
 import com.spleefleague.proxycore.listener.spigot.server.SpigotListenerServerPing;
@@ -66,6 +67,7 @@ public class SpigotPluginListener implements Listener {
         registeredListeners.put(PacketType.Spigot.QUEUE_JOIN, new SpigotListenerQueueJoin());
         registeredListeners.put(PacketType.Spigot.QUEUE_LEAVE, new SpigotListenerQueueLeave());
         registeredListeners.put(PacketType.Spigot.QUEUE_REQUEUE, new SpigotListenerQueueRequeue());
+        registeredListeners.put(PacketType.Spigot.REMOVAL_COLLECTIBLE, new SpigotListenerRemovalCollectible());
         registeredListeners.put(PacketType.Spigot.SERVER_HUB, new SpigotListenerServerHub());
         registeredListeners.put(PacketType.Spigot.SERVER_DIRECT, new SpigotListenerServerDirect());
         registeredListeners.put(PacketType.Spigot.SERVER_PING, new SpigotListenerServerPing());

@@ -62,7 +62,6 @@ public class BuildStructure extends DBEntity {
         List<Integer> palette = new ArrayList<>();
         palette.add(REGISTRY.getId(((CraftBlockData) Material.AIR.createBlockData()).getState()));
         List<Long> blocks = new ArrayList<>();
-        int i = 0;
         for (Map.Entry<BlockPosition, FakeBlock> entry : fakeBlocks.entrySet()) {
             BlockData blockData = entry.getValue().getBlockData();
             if (!blockToIndex.containsKey(blockData)) {

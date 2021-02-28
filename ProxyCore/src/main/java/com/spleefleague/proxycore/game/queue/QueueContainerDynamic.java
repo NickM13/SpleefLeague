@@ -299,10 +299,10 @@ public class QueueContainerDynamic extends QueueContainer {
         if (playerReused) {
             return true;
         }
-        return startMatch(players, chunk.query.toString(), false);
+        return startMatch(players, chunk.teamSize, chunk.query.toString(), false);
     }
 
-    public boolean startMatch(List<UUID> players, String query, boolean challenge) {
+    public boolean startMatch(List<UUID> players, int teamSize, String query, boolean challenge) {
         Droplet droplet = ProxyCore.getInstance().getDropletManager().getAvailable(DropletType.MINIGAME);
         if (droplet == null) {
             ProxyCore.getInstance().getLogger().warning("There are no minigame servers available right now!");
@@ -325,6 +325,8 @@ public class QueueContainerDynamic extends QueueContainer {
 
         UUID battleId = UUID.randomUUID();
 
+        Set<ProxyParty> parties = new HashSet<>();
+
         for (UUID uuid : players) {
             ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().get(uuid);
             ProxyCore.getInstance().getQueueManager().leaveAllQueues(pcp.getUniqueId());
@@ -333,11 +335,19 @@ public class QueueContainerDynamic extends QueueContainer {
             playing.add(pcp.getUniqueId());
             pcp.connect(droplet);
             pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, query));
+            ProxyParty party = pcp.getParty();
+            if (party != null) {
+                parties.add(pcp.getParty());
+            }
+        }
+
+        for (ProxyParty party : parties) {
+            ProxyCore.getInstance().getQueueManager().leaveAllQueues(party);
         }
 
         BattleSessionManager.createBattleSession(battleId, identifier, droplet, players, spectatable);
 
-        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players, challenge));
+        ProxyCore.getInstance().getPacketManager().sendPacket(droplet.getInfo(), new PacketBungeeBattleStart(battleId, identifier, query, players, teamSize, challenge));
 
         return true;
     }

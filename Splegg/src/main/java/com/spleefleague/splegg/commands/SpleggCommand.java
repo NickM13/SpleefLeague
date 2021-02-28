@@ -36,7 +36,6 @@ public class SpleggCommand extends CoreCommand {
         this.addAlias("sg");
         this.setOptions("gamemodes", pi -> CoreUtils.enumToStrSet(SpleggMode.class, true));
         this.setOptions("arenas", this::getArenas);
-        this.setOptions("players", this::getPlayers);
         this.setContainer("splegg");
     }
 
@@ -49,15 +48,6 @@ public class SpleggCommand extends CoreCommand {
             return Sets.newTreeSet(Arenas.getUnpaused(mode).keySet());
         }
         return new TreeSet<>();
-    }
-
-    protected SortedSet<String> getPlayers(PriorInfo pi) {
-        SortedSet<String> players = Splegg.getInstance().getPlayers().getAllNames();
-        for (int i = 2; i < pi.getArgs().size(); i++) {
-            players.remove(pi.getArgs().get(i));
-        }
-        String mode = pi.getArgs().get(pi.getArgs().size() - 1);
-        return Sets.newTreeSet(Arenas.getUnpaused(SpleggMode.valueOf(mode.toUpperCase()).getBattleMode()).keySet());
     }
 
     @CommandAnnotation
@@ -79,7 +69,7 @@ public class SpleggCommand extends CoreCommand {
                             @LiteralArg("match") String l,
                             @OptionArg(listName = "gamemodes") String mode,
                             @OptionArg(listName = "arenas") String arenaName,
-                            @HelperArg("<players>") String players) {
+                            @HelperArg("players") String players) {
         List<CorePlayer> corePlayers = new ArrayList<>();
         for (String player : players.split(" ")) {
             CorePlayer cp = Core.getInstance().getPlayers().get(player);

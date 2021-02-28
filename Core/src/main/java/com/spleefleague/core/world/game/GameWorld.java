@@ -324,8 +324,8 @@ public class GameWorld extends ProjectileWorld<GameWorldPlayer> {
                 return false;
             }
             getPlayerMap().values().forEach(fwp -> {
-                fwp.getPlayer().spawnParticle(Particle.BLOCK_DUST, pos.toLocation(getWorld()).add(0.5, 0.5, 0.5), 20, 0.25, 0.25, 0.25, Material.RED_CONCRETE_POWDER.createBlockData());
-                fwp.getPlayer().playSound(pos.toLocation(getWorld()), Sound.ENTITY_BLAZE_SHOOT, 0.25f, 0.5f);
+                fwp.getPlayer().spawnParticle(Particle.BLOCK_DUST, pos.toLocation(getWorld()).add(0.5, 0.5, 0.5), 5, 0.1, 0.1, 0.1, Material.RED_CONCRETE_POWDER.createBlockData());
+                fwp.getPlayer().playSound(pos.toLocation(getWorld()), Sound.ENTITY_BLAZE_SHOOT, 0.125f, 0.5f);
             });
             burningBlocks.put(pos, new BurningBlock(BURN_TIME, fuel));
             setBlock(pos, WARMING_BLOCK);

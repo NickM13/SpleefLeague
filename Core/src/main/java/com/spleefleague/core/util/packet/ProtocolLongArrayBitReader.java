@@ -1,8 +1,8 @@
 package com.spleefleague.core.util.packet;
 
-import java.nio.ByteBuffer;
-
 /**
+ * Only valid in 1.15.2, 1.16 no longer shares data at ends of longs
+ *
  * @author Jonas
  */
 public class ProtocolLongArrayBitReader {
@@ -14,61 +14,8 @@ public class ProtocolLongArrayBitReader {
         this.data = data;
     }
 
-    public ProtocolLongArrayBitReader(short[] data) {
-        ByteBuffer buffer = ByteBuffer.allocate(data.length * Short.SIZE / Byte.SIZE);
-        for (short s : data) {
-            buffer.putShort(s);
-        }
-        this.data = buffer.array();
-    }
-
-    public ProtocolLongArrayBitReader(int[] data) {
-        ByteBuffer buffer = ByteBuffer.allocate(data.length * Integer.SIZE / Byte.SIZE);
-        for (int i : data) {
-            buffer.putInt(i);
-        }
-        this.data = buffer.array();
-    }
-
-
-    public ProtocolLongArrayBitReader(long[] data) {
-        ByteBuffer buffer = ByteBuffer.allocate(data.length * Long.SIZE / Byte.SIZE);
-        for (long l : data) {
-            buffer.putLong(l);
-        }
-        this.data = buffer.array();
-    }
-
-    public long readLong(int bits) {
-        long value = 0;
-        int read = 0;
-        while (bits > 0) {
-            int toRead = Math.min(8, bits);
-            int b = Byte.toUnsignedInt(readByte(toRead));
-            b <<= read;
-            value |= b;
-            read += toRead;
-            bits -= toRead;
-        }
-        return value;
-    }
-
     public short readShort(int bits) {
         short value = 0;
-        int read = 0;
-        while (bits > 0) {
-            int toRead = Math.min(8, bits);
-            int b = Byte.toUnsignedInt(readByte(toRead));
-            b <<= read;
-            value |= b;
-            read += toRead;
-            bits -= toRead;
-        }
-        return value;
-    }
-
-    public int readInt(int bits) {
-        int value = 0;
         int read = 0;
         while (bits > 0) {
             int toRead = Math.min(8, bits);

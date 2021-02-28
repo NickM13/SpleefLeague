@@ -29,6 +29,7 @@ public class SuperJumpCommand extends CoreCommand {
         addAlias("sj");
         setUsage("/sj <mode>");
         this.setOptions("gamemodes", pi -> enabledModes);
+        setOptions("classicArenas", pi -> Arenas.getAll(SJMode.CLASSIC.getBattleMode()).keySet());
         setOptions("conquestPacks", pi -> ConquestPack.getPackNames());
         setOptions("shuffleArenas", pi -> Arenas.getAll(SJMode.SHUFFLE.getBattleMode()).keySet());
         setOptions("proArenas", pi -> Arenas.getAll(SJMode.PRO.getBattleMode()).keySet());
@@ -51,7 +52,7 @@ public class SuperJumpCommand extends CoreCommand {
     public void sjChallenge(CorePlayer sender,
                             @LiteralArg("challenge") String l,
                             @LiteralArg("classic") String mode,
-                            @OptionArg(listName = "arenas") String arenaName,
+                            @OptionArg(listName = "classicArenas") String arenaName,
                             @CorePlayerArg(allowCrossServer = true, allowSelf = false) CorePlayer target) {
         SuperJump.getInstance().challengePlayer(sender, target, SJMode.CLASSIC.getBattleMode(), arenaName);
     }

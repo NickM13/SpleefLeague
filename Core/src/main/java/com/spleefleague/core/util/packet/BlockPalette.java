@@ -63,7 +63,7 @@ public abstract class BlockPalette {
             ProtocolLongArrayBitReader reader = new ProtocolLongArrayBitReader(data);
             BlockData[] bdata = new BlockData[4096];//Chunk section is 16x16x16
             for (int i = 0; i < bdata.length; i++) {
-                int id = reader.readInt(14);
+                int id = reader.readShort(14);
                 bdata[i] = blockDataFromId(id);
             }
             return bdata;

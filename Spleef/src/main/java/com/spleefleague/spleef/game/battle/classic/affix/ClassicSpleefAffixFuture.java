@@ -56,6 +56,7 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
                 lastUpdate = battle.getRoundTime();
             } else {
                 updateActive(battle);
+                lastUpdate = battle.getRoundTime();
             }
         }
     }

@@ -163,9 +163,30 @@ public class Arenas {
         return arenas;
     }
 
-    public static Arena getByQuery(SubQuery query, BattleMode mode) {
+    /**
+     * Get all arenas for a specific mode that are available
+     *
+     * @param mode Battle Mode
+     * @return Available Arenas
+     */
+    public static Map<String, Arena> getUnpaused(BattleMode mode, int teamSize) {
+        if (!modeArenaMap.containsKey(mode.getName())) {
+            return new HashMap<>();
+        }
+        Map<String, Arena> arenas = new TreeMap<>();
+
+        for (Map.Entry<String, Arena> entry : modeArenaMap.get(mode.getName()).entrySet()) {
+            if (entry.getValue().isAvailable() && (teamSize == -1 || entry.getValue().getTeamSize() == teamSize)) {
+                arenas.put(entry.getValue().getIdentifierNoTag(), entry.getValue());
+            }
+        }
+
+        return arenas;
+    }
+
+    public static Arena getByQuery(SubQuery query, BattleMode mode, int teamSize) {
         if (query.hasStar) {
-            Map<String, Arena> unpaused = getUnpaused(mode);
+            Map<String, Arena> unpaused = getUnpaused(mode, teamSize);
             for (String s : query.values) {
                 unpaused.remove(s);
             }
@@ -180,7 +201,7 @@ public class Arenas {
             int r = new Random().nextInt(query.values.size());
             int i = 0;
             for (String s : query.values) {
-                if (i == r) return get(s, mode);
+                if (i == r) return get(s, mode, teamSize);
                 i++;
             }
         }
@@ -210,10 +231,30 @@ public class Arenas {
      * @param mode Battle Mode
      * @return Arena
      */
-    public static Arena getRandom(BattleMode mode) {
-        Map<String, Arena> arenas = getUnpaused(mode);
+    public static Arena getRandom(BattleMode mode, int teamSize) {
+        Map<String, Arena> arenas = getUnpaused(mode, teamSize);
         if (arenas.isEmpty()) return null;
         return (Arena) (arenas.values().toArray()[new Random().nextInt(arenas.values().size())]);
+    }
+
+    /**
+     * Returns an arena by name and mode
+     *
+     * @param arenaName Arena Name
+     * @param mode      Battle Mode
+     * @return Arena
+     */
+    public static Arena get(String arenaName, BattleMode mode, int teamSize) {
+        if (arenaName == null) return null;
+        Map<String, Arena> arenas = modeArenaMap.get(mode.getName());
+        if (arenas != null) {
+            if (arenaName.equals("")) {
+                return getRandom(mode, teamSize);
+            } else {
+                return arenas.get(arenaName.contains(":") ? arenaName.split(":")[1] : arenaName);
+            }
+        }
+        return null;
     }
 
     /**
@@ -228,7 +269,7 @@ public class Arenas {
         Map<String, Arena> arenas = modeArenaMap.get(mode.getName());
         if (arenas != null) {
             if (arenaName.equals("")) {
-                return getRandom(mode);
+                return getRandom(mode, -1);
             } else {
                 return arenas.get(arenaName.contains(":") ? arenaName.split(":")[1] : arenaName);
             }

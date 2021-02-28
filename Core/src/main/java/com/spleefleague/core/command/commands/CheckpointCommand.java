@@ -24,7 +24,11 @@ public class CheckpointCommand extends CoreCommand {
 
     @CommandAnnotation
     public void checkpoint(CorePlayer sender) {
-        sender.checkpoint();
+        if (sender.checkpoint()) {
+            success(sender, "Teleported to your checkpoint");
+        } else {
+            error(sender, "You don't have a checkpoint set!");
+        }
     }
 
 }

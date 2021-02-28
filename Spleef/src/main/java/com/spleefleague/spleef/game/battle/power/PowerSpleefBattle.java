@@ -25,6 +25,7 @@ import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.util.SpleefUtils;
@@ -89,10 +90,13 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     protected void setupBattlers() {
         super.setupBattlers();
         for (PowerSpleefPlayer psp : battlers.values()) {
+            gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "shovel", psp.getCorePlayer().getCollectibles().getActive(Shovel.class).getIdentifier());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:offensive", psp.getOffensiveName());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:utility", psp.getUtilityName());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:mobility", psp.getMobilityName());
         }
+        sortedBattlers.get(0).setOpponent(sortedBattlers.get(1));
+        sortedBattlers.get(1).setOpponent(sortedBattlers.get(0));
     }
 
     @Override
@@ -139,43 +143,6 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
     public void startCountdown() {
         super.startCountdown();
         countdown = 5;
-    }
-
-    public BlockPosition createRespawnPlatform() {
-        BlockPosition pos = null;
-        Set<BlockPosition> positions = getGameWorld().getBaseBlocks().keySet();
-        while (!positions.isEmpty() && pos == null) {
-            int r = new Random().nextInt(positions.size());
-            int i = 0;
-            for (BlockPosition bp : positions) {
-                if (i == r) {
-                    boolean valid = true;
-                    for (Dimension dim : arena.getBorders()) {
-                        if (!dim.expand(-2).isContained(bp)) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                    if (valid) {
-                        pos = bp;
-                    }
-                    positions.remove(bp);
-                    break;
-                }
-                i++;
-            }
-        }
-        if (pos == null) {
-            pos = getArena().getOrigin().toBlockPosition();
-        }
-        pos = pos.add(new BlockPosition(0, 15, 0));
-        BuildStructure platform = BuildStructures.get("power:respawn");
-        Map<BlockPosition, FakeBlock> transformed = FakeUtils.translateBlocks(platform.getFakeBlocks(), pos);
-        getGameWorld().setBlocks(transformed);
-        for (Map.Entry<BlockPosition, FakeBlock> entry : transformed.entrySet()) {
-            getGameWorld().setBlockDelayed(entry.getKey(), FakeWorld.AIR, 6 * 20);
-        }
-        return pos;
     }
 
     @Override

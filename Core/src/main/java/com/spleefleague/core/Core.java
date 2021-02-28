@@ -148,10 +148,10 @@ public class Core extends CorePlugin {
 
         // TODO: Move this?
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            for (CorePlayer cp : getPlayers().getAllLocal()) {
-                cp.checkAfk();
+            getPlayers().getAllLocal().stream().iterator().forEachRemaining(cp -> {
                 cp.checkTempRanks();
-            }
+                cp.checkAfk();
+            });
             RequestManager.checkTimeouts();
         }, 0L, 100L);
     }

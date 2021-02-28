@@ -246,6 +246,7 @@ public class SpleggBattlePlayer extends BattlePlayer {
     public void resetAbilities() {
         cooldown[0] = cooldown[1] = 0;
         charge[0] = charge[1] = -1;
+        fireOffCd[0] = fireOffCd[1] = false;
         getPlayer().removePotionEffect(PotionEffectType.SLOW);
     }
     

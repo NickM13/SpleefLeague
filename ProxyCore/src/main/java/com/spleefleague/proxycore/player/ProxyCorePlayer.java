@@ -13,6 +13,7 @@ import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.chat.ChatChannel;
 import com.spleefleague.proxycore.droplet.Droplet;
 import com.spleefleague.proxycore.party.ProxyParty;
+import com.spleefleague.proxycore.player.collectibles.ProxyPlayerCollectibles;
 import com.spleefleague.proxycore.player.crates.ProxyPlayerCrates;
 import com.spleefleague.proxycore.player.friends.ProxyFriendsList;
 import com.spleefleague.proxycore.player.purse.ProxyPlayerPurse;
@@ -52,7 +53,7 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
 
     @DBField private final ProxyPlayerPurse purse = new ProxyPlayerPurse(this);
     @DBField private final PlayerOptions options = new PlayerOptions();
-    @DBField private final PlayerCollectibles collectibles = new PlayerCollectibles();
+    @DBField private final ProxyPlayerCollectibles collectibles = new ProxyPlayerCollectibles(this);
 
     @DBField private Long lastOnline = -1L;
 
@@ -158,7 +159,7 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
         return options;
     }
 
-    public PlayerCollectibles getCollectibles() {
+    public ProxyPlayerCollectibles getCollectibles() {
         return collectibles;
     }
 
@@ -255,7 +256,9 @@ public class ProxyCorePlayer extends ProxyDBPlayer {
     }
 
     public void connect(Droplet droplet) {
-        getPlayer().connect(droplet.getInfo());
+        if (!getPlayer().getServer().getInfo().getName().equals(droplet.getInfo().getName())) {
+            getPlayer().connect(droplet.getInfo());
+        }
     }
 
     public void setCurrentServer(ServerInfo currentServer) {

@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class FlySpeedCommand extends CoreCommand {
 
     public FlySpeedCommand() {
-        super("fspeed", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("fspeed", CoreRank.TEMP_MOD);
         addAlias("flyspeed");
         setUsage("/fspeed [player] <-10 to 10>");
         setDescription("Set flying speed");

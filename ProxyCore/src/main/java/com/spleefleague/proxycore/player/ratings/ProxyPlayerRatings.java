@@ -63,6 +63,19 @@ public class ProxyPlayerRatings extends PlayerRatings {
         }
     }
 
+    /**
+     * Debug fix, accidentally put multi gamemode elos in backwards
+     */
+    public void flip(String mode, String season) {
+        if (modeRatingsMap.containsKey(mode)) {
+            Ratings ratings = modeRatingsMap.get(mode);
+            if (ratings.isRanked(season)) {
+                ratings.get(season).flip();
+                ProxyCore.getInstance().getLeaderboards().get(mode).setPlayerScore(owner.getUniqueId(), owner.getName(), ratings.get(season));
+            }
+        }
+    }
+
     public void setRating(String mode, String season, int elo) {
         super.setRating(mode, season, elo);
 

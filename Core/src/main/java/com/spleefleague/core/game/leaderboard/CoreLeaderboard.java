@@ -68,6 +68,13 @@ public class CoreLeaderboard extends Leaderboard {
                                 .setDisplayItem(InventoryMenuUtils.createCustomSkullOrDefault(leaderboardEntry.getUniqueId()))
                                 .setCloseOnAction(false), i + skip);
                     }
+                })
+                .setOpenAction((container, cp) -> {
+                    if (cp.getMenu().hasMenuTag("rankSearch")) {
+                        int place = getPlayerRanking(Bukkit.getOfflinePlayer(cp.getMenu().getMenuTag("rankSearch", String.class)).getUniqueId());
+                        cp.getMenu().setPage(place / container.getPageItemTotal());
+                        cp.getMenu().removeMenuTag("rankSearch");
+                    }
                 });
 
         menuContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
@@ -78,10 +85,7 @@ public class CoreLeaderboard extends Leaderboard {
                 .setAction(cp -> cp.getMenu().setInventoryMenuAnvil(InventoryMenuAPI.createAnvil()
                         .setTitle("Search for Player")
                         .setSuccessFunc(str -> containsPlayer(Bukkit.getOfflinePlayer(str).getUniqueId()))
-                        .setAction((cp2, str) -> {
-                            int place = getPlayerRanking(Bukkit.getOfflinePlayer(str).getUniqueId());
-                            cp.getMenu().setPage(place / menuContainer.getPageItemTotal());
-                        })
+                        .setAction((cp2, str) -> cp.getMenu().setMenuTag("rankSearch", str))
                         .setFailText("Player not rated!")))
                 .setCloseOnAction(false);
 

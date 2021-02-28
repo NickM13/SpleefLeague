@@ -7,14 +7,13 @@
 package com.spleefleague.spleef.commands;
 
 import com.spleefleague.core.command.HoldableCommand;
-import com.spleefleague.core.command.annotation.CommandAnnotation;
-import com.spleefleague.core.command.annotation.EnumArg;
-import com.spleefleague.core.command.annotation.LiteralArg;
+import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.ShovelEffect;
+import org.bukkit.Particle;
 
 /**
  * @author NickM13
@@ -27,14 +26,23 @@ public class ShovelCommand extends HoldableCommand {
     }
 
     @CommandAnnotation
-    public void shovelSetEffect(CorePlayer sender,
+    public void shovelSetEffectSelf(CorePlayer sender,
                                 @LiteralArg("set") String l1,
                                 @LiteralArg("effect") String l2,
                                 @LiteralArg("self") String l3,
-                                @EnumArg ShovelEffect type) {
+                                @EnumArg ShovelEffect.ShovelEffectDesign design,
+                                @EnumArg Particle particle,
+                                @HelperArg("tickSpace") @NumberArg Integer spacing,
+                                @HelperArg("delayIn") @NumberArg Integer delayIn,
+                                @HelperArg("remain") @NumberArg Integer remain) {
         Shovel shovel = Vendorables.get(Shovel.class, sender.getHeldItem());
         if (shovel != null) {
-            shovel.setEffect();
+            shovel.setEffect(ShovelEffect.ShovelEffectCastType.SELF,
+                    design,
+                    particle,
+                    spacing,
+                    delayIn,
+                    remain);
         }
     }
 

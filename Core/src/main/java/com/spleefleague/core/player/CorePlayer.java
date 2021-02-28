@@ -39,6 +39,7 @@ import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -84,7 +85,7 @@ public class CorePlayer extends CoreOfflinePlayer {
     private boolean afkWarned;
 
     private CoreLocation lastLocation;
-    private Checkpoint checkpoint;
+    private CoreLocation checkpoint;
 
     private Infraction mute = null;
 
@@ -129,6 +130,28 @@ public class CorePlayer extends CoreOfflinePlayer {
         setGameMode(GameMode.valueOf(gameMode));
         refreshHotbar();
         updateMute();
+    }
+
+    protected void resetPlayer() {
+        getPlayer().setCollidable(false);
+        getPlayer().setGravity(true);
+        getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
+        setGameMode(GameMode.valueOf(gameMode));
+        refreshHotbar();
+    }
+
+    public void onRespawn(PlayerRespawnEvent event) {
+        Location respawnLoc;
+        if (checkpoint != null) {
+            respawnLoc = checkpoint.toLocation(this);
+        } else {
+            respawnLoc = getSpawnLocation();
+        }
+        event.setRespawnLocation(respawnLoc);
+        Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+            resetPlayer();
+            getPlayer().playSound(respawnLoc, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1, 1);
+        }, 5L);
     }
 
     @Override
@@ -265,8 +288,9 @@ public class CorePlayer extends CoreOfflinePlayer {
         if (afk != state) {
             afk = state;
             if (afk && getRank().equals(CoreRank.DEFAULT)) {
-                // TODO: Removed temporarily to keep Sudofox's alts from being kicked
-                getPlayer().kickPlayer("Kicked for AFK!");
+                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                    getPlayer().kickPlayer("Kicked for AFK!");
+                }, 5L);
                 return;
             }
             Core.getInstance().sendMessage(this, "You are " + (afk ? "now afk" : "no longer afk"));
@@ -634,21 +658,20 @@ public class CorePlayer extends CoreOfflinePlayer {
 
     /**
      * Sets a player's checkpoint for a certain duration of seconds, or 0 for no expire time
-     *
-     * @param warp     WarpName
-     * @param duration Seconds (0=no expire)
      */
-    public void setCheckpoint(String warp, int duration) {
-        checkpoint = new Checkpoint(warp, duration);
+    public void setCheckpoint(CoreLocation location) {
+        checkpoint = location;
     }
 
     /**
      * Teleport player to their checkpoint
      */
-    public void checkpoint() {
-        if (checkpoint != null && checkpoint.isActive()) {
-            teleport(checkpoint.getLocation());
+    public boolean checkpoint() {
+        if (checkpoint != null) {
+            teleport(checkpoint.toLocation(this));
+            return true;
         }
+        return false;
     }
 
     /**
@@ -656,13 +679,6 @@ public class CorePlayer extends CoreOfflinePlayer {
      */
     public Location getLastLocation() {
         return lastLocation.toLocation();
-    }
-
-    /**
-     * @return Checkpoint
-     */
-    public Checkpoint getCheckpoint() {
-        return checkpoint;
     }
 
     /**
@@ -746,12 +762,7 @@ public class CorePlayer extends CoreOfflinePlayer {
             "minecraft.command.setworldspawn",
             "minecraft.command.spawnpoint",
             "minecraft.command.stop",
-            "minecraft.command.testfor",
-            "minecraft.command.testforblock",
-            "minecraft.command.toggledownfall",
-            "minecraft.command.teleport",
-            "minecraft.command.weather",
-            "minecraft.command.xp"
+            "minecraft.command.toggledownfall"
     );
 
     /**

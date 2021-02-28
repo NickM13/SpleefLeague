@@ -162,8 +162,10 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
     @Override
     protected boolean onBlockPunch(CorePlayer cp, BlockPosition pos) {
         FakeBlock fakeBlock = getFakeBlock(pos);
-        if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) return false;
-        return breakBlock(pos, cp);
+        if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) {
+            return breakBlock(pos, cp);
+        }
+        return false;
     }
 
     /**

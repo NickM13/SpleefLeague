@@ -785,7 +785,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
      */
     public boolean breakBlock(BlockPosition pos, CorePlayer cp) {
         FakeBlock fakeBlock = getFakeBlock(pos);
-        if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().equals(Material.AIR)) {
+        if (fakeBlock != null && !fakeBlock.getBlockData().getMaterial().isAir()) {
             getPlayerMap().values().forEach(fwp -> {
                 fwp.getPlayer().spawnParticle(Particle.BLOCK_DUST, pos.toLocation(world).add(0.5, 0.5, 0.5), 20, 0.25, 0.25, 0.25, fakeBlock.getBlockData());
                 if (cp == null || !cp.equals(fwp.getCorePlayer())) {

@@ -28,15 +28,16 @@ import org.bson.Document;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * @author NickM13
  */
 public class Warp extends DBEntity {
 
-    private static final SortedMap<String, Warp> warps = new TreeMap<>();
+    private static final SortedMap<String, Warp> WARPS = new TreeMap<>();
     private static MongoCollection<Document> warpCollection;
-    private static final SortedMap<String, SortedSet<String>> folders = new TreeMap<>();
+    private static final SortedMap<String, SortedSet<String>> FOLDERS = new TreeMap<>();
     private static final String DEFAULT_FOLDER = ".";
 
     /**
@@ -44,30 +45,35 @@ public class Warp extends DBEntity {
      */
     public static void init() {
         warpCollection = Core.getInstance().getPluginDB().getCollection("Warps");
-        folders.put(DEFAULT_FOLDER, new TreeSet<>());
+        refresh();
+    }
+
+    public static void refresh() {
+        FOLDERS.clear();
+        WARPS.clear();
+        FOLDERS.put(DEFAULT_FOLDER, new TreeSet<>());
         for (Document doc : warpCollection.find()) {
             Warp warp = new Warp();
             warp.load(doc);
-            warps.put(warp.getIdentifier(), warp);
+            WARPS.put(warp.getIdentifier(), warp);
         }
     }
 
     public static InventoryMenuContainerChest createMenuContainer(String folderName) {
         InventoryMenuContainerChest menuContainer = InventoryMenuAPI.createContainer()
                 .setTitle(cp -> " Folder " + cp.getMenu().getMenuTag("folderName", String.class))
-                .setPageBoundaries(1, 3, 1, 7)
                 .setOpenAction((container, cp) -> {
                     cp.getMenu().setMenuTag("folderName", folderName == null ? DEFAULT_FOLDER : folderName);
                     cp.getMenu().setMenuTag("warpPage", 0);
                 })
                 .setRefreshAction((container, cp) -> {
                     container.clearUnsorted();
-                    SortedSet<String> warpNames = folders.get(cp.getMenu().getMenuTag("folderName", String.class));
+                    SortedSet<String> warpNames = FOLDERS.get(cp.getMenu().getMenuTag("folderName", String.class));
                     for (String warpName : warpNames) {
-                        Warp warp = warps.get(warpName);
+                        Warp warp = WARPS.get(warpName);
                         container.addMenuItem(InventoryMenuAPI.createItemDynamic()
                                 .setName(ChatColor.YELLOW + "" + ChatColor.BOLD + warp.getName())
-                                .setDisplayItem(Material.SAND)
+                                .setDisplayItem(warp.getDisplayItem())
                                 .setAction(cp2 -> cp2.warp(warp)));
                     }
                 });
@@ -85,7 +91,7 @@ public class Warp extends DBEntity {
                         .setName(ChatColor.GREEN + "" + ChatColor.BOLD + "Next Page")
                         .setDescription("")
                         .setDisplayItem(InventoryMenuUtils.MenuIcon.NEXT_GRAY.getIconItem())
-                        .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) < folders.get(cp.getMenu().getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
+                        .setVisibility(cp -> cp.getMenu().getMenuTag("warpPage", Integer.class) < FOLDERS.get(cp.getMenu().getMenuTag("folderName", String.class)).size() / menuContainer.getPageItemTotal())
                         .setAction(cp -> cp.getMenu().setMenuTag("warpPage", cp.getMenu().getMenuTag("warpPage", Integer.class) + 1))
                         .setCloseOnAction(false),
                 6, 4);
@@ -105,7 +111,7 @@ public class Warp extends DBEntity {
      */
     public static Set<String> getWarpNames(CoreCommand.PriorInfo pi) {
         Set<String> warpNames = new HashSet<>();
-        for (Warp warp : warps.values()) {
+        for (Warp warp : WARPS.values()) {
             if (warp.isAvailable(pi.getCorePlayer())) {
                 warpNames.add(warp.getIdentifier());
             }
@@ -119,8 +125,8 @@ public class Warp extends DBEntity {
      * @return Warp Name Set
      */
     public static Set<Warp> getWarps(String folderName) {
-        if (!folders.containsKey(folderName)) return Collections.EMPTY_SET;
-        return folders.get(folderName).stream().map(warps::get).collect(Collectors.toSet());
+        if (!FOLDERS.containsKey(folderName)) return Collections.EMPTY_SET;
+        return FOLDERS.get(folderName).stream().map(WARPS::get).collect(Collectors.toSet());
     }
 
     /**
@@ -133,7 +139,7 @@ public class Warp extends DBEntity {
         TextComponent message = new TextComponent("");
         TextComponent warpstr;
 
-        Iterator<HashMap.Entry<String, Warp>> wit = warps.entrySet().iterator();
+        Iterator<HashMap.Entry<String, Warp>> wit = WARPS.entrySet().iterator();
 
         boolean first = true;
         while (wit.hasNext()) {
@@ -158,7 +164,7 @@ public class Warp extends DBEntity {
      * @return Warp
      */
     public static Warp getWarp(String name) {
-        return warps.get(name);
+        return WARPS.get(name);
     }
 
     /**
@@ -174,12 +180,12 @@ public class Warp extends DBEntity {
                 return 1;
             }
         }
-        if (warps.containsKey(identifier)) {
+        if (WARPS.containsKey(identifier)) {
             delWarp(identifier);
             return 2;
         }
         Warp warp = new Warp(identifier, loc);
-        warps.put(warp.getIdentifier(), warp);
+        WARPS.put(warp.getIdentifier(), warp);
         warp.save(warpCollection);
         return 0;
     }
@@ -191,12 +197,12 @@ public class Warp extends DBEntity {
      * @return Success
      */
     public static boolean delWarp(String identifier) {
-        if (warps.containsKey(identifier)) {
-            Warp warp = warps.remove(identifier);
+        if (WARPS.containsKey(identifier)) {
+            Warp warp = WARPS.remove(identifier);
             warp.unsave(warpCollection);
-            folders.get(warp.getFolder()).remove(identifier);
-            if (folders.get(warp.getFolder()).isEmpty() && !warp.getFolder().equals(DEFAULT_FOLDER)) {
-                folders.remove(warp.getFolder());
+            FOLDERS.get(warp.getFolder()).remove(identifier);
+            if (FOLDERS.get(warp.getFolder()).isEmpty() && !warp.getFolder().equals(DEFAULT_FOLDER)) {
+                FOLDERS.remove(warp.getFolder());
             }
             return true;
         }
@@ -204,6 +210,9 @@ public class Warp extends DBEntity {
     }
 
     @DBField public CoreLocation location;
+    @DBField private Material material = Material.SAND;
+    @DBField private Integer customModelData = 0;
+    private ItemStack displayItem;
     protected String warpName;
     protected String folderName = null;
 
@@ -215,11 +224,23 @@ public class Warp extends DBEntity {
         this.identifier = identifier;
         this.location = new CoreLocation(location);
         initFolder();
+        updateDisplayItem();
     }
 
     @Override
     public void afterLoad() {
         initFolder();
+        updateDisplayItem();
+    }
+
+    public void updateDisplayItem() {
+        displayItem = InventoryMenuUtils.createCustomItem(material, customModelData);
+    }
+
+    public void setDisplayItem(Material material, int customModelData) {
+        this.material = material;
+        this.customModelData = customModelData;
+        updateDisplayItem();
     }
 
     private void initFolder() {
@@ -228,16 +249,20 @@ public class Warp extends DBEntity {
             if (!args[0].isEmpty() && !args[1].isEmpty()) {
                 folderName = args[0];
                 warpName = args[1];
-                if (!folders.containsKey(folderName)) {
-                    folders.put(folderName, new TreeSet<>());
+                if (!FOLDERS.containsKey(folderName)) {
+                    FOLDERS.put(folderName, new TreeSet<>());
                 }
-                folders.get(folderName).add(identifier);
+                FOLDERS.get(folderName).add(identifier);
                 return;
             }
         }
         warpName = identifier;
         folderName = DEFAULT_FOLDER;
-        folders.get(folderName).add(identifier);
+        FOLDERS.get(folderName).add(identifier);
+    }
+
+    public ItemStack getDisplayItem() {
+        return displayItem;
     }
 
     public String getName() {

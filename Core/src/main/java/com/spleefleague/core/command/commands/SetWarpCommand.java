@@ -19,7 +19,7 @@ import com.spleefleague.core.util.variable.Warp;
 public class SetWarpCommand extends CoreCommand {
 
     public SetWarpCommand() {
-        super("setwarp", CoreRank.BUILDER);
+        super("setwarp", CoreRank.MODERATOR);
         setUsage("/setwarp <name>");
         setDescription("Set a warp");
         setContainer("warp");

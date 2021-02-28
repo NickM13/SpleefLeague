@@ -20,7 +20,7 @@ import com.spleefleague.core.util.variable.Warp;
 public class DelWarpCommand extends CoreCommand {
 
     public DelWarpCommand() {
-        super("delwarp", CoreRank.DEVELOPER, CoreRank.BUILDER);
+        super("delwarp", CoreRank.DEVELOPER);
         setUsage("/delwarp <warp>");
         setDescription("Delete a warp");
         setOptions("warpList", Warp::getWarpNames);

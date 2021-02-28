@@ -33,9 +33,7 @@ public class RequestManager {
     }
 
     public static void checkTimeouts() {
-        CorePlayer receiver;
         for (Map.Entry<String, Map<UUID, Request>> r : requests.entrySet()) {
-            receiver = Core.getInstance().getPlayers().get(r.getKey());
             Iterator<Map.Entry<UUID, Request>> sit = r.getValue().entrySet().iterator();
             while (sit.hasNext()) {
                 Map.Entry<UUID, Request> sn = sit.next();

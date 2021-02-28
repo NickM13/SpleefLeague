@@ -12,11 +12,13 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefMode;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
@@ -59,6 +61,15 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
                             getArena().getOrigin().toBlockPosition()));
         }
         ClassicSpleefAffixes.startBattle(this);
+    }
+
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (ClassicSpleefPlayer csp : battlers.values()) {
+            gameHistory.addPlayerAdditional(csp.getCorePlayer().getUniqueId(),
+                    "shovel", csp.getCorePlayer().getCollectibles().getActive(Shovel.class).getIdentifier());
+        }
     }
 
     @Override

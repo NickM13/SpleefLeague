@@ -9,9 +9,11 @@ package com.spleefleague.core.util.variable;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.logger.CoreLogger;
+import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.coreapi.database.variable.DBVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,22 +33,32 @@ public class CoreLocation extends DBVariable<List<?>> {
     public double x;
     public double y;
     public double z;
-    public long yaw;
-    public long pitch;
+    public Long yaw;
+    public Long pitch;
     public String worldName;
 
     public CoreLocation() {
+
     }
 
     public CoreLocation(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.yaw = this.pitch = 0;
+        this.yaw = this.pitch = 0L;
         this.worldName = Core.OVERWORLD.getName();
     }
 
-    public CoreLocation(double x, double y, double z, long yaw, long pitch) {
+    public CoreLocation(World world, double x, double y, double z, Long yaw, Long pitch) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.worldName = world.getName();
+    }
+
+    public CoreLocation(double x, double y, double z, Long yaw, Long pitch) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -161,7 +173,13 @@ public class CoreLocation extends DBVariable<List<?>> {
     }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(worldName), x, y, z, (float) yaw, (float) pitch);
+        return new Location(Bukkit.getWorld(worldName), x, y, z, (float) (yaw == null ? 0 : yaw), (float) (pitch == null ? 0 : pitch));
+    }
+
+    public Location toLocation(CorePlayer cp) {
+        return new Location(Bukkit.getWorld(worldName), x, y, z,
+                yaw == null ? cp.getPlayer().getLocation().getYaw() : yaw,
+                pitch == null ? cp.getPlayer().getLocation().getPitch() : pitch);
     }
 
     @Override

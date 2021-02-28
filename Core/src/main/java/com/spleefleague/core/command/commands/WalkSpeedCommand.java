@@ -19,7 +19,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class WalkSpeedCommand extends CoreCommand {
 
     public WalkSpeedCommand() {
-        super("wspeed", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("wspeed", CoreRank.TEMP_MOD);
         addAlias("walkspeed");
         setUsage("/wspeed [player] <-10 to 10>");
         setDescription("Set walking speed");

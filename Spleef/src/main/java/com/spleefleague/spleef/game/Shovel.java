@@ -25,6 +25,7 @@ import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import net.minecraft.server.v1_15_R1.NBTTagList;
 import net.minecraft.server.v1_15_R1.NBTTagString;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -67,7 +68,8 @@ public class Shovel extends Holdable {
                 .setName(cp -> cp.getCollectibles().getActiveName(Shovel.class))
                 .setDisplayItem(cp -> cp.getCollectibles().getActiveIcon(Shovel.class))
                 .setDescription(cp -> cp.getCollectibles().getActive(Shovel.class).getDescription())
-                .setAvailability(cp -> cp.isInGlobal() && cp.getCollectibles().hasActive(Shovel.class) && cp.getCollectibles().isEnabled(Shovel.class));
+                .setAvailability(cp -> cp.isInGlobal() && cp.getCollectibles().hasActive(Shovel.class) && cp.getCollectibles().isEnabled(Shovel.class))
+                .setAction(cp -> cp.getCollectibles().getActive(Shovel.class).activateEffect(cp));
     }
 
     public static void createMenu() {
@@ -82,7 +84,7 @@ public class Shovel extends Holdable {
         HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 0, 2);
     }
 
-    @DBField private ShovelEffect shovelEffect = new ShovelEffect();
+    //@DBField private ShovelEffect shovelEffect = new ShovelEffect();
 
     public Shovel() {
         super();
@@ -100,8 +102,19 @@ public class Shovel extends Holdable {
 
     }
 
-    public void setEffect() {
-
+    public void setEffect(ShovelEffect.ShovelEffectCastType castType,
+                          ShovelEffect.ShovelEffectDesign design,
+                          Particle particle,
+                          int tickSpace,
+                          int delayIn,
+                          int remain) {
+        /*
+        shovelEffect.setCastType(castType)
+                .setDesign(design)
+                .setParticle(particle)
+                .setDelayIn(delayIn)
+                .setRemain(remain);
+        */
     }
 
     @Override
@@ -121,7 +134,11 @@ public class Shovel extends Holdable {
      */
     @Override
     public void onRightClick(CorePlayer corePlayer) {
-        shovelEffect.activate(corePlayer);
+
+    }
+
+    public void activateEffect(CorePlayer corePlayer) {
+        //shovelEffect.activate(corePlayer);
     }
 
     /**

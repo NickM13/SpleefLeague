@@ -12,6 +12,7 @@ import com.spleefleague.core.chat.ChatUtils;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
+import com.spleefleague.core.infraction.CoreInfractionManager;
 import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
@@ -22,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.spleefleague.coreapi.database.variable.DBPlayer;
+import com.spleefleague.coreapi.infraction.Infraction;
+import com.spleefleague.coreapi.infraction.InfractionManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -91,15 +94,18 @@ public class PlayerInfoCommand extends CoreCommand {
     }
 
     private String getMuted(CoreOfflinePlayer cp) {
-        return "Maybe?";
+        Infraction infraction = Core.getInstance().getInfractionManager().getMute(cp.getUniqueId());
+        if (infraction != null && infraction.getRemainingTime() > 0) {
+            return "Yes (" + TimeUtils.gcdTimeToString(infraction.getRemainingTime()) + ")";
+        }
+        return "No";
     }
 
     private String getState(CoreOfflinePlayer cp) {
         String state;
 
         if (cp.getOnlineState() == DBPlayer.OnlineState.OFFLINE) {
-            /*
-            Infraction infraction = Infraction.getMostRecent(cp.getUniqueId(), Lists.newArrayList(Infraction.Type.BAN, Infraction.Type.TEMPBAN, Infraction.Type.UNBAN));
+            Infraction infraction = Core.getInstance().getInfractionManager().getBan(cp.getUniqueId());
             if (infraction == null) {
                 state = "Offline";
             } else {
@@ -108,15 +114,13 @@ public class PlayerInfoCommand extends CoreCommand {
                         state = "Permanent Ban";
                         break;
                     case TEMPBAN:
-                        state = "Banned for " + infraction.getRemainingTimeString();
+                        state = "Banned for " + TimeUtils.gcdTimeToString(infraction.getRemainingTime());
                         break;
                     default:
                         state = "Offline";
                         break;
                 }
             }
-             */
-            state = "Offline";
         } else {
             state = "Online";
         }

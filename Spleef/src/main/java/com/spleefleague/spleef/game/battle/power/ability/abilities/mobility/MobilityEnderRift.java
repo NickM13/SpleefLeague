@@ -25,7 +25,7 @@ public class MobilityEnderRift extends AbilityMobility {
                 .setUsage(15D);
     }
 
-    private static final double REVERSE_TIME = 3D;
+    private static final double REVERSE_TIME = 2D;
     private static final int REVERSE_SPEED = 10;
 
     private List<Location> riftLocs = new ArrayList<>();

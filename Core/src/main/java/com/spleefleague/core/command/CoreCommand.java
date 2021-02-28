@@ -1175,6 +1175,15 @@ public class CoreCommand extends Command {
                         }
                         if (cpCollection.size() < 50 || lastArg.length() >= 1) {
                             for (CorePlayer cp2 : cpCollection) {
+                                if (cp2 == null || cp2.getName() == null) {
+                                    Thread.dumpStack();
+                                    System.out.println(cpa);
+                                    System.out.println(cp2);
+                                    if (cp2 != null) {
+                                        System.out.println(cp2.getName());
+                                    }
+                                    continue;
+                                }
                                 if (cp != null && cpa != null && !cpa.allowSelf()) {
                                     if (!cp.getName().equalsIgnoreCase(cp2.getName())) {
                                         addOption(options, cp2.getName(), lastArg);

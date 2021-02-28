@@ -20,6 +20,7 @@ import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.plugin.CorePlugin;
+import com.spleefleague.core.settings.Settings;
 import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.util.variable.Position;
@@ -126,6 +127,7 @@ public abstract class Battle<BP extends BattlePlayer> {
 
     public void setForced(boolean forced) {
         this.forced = forced;
+        gameHistory.setRated(!forced);
     }
 
     public UUID getBattleId() {
@@ -735,11 +737,11 @@ public abstract class Battle<BP extends BattlePlayer> {
             case EPIC: epic++; break;
             case LEGENDARY: legendary++; break;
         }
-        if (coins > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins);
-        if (common > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common);
-        if (rare > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare);
-        if (epic > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic);
-        if (legendary > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary);
+        if (coins > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.COIN, coins, true);
+        if (common > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_COMMON, common, true);
+        if (rare > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_RARE, rare, true);
+        if (epic > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_EPIC, epic, true);
+        if (legendary > 0) battlePlayer.getCorePlayer().getPurse().addCurrency(CoreCurrency.ORE_LEGENDARY, legendary, true);
     }
 
     /**

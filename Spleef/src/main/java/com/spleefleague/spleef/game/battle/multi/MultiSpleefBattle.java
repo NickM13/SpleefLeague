@@ -13,12 +13,15 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.dynamic.DynamicBattle;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.player.collectible.hat.Hat;
 import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.spleef.Spleef;
+import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.game.battle.classic.ClassicSpleefPlayer;
 import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -50,6 +53,15 @@ public class MultiSpleefBattle extends DynamicBattle<MultiSpleefPlayer> {
                     FakeUtils.translateBlocks(
                             FakeUtils.rotateBlocks(structure.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
                             origin));
+        }
+    }
+
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        for (MultiSpleefPlayer msp : battlers.values()) {
+            gameHistory.addPlayerAdditional(msp.getCorePlayer().getUniqueId(),
+                    "shovel", msp.getCorePlayer().getCollectibles().getActive(Shovel.class).getIdentifier());
         }
     }
 

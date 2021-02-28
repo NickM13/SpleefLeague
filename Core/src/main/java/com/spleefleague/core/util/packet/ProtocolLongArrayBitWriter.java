@@ -12,21 +12,6 @@ public class ProtocolLongArrayBitWriter {
         this.data = data;
     }
 
-    public void writeLong(long l, int bits) {
-        while (bits > 0) {
-            int toWrite = Math.min(8, bits);
-            bits -= toWrite;
-            short ff = 0xFF;
-            if (toWrite == 8) {
-                writeByte((byte) (l & ff), toWrite);
-            } else {
-                ff >>>= 8 - toWrite;
-                writeByte((byte) (l & ff), toWrite);
-            }
-            l >>>= 8;
-        }
-    }
-
     public void writeShort(short s, int bits) {
         while (bits > 0) {
             int toWrite = Math.min(8, bits);
@@ -38,14 +23,6 @@ public class ProtocolLongArrayBitWriter {
             writeByte((byte) (s & ff), toWrite);
             s >>>= 8;
         }
-    }
-
-    public static String binaryShort(short b) {
-        return String.format("%16s", Integer.toBinaryString(Short.toUnsignedInt(b))).replace(' ', '0');
-    }
-
-    public static String binaryByte(byte b) {
-        return String.format("%8s", Integer.toBinaryString(Byte.toUnsignedInt(b))).replace(' ', '0');
     }
 
     public void writeInt(int i, int bits) {

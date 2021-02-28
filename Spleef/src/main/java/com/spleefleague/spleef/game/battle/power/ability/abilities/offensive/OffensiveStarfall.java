@@ -39,6 +39,7 @@ public class OffensiveStarfall extends AbilityOffensive {
     }
 
     private double starfall = -1;
+    private Location location = null;
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.
@@ -49,6 +50,7 @@ public class OffensiveStarfall extends AbilityOffensive {
         getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 2);
         getPlayer().addPotionEffect(PotionEffectType.SLOW.createEffect(80, 1));
         getUser().setChanneling(false);
+        location = getUser().getOpponent().getPlayer().getLocation().clone().add(0, 20, 0).setDirection(new Vector(0, -1, 0));
         return true;
     }
 
@@ -61,6 +63,7 @@ public class OffensiveStarfall extends AbilityOffensive {
         if (starfall > getUser().getBattle().getRoundTime()) {
             getPlayer().removePotionEffect(PotionEffectType.SLOW);
             starfall = -1;
+            location = null;
             getUser().setChanneling(false);
         }
     }
@@ -72,18 +75,11 @@ public class OffensiveStarfall extends AbilityOffensive {
     public void update() {
         if (starfall > getUser().getBattle().getRoundTime()) {
             Battle<?> battle = getUser().getBattle();
-            Location loc;
-            if (battle.getBattlers().get(0).getCorePlayer().equals(getUser().getCorePlayer()) && battle.getBattlers().size() > 1) {
-                loc = battle.getBattlers().get(1).getPlayer().getLocation().clone();
-            } else {
-                loc = battle.getBattlers().get(0).getPlayer().getLocation().clone();
-            }
-            loc.add(0, 20, 0);
-            loc.setDirection(new Vector(0, -1, 0));
-            battle.getGameWorld().shootProjectile(getUser().getCorePlayer(), loc, starStats);
+            battle.getGameWorld().shootProjectile(getUser().getCorePlayer(), location, starStats);
         } else if (starfall >= 0) {
             getUser().setChanneling(false);
             starfall = -1;
+            location = null;
         }
     }
 
@@ -93,6 +89,7 @@ public class OffensiveStarfall extends AbilityOffensive {
     @Override
     public void reset() {
         starfall = -1;
+        location = null;
     }
 
 }

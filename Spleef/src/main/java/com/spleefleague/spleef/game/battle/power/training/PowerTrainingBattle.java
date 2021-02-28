@@ -45,6 +45,11 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
     public PowerTrainingBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), battleId, players, arena, PowerTrainingPlayer.class, SpleefMode.POWER.getBattleMode());
     }
+    @Override
+    protected void setupBattlers() {
+        super.setupBattlers();
+        battler.setOpponent(battler);
+    }
 
     @Override
     protected void sendStartMessage() {

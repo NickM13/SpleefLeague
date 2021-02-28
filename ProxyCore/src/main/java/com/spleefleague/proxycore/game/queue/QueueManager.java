@@ -65,7 +65,7 @@ public class QueueManager {
 
     public void forceStart(String mode, String query, List<UUID> players) {
         if (queueContainerDynamicMap.containsKey(mode)) {
-            queueContainerDynamicMap.get(mode).startMatch(players, query, true);
+            queueContainerDynamicMap.get(mode).startMatch(players, players.size() / 2, query, true);
         }
     }
 

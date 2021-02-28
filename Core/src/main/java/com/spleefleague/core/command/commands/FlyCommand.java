@@ -18,7 +18,7 @@ import com.spleefleague.core.player.rank.CoreRank;
 public class FlyCommand extends CoreCommand {
 
     public FlyCommand() {
-        super("fly", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("fly", CoreRank.TEMP_MOD);
         setUsage("/fly [player]");
         setDescription("Toggle player's flight");
     }

@@ -23,7 +23,7 @@ import org.bukkit.command.CommandSender;
 public class WarpOtherCommand extends CoreCommand {
 
     public WarpOtherCommand() {
-        super("warpother", CoreRank.TEMP_MOD, CoreRank.BUILDER);
+        super("warpother", CoreRank.MODERATOR);
         setUsage("/warpother <player> <warp>");
         setOptions("warpList", Warp::getWarpNames);
         setContainer("warp");

@@ -33,11 +33,13 @@ import java.util.Map;
  */
 public class PowerSpleefPlayer extends SpleefBattlePlayer {
 
-    private AbilityStats utilityStats, offensiveStats, mobilityStats;
+    private AbilityStats utilityStats = null, offensiveStats = null, mobilityStats = null;
 
     private AbilityUtility utility;
     private AbilityOffensive offensive;
     private AbilityMobility mobility;
+
+    private PowerSpleefPlayer opponent;
 
     // Cooldown is the seconds into the current round that the ability will have all of its charges back.
     private final Map<Ability.Type, Double> cooldowns = new HashMap<>();
@@ -45,6 +47,14 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     public PowerSpleefPlayer(CorePlayer cp, Battle<?> battle) {
         super(cp, battle);
         selectPowers();
+    }
+
+    public void setOpponent(PowerSpleefPlayer opponent) {
+        this.opponent = opponent;
+    }
+
+    public PowerSpleefPlayer getOpponent() {
+        return opponent;
     }
 
     public void selectPowers() {
@@ -60,7 +70,8 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         String offensiveOption = getCorePlayer().getOptions().getString(Ability.Type.OFFENSIVE.getOptionName());
         if (!offensiveOption.isEmpty()) {
             offensiveStats = Abilities.getAbility(Ability.Type.OFFENSIVE, offensiveOption);
-        } else {
+        }
+        if (offensiveStats == null) {
             offensiveStats = Abilities.getRandomAbilityStats(Ability.Type.OFFENSIVE);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &cOffensive &7power: &c" + offensiveStats.getName());
         }
@@ -72,7 +83,8 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         String utilityOption = getCorePlayer().getOptions().getString(Ability.Type.UTILITY.getOptionName());
         if (!utilityOption.isEmpty()) {
             utilityStats = Abilities.getAbility(Ability.Type.UTILITY, utilityOption);
-        } else {
+        }
+        if (utilityStats == null) {
             utilityStats = Abilities.getRandomAbilityStats(Ability.Type.UTILITY);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &9Utility &7power: &9" + utilityStats.getName());
         }
@@ -84,7 +96,8 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         String mobilityOption = getCorePlayer().getOptions().getString(Ability.Type.MOBILITY.getOptionName());
         if (!mobilityOption.isEmpty()) {
             mobilityStats = Abilities.getAbility(Ability.Type.MOBILITY, mobilityOption);
-        } else {
+        }
+        if (mobilityStats == null) {
             mobilityStats = Abilities.getRandomAbilityStats(Ability.Type.MOBILITY);
             Spleef.getInstance().sendMessage(getCorePlayer(), "You've been assigned a random &aMobility &7power: &a" + mobilityStats.getName());
         }

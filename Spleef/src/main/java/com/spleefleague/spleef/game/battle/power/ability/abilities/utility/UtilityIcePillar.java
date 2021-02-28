@@ -30,31 +30,12 @@ public class UtilityIcePillar extends AbilityUtility {
     public static AbilityStats init() {
         return init(UtilityIcePillar.class)
                 .setCustomModelData(3)
-                .setName("Ice Pillar")
-                .setDescription("Raise a pillar of ice beneath the caster, quickly lifting them upward.")
+                .setName("Snow Pillar")
+                .setDescription("Raise a pillar of snow beneath the caster, quickly lifting them upward.")
                 .setUsage(20);
     }
 
-    private static final int RADIUS = 5;
-    private static final double RISE = 1.5;
-    private static final double STAY = 1.5;
     private static final double DURATION = 5;
-    private static final int SPACING = 4;
-    private static final int SLOW = 1;
-
-    private void tick(PowerSpleefPlayer psp, Vector pos, double remainder) {
-        if (remainder <= 0) return;
-        for (BattlePlayer bp : psp.getBattle().getBattlers()) {
-            if (!bp.getCorePlayer().equals(psp.getCorePlayer()) &&
-                    bp.getPlayer().getLocation().toVector().distance(pos) < RADIUS) {
-                bp.getPlayer().addPotionEffect(PotionEffectType.SLOW.createEffect(SPACING + 10, SLOW - 1));
-            }
-        }
-        GameUtils.spawnRingParticles(psp.getBattle().getGameWorld(), pos, Type.UTILITY.getDustMedium(), RADIUS, 10);
-        psp.getBattle().getGameWorld().runTask(Bukkit.getScheduler().runTaskLater(Spleef.getInstance(), () -> {
-            tick(psp, pos, remainder - (SPACING / 20D));
-        }, SPACING));
-    }
 
     /**
      * This is called when a player uses an ability that isn't on cooldown.

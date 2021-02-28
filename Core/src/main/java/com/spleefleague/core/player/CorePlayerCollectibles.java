@@ -87,15 +87,19 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 }
                 Vendorable.Rarity rarity = entry.getValue().getRarity();
                 Collectible collectible = (Collectible) entry.getValue();
-                System.out.println(rarity + ", " + collectible.getIdentifier());
                 if (collectible.getUnlockType().isRolled() && (!collectible.getUnlockType().isBaseRequired() || getInfo(collectible).isBaseUnlocked())) {
                     available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier());
                     for (String skin : collectible.getSkinIds()) {
                         available.get(rarity).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
                     }
+                } else {
+                    System.out.println(rarity + ": " + collectible.getParentType() + ":" + collectible.getIdentifier());
                 }
             }
         }
+        available.forEach((key, value) -> {
+            System.out.println("total " + key + ": " + value.size());
+        });
         return available;
     }
 

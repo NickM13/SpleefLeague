@@ -74,7 +74,14 @@ public class PersonalScoreboard {
             team.removeEntry(cp.getName());
         }
         for (PersonalScoreboard ps : scoreboards.values()) {
-            Objects.requireNonNull(ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort())).addEntry(cp.getName());
+            if (cp.getRank() == null) {
+                Thread.dumpStack();
+                break;
+            }
+            Team containedTeam = ps.getScoreboard().getTeam(cp.getRank().getIdentifierShort());
+            if (containedTeam != null) {
+                containedTeam.addEntry(cp.getName());
+            }
         }
     }
 

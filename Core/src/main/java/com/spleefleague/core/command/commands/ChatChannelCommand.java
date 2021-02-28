@@ -6,10 +6,12 @@
 
 package com.spleefleague.core.command.commands;
 
+import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.command.annotation.CommandAnnotation;
 import com.spleefleague.core.chat.ChatChannel;
+import com.spleefleague.core.command.annotation.LiteralArg;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
@@ -37,8 +39,7 @@ public class ChatChannelCommand extends CoreCommand {
         }
 
         public String createChatDescription() {
-            String formatted = desc + ": " + name;
-            return formatted;
+            return desc + ": " + name;
         }
     }
 
@@ -50,12 +51,11 @@ public class ChatChannelCommand extends CoreCommand {
         newQuickChat(ChatChannel.GLOBAL, "global", "Global Chat");
         newQuickChat(ChatChannel.PARTY, "party", "Party Chat");
         newQuickChat(ChatChannel.VIP, "vip", "VIP Chat");
-        newQuickChat(ChatChannel.BUILD, "builder", "Builder Chat");
         newQuickChat(ChatChannel.STAFF, "staff", "Staff Chat");
         newQuickChat(ChatChannel.ADMIN, "admin", "Admin Chat");
-        setUsage("/cc <channel> | /chatchannels");
+        setUsage("/cc <channel> [message]");
         setDescription("Set your current chat channel");
-        setOptions("chatChannels", pi -> getAvailableChatNames(pi));
+        setOptions("chatChannels", this::getAvailableChatNames);
     }
 
     private Set<String> getAvailableChatNames(PriorInfo pi) {
@@ -100,6 +100,46 @@ public class ChatChannelCommand extends CoreCommand {
                     return;
                 }
                 break;
+            }
+        }
+        error(sender, "Channel not found");
+        error(sender, "Find available channels with /cc");
+    }
+
+    @CommandAnnotation
+    public void chatchannels(CorePlayer sender,
+                             @OptionArg(listName = "chatChannels") String channel,
+                             String message) {
+        for (QuickChat qc : quickChats) {
+            if (channel.equalsIgnoreCase(qc.name)) {
+                if (checkChatPerm(sender, qc)) {
+                    Chat.sendMessage(sender, qc.cc, message);
+                    return;
+                }
+                break;
+            }
+        }
+        error(sender, "Channel not found");
+        error(sender, "Find available channels with /cc");
+    }
+
+    @CommandAnnotation(minRank = "MODERATOR")
+    public void chatchannelsWho(CorePlayer sender,
+                                @LiteralArg("who") String l,
+                                @OptionArg(listName = "chatChannels") String channel) {
+        for (QuickChat qc : quickChats) {
+            if (channel.equalsIgnoreCase(qc.name)) {
+                success(sender, "Who can see " + qc.name + ":");
+                if (!qc.cc.isGlobal()) {
+                    success(sender, "Everyone");
+                } else {
+                    for (CorePlayer cp : Core.getInstance().getPlayers().getAllOnline()) {
+                        if (qc.cc.isActive(cp)) {
+                            success(sender, cp.getDisplayName());
+                        }
+                    }
+                }
+                return;
             }
         }
         error(sender, "Channel not found");

@@ -17,6 +17,7 @@ import com.spleefleague.core.player.collectible.Collectible;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.plugin.CorePlugin;
 import com.spleefleague.core.settings.Settings;
+import com.spleefleague.core.util.variable.Warp;
 import com.spleefleague.core.world.build.BuildStructures;
 
 /**
@@ -64,6 +65,17 @@ public class ReloadDataCommand extends CoreCommand {
     @CommandAnnotation
     public void reloaddataCollectibles(CorePlayer sender,
                                        @LiteralArg("collectibles") String l) {
+        Collectible.clear();
+        for (CorePlugin plugin : CorePlugin.getAllPlugins()) {
+            plugin.reloadCollectibles();
+        }
+        success(sender, "Reloaded collectibles from database");
+    }
+
+    @CommandAnnotation
+    public void reloaddataWarps(CorePlayer sender,
+                                @LiteralArg("warps") String l) {
+        Warp.init();
         Collectible.clear();
         for (CorePlugin plugin : CorePlugin.getAllPlugins()) {
             plugin.reloadCollectibles();

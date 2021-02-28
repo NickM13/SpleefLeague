@@ -9,6 +9,7 @@ import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.rank.CoreRank;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
+import com.spleefleague.coreapi.utils.packet.spigot.removal.PacketSpigotRemovalCollectible;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -30,6 +31,7 @@ public class CollectibleCommand extends CoreCommand {
         this.name = name;
         this.collectibleClass = collectibleClazz;
         setOptions("collectibles", cp -> Vendorables.getAll(collectibleClazz).keySet());
+        setOptions("crates", cp -> Core.getInstance().getCrateManager().getCrateNames());
         setOptions("skins", pi -> Vendorables.get(collectibleClazz, pi.getReverse().get(0)).getSkinIds());
     }
 
@@ -87,12 +89,19 @@ public class CollectibleCommand extends CoreCommand {
     @CommandAnnotation
     public void collectibleDestroy(CorePlayer sender,
                                    @LiteralArg("destroy") String l,
-                                   @OptionArg(listName = "collectibles") String identifier) {
+                                   @OptionArg(listName = "collectibles") String identifier,
+                                   @OptionArg(listName = "crates") String crateName) {
         if (!Vendorables.contains(collectibleClass, identifier)) {
             error(sender, "That collectible doesn't exists!");
         } else {
-            Collectible.destroy(collectibleClass, identifier);
-            success(sender, "Destroyed collectible " + identifier);
+            Collectible collectible = Vendorables.get(collectibleClass, identifier);
+            if (collectible != null) {
+                Core.getInstance().sendPacket(new PacketSpigotRemovalCollectible(sender.getUniqueId(), collectible.getParentType(), collectible.getIdentifier(), crateName));
+                Collectible.destroy(collectibleClass, identifier);
+                success(sender, "Destroyed collectible " + identifier);
+            } else {
+                error(sender, "Failed to destroy collectible " + identifier);
+            }
         }
     }
 

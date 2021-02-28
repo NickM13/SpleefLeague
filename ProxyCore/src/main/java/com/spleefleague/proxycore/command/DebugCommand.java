@@ -1,7 +1,13 @@
 package com.spleefleague.proxycore.command;
 
+import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.game.queue.QueueContainerDynamic;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import com.spleefleague.proxycore.season.SeasonManager;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
+
+import java.util.UUID;
 
 /**
  * @author NickM13
@@ -15,8 +21,15 @@ public class DebugCommand extends Command {
 
     @Override
     public void execute(CommandSender commandSender, String[] strings) {
-        //ProxyCore.getInstance().getDropletManager().openNext(DropletType.LOBBY);
-        //ProxyCore.getInstance().getDropletManager().sendHttpRequest();
+        if (strings[0].equalsIgnoreCase("flip")) {
+            if (strings.length > 1) {
+                String season = ProxyCore.getInstance().getSeasonManager().getCurrentSeason();
+                for (UUID uuid : ProxyCore.getInstance().getPlayers().getAllOfflineUuids()) {
+                    ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
+                    pcp.getRatings().flip(strings[1], season);
+                }
+            }
+        }
     }
 
 }

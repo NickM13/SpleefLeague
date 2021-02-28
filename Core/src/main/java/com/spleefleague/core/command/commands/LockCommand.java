@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 public class LockCommand extends CoreCommand {
 
     public LockCommand() {
-        super("lock", CoreRank.DEVELOPER, CoreRank.BUILDER);
+        super("lock", CoreRank.DEVELOPER);
     }
 
     @CommandAnnotation

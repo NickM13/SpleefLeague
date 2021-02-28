@@ -510,7 +510,7 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
-        event.setRespawnLocation(corePlayer.getSpawnLocation());
+        corePlayer.onRespawn(event);
     }
 
     /**

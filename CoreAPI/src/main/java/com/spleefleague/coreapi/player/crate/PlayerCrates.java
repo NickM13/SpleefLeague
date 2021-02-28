@@ -32,7 +32,7 @@ public class PlayerCrates extends DBEntity {
     }
 
     public void addOpenedCrates(String crate, int amount) {
-        this.opened.put(crate, this.opened.getOrDefault(crate, 0) - amount);
+        this.opened.put(crate, Math.abs(this.opened.getOrDefault(crate, 0)) + amount);
     }
 
 }

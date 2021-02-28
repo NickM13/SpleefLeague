@@ -11,7 +11,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.server.PacketSpigotServerDir
 public class ServersCommand extends CoreCommand {
 
     public ServersCommand() {
-        super("servers", CoreRank.BUILDER);
+        super("servers", CoreRank.DEVELOPER);
         setOptions("serverNames", pi -> Core.getInstance().getServers());
     }
 

@@ -14,7 +14,7 @@ import org.bukkit.entity.Arrow;
 public class SitCommand extends CoreCommand {
 
     public SitCommand() {
-        super("sit", CoreRank.BUILDER);
+        super("sit", CoreRank.DEVELOPER);
     }
 
     @CommandAnnotation

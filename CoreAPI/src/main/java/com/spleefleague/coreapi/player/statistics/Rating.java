@@ -134,6 +134,14 @@ public class Rating extends DBEntity {
         return division;
     }
 
+    public void flip() {
+        int prev = wins;
+        wins = losses;
+        losses = prev;
+        elo = 1000 - (elo - 1000);
+        updateDivision();
+    }
+
     public int getWins() {
         return wins;
     }

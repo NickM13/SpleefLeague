@@ -39,7 +39,7 @@ public class BattleManagerBonanza extends BattleManager {
      * Starts a battle on a random arena
      */
     private void startFirstAvailable() {
-        Arena arena = Arenas.getRandom(mode);
+        Arena arena = Arenas.getRandom(mode, -1);
         if (arena != null) {
             startMatch(new ArrayList<>(), arena.getName());
         }
