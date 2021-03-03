@@ -6,10 +6,12 @@
 
 package com.spleefleague.core.util;
 
+import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.player.CoreOfflinePlayer;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Entity;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
@@ -124,6 +126,18 @@ public class CoreUtils {
 
     public static void knockbackEntity(Entity entity, Vector direction, double power) {
         entity.setVelocity(direction.setY(0).normalize().setY(0.1).multiply(power).add(new Vector(0, 0.1, 0)));
+    }
+
+    public static List<BlockPosition> getInsideBlocks(BoundingBox boundingBox) {
+        List<BlockPosition> positions = new ArrayList<>();
+        for (int x = (int)Math.floor(boundingBox.getMinX()); x < Math.ceil(boundingBox.getMaxX()); ++x) {
+            for (int y = (int)Math.floor(boundingBox.getMinY()); y < Math.ceil(boundingBox.getMaxY()); ++y) {
+                for (int z = (int)Math.floor(boundingBox.getMinZ()); z < Math.ceil(boundingBox.getMaxZ()); ++z) {
+                    positions.add(new BlockPosition(x, y, z));
+                }
+            }
+        }
+        return positions;
     }
 
 }

@@ -59,8 +59,8 @@ public class GameHistory extends DBEntity {
     private final Map<UUID, Integer> playerMap = new HashMap<>();
     @DBField private final List<Player> players = new ArrayList<>();
     @DBField private EndReason endReason = EndReason.NONE;
-    @DBField private final Long startTime;
-    @DBField private Long endTime;
+    private final Long startTime;
+    @DBField private Long duration;
     @DBField private final String season;
     @DBField private final Date date;
 
@@ -73,7 +73,7 @@ public class GameHistory extends DBEntity {
         this.mode = mode;
         this.arena = arena;
         this.startTime = System.currentTimeMillis();
-        this.endTime = 0L;
+        this.duration = 0L;
         this.avgRating = avgRating;
         this.season = Settings.getCurrentSeason();
         this.date = new Date();
@@ -97,7 +97,7 @@ public class GameHistory extends DBEntity {
 
     public void setEndReason(EndReason endReason) {
         this.endReason = endReason;
-        this.endTime = System.currentTimeMillis();
+        this.duration = System.currentTimeMillis() - startTime;
     }
 
     public void setPlayerStats(UUID uuid, int place, int score) {

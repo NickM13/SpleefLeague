@@ -6,6 +6,9 @@ import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import com.spleefleague.coreapi.game.leaderboard.Leaderboard;
 import com.spleefleague.coreapi.player.statistics.Rating;
+import com.spleefleague.proxycore.ProxyCore;
+import com.spleefleague.proxycore.player.ProxyCorePlayer;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bson.Document;
 
 import java.text.DateFormat;
@@ -37,7 +40,21 @@ public class ProxyLeaderboard extends Leaderboard {
      */
     @Override
     public void setPlayerScore(UUID player, String username, Rating rating) {
-        super.setPlayerScore(player, username, rating);
+        if (rating.getDivision() != Rating.Division.UNRANKED) {
+            // Send message for becoming ranked?
+            super.setPlayerScore(player, username, rating);
+            modified = true;
+        }
+    }
+
+    public void removePlayerScore(UUID player) {
+        Integer prevScore = this.playerScoreMap.remove(player);
+        if (prevScore != null) {
+            scorePlayersMap.get(prevScore).remove(player);
+            if (scorePlayersMap.get(prevScore).isEmpty()) {
+                scorePlayersMap.remove(prevScore);
+            }
+        }
         modified = true;
     }
 

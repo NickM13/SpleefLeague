@@ -2,6 +2,7 @@ package com.spleefleague.core.player.collectible;
 
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
 import org.bukkit.ChatColor;
@@ -15,6 +16,7 @@ public class CollectibleSkin extends DBEntity {
     private final Collectible parent;
     @DBField private Integer cmd;
     @DBField private String displayName;
+    @DBField private Vendorable.Rarity rarity = null;
 
     private ItemStack displayItem;
 
@@ -54,7 +56,7 @@ public class CollectibleSkin extends DBEntity {
     }
 
     public String getFullDisplayName() {
-        return parent.getDisplayName() + " (" + displayName + ")";
+        return getRarity().getColor() + "" + ChatColor.BOLD + parent.getName() + " (" + displayName + ")";
     }
 
     public void setDisplayName(String displayName) {
@@ -68,6 +70,17 @@ public class CollectibleSkin extends DBEntity {
 
     public Collectible getParent() {
         return parent;
+    }
+
+    public Vendorable.Rarity getRarity() {
+        if (rarity == null) {
+            return parent.getRarity();
+        }
+        return rarity;
+    }
+
+    public void setRarity(Vendorable.Rarity rarity) {
+        this.rarity = rarity;
     }
 
 }

@@ -1031,9 +1031,7 @@ public class CoreCommand extends Command {
                     if (CoreOfflinePlayer.class.isAssignableFrom(paramClass)) {
                         invalidArg = ((obj = Core.getInstance().getPlayers().getOffline(arg)) == null);
                         if (!invalidArg) {
-                            if (isValidCorePlayer(cs, cp, (CoreOfflinePlayer) obj, param.getAnnotation(CorePlayerArg.class))) {
-                                invalidArg = false;
-                            } else {
+                            if (!isValidCorePlayer(cs, cp, (CoreOfflinePlayer) obj, param.getAnnotation(CorePlayerArg.class))) {
                                 invalidArg = true;
                             }
                         }
@@ -1097,12 +1095,11 @@ public class CoreCommand extends Command {
                             if (possibleMatch != null) {
                                 arg = possibleMatch;
                                 invalidArg = false;
-                            } else {
-                                continue;
                             }
                         }
                         strParams.add(arg);
                         ai++;
+                        continue;
                     }
                     if (paramClass.equals(String.class)) {
                         if (param.isAnnotationPresent(LiteralArg.class)) {

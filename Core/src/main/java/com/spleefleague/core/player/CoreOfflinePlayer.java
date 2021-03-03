@@ -45,6 +45,9 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
     @DBField protected final CorePermanentRank permRank = new CorePermanentRank();
     @DBField protected final List<CoreTempRank> tempRanks = new ArrayList<>();
     @DBField private Long lastOnline = -1L;
+    @DBField protected Long onlineTime = 0L;
+    @DBField protected Long activeTime = 0L;
+    @DBField protected Long battleTime = 0L;
 
     private TextComponent chatName, chatNamePossessive, chatNameRanked;
     private String rankedDisplayName, menuName, displayName, displayNamePossessive;
@@ -129,6 +132,18 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
     public boolean isFlying() {
         return getPlayer().isFlying()
                 || getPlayer().isGliding();
+    }
+
+    public long getOnlineTime() {
+        return onlineTime;
+    }
+
+    public long getActiveTime() {
+        return activeTime;
+    }
+
+    public long getBattleTime() {
+        return battleTime;
     }
 
     /**

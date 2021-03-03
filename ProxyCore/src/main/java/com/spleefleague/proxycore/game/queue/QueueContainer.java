@@ -234,7 +234,8 @@ public abstract class QueueContainer {
     public enum TeamStyle {
         SOLO(   true,  false, true,  1, 1 ),
         VERSUS( false, false, true,  2, 2 ),
-        DYNAMIC(true,  true,  false, 4, 8),
+        DYNAMIC_8(true,  true,  false, 4, 8),
+        DYNAMIC_12(true,  true,  false, 4, 12),
         BONANZA(true,  false, true,  1, 1 );
 
         boolean allowPartySplit;

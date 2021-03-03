@@ -14,6 +14,8 @@ import java.util.Map;
  */
 public class Rating extends DBEntity {
 
+    public static final int REQUIRED_GAMES = 8;
+
     public enum Division {
 
         //MASTER(    "Master I",     ChatColor.LIGHT_PURPLE + "", 2000, Integer.MAX_VALUE, 30),
@@ -31,7 +33,8 @@ public class Rating extends DBEntity {
         SILVER3(   "Silver III",   ChatColor.GRAY + "",         950,  1150, 0),
         BRONZE1(   "Bronze I",     ChatColor.DARK_RED + "",     800,  1000, 0),
         BRONZE2(   "Bronze II",    ChatColor.DARK_RED + "",     650,  850,  0),
-        BRONZE3(   "Bronze III",   ChatColor.DARK_RED + "",     0,    700,  0);
+        BRONZE3(   "Bronze III",   ChatColor.DARK_RED + "",     0,    700,  0),
+        UNRANKED(  "Unranked",      ChatColor.YELLOW + "",      -1,    -1,  0);
 
         protected String displayName;
         protected String scorePrefix;
@@ -70,7 +73,7 @@ public class Rating extends DBEntity {
 
     public Rating() {
         elo = BASE_ELO;
-        division = Division.SILVER3;
+        division = Division.UNRANKED;
         wins = 0;
         losses = 0;
     }
@@ -85,12 +88,17 @@ public class Rating extends DBEntity {
     }
 
     public int updateDivision() {
-        int result = division.isWithin(elo);
-        if (result != 0) {
-            for (Division div : Division.values()) {
-                if (div.isWithin(elo) == 0) {
-                    division = div;
-                    return result;
+        if (wins + losses >= REQUIRED_GAMES) {
+            int result = division.isWithin(elo);
+            if (result != 0) {
+                if (division == Division.UNRANKED) {
+                    result = 2;
+                }
+                for (Division div : Division.values()) {
+                    if (div.isWithin(elo) == 0) {
+                        division = div;
+                        return result;
+                    }
                 }
             }
         }
@@ -156,6 +164,10 @@ public class Rating extends DBEntity {
 
     public void addLoss() {
         this.losses++;
+    }
+
+    public int getTotalGames() {
+        return wins + losses;
     }
 
 }

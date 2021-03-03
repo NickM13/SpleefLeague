@@ -10,6 +10,7 @@ import com.spleefleague.core.chat.ChatChannel;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.options.ChatOptionsMenu;
+import com.spleefleague.core.menu.hotbars.main.options.SoundOptionsMenu;
 import com.spleefleague.core.menu.hotbars.main.options.StaffToolsMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -39,7 +40,8 @@ public class OptionsMenu {
                     .createLinkedContainer("Options");
 
             menuItem.getLinkedChest().addStaticItem(ChatOptionsMenu.getItem(), 6, 0);
-            menuItem.getLinkedChest().addStaticItem(StaffToolsMenu.getItem(), 5, 0);
+            menuItem.getLinkedChest().addStaticItem(SoundOptionsMenu.getItem(), 5, 0);
+            menuItem.getLinkedChest().addStaticItem(StaffToolsMenu.getItem(), 6, 1);
         }
         return menuItem;
     }

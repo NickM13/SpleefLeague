@@ -204,4 +204,24 @@ public class InventoryMenuUtils {
         }
     }
 
+    private static final int LOADING_BAR_STATES = (5 - 1);
+
+    public static void createLoadingBar(InventoryMenuContainerChest container, int startX, int startY, int count, Function<CorePlayer, Double> function) {
+        double percentPerPiece = 1D / count;
+        for (int i = 0; i < count; i++) {
+            double startPercent = (double) i / count;
+            InventoryMenuItemDynamic item = InventoryMenuAPI.createItemDynamic()
+                    .setName(cp -> (int) Math.floor(function.apply(cp) * 100) + "%")
+                    .setDisplayItem(cp -> {
+                        double percent = function.apply(cp) - startPercent;
+                        int state = (int) Math.floor(LOADING_BAR_STATES * Math.max(Math.min(percent / percentPerPiece, 1D), 0D));
+                        return InventoryMenuUtils.createCustomItem(Material.GLOWSTONE_DUST, state + 1);
+                        //if (state == 0) state = 10;
+                        //return InventoryMenuUtils.createCustomItem(Material.DIAMOND, state);
+                    })
+                    .setCloseOnAction(false);
+            container.addMenuItem(item, startX + i, startY);
+        }
+    }
+
 }

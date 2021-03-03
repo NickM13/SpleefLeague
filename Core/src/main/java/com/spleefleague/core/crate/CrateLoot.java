@@ -5,9 +5,7 @@ import com.spleefleague.core.player.collectible.CollectibleSkin;
 import com.spleefleague.core.player.purse.CoreCurrency;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author NickM13
@@ -15,8 +13,43 @@ import java.util.Map;
  */
 public class CrateLoot {
 
-    public List<Collectible> collectibles = new ArrayList<>();
-    public List<CollectibleSkin> collectibleSkins = new ArrayList<>();
-    public Map<CoreCurrency, Integer> currencies = new HashMap<>();
+    public static class CrateLootItem {
+
+        public CoreCurrency replacement = null;
+
+        public enum LootType {
+            COLLECTIBLE,
+            SKIN,
+            CURRENCY
+        }
+
+        public final LootType lootType;
+
+        public Collectible collectible = null;
+        public CollectibleSkin skin = null;
+        public CoreCurrency currency = null;
+        public int amount;
+
+        public CrateLootItem(Collectible collectible, CoreCurrency replacement) {
+            lootType = LootType.COLLECTIBLE;
+            this.collectible = collectible;
+            this.replacement = replacement;
+        }
+
+        public CrateLootItem(CollectibleSkin skin, CoreCurrency replacement) {
+            lootType = LootType.SKIN;
+            this.skin = skin;
+            this.replacement = replacement;
+        }
+
+        public CrateLootItem(CoreCurrency currency, int amount) {
+            lootType = LootType.CURRENCY;
+            this.currency = currency;
+            this.amount = amount;
+        }
+
+    }
+
+    public List<CrateLootItem> items = new ArrayList<>();
 
 }

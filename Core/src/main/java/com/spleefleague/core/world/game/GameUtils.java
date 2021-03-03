@@ -59,6 +59,46 @@ public class GameUtils {
         }
     }
 
+    public static void spawnHorizontalCircleParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
+                                            Vector loc,
+                                            Particle particle,
+                                            double radius,
+                                            double rotationRadians,
+                                            double rotationSection,
+                                            int count) {
+        for (int i = 0; i < count; i++) {
+            double radians = (i / (double) count) * rotationSection + rotationRadians;
+            Vector pos = loc.clone().add(new Vector(Math.sin(radians), 0, Math.cos(radians)).multiply(radius));
+            gameWorld.spawnParticles(particle,
+                    pos.getX(), pos.getY(), pos.getZ(),
+                    1, 0, 0, 0, 0);
+        }
+    }
+
+    public static void spawnCircleParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
+                                            Vector loc,
+                                            Vector axis,
+                                            Particle particle,
+                                            double radius,
+                                            double rotationRadians,
+                                            double rotationSection,
+                                            int count) {
+        double dot = axis.dot(new Vector(0, 1, 0));
+        if (dot >= 0.999 || dot <= -0.999) {
+            spawnHorizontalCircleParticles(gameWorld, loc, particle, radius, rotationRadians, rotationSection, count);
+            return;
+        }
+        Vector rotAxis = axis.getCrossProduct(new Vector(0, 1, 0));
+        double angle = Math.toRadians(90 * (-dot + 1));
+        for (int i = 0; i < count; i++) {
+            double radians = (i / (double) count) * rotationSection + rotationRadians;
+            Vector pos = new Vector(Math.sin(radians), 0, Math.cos(radians)).rotateAroundAxis(rotAxis, angle).multiply(radius).add(loc);
+            gameWorld.spawnParticles(particle,
+                    pos.getX(), pos.getY(), pos.getZ(),
+                    1, 0, 0, 0, 0);
+        }
+    }
+
     public static void spawnRingParticles(ProjectileWorld<? extends ProjectileWorldPlayer> gameWorld,
                                           Vector loc,
                                           Vector axis,

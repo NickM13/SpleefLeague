@@ -29,20 +29,10 @@ public class ShovelCommand extends HoldableCommand {
     public void shovelSetEffectSelf(CorePlayer sender,
                                 @LiteralArg("set") String l1,
                                 @LiteralArg("effect") String l2,
-                                @LiteralArg("self") String l3,
-                                @EnumArg ShovelEffect.ShovelEffectDesign design,
-                                @EnumArg Particle particle,
-                                @HelperArg("tickSpace") @NumberArg Integer spacing,
-                                @HelperArg("delayIn") @NumberArg Integer delayIn,
-                                @HelperArg("remain") @NumberArg Integer remain) {
+                                @EnumArg ShovelEffect.ShovelEffectType type) {
         Shovel shovel = Vendorables.get(Shovel.class, sender.getHeldItem());
         if (shovel != null) {
-            shovel.setEffect(ShovelEffect.ShovelEffectCastType.SELF,
-                    design,
-                    particle,
-                    spacing,
-                    delayIn,
-                    remain);
+            shovel.setEffect(type);
         }
     }
 

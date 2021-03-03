@@ -35,6 +35,11 @@ public class CoreLeaderboard extends Leaderboard {
         return 0;
     }
 
+    public void clear() {
+        playerScoreMap.clear();
+        scorePlayersMap.clear();
+    }
+
     private InventoryMenuContainerChest menuContainer = null;
 
     private static String formatWinPercent(int wins, int losses) {
@@ -98,10 +103,13 @@ public class CoreLeaderboard extends Leaderboard {
 
         menuContainer.addStaticItem(InventoryMenuAPI.createItemDynamic()
                 .setName(cp -> ChatColor.YELLOW + "" + ChatColor.BOLD + cp.getName() + " " + cp.getRatings().getDisplayElo(name, getSeason()))
-                .setDescription(cp -> ChatColor.GRAY + "Rank: " + cp.getRatings().getDisplayDivision(name, getSeason()) + ChatColor.YELLOW + " (#" + (getPlayerRanking(cp.getUniqueId()) + 1) + ")\n"
-                        + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp.getRatings().getWins(name, getSeason()) + "\n"
-                        + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp.getRatings().getLosses(name, getSeason()) + "\n"
-                        + ChatColor.GRAY + "Win Rate: " + cp.getRatings().getWinPercent(name, getSeason()))
+                .setDescription(cp -> {
+                    return ChatColor.GRAY + "Rank: " + cp.getRatings().getDisplayDivision(name, getSeason()) +
+                            (cp.getRatings().isRanked(name, getSeason()) ? ChatColor.YELLOW + " (#" + (getPlayerRanking(cp.getUniqueId()) + 1) + ")" : "") + "\n"
+                            + ChatColor.GRAY + "Wins: " + ChatColor.GREEN + cp.getRatings().getWins(name, getSeason()) + "\n"
+                            + ChatColor.GRAY + "Losses: " + ChatColor.RED + cp.getRatings().getLosses(name, getSeason()) + "\n"
+                            + ChatColor.GRAY + "Win Rate: " + cp.getRatings().getWinPercent(name, getSeason());
+                })
                 .setDisplayItem(cp -> InventoryMenuUtils.createCustomSkullOrDefault(cp.getUniqueId()))
                 .setCloseOnAction(false), 6, 2);
 

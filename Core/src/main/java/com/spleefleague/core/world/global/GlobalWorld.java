@@ -2,20 +2,22 @@ package com.spleefleague.core.world.global;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.world.FakeUtils;
+import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.core.world.game.projectile.ProjectileWorld;
 import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
 import com.spleefleague.core.world.global.lock.GlobalLock;
 import com.spleefleague.core.world.global.vehicle.GlobalVehicle;
+import net.minecraft.server.v1_15_R1.Entity;
 import net.minecraft.server.v1_15_R1.ItemStack;
-import org.bukkit.Bukkit;
-import org.bukkit.Particle;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -228,6 +230,63 @@ public class GlobalWorld extends ProjectileWorld<GlobalWorldPlayer> {
         if (getFakeBlock(pos) == null) return false;
         tryFix(cp, pos);
         return true;
+    }
+
+    @Override
+    protected List<net.minecraft.server.v1_15_R1.Entity> shoot(CorePlayer shooter,
+                                                               Location location,
+                                                               ProjectileStats projectileStats,
+                                                               double charge) {
+        List<net.minecraft.server.v1_15_R1.Entity> entities = new ArrayList<>();
+        try {
+            for (ProjectileWorldPlayer pwp : playerMap.values()) {
+                if (pwp.getCorePlayer().getOptions().getBoolean("Sound:Gadget")) {
+                    pwp.getPlayer().playSound(location, projectileStats.soundEffect, projectileStats.soundVolume.floatValue(), projectileStats.soundPitch.floatValue());
+                }
+            }
+            switch (projectileStats.shape) {
+                case PLUS:
+                    shoot(entities, shooter, location.clone(),
+                            projectileStats, charge);
+                    for (int i = 1; i <= projectileStats.count; i++) {
+                        shoot(entities, shooter, location.clone().add(
+                                location.clone().getDirection().crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize().multiply(i * (float) projectileStats.hSpread / 100 / projectileStats.count)),
+                                projectileStats, charge);
+                        shoot(entities, shooter, location.clone().add(
+                                location.clone().getDirection().crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize().multiply(-i * (float) projectileStats.hSpread / 100 / projectileStats.count)),
+                                projectileStats, charge);
+                    }
+                    shooter.getStatistics().add("splegg", "eggsFired", (int) (projectileStats.count * charge * 2 + 1));
+                    break;
+                default:
+                    for (int i = 0; i < projectileStats.count * charge; i++) {
+                        shoot(entities, shooter, location, projectileStats, charge);
+                    }
+                    shooter.getStatistics().add("splegg", "eggsFired", (int) (projectileStats.count * charge));
+                    break;
+            }
+            if (charge >= 0.2 && Math.abs(projectileStats.fireKnockback) > 0.001) {
+                shooter.getPlayer().setVelocity(shooter.getPlayer().getLocation().getDirection().multiply(-projectileStats.fireKnockback * charge));
+            }
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException exception) {
+            CoreLogger.logError(exception);
+        }
+        return entities;
+    }
+
+    @Override
+    public void playSound(Location location, Sound sound, float volume, float pitch) {
+        for (GlobalWorldPlayer globalWorldPlayer : playerMap.values()) {
+            globalWorldPlayer.getPlayer().playSound(location, sound, volume, pitch);
+        }
+    }
+
+    public void playSound(Location location, Sound sound, float volume, float pitch, String channel) {
+        for (GlobalWorldPlayer globalWorldPlayer : playerMap.values()) {
+            if (globalWorldPlayer.getCorePlayer().getOptions().getBoolean(channel)) {
+                globalWorldPlayer.getPlayer().playSound(location, sound, volume, pitch);
+            }
+        }
     }
 
 }

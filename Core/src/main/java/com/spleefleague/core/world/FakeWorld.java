@@ -157,7 +157,7 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
                             event.getPlayer().getLocation().getChunk().getZ() == chunkCoord.z) {
                         event.getPlayer().setGravity(false);
                         event.getPlayer().setVelocity(new Vector(0, 0, 0));
-                        event.getPlayer().teleport(event.getPlayer().getLocation().clone().add(0, 0.2, 0));
+                        event.getPlayer().teleport(event.getPlayer().getLocation().clone().add(0, 0.5, 0));
                         Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> event.getPlayer().setGravity(true), 20L);
                     }
                 }
@@ -533,6 +533,10 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
 
     private static short getChunkRelativePos(BlockPosition pos) {
         return (short) ((pos.getX() & 0xF) + ((pos.getZ() & 0xF) << 4) + ((pos.getY() & 0xFF) << 8));
+    }
+
+    private static BlockPosition getBlockPos(ChunkCoord chunkCoord, short pos) {
+        return new BlockPosition((pos & 0xF) + chunkCoord.x * 16, ((pos >> 8) & 0xFF), ((pos >> 4) & 0xF) + chunkCoord.z * 16);
     }
 
     /**

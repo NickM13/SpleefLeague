@@ -21,9 +21,7 @@ import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,7 +93,9 @@ public class ConnectionListener implements Listener {
         text.addExtra(pcp.getChatName());
         text.addExtra(" has logged in");
         if (pcp.getRank().equals(ProxyRank.DONOR_4)) {
-            for (ProxyCorePlayer pcp2 : ProxyCore.getInstance().getPlayers().getAll()) {
+            Set<ProxyCorePlayer> players = new HashSet<>(ProxyCore.getInstance().getPlayers().getAll());
+            players.remove(pcp);
+            for (ProxyCorePlayer pcp2 : players) {
                 ProxyCore.getInstance().sendMessage(pcp2, text);
             }
         } else {

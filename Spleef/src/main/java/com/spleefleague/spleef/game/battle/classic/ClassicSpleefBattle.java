@@ -20,11 +20,13 @@ import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffix;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.ChatColor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -35,6 +37,8 @@ import java.util.UUID;
 public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
 
     private BuildStructure randomField;
+
+    private List<ClassicSpleefAffix> affixes = new ArrayList<>();
 
     public ClassicSpleefBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), battleId, players, arena, ClassicSpleefPlayer.class, SpleefMode.CLASSIC.getBattleMode());
@@ -60,7 +64,7 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
                             FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
                             getArena().getOrigin().toBlockPosition()));
         }
-        ClassicSpleefAffixes.startBattle(this);
+        affixes = ClassicSpleefAffixes.startBattle(this);
     }
 
     @Override
@@ -81,7 +85,7 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
     public void reset() {
         getGameWorld().reset();
         fillField();
-        ClassicSpleefAffixes.startRound(this);
+        affixes.forEach(ClassicSpleefAffix::startRound);
         for (ClassicSpleefPlayer csp : battlers.values()) {
             csp.respawn();
         }
@@ -91,7 +95,7 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
     public void startRound() {
         getGameWorld().reset();
         super.startRound();
-        ClassicSpleefAffixes.startRound(this);
+        affixes.forEach(ClassicSpleefAffix::startRound);
     }
 
     @Override
@@ -106,7 +110,19 @@ public class ClassicSpleefBattle extends VersusBattle<ClassicSpleefPlayer> {
 
     @Override
     public void updateField() {
-        ClassicSpleefAffixes.updateField(this);
+        affixes.forEach(ClassicSpleefAffix::update);
+    }
+
+    @Override
+    public void onBlockBreak(CorePlayer cp) {
+        super.onBlockBreak(cp);
+        affixes.forEach(affix -> affix.onBlockBreak(battlers.get(cp)));
+    }
+
+    @Override
+    public void onRightClick(CorePlayer cp) {
+        super.onRightClick(cp);
+        affixes.forEach(affix -> affix.onRightClick(battlers.get(cp)));
     }
 
 }

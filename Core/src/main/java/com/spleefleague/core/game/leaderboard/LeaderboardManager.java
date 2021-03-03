@@ -34,6 +34,14 @@ public class LeaderboardManager {
         Bukkit.getScheduler().runTaskTimerAsynchronously(Core.getInstance(), this::refresh, 200L, 200L);
     }
 
+    public void clear() {
+        for (CoreLeaderboard leaderboard : LEADERBOARDS.values()) {
+            if (leaderboard.getSeason().equals(SeasonManager.getCurrentSeason().getIdentifier())) {
+                leaderboard.clear();
+            }
+        }
+    }
+
     public void refresh() {
         for (Document doc : leaderboardCol.find(new Document("season", SeasonManager.getCurrentSeason().getIdentifier()))) {
             String name = doc.getString("name");

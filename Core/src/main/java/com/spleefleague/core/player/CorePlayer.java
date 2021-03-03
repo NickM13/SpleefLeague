@@ -264,13 +264,14 @@ public class CorePlayer extends CoreOfflinePlayer {
      */
     public boolean setLastAction() {
         boolean wasAfk = this.afk;
+        long delta = System.currentTimeMillis() - lastAction;
+        onlineTime += delta;
         if (this.afk) {
             setAfk(false);
-            statistics.add("general", "afkTime", System.currentTimeMillis() - lastAction);
         } else {
-            statistics.add("general", "activeTime", System.currentTimeMillis() - lastAction);
+            activeTime += delta;
             if (battleState == BattleState.BATTLER) {
-                statistics.add("general", "gameTime", System.currentTimeMillis() - lastAction);
+                battleTime += delta;
             }
         }
         lastAction = System.currentTimeMillis();
@@ -694,6 +695,13 @@ public class CorePlayer extends CoreOfflinePlayer {
         } else {
             return p.getLocation();
         }
+    }
+
+    public Location getHand() {
+        return getPlayer().getEyeLocation().clone()
+                .add(getPlayer().getLocation().getDirection()
+                        .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
+                        .multiply(0.15).add(new Vector(0, -0.15, 0)));
     }
 
     /**

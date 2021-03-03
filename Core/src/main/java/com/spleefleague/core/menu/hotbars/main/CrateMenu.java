@@ -70,48 +70,61 @@ public class CrateMenu {
                                         CrateLoot loot = cp.getCrates().openCrate(crate.getIdentifier());
                                         int delay = 0;
                                         GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, crate.getOpened());
-                                        for (Collectible collectible : loot.collectibles) {
-                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                                    .setDisplayItem(collectible.getDisplayItem())
-                                                    .setName(collectible.getDisplayName()));
-                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                                                Core.getInstance().sendMessage(cp,
-                                                        ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
-                                                double height = 0.05;
-                                                if (collectible.getParentType().equalsIgnoreCase("Shovel")) {
-                                                    height += 0.2;
-                                                }
-                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, collectible.getDisplayItem(), height);
-                                            }, delay += 20);
+                                        for (CrateLoot.CrateLootItem item : loot.items) {
+                                            if (item.lootType == CrateLoot.CrateLootItem.LootType.COLLECTIBLE) {
+                                                container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                        .setDisplayItem(item.collectible.getDisplayItem())
+                                                        .setName(item.collectible.getDisplayName()));
+                                                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                    if (item.replacement == null) {
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "You received the " + item.collectible.getDisplayName() + ChatColor.GRAY + "!");
+                                                    } else {
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "You received another " + item.collectible.getDisplayName() + ChatColor.GRAY + "!");
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "Converted to a " + item.replacement.color + item.replacement.displayName + ChatColor.GRAY + "!");
+                                                    }
+                                                    double height = 0.05;
+                                                    if (item.collectible.getParentType().equalsIgnoreCase("Shovel")) {
+                                                        height += 0.2;
+                                                    }
+                                                    GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, item.collectible.getDisplayItem(), height);
+                                                }, delay += 20);
+                                            } else if (item.lootType == CrateLoot.CrateLootItem.LootType.SKIN) {
+                                                container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                        .setDisplayItem(item.skin.getDisplayItem())
+                                                        .setName(item.skin.getDisplayName()));
+                                                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                    if (item.replacement == null) {
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "You received the " + item.skin.getFullDisplayName() + ChatColor.GRAY + "!");
+                                                    } else {
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "You received another " + item.skin.getFullDisplayName() + ChatColor.GRAY + "!");
+                                                        Core.getInstance().sendMessage(cp,
+                                                                ChatColor.GRAY + "Converted to a " + item.replacement.color + item.replacement.displayName + ChatColor.GRAY + "!");
+                                                    }
+                                                    double height = 0.05;
+                                                    if (item.skin.getParent().getParentType().equalsIgnoreCase("Shovel")) {
+                                                        height += 0.2;
+                                                    }
+                                                    GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, item.skin.getDisplayItem(), height);
+                                                }, delay += 20);
+                                            } else {
+                                                ItemStack itemStack = item.currency.displayItem.clone();
+                                                itemStack.setAmount(item.amount);
+                                                container.addMenuItem(InventoryMenuAPI.createItemStatic()
+                                                        .setDisplayItem(itemStack)
+                                                        .setName(item.currency.displayName));
+                                                Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
+                                                    Core.getInstance().sendMessage(cp,
+                                                            ChatColor.GRAY + "You received " + item.currency.color + item.amount + " " +
+                                                                    item.currency.displayName + (item.amount != 1 ? "s" : "") + ChatColor.GRAY + "!");
+                                                    GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, item.currency.displayItem, -0.15);
+                                                }, delay += 20);
+                                            }
                                         }
-                                        for (CollectibleSkin skin : loot.collectibleSkins) {
-                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                                    .setDisplayItem(skin.getDisplayItem())
-                                                    .setName(skin.getDisplayName()));
-                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                                                Core.getInstance().sendMessage(cp,
-                                                        ChatColor.GRAY + "You've received " + skin.getFullDisplayName() + ChatColor.GRAY + "!");
-                                                double height = 0.05;
-                                                if (skin.getParent().getParentType().equalsIgnoreCase("Shovel")) {
-                                                    height += 0.2;
-                                                }
-                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, skin.getDisplayItem(), height);
-                                            }, delay += 20);
-                                        }
-                                        for (Map.Entry<CoreCurrency, Integer> entry : loot.currencies.entrySet()) {
-                                            ItemStack item = entry.getKey().displayItem.clone();
-                                            item.setAmount(entry.getValue());
-                                            container.addMenuItem(InventoryMenuAPI.createItemStatic()
-                                                    .setDisplayItem(item)
-                                                    .setName(entry.getKey().displayName));
-                                            Bukkit.getScheduler().runTaskLater(Core.getInstance(), () -> {
-                                                Core.getInstance().sendMessage(cp,
-                                                        ChatColor.GRAY + "You've received " + entry.getKey().color + entry.getValue() + " " +
-                                                                entry.getKey().displayName + (entry.getValue() != 1 ? "s" : "") + ChatColor.GRAY + "!");
-                                                GlobalWorld.getGlobalWorld(Core.OVERWORLD).addRotationItem(cp, entry.getKey().displayItem, -0.05);
-                                            }, delay += 20);
-                                        }
-                                        //cp2.getMenu().setMenuTag("openedCrate", crate.getIdentifier());
                                     })
                                     .setCloseOnAction(true));
                         } else {

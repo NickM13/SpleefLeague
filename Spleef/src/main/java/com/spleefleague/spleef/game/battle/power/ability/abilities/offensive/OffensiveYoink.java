@@ -66,7 +66,7 @@ public class OffensiveYoink extends AbilityOffensive {
         projectileStats.fireRange = 5D;
         projectileStats.collidable = true;
         projectileStats.noClip = true;
-        projectileStats.size = 1.25D;
+        projectileStats.size = 1.D;
         projectileStats.customModelDatas = Lists.newArrayList(31);
     }
 

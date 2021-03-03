@@ -27,13 +27,13 @@ public class ClassicSpleefPlayer extends SpleefBattlePlayer {
     @Override
     public void onBlockBreak() {
         super.onBlockBreak();
-        ClassicSpleefAffixes.onBlockBreak(this);
+        getBattle().onBlockBreak(getCorePlayer());
     }
 
     @Override
     public void onRightClick() {
         super.onRightClick();
-        ClassicSpleefAffixes.onRightClick(this);
+        getBattle().onRightClick(getCorePlayer());
     }
 
 }

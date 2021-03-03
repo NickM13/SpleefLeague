@@ -36,7 +36,7 @@ public enum SpleggMode {
                 .setDescription("Take your skills to the next level in this free-for-all multiplayer edition of Splegg!")
                 .setTeamStyle(BattleMode.TeamStyle.DYNAMIC)
                 .setBattleClass(MultiSpleggBattle.class)
-                .setRewards(0, 15, 0.05, 0.02, 0.01, 0.002);
+                .setRewards(0, 15, 0.025, 0.01, 0.005, 0.001);
     }
     
     public String getName() {

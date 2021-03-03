@@ -12,6 +12,7 @@ import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.coreapi.player.crate.PlayerCrates;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerCrate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -76,54 +77,52 @@ public class CorePlayerCrates extends PlayerCrates {
                         }
                         if (parts.length > 2) {
                             String skin = parts[2];
-                            if (owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin)) {
+                            boolean preowned = owner.getCollectibles().getInfo(collectible).getOwnedSkins().containsKey(skin);
+                            if (preowned) {
+                                CoreCurrency currency;
                                 switch (collectible.getRarity()) {
                                     case COMMON:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_COMMON, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        currency = CoreCurrency.FRAGMENT_COMMON;
                                         break;
                                     case RARE:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_RARE, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_RARE, 1);
+                                        currency = CoreCurrency.FRAGMENT_RARE;
                                         break;
                                     case EPIC:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_EPIC, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        currency = CoreCurrency.FRAGMENT_EPIC;
                                         break;
-                                    case LEGENDARY:
-                                    case MYTHIC:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_LEGENDARY, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                    default:
+                                        currency = CoreCurrency.FRAGMENT_LEGENDARY;
                                         break;
                                 }
+                                owner.getPurse().addCurrency(currency, 1);
+                                crateLoot.items.add(new CrateLoot.CrateLootItem(collectible.getSkin(skin), currency));
                             } else {
-                                crateLoot.collectibleSkins.add(collectible.getSkin(skin));
                                 owner.getCollectibles().addSkin(collectible, skin);
+                                crateLoot.items.add(new CrateLoot.CrateLootItem(collectible.getSkin(skin), null));
                             }
                         } else {
-                            if (owner.getCollectibles().contains(collectible)) {
+                            boolean preowned = owner.getCollectibles().contains(collectible);
+                            if (preowned) {
+                                CoreCurrency currency;
                                 switch (collectible.getRarity()) {
                                     case COMMON:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_COMMON, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_COMMON, 1);
+                                        currency = CoreCurrency.FRAGMENT_COMMON;
                                         break;
                                     case RARE:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_RARE, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_RARE, 1);
+                                        currency = CoreCurrency.FRAGMENT_RARE;
                                         break;
                                     case EPIC:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_EPIC, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_EPIC, 1);
+                                        currency = CoreCurrency.FRAGMENT_EPIC;
                                         break;
-                                    case LEGENDARY:
-                                    case MYTHIC:
-                                        owner.getPurse().addCurrency(CoreCurrency.FRAGMENT_LEGENDARY, 1);
-                                        crateLoot.currencies.put(CoreCurrency.FRAGMENT_LEGENDARY, 1);
+                                    default:
+                                        currency = CoreCurrency.FRAGMENT_LEGENDARY;
                                         break;
                                 }
+                                owner.getPurse().addCurrency(currency, 1);
+                                crateLoot.items.add(new CrateLoot.CrateLootItem(collectible, currency));
                             } else {
-                                crateLoot.collectibles.add(collectible);
                                 owner.getCollectibles().add(collectible);
+                                crateLoot.items.add(new CrateLoot.CrateLootItem(collectible, null));
                             }
                         }
                     }
@@ -131,20 +130,22 @@ public class CorePlayerCrates extends PlayerCrates {
             }
         }
 
+        Map<CoreCurrency, Integer> currencies = new HashMap<>();
         for (int i = 0; i < currencyCount; i++) {
             roll = Math.random() * crate.getTotalCurrencyWeight();
             for (Map.Entry<String, Double> entry : crate.getCurrencyWeightMap().entrySet()) {
                 roll -= entry.getValue();
                 if (roll < 0) {
                     CoreCurrency coreCurrency = CoreCurrency.valueOf(entry.getKey());
-                    int newVal = crateLoot.currencies.getOrDefault(coreCurrency, 0) + 1;
-                    crateLoot.currencies.put(CoreCurrency.valueOf(entry.getKey()), newVal);
+                    int newVal = currencies.getOrDefault(coreCurrency, 0) + 1;
+                    currencies.put(CoreCurrency.valueOf(entry.getKey()), newVal);
                 }
             }
         }
 
-        for (Map.Entry<CoreCurrency, Integer> entry : crateLoot.currencies.entrySet()) {
+        for (Map.Entry<CoreCurrency, Integer> entry : currencies.entrySet()) {
             owner.getPurse().addCurrency(entry.getKey(), entry.getValue());
+            crateLoot.items.add(new CrateLoot.CrateLootItem(entry.getKey(), entry.getValue()));
         }
 
         super.changeCrateCount(crateName, -1);

@@ -174,30 +174,9 @@ public class PlayerInfoCommand extends CoreCommand {
     */
 
     private String getOnlineTime(CoreOfflinePlayer cp) {
-        String onlineTime = "";
-        long onlineTimeTotal = 0;
-        long lastJoin = -1;
+        String onlineTime;
 
-        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString())).sort(new Document("date", 1)).iterator();
-
-        while (cursor.hasNext()) {
-            Document doc = cursor.next();
-            long time = doc.get("date", Date.class).getTime();
-            switch (doc.get("type", String.class)) {
-                case "JOIN":
-                    lastJoin = time;
-                    break;
-                case "LEAVE":
-                    if (lastJoin != -1) {
-                        onlineTimeTotal += time - lastJoin;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        onlineTime = TimeUtils.timeToString(onlineTimeTotal);
+        onlineTime = TimeUtils.timeToString(cp.getOnlineTime());
 
         return onlineTime;
     }

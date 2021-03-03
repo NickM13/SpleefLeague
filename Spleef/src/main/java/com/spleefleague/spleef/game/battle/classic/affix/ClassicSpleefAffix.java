@@ -13,37 +13,22 @@ import org.bukkit.inventory.ItemStack;
  * @author NickM13
  * @since 5/1/2020
  */
-public abstract class ClassicSpleefAffix extends DBEntity {
+public abstract class ClassicSpleefAffix {
 
-    @DBField
-    private Boolean active = false;
+    private final ClassicSpleefAffixes.AffixType type;
 
-    protected String displayName = "";
+    protected ClassicSpleefBattle battle;
 
-    public ClassicSpleefAffix() {
-        this.identifier = getClass().getSimpleName();
+    public ClassicSpleefAffix(ClassicSpleefAffixes.AffixType type) {
+        this.type = type;
     }
 
-    public InventoryMenuItem createMenuItem() {
-        return InventoryMenuAPI.createItemDynamic()
-                .setName(identifier)
-                .setDescription("")
-                .setDisplayItem(cp -> new ItemStack(isActive() ? Material.GLOWSTONE : Material.REDSTONE_LAMP))
-                .setAction(cp -> setActive(!isActive()))
-                .setCloseOnAction(false);
+    public void setBattle(ClassicSpleefBattle battle) {
+        this.battle = battle;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean state) {
-        active = state;
-        ClassicSpleefAffixes.updateAffix(this);
-    }
-
-    public String getDisplayName() {
-        return displayName;
+    public ClassicSpleefAffixes.AffixType getType() {
+        return type;
     }
 
     /**
@@ -56,7 +41,7 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     /**
      * Called at the start of a round
      */
-    public void startRound(ClassicSpleefBattle battle) {
+    public void startRound() {
 
     }
 
@@ -71,7 +56,7 @@ public abstract class ClassicSpleefAffix extends DBEntity {
     /**
      * Called every 2 ticks (1/10 of a second)
      */
-    public void update(ClassicSpleefBattle battle) {
+    public void update() {
 
     }
 

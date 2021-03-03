@@ -243,6 +243,11 @@ public abstract class Collectible extends Vendorable {
         }
     }
 
+    public void setSkinRarity(String identifier, Rarity rarity) {
+        skins.get(identifier).setRarity(rarity);
+        saveChanges();
+    }
+
     public boolean isUnlocked(CorePlayer corePlayer) {
         return corePlayer.getCollectibles().contains(this) || isDefault(corePlayer);
     }

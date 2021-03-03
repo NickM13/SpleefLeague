@@ -6,19 +6,16 @@
 
 package com.spleefleague.spleef.game;
 
-import com.mongodb.client.MongoCollection;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.menu.hotbars.main.HeldItemMenu;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.CorePlayerCollectibles;
 import com.spleefleague.core.player.collectible.Holdable;
-import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.spleef.Spleef;
-import java.util.Set;
 
 import com.spleefleague.spleef.util.SpleefUtils;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
@@ -84,7 +81,7 @@ public class Shovel extends Holdable {
         HeldItemMenu.getItem().getLinkedChest().addMenuItem(CorePlayerCollectibles.createToggleMenuItem(Shovel.class), 0, 2);
     }
 
-    //@DBField private ShovelEffect shovelEffect = new ShovelEffect();
+    @DBField private ShovelEffect shovelEffect = new ShovelEffect();
 
     public Shovel() {
         super();
@@ -99,22 +96,13 @@ public class Shovel extends Holdable {
     }
 
     public void clearEffect() {
-
+        shovelEffect.setType(ShovelEffect.ShovelEffectType.NONE);
+        saveChanges();
     }
 
-    public void setEffect(ShovelEffect.ShovelEffectCastType castType,
-                          ShovelEffect.ShovelEffectDesign design,
-                          Particle particle,
-                          int tickSpace,
-                          int delayIn,
-                          int remain) {
-        /*
-        shovelEffect.setCastType(castType)
-                .setDesign(design)
-                .setParticle(particle)
-                .setDelayIn(delayIn)
-                .setRemain(remain);
-        */
+    public void setEffect(ShovelEffect.ShovelEffectType type) {
+        shovelEffect.setType(type);
+        saveChanges();
     }
 
     @Override
@@ -138,7 +126,7 @@ public class Shovel extends Holdable {
     }
 
     public void activateEffect(CorePlayer corePlayer) {
-        //shovelEffect.activate(corePlayer);
+        shovelEffect.activate(corePlayer);
     }
 
     /**

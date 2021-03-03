@@ -13,6 +13,7 @@ import com.spleefleague.coreapi.utils.packet.spigot.removal.PacketSpigotRemovalC
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
@@ -162,7 +163,7 @@ public class CollectibleCommand extends CoreCommand {
                                     @HelperArg("customModelData") Integer customModelData) {
         Collectible collectible = Vendorables.get(collectibleClass, identifier);
         if (collectible != null) {
-            Integer prevModel = collectible.getCustomModelData();
+            int prevModel = collectible.getCustomModelData();
             collectible.setCustomModelData(customModelData);
             success(sender, "Changed customModelData value of " + collectible.getIdentifier() + " from " + prevModel + " to " + customModelData);
             sender.setHeldItem(collectible.getDisplayItem());
@@ -228,15 +229,64 @@ public class CollectibleCommand extends CoreCommand {
      * @param identifier Collectible Identifier
      */
     @CommandAnnotation
+    public void collectibleActivate(CommandSender sender,
+                               @LiteralArg("activate") String l,
+                               CorePlayer target,
+                               @OptionArg(listName = "collectibles") String identifier) {
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
+        if (collectible == null) return;
+        if (target.getCollectibles().add(collectible)) {
+            Core.getInstance().sendMessage(target,
+                    ChatColor.GRAY + "You received the " + collectible.getDisplayName() + ChatColor.GRAY + "!");
+        }
+        target.getCollectibles().setActiveItem(collectible);
+        target.getCollectibles().setEnabled(collectibleClass, true);
+    }
+
+    /**
+     * Adds a collectible to the players collection
+     *
+     * @param sender     Sender
+     * @param l          add
+     * @param targets    Targets
+     * @param identifier Collectible Identifier
+     */
+    @CommandAnnotation
+    public void collectibleActivates(CommandSender sender,
+                                     @LiteralArg("activate") String l,
+                                     List<CorePlayer> targets,
+                                     @OptionArg(listName = "collectibles") String identifier) {
+        Collectible collectible = Vendorables.get(collectibleClass, identifier);
+        if (collectible == null) return;
+        for (CorePlayer target : targets) {
+            if (target.getCollectibles().add(collectible)) {
+                Core.getInstance().sendMessage(target,
+                        ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
+            }
+            target.getCollectibles().setActiveItem(collectible);
+            target.getCollectibles().setEnabled(collectibleClass, true);
+        }
+    }
+
+    /**
+     * Adds a collectible to the players collection
+     *
+     * @param sender     Sender
+     * @param l          add
+     * @param target     Target
+     * @param identifier Collectible Identifier
+     */
+    @CommandAnnotation
     public void collectibleAdd(CommandSender sender,
                                @LiteralArg("add") String l,
                                CorePlayer target,
                                @OptionArg(listName = "collectibles") String identifier) {
         Collectible collectible = Vendorables.get(collectibleClass, identifier);
+        if (collectible == null) return;
         if (target.getCollectibles().add(collectible)) {
             sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
             Core.getInstance().sendMessage(target,
-                    ChatColor.GRAY + "You've received " + collectible.getDisplayName() + ChatColor.GRAY + "!");
+                    ChatColor.GRAY + "You received the " + collectible.getDisplayName() + ChatColor.GRAY + "!");
         } else {
             sender.sendMessage(target.getDisplayName() + " already had " + identifier);
         }
@@ -256,6 +306,7 @@ public class CollectibleCommand extends CoreCommand {
                                 List<CorePlayer> targets,
                                 @OptionArg(listName = "collectibles") String identifier) {
         Collectible collectible = Vendorables.get(collectibleClass, identifier);
+        if (collectible == null) return;
         for (CorePlayer target : targets) {
             if (target.getCollectibles().add(collectible)) {
                 sender.sendMessage("Added collectible " + identifier + " to " + target.getDisplayNamePossessive() + " collection");
@@ -321,6 +372,23 @@ public class CollectibleCommand extends CoreCommand {
         }
         collectible.destroySkin(identifier);
         success(sender, "Skin destroyed " + parent + ":" + identifier);
+    }
+
+    @CommandAnnotation
+    public void collectibleSkinSetRarity(CorePlayer sender,
+                                         @LiteralArg("skin") String l1,
+                                         @LiteralArg("set") String l2,
+                                         @LiteralArg("rarity") String l3,
+                                         @OptionArg(listName = "collectibles") String parent,
+                                         @OptionArg(listName = "skins") String identifier,
+                                         @Nullable Vendorable.Rarity rarity) {
+        Collectible collectible = Vendorables.get(collectibleClass, parent);
+        if (collectible == null) {
+            error(sender, "Collectible not found");
+            return;
+        }
+        collectible.setSkinRarity(identifier, rarity);
+        success(sender, "Skin rarity " + parent + ":" + identifier + " set to " + rarity);
     }
 
     @CommandAnnotation

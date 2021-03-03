@@ -21,12 +21,12 @@ public class DebugCommand extends Command {
 
     @Override
     public void execute(CommandSender commandSender, String[] strings) {
-        if (strings[0].equalsIgnoreCase("flip")) {
+        if (strings[0].equalsIgnoreCase("removeLow")) {
             if (strings.length > 1) {
                 String season = ProxyCore.getInstance().getSeasonManager().getCurrentSeason();
                 for (UUID uuid : ProxyCore.getInstance().getPlayers().getAllOfflineUuids()) {
                     ProxyCorePlayer pcp = ProxyCore.getInstance().getPlayers().getOffline(uuid);
-                    pcp.getRatings().flip(strings[1], season);
+                    pcp.getRatings().removeLow(strings[1], season);
                 }
             }
         }

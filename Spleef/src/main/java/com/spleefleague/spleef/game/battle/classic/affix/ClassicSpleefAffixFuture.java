@@ -12,15 +12,13 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
     /**
      * Time into the round that this affix will activate, in seconds
      */
-    protected Integer activateTime;
+    protected final int activateTime;
     protected double lastUpdate;
+    protected boolean announced;
 
-    public ClassicSpleefAffixFuture() {
-        super();
-    }
-
-    public void setActiveTime(int activeTime) {
-        this.activateTime = activeTime;
+    public ClassicSpleefAffixFuture(ClassicSpleefAffixes.AffixType type, int activateTime) {
+        super(type);
+        this.activateTime = activateTime;
     }
 
     protected boolean isRoundActivated() {
@@ -28,8 +26,9 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
     }
 
     @Override
-    public void startRound(ClassicSpleefBattle battle) {
+    public void startRound() {
         lastUpdate = 0;
+        announced = false;
     }
 
     public void activate(ClassicSpleefBattle battle) {
@@ -40,23 +39,19 @@ public abstract class ClassicSpleefAffixFuture extends ClassicSpleefAffix {
 
     }
 
-    protected abstract String getPreActiveMessage(int seconds);
-
     @Override
-    public void update(ClassicSpleefBattle battle) {
-        if (battle.isRoundStarted() && activateTime > 0) {
+    public void update() {
+        if (battle.isRoundStarted()) {
             if (lastUpdate < activateTime) {
-                if (battle.getRoundTime() > activateTime) {
+                if (battle.getRoundTime() >= activateTime) {
                     activate(battle);
-                } else if (Math.floor(lastUpdate) < Math.floor(battle.getRoundTime())) {
-                    if (Math.floor(battle.getRoundTime()) == activateTime - 15) {
-                        battle.getChatGroup().sendMessage(getPreActiveMessage(15));
-                    }
+                } else if (!announced && Math.floor(battle.getRoundTime()) >= activateTime - 15) {
+                    battle.getChatGroup().sendMessage(getType().displayName + " will activate in " + 15 + " seconds");
+                    announced = true;
                 }
                 lastUpdate = battle.getRoundTime();
             } else {
                 updateActive(battle);
-                lastUpdate = battle.getRoundTime();
             }
         }
     }

@@ -146,7 +146,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     protected void endRound(BP winner) {
         winner.addRoundWin();
-        winner.addRoundWin();
         if (winner.getRoundWins() < playToPoints) {
             chatGroup.sendMessage(Chat.PLAYER_NAME + winner.getCorePlayer().getDisplayName() + Chat.DEFAULT + " won the round");
             startRound();
@@ -215,7 +214,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void failBattler(CorePlayer cp) {
-        remainingPlayers.remove(battlers.get(cp));
+        if (finished || !remainingPlayers.remove(battlers.get(cp))) return;
         applyEloChange(battlers.get(cp), remainingPlayers.size());
         if (remainingPlayers.isEmpty()) {
             endRound(battlers.get(cp));

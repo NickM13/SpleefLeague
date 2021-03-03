@@ -76,11 +76,15 @@ public class ReloadDataCommand extends CoreCommand {
     public void reloaddataWarps(CorePlayer sender,
                                 @LiteralArg("warps") String l) {
         Warp.init();
-        Collectible.clear();
-        for (CorePlugin plugin : CorePlugin.getAllPlugins()) {
-            plugin.reloadCollectibles();
-        }
-        success(sender, "Reloaded collectibles from database");
+        success(sender, "Reloaded warps from database");
+    }
+
+    @CommandAnnotation
+    public void reloaddataLeaderboards(CorePlayer sender,
+                                       @LiteralArg("leaderboards") String l) {
+        Core.getInstance().getLeaderboards().clear();
+        Core.getInstance().getLeaderboards().refresh();
+        success(sender, "Reloaded leaderboards from database");
     }
 
 }

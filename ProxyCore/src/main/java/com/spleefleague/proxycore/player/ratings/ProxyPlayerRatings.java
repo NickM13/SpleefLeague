@@ -33,45 +33,53 @@ public class ProxyPlayerRatings extends PlayerRatings {
                 // Store masters players in another list and when a new master is promoted, drop someone
             }
              */
+            String message;
+            switch (result) {
+                case -1:
+                    message = "demoted to ";
+                    break;
+                case 1:
+                    message = "promoted to ";
+                    break;
+                case 2:
+                    message = "placed in ";
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + result);
+            }
 
-            TextComponent component = new TextComponent();
+            TextComponent component;
 
+            component = new TextComponent();
             component.setColor(ChatColor.GRAY);
             component.addExtra(owner.getChatName());
-            component.addExtra(" has been ");
-            component.addExtra(result == 1 ? "promoted" : "demoted");
-            component.addExtra(" to ");
+            component.addExtra(" has ");
+            component.addExtra(message);
             component.addExtra(rating.getDivision().getDisplayName());
             component.addExtra(" in ");
-            System.out.println(mode);
-            System.out.println(ProxyCore.getInstance().getQueueManager().getQueue(mode));
             component.addExtra(ProxyCore.getInstance().getQueueManager().getQueue(mode).getDisplayName());
-
             ProxyCore.getInstance().getChat().sendNotificationFriends(Sets.newHashSet(owner.getUniqueId()), component);
 
             component = new TextComponent();
-
             component.setColor(ChatColor.GRAY);
-            component.addExtra("You have been ");
-            component.addExtra(result == 1 ? "promoted" : "demoted");
-            component.addExtra(" to ");
+            component.addExtra("You have ");
+            component.addExtra(message);
             component.addExtra(rating.getDivision().getDisplayName());
             component.addExtra(" in ");
             component.addExtra(ProxyCore.getInstance().getQueueManager().getQueue(mode).getDisplayName());
-
             ProxyCore.getInstance().sendMessage(owner, component);
         }
     }
 
     /**
-     * Debug fix, accidentally put multi gamemode elos in backwards
+     * Debug fix, removing players from leaderboard with less than specified games played
      */
-    public void flip(String mode, String season) {
+    public void removeLow(String mode, String season) {
         if (modeRatingsMap.containsKey(mode)) {
             Ratings ratings = modeRatingsMap.get(mode);
-            if (ratings.isRanked(season)) {
-                ratings.get(season).flip();
-                ProxyCore.getInstance().getLeaderboards().get(mode).setPlayerScore(owner.getUniqueId(), owner.getName(), ratings.get(season));
+            if (ratings.isRanked(season) && ratings.get(season).getTotalGames() < Rating.REQUIRED_GAMES) {
+                ProxyCore.getInstance().getLeaderboards().get(mode).removePlayerScore(owner.getUniqueId());
+                ratings.get(season).setDivision(Rating.Division.UNRANKED);
             }
         }
     }

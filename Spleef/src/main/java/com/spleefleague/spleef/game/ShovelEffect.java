@@ -1,10 +1,15 @@
 package com.spleefleague.spleef.game;
 
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.world.game.GameUtils;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.variable.DBEntity;
+import com.spleefleague.spleef.game.effects.*;
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,21 +21,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings("unused")
 public class ShovelEffect extends DBEntity {
 
-    public enum ShovelEffectCastType {
-        SELF,
-        LAUNCH,
-        SIGHT
+    public enum ShovelEffectType {
+
+        NONE,
+        FLAME_WHEEL(new Particle.DustOptions(Color.WHITE, 0.5f)),
+        FLAME_PHOENIX(new Particle.DustOptions(Color.WHITE, 0.5f)),
+        WATER(new Particle.DustOptions(Color.WHITE, 0.5f)),
+        AIR_TORNADO(new Particle.DustOptions(Color.WHITE, 0.5f)),
+        LIGHTNING(new Particle.DustOptions(Color.WHITE, 0.5f)),
+        SNOW_BLIZZARD(new Particle.DustOptions(Color.WHITE, 0.5f));
+
+        public final Particle.DustOptions dustOptions;
+
+        ShovelEffectType() {
+            this(new Particle.DustOptions(Color.WHITE, 0.5f));
+        }
+
+        ShovelEffectType(Particle.DustOptions dustOptions) {
+            this.dustOptions = dustOptions;
+        }
+
     }
 
-    public enum ShovelEffectDesign {
-        BOMB,
-        TORNADO,
-        SPRINKLER
-    }
-
-    @DBField private ShovelEffectCastType castType = ShovelEffectCastType.SELF;
-    @DBField private ShovelEffectDesign design = ShovelEffectDesign.BOMB;
-    @DBField private Particle particle = Particle.WATER_BUBBLE;
+    @DBField private ShovelEffectType effectType = ShovelEffectType.LIGHTNING;
+    @DBField private Particle particle = Particle.BUBBLE_POP;
     @DBField private Integer tickSpace = 4;
     @DBField private Integer delayIn = 10;
     @DBField private Integer remain = 20;
@@ -41,22 +55,13 @@ public class ShovelEffect extends DBEntity {
 
     }
 
-    public ShovelEffect setCastType(ShovelEffectCastType castType) {
-        this.castType = castType;
+    public ShovelEffect setType(ShovelEffectType effectType) {
+        this.effectType = effectType;
         return this;
     }
 
-    public ShovelEffectCastType getCastType() {
-        return castType;
-    }
-
-    public ShovelEffectDesign getDesign() {
-        return design;
-    }
-
-    public ShovelEffect setDesign(ShovelEffectDesign design) {
-        this.design = design;
-        return this;
+    public ShovelEffectType getType() {
+        return effectType;
     }
 
     public Particle getParticle() {
@@ -113,38 +118,77 @@ public class ShovelEffect extends DBEntity {
         return this;
     }
 
-    private void performSelf(CorePlayer corePlayer) {
-        AtomicInteger i = new AtomicInteger();
+    private void performAirTornado(CorePlayer corePlayer) {
+        GlobalWorld globalWorld = corePlayer.getGlobalWorld();
+        EffectAirTornado effect = new EffectAirTornado(globalWorld, corePlayer.getLocation());
+        globalWorld.addRepeatingTask(() -> {
+
+        }, 60, 1);
+    }
+
+    private void performLightning(CorePlayer corePlayer) {
         GlobalWorld globalWorld = corePlayer.getGlobalWorld();
         globalWorld.addRepeatingTask(() -> {
-            if (i.getAndIncrement() >= delayIn) {
-                Vector vec = corePlayer.getLocation().toVector();
-                System.out.println(particle + ", " + vec + ", " + count);
-                globalWorld.spawnParticles(particle, vec.getX(), vec.getY(), vec.getZ(), count);
+            EffectLightning effect = new EffectLightning(globalWorld, corePlayer.getHand(), corePlayer.getPlayer().getLocation().getDirection(), 40);
+            effect.play();
+        }, 3, 5);
+    }
+
+    private void performFlameWheel(CorePlayer corePlayer) {
+        GlobalWorld globalWorld = corePlayer.getGlobalWorld();
+        EffectFlameWheel effect = new EffectFlameWheel(globalWorld.getWorld(),
+                corePlayer.getHand(),
+                1, 0.5);
+        AtomicInteger i = new AtomicInteger();
+        globalWorld.addRepeatingTask(() -> {
+            if (effect.isAlive()) {
+                if (effect.forward()) {
+                    GameUtils.spawnCircleParticles(globalWorld,
+                            effect.getCenter(),
+                            effect.getRight(),
+                            Particle.FLAME,
+                            1D, i.getAndIncrement() * (Math.PI / 16), Math.PI * 2, 8);
+                }
             }
-        }, remain, tickSpace);
+        }, 100, 1);
     }
 
-    private void performLaunch(CorePlayer corePlayer) {
-
+    private void performFlamePhoenix(CorePlayer corePlayer) {
+        GlobalWorld globalWorld = corePlayer.getGlobalWorld();
+        EffectFlamePhoenix effect = new EffectFlamePhoenix(globalWorld,
+                corePlayer.getHand(),
+                0.5);
+        globalWorld.addRepeatingTask(effect::forward, 100, 1);
     }
 
-    private void performSight(CorePlayer corePlayer) {
-
+    private void performSnowBlizzard(CorePlayer corePlayer) {
+        GlobalWorld globalWorld = corePlayer.getGlobalWorld();
+        //EffectSnowBlizzard effect = new EffectSnowBlizzard(globalWorld);
+        //globalWorld.addRepeatingTask(effect::tick, 100, 1);
     }
 
     public void activate(CorePlayer corePlayer) {
-        switch(castType) {
-            case SELF:
-                performSelf(corePlayer);
+        if (corePlayer.getPlayer().getCooldown(Material.DIAMOND_SHOVEL) > 0) return;
+        switch (effectType) {
+            case AIR_TORNADO:
+                performAirTornado(corePlayer);
                 break;
-            case SIGHT:
-                performSight(corePlayer);
+            case FLAME_WHEEL:
+                performFlameWheel(corePlayer);
                 break;
-            case LAUNCH:
-                performLaunch(corePlayer);
+            case FLAME_PHOENIX:
+                performFlamePhoenix(corePlayer);
                 break;
+            case LIGHTNING:
+                performLightning(corePlayer);
+                break;
+            case SNOW_BLIZZARD:
+                performSnowBlizzard(corePlayer);
+                break;
+            default:
+                return;
         }
+        corePlayer.getPlayer().setCooldown(Material.DIAMOND_SHOVEL, 60);
     }
 
 }

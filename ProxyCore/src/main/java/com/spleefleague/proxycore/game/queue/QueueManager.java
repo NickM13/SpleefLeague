@@ -1,6 +1,5 @@
 package com.spleefleague.proxycore.game.queue;
 
-import com.mongodb.client.MongoCollection;
 import com.spleefleague.coreapi.queue.SubQuery;
 import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.game.arena.Arena;
@@ -10,7 +9,6 @@ import com.spleefleague.proxycore.utils.CoreUtils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
-import org.bson.Document;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -29,11 +27,11 @@ public class QueueManager {
         addQueueContainer("spleef:power",           "Power Spleef",         QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("spleef:power_training",  "Power Training",       QueueContainer.TeamStyle.SOLO, false);
         addQueueContainer("spleef:team",            "Team Spleef",          QueueContainer.TeamStyle.VERSUS, true);
-        addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC, true);
+        addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC_12, true);
         addQueueContainer("spleef:bonanza",         "Bonanza Spleef",       QueueContainer.TeamStyle.BONANZA, false);
 
         addQueueContainer("splegg:versus",          "Splegg Versus",        QueueContainer.TeamStyle.VERSUS, true);
-        addQueueContainer("splegg:multi",           "Multisplegg",          QueueContainer.TeamStyle.DYNAMIC, true);
+        addQueueContainer("splegg:multi",           "Multisplegg",          QueueContainer.TeamStyle.DYNAMIC_8, true);
 
         addQueueContainer("sj:classic",             "SuperJump: Classic",   QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("sj:shuffle",             "SuperJump: Shuffle",   QueueContainer.TeamStyle.VERSUS, true);

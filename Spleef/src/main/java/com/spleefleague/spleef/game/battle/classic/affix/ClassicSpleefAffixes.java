@@ -6,24 +6,16 @@ import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.hotbars.main.options.StaffToolsMenu;
 import com.spleefleague.core.util.CoreUtils;
+import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.battle.classic.ClassicSpleefBattle;
-import com.spleefleague.spleef.game.battle.classic.ClassicSpleefPlayer;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixArtillery;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixCutDown;
 import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixDecay;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixHotStreak;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixLateGame;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixPunch;
-import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixSlowFall;
 import com.spleefleague.spleef.game.battle.classic.affix.affixes.AffixThunderdome;
 import org.bson.Document;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,10 +24,28 @@ import java.util.stream.Collectors;
  */
 public class ClassicSpleefAffixes {
 
-    private static final Map<String, ClassicSpleefAffix> affixMap = new HashMap<>();
-    private static final Set<ClassicSpleefAffix> activeAffixes = new HashSet<>();
+    public enum AffixType {
 
-    private static MongoCollection<Document> affixCol;
+        DECAY("Decay", AffixDecay.class),
+        THUNDERDOME("Thunderdome", AffixThunderdome.class);
+
+        public String displayName;
+        public Class<? extends ClassicSpleefAffix> clazz;
+
+        AffixType(String displayName, Class<? extends ClassicSpleefAffix> clazz) {
+            this.displayName = displayName;
+            this.clazz = clazz;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+    }
+
+    private static final Set<AffixType> activeAffixes = new HashSet<>();
+
+    private static MongoCollection<Document> affixColl;
 
     public static void createMenu() {
         InventoryMenuItem menuItem = InventoryMenuAPI.createItemDynamic()
@@ -46,97 +56,67 @@ public class ClassicSpleefAffixes {
         menuItem.getLinkedChest()
                 .setOpenAction((container, cp) -> {
                     container.clearUnsorted();
-                    for (String affixName : new TreeSet<>(affixMap.keySet())) {
-                        container.addMenuItem(affixMap.get(affixName).createMenuItem());
+                    for (AffixType type : AffixType.values()) {
+                        container.addMenuItem(InventoryMenuAPI.createItemDynamic()
+                                .setName(type.clazz.getSimpleName())
+                                .setDescription("")
+                                .setDisplayItem(cp2 -> new ItemStack(activeAffixes.contains(type) ? Material.GLOWSTONE : Material.REDSTONE_LAMP))
+                                .setAction(cp2 -> toggle(type))
+                                .setCloseOnAction(false));
                     }
                 });
         StaffToolsMenu.getItem().getLinkedChest().addMenuItem(menuItem);
     }
 
     public static void init() {
-        affixCol = Core.getInstance().getPluginDB().getCollection("Affixes");
-        initAffix(new AffixArtillery());
-        initAffix(new AffixCutDown());
-        initAffix(new AffixDecay());
-        initAffix(new AffixHotStreak());
-        initAffix(new AffixLateGame());
-        initAffix(new AffixPunch());
-        /*
-        initAffix(new AffixRegeneration());
-         */
-        initAffix(new AffixSlowFall());
-        initAffix(new AffixThunderdome());
-        //initAffix(new AffixWane());
-        //initAffix(new AffixWither());
+        affixColl = Spleef.getInstance().getPluginDB().getCollection("Affixes");
+
+        for (Document doc : affixColl.find()) {
+            try {
+                AffixType type = AffixType.valueOf(doc.getString("identifier"));
+                activeAffixes.add(type);
+            } catch (IllegalArgumentException ignored) {
+                affixColl.deleteMany(doc);
+            }
+        }
     }
 
     public static void refresh() {
-        for (ClassicSpleefAffix affix : affixMap.values()) {
-            Document doc = affixCol.find(new Document("identifier", affix.getIdentifier())).first();
-            if (doc != null) affix.load(doc);
+        activeAffixes.clear();
+        for (Document doc : affixColl.find()) {
+            try {
+                AffixType type = AffixType.valueOf(doc.getString("identifier"));
+                activeAffixes.add(type);
+            } catch (IllegalArgumentException ignored) { }
+        }
+    }
+
+    public static void toggle(AffixType type) {
+        if (activeAffixes.contains(type)) {
+            activeAffixes.remove(type);
+            affixColl.deleteMany(new Document("identifier", type.name()));
+        } else {
+            activeAffixes.add(type);
+            affixColl.insertOne(new Document("identifier", type.name()));
         }
     }
 
     public static String getActiveDisplayNames() {
-        return CoreUtils.mergeSetString(activeAffixes.stream().map(ClassicSpleefAffix::getDisplayName).collect(Collectors.toSet()));
+        return CoreUtils.mergeSetString(activeAffixes.stream().map(AffixType::getDisplayName).collect(Collectors.toSet()));
     }
 
-    private static <T extends ClassicSpleefAffix> void initAffix(T affix) {
-        Document doc = affixCol.find(new Document("identifier", affix.getIdentifier())).first();
-        if (doc != null) affix.load(doc);
-        affixMap.put(affix.getIdentifier(), affix);
-        if (affix.isActive()) {
-            activeAffixes.add(affix);
-        }
-    }
+    public static List<ClassicSpleefAffix> startBattle(ClassicSpleefBattle battle) {
+        List<ClassicSpleefAffix> affixes = new ArrayList<>();
 
-    public static <T extends ClassicSpleefAffix> T get(Class<T> clazz) {
-        return (T) affixMap.get(clazz.getSimpleName());
-    }
-
-    public static void saveAffix(ClassicSpleefAffix affix) {
-        affix.save(affixCol);
-    }
-
-    public static void updateAffix(ClassicSpleefAffix affix) {
-        if (affix.isActive()) {
-            activeAffixes.add(affix);
-        } else {
-            activeAffixes.remove(affix);
-        }
-        affix.save(affixCol);
-    }
-
-    public static void startBattle(ClassicSpleefBattle battle) {
-        for (ClassicSpleefAffix affix : activeAffixes) {
-            affix.startBattle(battle);
-        }
-    }
-
-    public static void startRound(ClassicSpleefBattle battle) {
-        for (ClassicSpleefAffix affix : activeAffixes) {
-            affix.startRound(battle);
-        }
-    }
-
-    public static void updateField(ClassicSpleefBattle battle) {
-        for (ClassicSpleefAffix affix : activeAffixes) {
-            affix.update(battle);
-        }
-    }
-
-    public static void onBlockBreak(ClassicSpleefPlayer csp) {
-        for (ClassicSpleefAffix affix : activeAffixes) {
-            affix.onBlockBreak(csp);
-        }
-    }
-
-    public static void onRightClick(ClassicSpleefPlayer csp) {
-        if (csp.getBattle().isRoundStarted()) {
-            for (ClassicSpleefAffix affix : activeAffixes) {
-                affix.onRightClick(csp);
+        for (AffixType type : activeAffixes) {
+            try {
+                affixes.add(type.clazz.getConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                e.printStackTrace();
             }
         }
+
+        return affixes;
     }
 
 }

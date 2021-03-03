@@ -63,6 +63,7 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
                             FakeUtils.rotateBlocks(randomField.getFakeBlocks(), (int) getArena().getOrigin().getYaw()),
                             getArena().getOrigin().toBlockPosition()));
         }
+        gameWorld.setRegenSpeed(0.5);
     }
 
     private static final String LB = ChatColor.GRAY + "" + ChatColor.BOLD + "[";
