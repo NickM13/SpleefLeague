@@ -94,19 +94,18 @@ public class Vendorables {
         PRICE
     }
 
-    public static <T extends Vendorable> SortedSet<T> getAllSorted(Class<T> clazz, SortType sortType) {
-        SortedSet<T> vendorables;
+    public static <T extends Vendorable> List<T> getAllSorted(Class<T> clazz, SortType sortType) {
+        List<T> vendorables = new ArrayList<>(getAll(clazz).values());
+
         switch (sortType) {
             case PRICE:
-                vendorables = new TreeSet<>(Comparator.comparingInt(Vendorable::getCoinCost));
+                vendorables.sort(Comparator.comparingDouble(Vendorable::getCoinCost));
                 break;
             case CUSTOM_MODEL_DATA:
             default:
-                vendorables = new TreeSet<>(Comparator.comparingInt(Vendorable::getCustomModelData));
+                vendorables.sort(Comparator.comparingDouble(Vendorable::getCustomModelData));
                 break;
         }
-
-        vendorables.addAll(getAll(clazz).values());
 
         return vendorables;
     }
