@@ -16,6 +16,7 @@ import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.core.util.PacketUtils;
 import com.spleefleague.coreapi.database.variable.DBPlayer;
 import net.minecraft.server.v1_15_R1.EnumDirection;
+import net.minecraft.server.v1_15_R1.ItemStack;
 import net.minecraft.server.v1_15_R1.PacketPlayInUseItem;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
@@ -488,6 +489,22 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     public void spawnParticles(Particle particle, double x, double y, double z, int count,
                                double offsetX, double offsetY, double offsetZ, double extra,
                                Particle.DustOptions options) {
+        for (FWP fwp : playerMap.values()) {
+            fwp.getPlayer().spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, options);
+        }
+    }
+
+    public void spawnParticles(Particle particle, double x, double y, double z, int count,
+                               double offsetX, double offsetY, double offsetZ, double extra,
+                               BlockData options) {
+        for (FWP fwp : playerMap.values()) {
+            fwp.getPlayer().spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, options);
+        }
+    }
+
+    public void spawnParticles(Particle particle, double x, double y, double z, int count,
+                               double offsetX, double offsetY, double offsetZ, double extra,
+                               ItemStack options) {
         for (FWP fwp : playerMap.values()) {
             fwp.getPlayer().spawnParticle(particle, x, y, z, count, offsetX, offsetY, offsetZ, extra, options);
         }

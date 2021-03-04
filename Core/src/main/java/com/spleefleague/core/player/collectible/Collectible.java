@@ -44,6 +44,10 @@ public abstract class Collectible extends Vendorable {
     public static void init() {
         collectiblesCol = Core.getInstance().getPluginDB().getCollection("Collectibles");
 
+        reload();
+    }
+
+    public static void reload() {
         Vendorables.init();
 
         Hat.init();
@@ -87,6 +91,7 @@ public abstract class Collectible extends Vendorable {
                 count++;
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
+                System.out.println(doc);
             }
         }
         return count;

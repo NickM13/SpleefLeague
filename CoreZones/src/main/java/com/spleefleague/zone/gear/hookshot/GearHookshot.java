@@ -40,8 +40,6 @@ public class GearHookshot extends Gear {
     }
 
     public static void init() {
-        Vendorable.registerExactType(GearHookshot.class);
-
         Bukkit.getScheduler().runTaskTimer(Core.getInstance(), () -> {
             for (HookshotPlayer hookshotPlayer : playerFiredMap.values()) {
                 hookshotPlayer.update();
@@ -77,8 +75,6 @@ public class GearHookshot extends Gear {
 
     public GearHookshot(String identifier, String name) {
         super(GearType.HOOKSHOT, identifier, name);
-        this.material = GearType.HOOKSHOT.material;
-        this.customModelData = 1;
     }
 
     @Override

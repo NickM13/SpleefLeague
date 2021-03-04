@@ -12,6 +12,7 @@ import com.spleefleague.zone.CoreZones;
 import com.spleefleague.zone.gear.fortunescarabs.GearFortuneScarabs;
 import com.spleefleague.zone.gear.hookshot.GearHookshot;
 import com.spleefleague.zone.gear.mead.GearMead;
+import com.spleefleague.zone.gear.wayfinder.GearWayfinder;
 import com.spleefleague.zone.player.ZonePlayer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +28,8 @@ public abstract class Gear extends Holdable {
     public enum GearType {
         FORTUNE_SCARABS(GearFortuneScarabs.class, 5000L, Material.LAPIS_LAZULI),
         HOOKSHOT(GearHookshot.class, 30000L, Material.BLAZE_ROD),
-        MEAD(GearMead.class, 5000L, Material.HONEY_BOTTLE);
+        MEAD(GearMead.class, 5000L, Material.HONEY_BOTTLE),
+        WAYFINDER(GearWayfinder.class, 5000L, Material.COMPASS);
 
         public Class<? extends Gear> gearClass;
         public long cooldown;
@@ -54,19 +56,26 @@ public abstract class Gear extends Holdable {
      * Load hats from the SpleefLeague:Hats collection
      */
     public static void init() {
-        Vendorable.registerParentType(Gear.class);
-
-        GearHookshot.init();
-        GearMead.init();
-
-        loadCollectibles(Gear.class);
+        reload();
 
         InventoryMenuAPI.createItemHotbar(7, "Gear")
                 .setName(cp -> cp.getCollectibles().getActiveName(Gear.class))
                 .setDisplayItem(cp -> cp.getCollectibles().getActive(Gear.class).getGearItem(cp))
                 .setDescription(cp -> cp.getCollectibles().getActive(Gear.class).getDescription())
-                .setAvailability(cp -> !cp.isBattler() && cp.getCollectibles().hasActive(Gear.class) && cp.getCollectibles().isEnabled(Gear.class))
+                .setAvailability(cp -> !cp.isInBattle() && cp.getCollectibles().hasActive(Gear.class) && cp.getCollectibles().isEnabled(Gear.class))
                 .setAction(cp -> cp.getCollectibles().getActive(Gear.class).onRightClick(cp));
+    }
+
+    public static void reload() {
+        Vendorable.registerParentType(Gear.class);
+
+        for (GearType gearType : GearType.values()) {
+            Vendorable.registerExactType(gearType.gearClass);
+        }
+
+        loadCollectibles(Gear.class);
+
+        GearHookshot.init();
     }
 
     public static void close() {
@@ -94,6 +103,7 @@ public abstract class Gear extends Holdable {
         this.identifier = identifier;
         this.name = name;
         this.material = gearType.material;
+        this.customModelData = 1;
         this.available = applyPersistents(InventoryMenuUtils.createCustomItem(material, 1));
         this.unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(material, 2));
     }

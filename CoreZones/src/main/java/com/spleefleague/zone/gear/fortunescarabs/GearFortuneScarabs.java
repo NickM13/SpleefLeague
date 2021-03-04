@@ -5,7 +5,11 @@ import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.zone.gear.Gear;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.util.Vector;
 
 /**
@@ -22,13 +26,31 @@ public class GearFortuneScarabs extends Gear {
 
     public GearFortuneScarabs(String identifier, String name) {
         super(GearType.FORTUNE_SCARABS, identifier, name);
-        this.material = GearType.FORTUNE_SCARABS.material;
-        this.customModelData = 1;
     }
+
+    private static final BlockData goldBlockData = Material.GOLD_BLOCK.createBlockData();
+    private static final BlockData sandBlockData = Material.SAND.createBlockData();
 
     private void startDrilling(CorePlayer corePlayer, BlockPosition pos) {
         Vector center = new Vector(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
-        
+        GlobalWorld globalWorld = corePlayer.getGlobalWorld();
+        Location spinningLoc = new Location(globalWorld.getWorld(), center.getX(), center.getY(), center.getZ(), 0, 70);
+        globalWorld.addRepeatingTask(() -> {
+            spinningLoc.setY(spinningLoc.getY() - 0.05);
+            spinningLoc.setYaw(spinningLoc.getYaw() + 25);
+            corePlayer.getPlayer().teleport(spinningLoc);
+        }, 100, 1);
+        globalWorld.addRepeatingTask(() -> {
+            globalWorld.spawnParticles(Particle.BLOCK_CRACK,
+                    center.getX(), center.getY(), center.getZ(),
+                    25, 0.2, 1, 0.2, 1,
+                    goldBlockData);
+            globalWorld.spawnParticles(Particle.BLOCK_CRACK,
+                    center.getX(), center.getY(), center.getZ(),
+                    25, 0.2, 1, 0.2, 1,
+                    sandBlockData);
+            globalWorld.playSound(spinningLoc, Sound.BLOCK_SAND_HIT, 0.7f, 2, "Sound:Gear");
+        }, 50, 2);
     }
 
     @Override

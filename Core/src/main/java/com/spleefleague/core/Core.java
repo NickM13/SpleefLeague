@@ -323,7 +323,7 @@ public class Core extends CorePlugin {
 
     @Override
     public void reloadCollectibles() {
-        Collectible.init();
+        Collectible.reload();
     }
 
     @Override

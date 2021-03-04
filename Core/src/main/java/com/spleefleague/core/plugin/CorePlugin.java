@@ -17,6 +17,7 @@ import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.core.game.arena.Arenas;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
+import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.logger.CoreLoggerFilter;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
@@ -48,7 +49,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public abstract class CorePlugin extends JavaPlugin {
 
-    private static final Set<CorePlugin> plugins = new HashSet<>();
+    private static final List<CorePlugin> plugins = new ArrayList<>();
     private static final List<PlayerManager<?, ?>> playerManagers = new ArrayList<>();
 
     protected static Map<BattleMode, BattleManager> battleManagers = new HashMap<>();
@@ -120,7 +121,6 @@ public abstract class CorePlugin extends JavaPlugin {
             bm.close();
         }
         battleManagers.clear();
-        plugins.remove(this);
         close();
     }
 
@@ -234,6 +234,7 @@ public abstract class CorePlugin extends JavaPlugin {
         for (PlayerManager<?, ?> playerManager : playerManagers) {
             playerManager.onPlayerJoin(player);
         }
+        Core.getInstance().getPlayers().get(player).refreshHotbar();
     }
 
     public static void onPlayerQuit(UUID uuid) {
@@ -278,7 +279,7 @@ public abstract class CorePlugin extends JavaPlugin {
      *
      * @return CorePlugins Set
      */
-    public static Set<CorePlugin> getAllPlugins() {
+    public static List<CorePlugin> getAllPlugins() {
         return plugins;
     }
 
@@ -335,7 +336,7 @@ public abstract class CorePlugin extends JavaPlugin {
         try {
             mongoClient.close();
         } catch (NoClassDefFoundError e) {
-            System.out.println("Jar files updated, unable to close MongoDB");
+            CoreLogger.logInfo("DEBUG: Jar files updated, unable to close MongoDB");
         }
     }
 

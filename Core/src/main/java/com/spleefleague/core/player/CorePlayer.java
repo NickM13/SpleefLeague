@@ -128,7 +128,6 @@ public class CorePlayer extends CoreOfflinePlayer {
         getPlayer().setGravity(true);
         getPlayer().getActivePotionEffects().forEach(pe -> getPlayer().removePotionEffect(pe.getType()));
         setGameMode(GameMode.valueOf(gameMode));
-        refreshHotbar();
         updateMute();
     }
 

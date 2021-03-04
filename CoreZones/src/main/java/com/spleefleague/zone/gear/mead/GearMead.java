@@ -29,10 +29,6 @@ public class GearMead extends Gear {
 
     private static final int duration = 15;
 
-    public static void init() {
-        Vendorable.registerExactType(GearMead.class);
-    }
-
     private ItemStack empty, full;
 
     public GearMead() {
@@ -41,8 +37,6 @@ public class GearMead extends Gear {
 
     public GearMead(String identifier, String name) {
         super(GearType.MEAD, identifier, name);
-        this.material = Material.BLAZE_ROD;
-        this.customModelData = 1;
         this.empty = applyPersistents(InventoryMenuUtils.createCustomItem(material, 1));
         this.full = applyPersistents(InventoryMenuUtils.createCustomItem(material, 2));
     }
