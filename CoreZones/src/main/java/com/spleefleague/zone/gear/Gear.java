@@ -12,6 +12,7 @@ import com.spleefleague.zone.CoreZones;
 import com.spleefleague.zone.gear.fortunescarabs.GearFortuneScarabs;
 import com.spleefleague.zone.gear.hookshot.GearHookshot;
 import com.spleefleague.zone.gear.mead.GearMead;
+import com.spleefleague.zone.gear.steampack.GearSteamPack;
 import com.spleefleague.zone.gear.wayfinder.GearWayfinder;
 import com.spleefleague.zone.player.ZonePlayer;
 import org.bukkit.Material;
@@ -29,6 +30,7 @@ public abstract class Gear extends Holdable {
         FORTUNE_SCARABS(GearFortuneScarabs.class, 5000L, Material.LAPIS_LAZULI),
         HOOKSHOT(GearHookshot.class, 30000L, Material.BLAZE_ROD),
         MEAD(GearMead.class, 5000L, Material.HONEY_BOTTLE),
+        STEAM_PACK(GearSteamPack.class, 5000L, Material.COAL),
         WAYFINDER(GearWayfinder.class, 5000L, Material.COMPASS);
 
         public Class<? extends Gear> gearClass;
@@ -133,6 +135,10 @@ public abstract class Gear extends Holdable {
                 zonePlayer.startCooldown(gearType);
             }
         }
+    }
+
+    public void update() {
+
     }
 
     protected abstract boolean onActivate(CorePlayer corePlayer);

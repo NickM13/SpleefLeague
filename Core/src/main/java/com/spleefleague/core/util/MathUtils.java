@@ -1,8 +1,5 @@
 package com.spleefleague.core.util;
 
-import com.spleefleague.core.world.game.projectile.ProjectileWorld;
-import com.spleefleague.core.world.game.projectile.ProjectileWorldPlayer;
-import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 public class MathUtils {

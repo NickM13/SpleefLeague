@@ -4,49 +4,39 @@
  * and open the template in the editor.
  */
 
-package com.spleefleague.spleef.game.battle.power;
+package com.spleefleague.spleef.game.battle.power.versus;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleUtils;
-import com.spleefleague.core.game.battle.Battle;
-import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.versus.VersusBattle;
 import com.spleefleague.core.game.history.GameHistory;
-import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.purse.CoreCurrency;
-import com.spleefleague.core.util.variable.Dimension;
 import com.spleefleague.core.world.FakeBlock;
 import com.spleefleague.core.world.FakeUtils;
-import com.spleefleague.core.world.FakeWorld;
 import com.spleefleague.core.world.build.BuildStructure;
-import com.spleefleague.core.world.build.BuildStructures;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.Shovel;
 import com.spleefleague.spleef.game.SpleefMode;
+import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 /**
  * @author NickM13
  */
-public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
+public class PowerSpleefVersusBattle extends VersusBattle<PowerSpleefPlayer> {
 
     private BuildStructure randomField;
 
-    public PowerSpleefBattle(UUID battleId, List<UUID> players, Arena arena) {
+    public PowerSpleefVersusBattle(UUID battleId, List<UUID> players, Arena arena) {
         super(Spleef.getInstance(), battleId, players, arena, PowerSpleefPlayer.class, SpleefMode.POWER.getBattleMode());
     }
     
@@ -96,8 +86,8 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:utility", psp.getUtilityName());
             gameHistory.addPlayerAdditional(psp.getCorePlayer().getUniqueId(), "power:mobility", psp.getMobilityName());
         }
-        sortedBattlers.get(0).setOpponent(sortedBattlers.get(1));
-        sortedBattlers.get(1).setOpponent(sortedBattlers.get(0));
+        sortedBattlers.get(0).setOpponents(sortedBattlers.get(1));
+        sortedBattlers.get(1).setOpponents(sortedBattlers.get(0));
     }
 
     @Override
@@ -129,15 +119,6 @@ public class PowerSpleefBattle extends VersusBattle<PowerSpleefPlayer> {
             psp.updateAbilities();
         }
         gameWorld.performBaseBreakRegen();
-    }
-
-    @Override
-    public void startRound() {
-        super.startRound();
-        for (PowerSpleefPlayer psp : battlers.values()) {
-            psp.getPlayer().getActivePotionEffects().forEach(pe -> psp.getPlayer().removePotionEffect(pe.getType()));
-            NoteBlockMusic.playSong(psp.getCorePlayer().getUniqueId(), NoteBlockMusic.getSong("Biogra11.nbs"), 0.2f);
-        }
     }
 
     @Override

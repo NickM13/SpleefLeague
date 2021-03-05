@@ -199,24 +199,42 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     protected boolean destroyed = false;
 
     private static class RepeatingTask {
-        Runnable runnable;
+        private static final AtomicInteger COUNTER = new AtomicInteger();
+
+        public final int id;
+        Runnable runnable, finish;
         int repeats;
         final int delay;
         int cursor = 0;
 
-        public RepeatingTask(Runnable runnable, int repeats, int delay) {
+        public RepeatingTask(Runnable runnable, int repeats, int delay, Runnable finish) {
+            this.id = COUNTER.getAndIncrement();
             this.runnable = runnable;
             this.repeats = repeats;
             this.delay = delay;
+            this.finish = finish;
         }
 
         public boolean onRun() {
             if (++cursor >= delay) {
                 cursor = 0;
                 runnable.run();
-                return --repeats > 0;
+                if (--repeats > 0) {
+                    return true;
+                } else {
+                    if (finish != null) {
+                        Bukkit.getScheduler().runTask(Core.getInstance(), () -> finish.run());
+                    }
+                    return false;
+                }
             }
             return true;
+        }
+
+        public void runFinish() {
+            if (finish != null) {
+                finish.run();
+            }
         }
 
     }
@@ -289,7 +307,11 @@ public abstract class FakeWorld<FWP extends FakeWorldPlayer> {
     }
 
     public void addRepeatingTask(Runnable runnable, int repeats, int delay) {
-        repeatingTasks.add(new RepeatingTask(runnable, repeats, delay));
+        repeatingTasks.add(new RepeatingTask(runnable, repeats, delay, null));
+    }
+
+    public void addRepeatingTask(Runnable runnable, int repeats, int delay, Runnable finish) {
+        repeatingTasks.add(new RepeatingTask(runnable, repeats, delay, finish));
     }
 
     public final Map<UUID, FWP> getPlayerMap() {

@@ -1,19 +1,16 @@
 package com.spleefleague.spleef.game.battle.power.ability;
 
+import com.google.common.collect.Lists;
 import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.*;
 import com.spleefleague.core.player.BattleState;
-import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefBattle;
+import com.spleefleague.spleef.game.battle.power.team.PowerSpleefTeamBattle;
+import com.spleefleague.spleef.game.battle.power.versus.PowerSpleefVersusBattle;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityMobility;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityOffensive;
-import com.spleefleague.spleef.game.battle.power.ability.abilities.AbilityUtility;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.offensive.*;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.utility.*;
 import com.spleefleague.spleef.game.battle.power.ability.abilities.mobility.*;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
-import com.spleefleague.spleef.player.SpleefPlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,35 +64,38 @@ public class Abilities {
         addAbilityStats(MobilityJetpack.init(), false);
         addAbilityStats(MobilityPortalGun.init(), false);
 
-        applyHotbarItemStats(Ability.Type.MOBILITY, PowerSpleefBattle.class, "Place Block", false,
+        applyHotbarItemStats(Ability.Type.MOBILITY, Lists.newArrayList(PowerSpleefVersusBattle.class,
+                PowerSpleefTeamBattle.class), "Place Block", false,
                 InventoryMenuAPI.createItemHotbar(Ability.Type.MOBILITY.getSlot(), "not enough pizza"));
 
-        applyHotbarItemStats(Ability.Type.OFFENSIVE, PowerSpleefBattle.class, "Drop Item", false,
+        applyHotbarItemStats(Ability.Type.OFFENSIVE, Lists.newArrayList(PowerSpleefVersusBattle.class,
+                PowerSpleefTeamBattle.class), "Drop Item", false,
                 InventoryMenuAPI.createItemHotbar(Ability.Type.OFFENSIVE.getSlot(), "psOffensiveItem"));
 
-        applyHotbarItemStats(Ability.Type.UTILITY, PowerSpleefBattle.class, "Swap Item", false,
+        applyHotbarItemStats(Ability.Type.UTILITY, Lists.newArrayList(PowerSpleefVersusBattle.class,
+                PowerSpleefTeamBattle.class), "Swap Item", false,
                 InventoryMenuAPI.createItemHotbar(Ability.Type.UTILITY.getSlot(), "psUtilityItem"));
 
-        applyHotbarItemStats(Ability.Type.MOBILITY, PowerTrainingBattle.class, "Place Block", true,
+        applyHotbarItemStats(Ability.Type.MOBILITY, Lists.newArrayList(PowerTrainingBattle.class), "Place Block", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.MOBILITY.getSlot(), "too much pizza")
                         .setLinkedContainer(createAbilityMenuItem(Ability.Type.MOBILITY, null).getLinkedChest()));
 
-        applyHotbarItemStats(Ability.Type.OFFENSIVE, PowerTrainingBattle.class, "Drop Item", true,
+        applyHotbarItemStats(Ability.Type.OFFENSIVE, Lists.newArrayList(PowerTrainingBattle.class), "Drop Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.OFFENSIVE.getSlot(), "pstOffensiveItem")
                         .setLinkedContainer(createAbilityMenuItem(Ability.Type.OFFENSIVE, null).getLinkedChest()));
 
-        applyHotbarItemStats(Ability.Type.UTILITY, PowerTrainingBattle.class, "Swap Item", true,
+        applyHotbarItemStats(Ability.Type.UTILITY, Lists.newArrayList(PowerTrainingBattle.class), "Swap Item", true,
                 (InventoryMenuItemHotbar) InventoryMenuAPI.createItemHotbar(Ability.Type.UTILITY.getSlot(), "pstUtilityItem")
                         .setLinkedContainer(createAbilityMenuItem(Ability.Type.UTILITY, null).getLinkedChest()));
     }
 
-    private static void applyHotbarItemStats(Ability.Type type, Class<? extends Battle<?>> battleClass, String keybind, boolean swappable, InventoryMenuItemHotbar hotbarItem) {
+    private static void applyHotbarItemStats(Ability.Type type, List<Class<? extends Battle<?>>> battleClasses, String keybind, boolean swappable, InventoryMenuItemHotbar hotbarItem) {
         hotbarItem
                 .setName(cp -> type.getColor() + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getAbility(type).getName() + " (" + keybind + ")")
                 .setDisplayItem(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getAbility(type).getDisplayItem())
                 .setDescription(cp -> (swappable ? "&6&lClick to Change!\n\n" : "") + ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getAbility(type).getDescription())
                 .setAvailability(cp -> cp.getBattleState() == BattleState.BATTLER &&
-                        cp.getBattle().getClass().equals(battleClass) &&
+                        battleClasses.contains(cp.getBattle().getClass()) &&
                         ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getAbility(type) != null)
                 .setVisibility(cp -> ((PowerSpleefPlayer) cp.getBattle().getBattler(cp)).getAbility(type) != null);
     }

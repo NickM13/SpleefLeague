@@ -48,7 +48,7 @@ public class PowerTrainingBattle extends SoloBattle<PowerTrainingPlayer> {
     @Override
     protected void setupBattlers() {
         super.setupBattlers();
-        battler.setOpponent(battler);
+        battler.setOpponents(battler);
     }
 
     @Override

@@ -27,6 +27,7 @@ public class QueueManager {
         addQueueContainer("spleef:power",           "Power Spleef",         QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("spleef:power_training",  "Power Training",       QueueContainer.TeamStyle.SOLO, false);
         addQueueContainer("spleef:team",            "Team Spleef",          QueueContainer.TeamStyle.VERSUS, true);
+        addQueueContainer("spleef:power_team",      "Team Power Spleef",    QueueContainer.TeamStyle.VERSUS, true);
         addQueueContainer("spleef:multi",           "Multispleef",          QueueContainer.TeamStyle.DYNAMIC_12, true);
         addQueueContainer("spleef:bonanza",         "Bonanza Spleef",       QueueContainer.TeamStyle.BONANZA, false);
 
@@ -190,7 +191,7 @@ public class QueueManager {
                 }
             }
         } else if (!queueContainerDynamic.canQueueSolo()) {
-            ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+            ProxyCore.getInstance().sendMessage(pcp,
                     "You aren't in a party!");
             return;
         }
@@ -198,26 +199,31 @@ public class QueueManager {
         int result = queueContainerDynamic.join(pcp, query);
         String displayName = queueContainerDynamic.getDisplayName();
 
+        if (pcp.isBattling()) {
+            ProxyCore.getInstance().sendMessageError(pcp,
+                    new TextComponent("You can't do that while ingame"));
+            return;
+        }
         switch (result) {
             case -1:
-                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                ProxyCore.getInstance().sendMessage(pcp,
                         "You have left the queue for " +
                                 displayName);
                 break;
             case 0:
-                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                ProxyCore.getInstance().sendMessage(pcp,
                         "You have joined the queue for " +
                                 displayName +
                                 arenaAffix);
                 break;
             case 1:
-                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                ProxyCore.getInstance().sendMessage(pcp,
                         "You have rejoined the queue for " +
                                 displayName +
                                 arenaAffix);
                 break;
             case 2:
-                ProxyCore.getInstance().sendMessage(ProxyCore.getInstance().getPlayers().get(uuid),
+                ProxyCore.getInstance().sendMessage(pcp,
                         "Your party is already in queue for " + displayName);
                 break;
         }

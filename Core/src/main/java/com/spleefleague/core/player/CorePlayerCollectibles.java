@@ -87,7 +87,9 @@ public class CorePlayerCollectibles extends PlayerCollectibles {
                 }
                 Collectible collectible = (Collectible) entry.getValue();
                 if (collectible.getUnlockType().isRolled() && (!collectible.getUnlockType().isBaseRequired() || getInfo(collectible).isBaseUnlocked())) {
-                    available.get(collectible.getRarity()).add(collectible.getParentType() + ":" + collectible.getIdentifier());
+                    if (!collectible.getUnlockType().isBaseRequired()) {
+                        available.get(collectible.getRarity()).add(collectible.getParentType() + ":" + collectible.getIdentifier());
+                    }
                     for (String skin : collectible.getSkinIds()) {
                         available.get(collectible.getSkin(skin).getRarity()).add(collectible.getParentType() + ":" + collectible.getIdentifier() + ":" + skin);
                     }

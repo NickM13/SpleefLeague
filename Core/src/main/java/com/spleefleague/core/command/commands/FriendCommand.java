@@ -5,6 +5,7 @@ import com.spleefleague.core.command.CoreCommand;
 import com.spleefleague.core.command.annotation.*;
 import com.spleefleague.core.menu.hotbars.main.FriendsMenu;
 import com.spleefleague.core.menu.hotbars.main.friends.FriendPendingMenu;
+import com.spleefleague.core.player.CoreOfflinePlayer;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.rank.CoreRank;
 
@@ -18,7 +19,7 @@ public class FriendCommand extends CoreCommand {
     @CommandAnnotation
     public void friendAdd(CorePlayer sender,
                           @LiteralArg("add") String l,
-                          @CorePlayerArg(allowSelf = false, allowCrossServer = true, allowOffline = true) CorePlayer target) {
+                          @CorePlayerArg(allowSelf = false, allowCrossServer = true, allowOffline = true) CoreOfflinePlayer target) {
         if (!target.isOnline()) {
             error(sender, "Cannot add offline players as friends!");
         } else {

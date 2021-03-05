@@ -1,21 +1,9 @@
 package com.spleefleague.core.game;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.battle.BattlePlayer;
-import com.spleefleague.core.game.battle.team.TeamBattlePlayer;
 import com.spleefleague.core.game.battle.team.TeamBattleTeam;
-import com.spleefleague.core.util.variable.Position;
-import com.spleefleague.core.world.FakeBlock;
-import com.spleefleague.core.world.build.BuildStructure;
-import com.spleefleague.core.world.build.BuildStructures;
-import com.spleefleague.core.world.game.GameWorld;
-import org.bukkit.Location;
-import org.bukkit.Material;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -84,7 +72,7 @@ public class BattleUtils {
     }
 
     @SuppressWarnings("unused")
-    public static String toScoreSquares(TeamBattleTeam<? extends TeamBattlePlayer> bp, int playToPoints) {
+    public static String toScoreSquares(TeamBattleTeam<? extends BattlePlayer> bp, int playToPoints) {
         if (playToPoints > 5) {
             return (Chat.SCORE + bp.getRoundWins() + "/" + playToPoints);
         } else {

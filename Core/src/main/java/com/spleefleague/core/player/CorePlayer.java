@@ -38,6 +38,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -103,7 +104,6 @@ public class CorePlayer extends CoreOfflinePlayer {
     public CorePlayer() {
         this.lastAction = System.currentTimeMillis();
         this.chatChannel = ChatChannel.GLOBAL;
-        this.lastAction = System.currentTimeMillis();
         this.afk = false;
         this.afkWarned = false;
         this.lastLocation = null;
@@ -179,15 +179,6 @@ public class CorePlayer extends CoreOfflinePlayer {
 
         Team team = getPlayer().getScoreboard().getEntryTeam(getPlayer().getName());
         if (team != null) team.removeEntry(getPlayer().getName());
-
-        Document leaveDoc = new Document("date", Date.from(Instant.now()));
-        leaveDoc.append("type", "LEAVE");
-        leaveDoc.append("uuid", getPlayer().getUniqueId().toString());
-        try {
-            Core.getInstance().getPluginDB().getCollection("PlayerConnections").insertOne(leaveDoc);
-        } catch (NoClassDefFoundError | IllegalAccessError exception) {
-            Core.getInstance().getLogger().log(Level.WARNING, "Couldn't save PlayerConnection for " + getPlayer().getName());
-        }
     }
 
     public void updateMute() {

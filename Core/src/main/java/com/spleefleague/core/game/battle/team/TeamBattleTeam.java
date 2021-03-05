@@ -1,6 +1,7 @@
 package com.spleefleague.core.game.battle.team;
 
 import com.spleefleague.core.game.BattleMode;
+import com.spleefleague.core.game.battle.BattlePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -12,7 +13,7 @@ import java.util.*;
  * @author NickM13
  * @since 4/25/2020
  */
-public class TeamBattleTeam<BP extends TeamBattlePlayer> {
+public class TeamBattleTeam<BP extends BattlePlayer> {
 
     protected final UUID uuid = UUID.randomUUID();
     protected final TeamInfo teamName;

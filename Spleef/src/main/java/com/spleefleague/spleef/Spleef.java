@@ -67,6 +67,7 @@ public class Spleef extends CorePlugin {
         addBattleManager(SpleefMode.CLASSIC.getBattleMode());
         addBattleManager(SpleefMode.MULTI.getBattleMode());
         addBattleManager(SpleefMode.POWER.getBattleMode());
+        addBattleManager(SpleefMode.POWER_TEAM.getBattleMode());
         addBattleManager(SpleefMode.POWER_TRAINING.getBattleMode());
         addBattleManager(SpleefMode.TEAM.getBattleMode());
         
@@ -114,6 +115,12 @@ public class Spleef extends CorePlugin {
         powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY, powerMenu.getLinkedChest()), 6, 3);
         powerMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY, powerMenu.getLinkedChest()), 6, 4);
 
+        InventoryMenuItem powerTeamMenu = Arenas.createMenu(getInstance(), SpleefMode.POWER_TEAM.getBattleMode());
+
+        powerTeamMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.OFFENSIVE, powerMenu.getLinkedChest()), 6, 2);
+        powerTeamMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.UTILITY, powerMenu.getLinkedChest()), 6, 3);
+        powerTeamMenu.getLinkedChest().addStaticItem(Abilities.createAbilityMenuItem(Ability.Type.MOBILITY, powerMenu.getLinkedChest()), 6, 4);
+
         InventoryMenuItem teamMenu = Arenas.createMenu(getInstance(), SpleefMode.TEAM.getBattleMode());
 
         InventoryMenuItem multiMenu = Arenas.createMenu(getInstance(), SpleefMode.MULTI.getBattleMode());
@@ -122,6 +129,7 @@ public class Spleef extends CorePlugin {
         mainContainer.addStaticItem(powerMenu, 5, 1);
         mainContainer.addStaticItem(teamMenu, 4, 1);
         mainContainer.addStaticItem(multiMenu, 3, 1);
+        mainContainer.addStaticItem(powerTeamMenu, 2, 1);
 
         Shovel.createMenu();
     

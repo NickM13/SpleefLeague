@@ -24,8 +24,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author NickM
@@ -39,7 +38,7 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
     private AbilityOffensive offensive;
     private AbilityMobility mobility;
 
-    private PowerSpleefPlayer opponent;
+    private List<PowerSpleefPlayer> opponents = new ArrayList<>();
 
     // Cooldown is the seconds into the current round that the ability will have all of its charges back.
     private final Map<Ability.Type, Double> cooldowns = new HashMap<>();
@@ -49,12 +48,17 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
         selectPowers();
     }
 
-    public void setOpponent(PowerSpleefPlayer opponent) {
-        this.opponent = opponent;
+    public void addOpponent(PowerSpleefPlayer opponent) {
+        this.opponents.add(opponent);
     }
 
-    public PowerSpleefPlayer getOpponent() {
-        return opponent;
+    public void setOpponents(PowerSpleefPlayer ... opponents) {
+        this.opponents.clear();
+        this.opponents.addAll(Arrays.asList(opponents));
+    }
+
+    public List<PowerSpleefPlayer> getOpponents() {
+        return opponents;
     }
 
     public void selectPowers() {
@@ -107,6 +111,8 @@ public class PowerSpleefPlayer extends SpleefBattlePlayer {
 
     @Override
     public void respawn() {
+        setChanneling(false);
+        setFallen(false);
         resetCooldowns();
         BlockPosition pos = new BlockPosition(getSpawn().getBlockX(), getSpawn().getBlockY() + 15, getSpawn().getBlockZ());
         BuildStructure platform = BuildStructures.get("power:respawn");

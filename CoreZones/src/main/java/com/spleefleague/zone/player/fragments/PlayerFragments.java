@@ -94,8 +94,14 @@ public class PlayerFragments extends DBEntity {
         return collected;
     }
 
-    public int getCollected(String identifier) {
-        return collected.getOrDefault(identifier, Collections.EMPTY_SET).size();
+    private static final Set<Long> EMPTY = new HashSet<>();
+
+    public Set<Long> getCollected(String identifier) {
+        return collected.getOrDefault(identifier, EMPTY);
+    }
+
+    public int getCollectedCount(String identifier) {
+        return collected.getOrDefault(identifier, EMPTY).size();
     }
 
     public int getDeposited(String identifier) {

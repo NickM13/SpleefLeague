@@ -23,8 +23,8 @@ public class UtilityRegeneration extends AbilityUtility {
 
     private static final double RADIUS = 4D;
     private static final double SPACING = 0.25D;
-    private static final double TOTAL = RADIUS * SPACING;
     private static final int COUNT = 12;
+    private static final double TOTAL = (SPACING * 20 * COUNT) / 20;
 
     private void regenDelay(int count) {
         if (count < 0) return;

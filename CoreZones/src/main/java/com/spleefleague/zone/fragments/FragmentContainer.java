@@ -2,25 +2,36 @@ package com.spleefleague.zone.fragments;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuItem;
 import com.spleefleague.core.menu.InventoryMenuUtils;
+import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.util.MathUtils;
+import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.ChunkCoord;
+import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.coreapi.database.annotation.DBLoad;
 import com.spleefleague.coreapi.database.annotation.DBSave;
 import com.spleefleague.coreapi.database.variable.DBEntity;
+import com.spleefleague.zone.CoreZones;
 import com.spleefleague.zone.player.ZonePlayer;
+import com.spleefleague.zone.player.fragments.PlayerFragments;
 import net.minecraft.server.v1_15_R1.ItemStack;
 import net.minecraft.server.v1_15_R1.PacketPlayOutEntityDestroy;
 import org.bson.Document;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_15_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author NickM13
@@ -259,6 +270,37 @@ public class FragmentContainer extends DBEntity {
                 });
 
         return menuItem;
+    }
+
+    public Vector getClosest(CorePlayer corePlayer) {
+        List<FragmentChunk> chunks = new ArrayList<>();
+        Point point = new Point(corePlayer.getPlayer().getLocation());
+        Set<Long> collected = CoreZones.getInstance().getPlayers().get(corePlayer).getFragments().getCollected(getIdentifier());
+        Optional<FragmentChunk> optionalChunk = fragmentChunkMap.values().stream()
+                .sorted(Comparator.comparingDouble(chunk -> chunk.getCenter().distance(point)))
+                .filter(chunk -> chunk.hasRemaining(collected))
+                .findFirst();
+        if (optionalChunk.isPresent()) {
+            FragmentChunk fragmentChunk = optionalChunk.get();
+            Point relativePoint = new Point(
+                    point.x - fragmentChunk.chunkX * 16,
+                    point.y,
+                    point.z - fragmentChunk.chunkZ * 16);
+            Optional<Fragment> optionalFragment = fragmentChunk
+                    .getFragments()
+                    .stream()
+                    .sorted(Comparator.comparingDouble(fragment -> relativePoint.distance(new Point(fragment.x, fragment.y, fragment.z))))
+                    .filter(fragment -> !collected.contains(fragment.fullId))
+                    .findFirst();
+            if (optionalFragment.isPresent()) {
+                Fragment fragment = optionalFragment.get();
+                return new Vector(
+                        fragment.x + fragmentChunk.offsetX,
+                        fragment.y + 0.5,
+                        fragment.z + fragmentChunk.offsetZ);
+            }
+        }
+        return null;
     }
 
 }

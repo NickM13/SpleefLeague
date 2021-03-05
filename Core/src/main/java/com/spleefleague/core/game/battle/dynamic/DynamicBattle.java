@@ -183,13 +183,6 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     }
 
     /**
-     * @param winner Battle Player
-     */
-    protected void applyEloChange(@Nonnull BP winner) {
-        applyEloChange(winner, 0);
-    }
-
-    /**
      * End a battle with a determined winner
      *
      * @param winner Winner
@@ -197,7 +190,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     @Override
     public void endBattle(BP winner) {
         if (winner != null) {
-            applyEloChange(winner);
+            applyEloChange(winner, 0);
             sendEndMessage(winner);
         }
         Core.getInstance().sendPacket(new PacketSpigotBattleEnd(battleId));

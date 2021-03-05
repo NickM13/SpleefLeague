@@ -50,7 +50,7 @@ public class OffensiveStarfall extends AbilityOffensive {
         getUser().getBattle().getGameWorld().playSound(getPlayer().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 2);
         getPlayer().addPotionEffect(PotionEffectType.SLOW.createEffect(80, 1));
         getUser().setChanneling(false);
-        location = getUser().getOpponent().getPlayer().getLocation().clone().add(0, 20, 0).setDirection(new Vector(0, -1, 0));
+        location = getUser().getOpponents().get(0).getPlayer().getLocation().clone().add(0, 20, 0).setDirection(new Vector(0, -1, 0));
         return true;
     }
 

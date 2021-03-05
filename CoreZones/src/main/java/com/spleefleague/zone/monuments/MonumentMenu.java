@@ -30,7 +30,7 @@ public class MonumentMenu {
             PlayerFragments fragments = zonePlayer.getFragments();
             for (Monument monument : CoreZones.getInstance().getMonumentManager().getAll()) {
                 FragmentContainer fragment = monument.getFragmentContainer();
-                int collected = fragments.getCollected(fragment.getIdentifier());
+                int collected = fragments.getCollectedCount(fragment.getIdentifier());
                 double percent = fragments.getCollectedPercent(fragment);
                 double percentPerPiece = 1D / 5;
 

@@ -14,8 +14,8 @@ public class Fragment {
 
     // 15-8y, 7-4z, 3-0x
     short pos;
-    long fullId;
-    int x, y, z;
+    public long fullId;
+    public int x, y, z;
 
     public Fragment(long chunkShifted, short pos) {
         this.pos = pos;

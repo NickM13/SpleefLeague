@@ -24,7 +24,7 @@ import java.util.*;
  * @author NickM13
  * @since 4/24/2020
  */
-public abstract class TeamBattle<BP extends TeamBattlePlayer> extends Battle<BP> {
+public abstract class TeamBattle<BP extends BattlePlayer> extends Battle<BP> {
 
     protected Set<TeamBattleTeam<BP>> teams = new HashSet<>();
     protected List<TeamBattleTeam<BP>> sortedTeams = new ArrayList<>();

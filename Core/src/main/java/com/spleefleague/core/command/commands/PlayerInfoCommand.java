@@ -187,24 +187,7 @@ public class PlayerInfoCommand extends CoreCommand {
     }
 
     private String getLastSeen(CoreOfflinePlayer cp) {
-        String lastSeen = "";
-        long lastConnection = -1;
-
-        MongoCursor<Document> cursor = Core.getInstance().getPluginDB().getCollection("PlayerConnections").find(new Document("uuid", cp.getUniqueId().toString())).sort(new Document("date", 1)).iterator();
-
-        while (cursor.hasNext()) {
-            Document doc = cursor.next();
-            long time = doc.get("date", Date.class).getTime();
-            lastConnection = time;
-        }
-
-        if (lastConnection == -1) {
-            lastSeen = "Never";
-        } else {
-            lastSeen = TimeUtils.timeToString(System.currentTimeMillis() - lastConnection);
-        }
-
-        return lastSeen;
+        return TimeUtils.gcdTimeToString(System.currentTimeMillis() - cp.getLastOnline());
     }
 
 }

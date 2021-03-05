@@ -255,7 +255,7 @@ public class ProxyChat {
     }
 
     public void sendTell(@Nonnull ProxyCorePlayer sender, @Nonnull ProxyCorePlayer receiver, String message) {
-        if (!receiver.getOptions().getBoolean("Friend:Messages")) {
+        if (!receiver.getOptions().getBoolean("Friend:Messages") && !receiver.getFriends().isFriend(sender.getUniqueId())) {
             TextComponent component = new TextComponent();
             component.addExtra(receiver.getChatName());
             component.addExtra(" has messaging disabled");

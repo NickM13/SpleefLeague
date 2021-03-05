@@ -1,15 +1,11 @@
 package com.spleefleague.spleef.game.battle.power.ability;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.spleefleague.core.world.game.GameWorld;
 import com.spleefleague.spleef.Spleef;
-import com.spleefleague.spleef.game.battle.power.PowerSpleefBattle;
 import com.spleefleague.spleef.game.battle.power.PowerSpleefPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.util.Vector;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * @author NickM13

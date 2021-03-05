@@ -9,22 +9,16 @@ package com.spleefleague.spleef.game.battle.team;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.Arena;
 import com.spleefleague.core.game.BattleUtils;
-import com.spleefleague.core.game.battle.Battle;
-import com.spleefleague.core.game.battle.BattlePlayer;
 import com.spleefleague.core.game.battle.team.TeamBattle;
 import com.spleefleague.core.game.battle.team.TeamBattleTeam;
-import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.player.purse.CoreCurrency;
 import com.spleefleague.core.world.FakeUtils;
 import com.spleefleague.core.world.build.BuildStructure;
 import com.spleefleague.spleef.Spleef;
 import com.spleefleague.spleef.game.SpleefMode;
-import com.spleefleague.spleef.game.battle.power.ability.Ability;
 import com.spleefleague.spleef.util.SpleefUtils;
 import org.bukkit.ChatColor;
 
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 /**

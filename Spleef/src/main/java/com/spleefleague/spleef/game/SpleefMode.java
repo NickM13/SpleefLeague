@@ -9,9 +9,10 @@ package com.spleefleague.spleef.game;
 import com.spleefleague.core.game.BattleMode;
 import com.spleefleague.coreapi.chat.ChatColor;
 import com.spleefleague.spleef.game.battle.classic.affix.ClassicSpleefAffixes;
+import com.spleefleague.spleef.game.battle.power.team.PowerSpleefTeamBattle;
 import com.spleefleague.spleef.game.battle.power.training.PowerTrainingBattle;
+import com.spleefleague.spleef.game.battle.power.versus.PowerSpleefVersusBattle;
 import com.spleefleague.spleef.game.battle.team.*;
-import com.spleefleague.spleef.game.battle.power.*;
 import com.spleefleague.spleef.game.battle.multi.*;
 import com.spleefleague.spleef.game.battle.classic.*;
 import com.spleefleague.spleef.game.battle.bonanza.*;
@@ -27,6 +28,7 @@ public enum SpleefMode {
     MULTI,
     POWER,
     POWER_TRAINING,
+    POWER_TEAM,
     //WC,
     BONANZA;
     
@@ -69,7 +71,7 @@ public enum SpleefMode {
                 .setDisplayItem(Material.GOLDEN_SHOVEL, 32)
                 .setDescription("A twist on the original 1v1 Spleef Mode. Add unique powers to your Spleefing strategy!")
                 .setTeamStyle(BattleMode.TeamStyle.VERSUS)
-                .setBattleClass(PowerSpleefBattle.class)
+                .setBattleClass(PowerSpleefVersusBattle.class)
                 .setRewards(0, 4, 0.025, 0.01, 0.005, 0.001);
 
         BattleMode.createArenaMode(POWER_TRAINING.getName())
@@ -79,6 +81,14 @@ public enum SpleefMode {
                 .setTeamStyle(BattleMode.TeamStyle.SOLO)
                 .setBattleClass(PowerTrainingBattle.class)
                 .setForceRandom(true);
+
+        BattleMode.createArenaMode(POWER_TEAM.getName())
+                .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Team Power Spleef")
+                .setDisplayItem(Material.LEATHER_HELMET, 56)
+                .setDescription("United with a team of the same color, conquer your foes with your allies in this multiplayer gamemode.")
+                .setTeamStyle(BattleMode.TeamStyle.TEAM)
+                .setBattleClass(PowerSpleefTeamBattle.class)
+                .setRewards(0, 15, 0.05, 0.02, 0.01, 0.002);
 
         BattleMode.createArenaMode(TEAM.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Team Spleef")

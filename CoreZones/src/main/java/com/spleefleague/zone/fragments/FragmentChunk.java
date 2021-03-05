@@ -6,11 +6,15 @@ import com.comphenix.protocol.events.NetworkMarker;
 import com.comphenix.protocol.events.PacketContainer;
 import com.google.common.collect.Sets;
 import com.spleefleague.core.Core;
+import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.coreapi.database.variable.DBVariable;
+import com.spleefleague.zone.player.ZonePlayer;
+import com.spleefleague.zone.player.fragments.PlayerFragments;
 import net.minecraft.server.v1_15_R1.*;
 import org.bson.Document;
 import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,6 +37,8 @@ public class FragmentChunk extends DBVariable<Document> {
 
     final double offsetX, offsetZ;
 
+    final Point center;
+
     public FragmentChunk(Document doc) {
         this(doc.getInteger("chunkX").shortValue(), doc.getInteger("chunkZ").shortValue());
         load(doc);
@@ -45,6 +51,21 @@ public class FragmentChunk extends DBVariable<Document> {
 
         this.offsetX = chunkX * 16 + 0.5;
         this.offsetZ = chunkZ * 16 + 0.5;
+
+        center = new Point(chunkX * 16 + 8, 0, chunkZ * 16 + 8);
+    }
+
+    public Point getCenter() {
+        return center;
+    }
+
+    public boolean hasRemaining(Set<Long> collected) {
+        for (Fragment fragment : fragments.values()) {
+            if (!collected.contains(fragment.fullId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setItems(ItemStack uncollectedItem, ItemStack collectedItem) {
