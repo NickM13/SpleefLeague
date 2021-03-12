@@ -155,7 +155,7 @@ public class CoreRankManager extends RankManager<CoreRank> {
             Team team = scoreboard.registerNewTeam(rank.getIdentifierShort());
             team.setColor(org.bukkit.ChatColor.valueOf(rank.getColor().name()));
             if (rank.getDisplayNameUnformatted().length() > 0)
-                team.setPrefix(rank.getChatTag());
+                team.setPrefix("");
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             team.setAllowFriendlyFire(true);
         }

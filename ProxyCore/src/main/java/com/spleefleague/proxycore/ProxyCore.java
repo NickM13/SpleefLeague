@@ -310,7 +310,7 @@ public class ProxyCore extends Plugin {
     }
 
     public static String getChatTag() {
-        return Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT;
+        return "仳 " + Chat.DEFAULT;
     }
 
     public void sendMessage(ProxyDBPlayer pcp, String text) {

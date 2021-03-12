@@ -597,7 +597,7 @@ public class Core extends CorePlugin {
      */
     @Override
     public TextComponent getChatPrefix() {
-        return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "SpleefLeague" + Chat.TAG_BRACE + "] " + Chat.DEFAULT);
+        return new TextComponent(ChatColor.WHITE + "仳 ");
     }
 
     /**

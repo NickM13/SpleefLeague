@@ -1,6 +1,7 @@
 package com.spleefleague.zone.gear.fortunescarabs;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.world.global.GlobalWorld;
@@ -10,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
@@ -20,6 +22,12 @@ public class GearFortuneScarabs extends Gear {
 
     private static final Material SCARAB_BLOCK = Material.CHISELED_STONE_BRICKS;
 
+    private static final BlockData goldBlockData = Material.GOLD_BLOCK.createBlockData();
+    private static final BlockData sandBlockData = Material.SAND.createBlockData();
+
+    private ItemStack available;
+    private ItemStack unavailable;
+
     public GearFortuneScarabs() {
         super(GearType.FORTUNE_SCARABS);
     }
@@ -28,8 +36,11 @@ public class GearFortuneScarabs extends Gear {
         super(GearType.FORTUNE_SCARABS, identifier, name);
     }
 
-    private static final BlockData goldBlockData = Material.GOLD_BLOCK.createBlockData();
-    private static final BlockData sandBlockData = Material.SAND.createBlockData();
+    @Override
+    protected void createGearItems() {
+        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 1));
+        unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 2));
+    }
 
     private void startDrilling(CorePlayer corePlayer, BlockPosition pos) {
         Vector center = new Vector(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
@@ -63,6 +74,14 @@ public class GearFortuneScarabs extends Gear {
             }
         }
         return false;
+    }
+
+    @Override
+    public ItemStack getGearItem(CorePlayer corePlayer) {
+        if (isAvailable(corePlayer)) {
+            return available;
+        }
+        return unavailable;
     }
 
 }

@@ -7,6 +7,8 @@ import com.spleefleague.coreapi.utils.packet.shared.NumAction;
 import com.spleefleague.coreapi.utils.packet.shared.RatedPlayerInfo;
 import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerStatistics;
 
+import java.util.Map;
+
 /**
  * @author NickM13
  * @since 2/3/2021
@@ -14,6 +16,8 @@ import com.spleefleague.coreapi.utils.packet.spigot.player.PacketSpigotPlayerSta
 public class CorePlayerStatistics extends PlayerStatistics {
 
     CorePlayer owner;
+
+    private Map<String, Long> changesF;
 
     public CorePlayerStatistics(CorePlayer owner) {
         this.owner = owner;
@@ -43,6 +47,10 @@ public class CorePlayerStatistics extends PlayerStatistics {
         long higher = super.setHigher(parent, statName, compare);
         Core.getInstance().sendPacket(new PacketSpigotPlayerStatistics(parent, statName, new RatedPlayerInfo(NumAction.SET, owner.getUniqueId(), (int) higher)));
         return higher;
+    }
+
+    public void pushChanges() {
+
     }
 
 }

@@ -299,6 +299,14 @@ public class QueueContainerDynamic extends QueueContainer {
         if (playerReused) {
             return true;
         }
+        for (Map.Entry<UUID, String> playerQueries : chunk.playerQueries.entrySet()) {
+            ProxyCore.getInstance().getPlayers().get(playerQueries.getKey()).setLastQueueRequest(
+                    new PacketSpigotQueueJoin(
+                            playerQueries.getKey(),
+                            this.identifier,
+                            playerQueries.getValue()
+                    ));
+        }
         return startMatch(players, chunk.teamSize, chunk.query.toString(), false);
     }
 
@@ -334,7 +342,6 @@ public class QueueContainerDynamic extends QueueContainer {
             pcp.setBattling(true);
             playing.add(pcp.getUniqueId());
             pcp.connect(droplet);
-            pcp.setLastQueueRequest(new PacketSpigotQueueJoin(pcp.getUniqueId(), identifier, query));
             ProxyParty party = pcp.getParty();
             if (party != null) {
                 parties.add(pcp.getParty());

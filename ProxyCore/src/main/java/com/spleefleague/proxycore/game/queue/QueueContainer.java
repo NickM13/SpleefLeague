@@ -82,6 +82,7 @@ public abstract class QueueContainer {
     protected static class QueuedChunk {
         List<QueueTeam> openTeams = new ArrayList<>();
         List<QueueTeam> filledTeams = new ArrayList<>();
+        Map<UUID, String> playerQueries = new HashMap<>();
 
         final boolean teamSplitting;
         final int teamSize;
@@ -174,6 +175,14 @@ public abstract class QueueContainer {
                             openTeams.remove(0);
                         }
                     }
+                    if (entity instanceof QueueParty) {
+                        playerQueries.put(((QueueParty) entity).party.getOwner(), entity.query);
+                    } else if (entity instanceof QueuePlayer) {
+                        playerQueries.put(((QueuePlayer) entity).pcp.getUniqueId(), entity.query);
+                    } else {
+                        Thread.dumpStack();
+                        return false;
+                    }
                 }
                 return success;
             } else {
@@ -186,6 +195,7 @@ public abstract class QueueContainer {
                                 filledTeams.add(team);
                                 it.remove();
                             }
+                            playerQueries.put(((QueueParty) entity).party.getOwner(), entity.query);
                             return true;
                         }
                     }

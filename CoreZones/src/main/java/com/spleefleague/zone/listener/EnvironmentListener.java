@@ -3,8 +3,10 @@ package com.spleefleague.zone.listener;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.player.CorePlayer;
+import com.spleefleague.core.vendor.Vendorables;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.zone.CoreZones;
+import com.spleefleague.zone.gear.Gear;
 import com.spleefleague.zone.gear.hookshot.GearHookshot;
 import com.spleefleague.zone.player.ZonePlayer;
 import com.spleefleague.zone.zones.Zone;
@@ -16,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -59,6 +62,14 @@ public class EnvironmentListener implements Listener {
                     event.setCancelled(true);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSlotChange(PlayerItemHeldEvent event) {
+        Gear gear = Vendorables.get(Gear.class, event.getPlayer().getInventory().getItemInMainHand());
+        if (gear != null) {
+
         }
     }
 

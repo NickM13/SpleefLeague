@@ -233,10 +233,10 @@ public abstract class VersusBattle<BP extends BattlePlayer> extends Battle<BP> {
         }
         avgRating /= battlers.size();
 
-        int d = (avgRating - winnerRating) * battlers.size();
-        d = Math.min(Math.max(d, -750), 750);
+        int ratingDiff = (avgRating - winnerRating) * battlers.size();
+        ratingDiff = Math.min(Math.max(ratingDiff, -750), 750);
 
-        int eloChange = (int) (0.00001f * d * d + 0.014f * d + 20.f);
+        int eloChange = (int) (0.00001f * Math.pow(ratingDiff, 2) + 0.014f * ratingDiff + 20.f);
 
         for (BattlePlayer bp : battlers.values()) {
             int initialElo = bp.getCorePlayer().getRatings().getElo(getMode().getName(), getMode().getSeason());

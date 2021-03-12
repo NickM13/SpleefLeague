@@ -27,20 +27,20 @@ import java.util.Set;
 public abstract class Gear extends Holdable {
 
     public enum GearType {
-        FORTUNE_SCARABS(GearFortuneScarabs.class, 5000L, Material.LAPIS_LAZULI),
-        HOOKSHOT(GearHookshot.class, 30000L, Material.BLAZE_ROD),
-        MEAD(GearMead.class, 5000L, Material.HONEY_BOTTLE),
-        STEAM_PACK(GearSteamPack.class, 5000L, Material.COAL),
-        WAYFINDER(GearWayfinder.class, 5000L, Material.COMPASS);
+        FORTUNE_SCARABS(GearFortuneScarabs.class, 5000L, false),
+        HOOKSHOT(GearHookshot.class, 30000L, false),
+        MEAD(GearMead.class, 5000L, false),
+        STEAM_PACK(GearSteamPack.class, 5000L, false),
+        WAYFINDER(GearWayfinder.class, 5000L, false);
 
-        public Class<? extends Gear> gearClass;
-        public long cooldown;
-        public Material material;
+        public final Class<? extends Gear> gearClass;
+        public final long cooldown;
+        public final boolean offhand;
 
-        GearType(Class<? extends Gear> gearClass, long cooldown, Material material) {
+        GearType(Class<? extends Gear> gearClass, long cooldown, boolean offhand) {
             this.gearClass = gearClass;
             this.cooldown = cooldown;
-            this.material = material;
+            this.offhand = offhand;
         }
 
         public Gear create(String identifier, String displayName) {
@@ -66,6 +66,15 @@ public abstract class Gear extends Holdable {
                 .setDescription(cp -> cp.getCollectibles().getActive(Gear.class).getDescription())
                 .setAvailability(cp -> !cp.isInBattle() && cp.getCollectibles().hasActive(Gear.class) && cp.getCollectibles().isEnabled(Gear.class))
                 .setAction(cp -> cp.getCollectibles().getActive(Gear.class).onRightClick(cp));
+
+        InventoryMenuAPI.createItemHotbar(40, "GearOffhand")
+                .setName(cp -> cp.getCollectibles().getActiveName(Gear.class))
+                .setDisplayItem(cp -> cp.getCollectibles().getActive(Gear.class).getGearOffhandItem(cp))
+                .setDescription(cp -> cp.getCollectibles().getActive(Gear.class).getDescription())
+                .setAvailability(cp -> !cp.isInBattle() &&
+                        cp.getCollectibles().hasActive(Gear.class) &&
+                        cp.getCollectibles().isEnabled(Gear.class) &&
+                        cp.getCollectibles().getActive(Gear.class).hasOffhand(cp));
     }
 
     public static void reload() {
@@ -90,8 +99,6 @@ public abstract class Gear extends Holdable {
 
     @DBField private String usageZone = null;
 
-    protected ItemStack available;
-    protected ItemStack unavailable;
     protected final GearType gearType;
 
     public Gear(GearType gearType) {
@@ -104,18 +111,15 @@ public abstract class Gear extends Holdable {
         this.gearType = gearType;
         this.identifier = identifier;
         this.name = name;
-        this.material = gearType.material;
-        this.customModelData = 1;
-        this.available = applyPersistents(InventoryMenuUtils.createCustomItem(material, 1));
-        this.unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(material, 2));
+        this.material = Material.BLAZE_ROD;
     }
 
     @Override
     public void afterLoad() {
         super.afterLoad();
-        this.available = applyPersistents(InventoryMenuUtils.createCustomItem(material, 1));
-        this.unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(material, 2));
     }
+
+    protected abstract void createGearItems();
 
     public void setUsageZone(String usageZone) {
         this.usageZone = usageZone;
@@ -148,12 +152,14 @@ public abstract class Gear extends Holdable {
         return zonePlayer.isReady(gearType);
     }
 
-    public ItemStack getGearItem(CorePlayer corePlayer) {
-        if (isAvailable(corePlayer)) {
-            return available;
-        } else {
-            return unavailable;
-        }
+    public abstract ItemStack getGearItem(CorePlayer corePlayer);
+
+    public boolean hasOffhand(CorePlayer corePlayer) {
+        return gearType.offhand;
+    }
+
+    public ItemStack getGearOffhandItem(CorePlayer corePlayer) {
+        return null;
     }
 
 }

@@ -155,6 +155,13 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
     }
 
     private void applyEloChange(BP battler, int place) {
+        int halfCount = initBattlerCount / 2;
+        int shiftedPlace = place - halfCount;
+        if (initBattlerCount % 2 == 0) {
+            if (shiftedPlace >= 0) {
+                shiftedPlace++;
+            }
+        }
         battler.getCorePlayer().sendMessage(Chat.colorize("             &6&l" + getMode().getDisplayName()));
         StringBuilder linebreak = new StringBuilder(Chat.colorize("             &8"));
         for (int i = 0; i < ChatUtils.getPixelCount(ChatColor.BOLD + getMode().getDisplayName()) / (double) (ChatUtils.getPixelCount("-")); i++) {
@@ -189,7 +196,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     public void endBattle(BP winner) {
-        if (winner != null) {
+        if (winner != null && !finished) {
             applyEloChange(winner, 0);
             sendEndMessage(winner);
         }
@@ -257,6 +264,7 @@ public abstract class DynamicBattle<BP extends BattlePlayer> extends Battle<BP> 
      */
     @Override
     protected void leaveBattler(CorePlayer cp) {
+        if (finished || !remainingPlayers.remove(battlers.get(cp))) return;
         applyEloChange(battlers.get(cp), remainingPlayers.size() - 1);
         if (battlers.size() <= 2) {
             removeBattler(cp);

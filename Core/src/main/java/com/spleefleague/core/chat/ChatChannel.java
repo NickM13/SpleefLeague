@@ -62,20 +62,10 @@ public enum ChatChannel {
             net.md_5.bungee.api.ChatColor.AQUA,
             cp -> cp.getParty() != null,
             null),
-    SPLEEF("Spleef",
-            null,
-            net.md_5.bungee.api.ChatColor.GOLD,
-            null,
-            null),
     STAFF("Staff",
             null,
             net.md_5.bungee.api.ChatColor.LIGHT_PURPLE,
             cp -> cp.getRank().hasPermission(CoreRank.TEMP_MOD),
-            null),
-    SUPERJUMP("SuperJump",
-            null,
-            net.md_5.bungee.api.ChatColor.GOLD,
-            null,
             null),
     TICKET("Ticket",
             null,
@@ -97,7 +87,11 @@ public enum ChatChannel {
     private final TextComponent tagComponent;
     private final TextComponent playerMessageComponent;
 
-    ChatChannel(String name, Function<CorePlayer, Collection<CorePlayer>> playerFunc, net.md_5.bungee.api.ChatColor tagColor, Function<CorePlayer, Boolean> available, String playerChatColor) {
+    ChatChannel(String name,
+                Function<CorePlayer, Collection<CorePlayer>> playerFunc,
+                net.md_5.bungee.api.ChatColor tagColor,
+                Function<CorePlayer, Boolean> available,
+                String playerChatColor) {
         this.name = name;
         this.playerFunc = playerFunc;
         this.tagColor = tagColor;

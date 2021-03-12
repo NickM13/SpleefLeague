@@ -4,11 +4,11 @@ import com.google.common.collect.Lists;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
-import com.spleefleague.core.vendor.Vendorable;
 import com.spleefleague.core.world.game.projectile.ProjectileStats;
 import com.spleefleague.coreapi.database.annotation.DBField;
 import com.spleefleague.zone.gear.Gear;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -24,6 +24,9 @@ public class GearHookshot extends Gear {
 
     @DBField protected int customModelData = 0;
     @DBField protected double fireRange;
+
+    private ItemStack available;
+    private ItemStack unavailable;
 
     protected static final ProjectileStats projectileStats = new ProjectileStats();
 
@@ -75,6 +78,12 @@ public class GearHookshot extends Gear {
 
     public GearHookshot(String identifier, String name) {
         super(GearType.HOOKSHOT, identifier, name);
+    }
+
+    @Override
+    protected void createGearItems() {
+        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 1));
+        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 2));
     }
 
     @Override

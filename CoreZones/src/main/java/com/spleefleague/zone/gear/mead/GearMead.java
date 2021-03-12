@@ -49,6 +49,11 @@ public class GearMead extends Gear {
     }
 
     @Override
+    protected void createGearItems() {
+
+    }
+
+    @Override
     protected boolean onActivate(CorePlayer corePlayer) {
         ZonePlayer zonePlayer = CoreZones.getInstance().getPlayers().get(corePlayer);
         if (zonePlayer.getOptions().getInteger("Gear:TreeStumpMead") > 0 && MEAD_COOLDOWN.getOrDefault(corePlayer.getUniqueId(), 0L) < System.currentTimeMillis()) {

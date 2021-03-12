@@ -10,6 +10,7 @@ import com.spleefleague.zone.fragments.FragmentContainer;
 import com.spleefleague.zone.gear.Gear;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,6 +74,11 @@ public class GearWayfinder extends Gear {
     }
 
     @Override
+    protected void createGearItems() {
+
+    }
+
+    @Override
     protected boolean onActivate(CorePlayer corePlayer) {
         String skin = corePlayer.getCollectibles().getInfo(this).getSelectedSkin();
         if (skin.isEmpty()) return false;
@@ -85,6 +91,11 @@ public class GearWayfinder extends Gear {
             }
         }
         return false;
+    }
+
+    @Override
+    public ItemStack getGearItem(CorePlayer corePlayer) {
+        return null;
     }
 
 }

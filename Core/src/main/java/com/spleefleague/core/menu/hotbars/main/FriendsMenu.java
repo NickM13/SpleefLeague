@@ -18,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class FriendsMenu {
@@ -94,7 +95,7 @@ public class FriendsMenu {
                 }
                 for (FriendsList.FriendInfo info : favorites) {
                     CoreOfflinePlayer friend = Core.getInstance().getPlayers().getOffline(info.uuid);
-                    if (search != null && !friend.getName().contains(search)) continue;
+                    if (search != null && !friend.getName().toLowerCase().contains(search.toLowerCase())) continue;
 
                     container2.addMenuItem(createFriendItem(friend, info, actionContainer));
                 }

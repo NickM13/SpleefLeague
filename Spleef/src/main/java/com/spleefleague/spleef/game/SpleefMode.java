@@ -15,7 +15,6 @@ import com.spleefleague.spleef.game.battle.power.versus.PowerSpleefVersusBattle;
 import com.spleefleague.spleef.game.battle.team.*;
 import com.spleefleague.spleef.game.battle.multi.*;
 import com.spleefleague.spleef.game.battle.classic.*;
-import com.spleefleague.spleef.game.battle.bonanza.*;
 import org.bukkit.Material;
 
 /**
@@ -28,23 +27,25 @@ public enum SpleefMode {
     MULTI,
     POWER,
     POWER_TRAINING,
-    POWER_TEAM,
+    POWER_TEAM;
     //WC,
-    BONANZA;
+    //BONANZA;
     
     private static final String prefix = "spleef:";
     
     public static void init() {
+        /*
         BattleMode.createArenaMode(BONANZA.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Bonanza Spleef")
                 .setDescription("Drop in anytime to this fast paced, constant battleground of Spleef glory!" +
-                        "  Compete for kill streaks against other players and become a champion."/* +
-                        "\n\nYou may queue for other games while playing Bonanza Spleef."*/)
+                        "  Compete for kill streaks against other players and become a champion." +
+                        "\n\nYou may queue for other games while playing Bonanza Spleef.")
                 .setDisplayItem(Material.DIAMOND_SHOVEL, 1561)
                 .setTeamStyle(BattleMode.TeamStyle.BONANZA)
                 .setBattleClass(BonanzaSpleefBattle.class)
                 .setJoinOngoing(true)
                 .setForceRandom(true);
+        */
 
         BattleMode.createArenaMode(CLASSIC.getName())
                 .setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "Classic Spleef")

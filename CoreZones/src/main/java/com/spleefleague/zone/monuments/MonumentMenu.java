@@ -41,7 +41,7 @@ public class MonumentMenu {
                         .setCloseOnAction(false);
                 for (int stage = 0; stage < 5; stage++) {
                     double startPercent = (double) stage / 5;
-                    double chunkPercent = Math.max(Math.min((percent - startPercent) / percentPerPiece, 1D), 0D);
+                    double chunkPercent = Math.max(Math.min((percent - startPercent) / percentPerPiece, 1D), 0D) + 0.001D;
                     int state = (int) Math.floor(4 * chunkPercent);
                     int required = (int) (((double) (stage + 1) / 5) * fragment.getTotal());
                     //String name = (int) (chunkPercent * 100) + "%";

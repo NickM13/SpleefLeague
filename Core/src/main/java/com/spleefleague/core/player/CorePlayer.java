@@ -38,6 +38,8 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
 import org.bson.Document;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerRespawnEvent;

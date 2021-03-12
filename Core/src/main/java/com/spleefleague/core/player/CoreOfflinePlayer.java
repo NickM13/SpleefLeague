@@ -115,9 +115,7 @@ public class CoreOfflinePlayer extends CoreDBPlayer {
         menuName = Chat.PLAYER_NAME + ChatColor.BOLD + username;
         displayName = (getRank() == null ? Chat.PLAYER_NAME : getRank().getColor()) + username;
         displayNamePossessive = displayName + "'s";
-        rankedDisplayName = ((getRank() != null && getRank().getDisplayNameUnformatted().length() > 0) ?
-                Chat.TAG_BRACE + "[" + Chat.RANK + getRank().getDisplayName() + Chat.TAG_BRACE + "] " :
-                "") + displayName;
+        rankedDisplayName = (getRank() != null ? getRank().getDisplayName() + com.spleefleague.coreapi.chat.Chat.SPACE_1 : "") + displayName;
 
         chatName = new TextComponent(getRank().getColor() + username);
         chatName.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + username + " "));

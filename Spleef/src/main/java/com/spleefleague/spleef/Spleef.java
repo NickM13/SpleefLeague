@@ -9,7 +9,6 @@ package com.spleefleague.spleef;
 import com.spleefleague.core.Core;
 import com.spleefleague.core.chat.Chat;
 import com.spleefleague.core.game.arena.Arenas;
-import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.menu.InventoryMenuAPI;
 import com.spleefleague.core.menu.InventoryMenuContainerChest;
 import com.spleefleague.core.menu.InventoryMenuItem;
@@ -63,7 +62,6 @@ public class Spleef extends CorePlugin {
         SpleefMode.init();
         AbilityUtils.init();
 
-        addBattleManager(SpleefMode.BONANZA.getBattleMode());
         addBattleManager(SpleefMode.CLASSIC.getBattleMode());
         addBattleManager(SpleefMode.MULTI.getBattleMode());
         addBattleManager(SpleefMode.POWER.getBattleMode());

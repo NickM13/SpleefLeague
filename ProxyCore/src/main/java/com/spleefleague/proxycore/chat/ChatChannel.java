@@ -16,11 +16,11 @@ import java.util.function.Function;
 public enum ChatChannel {
 
     ADMIN("Admin",
-            ChatColor.RED,
+            "仸",
             pcp -> pcp.getRank().hasPermission(ProxyRank.ADMIN),
             null),
     GAMES("Games",
-            ChatColor.AQUA,
+            "价",
             null,
             null),
     GLOBAL("Global",
@@ -28,45 +28,33 @@ public enum ChatChannel {
             null,
             null),
     LOCAL("Local",
-            ChatColor.GRAY,
-            pcp -> pcp.getRank().hasPermission(ProxyRank.ADMIN),
-            null),
-    LOGIN("Login",
-            ChatColor.GRAY,
+            ChatColor.GRAY + "LocalChat",
             pcp -> pcp.getRank().hasPermission(ProxyRank.ADMIN),
             null),
     PARTY("Party",
-            ChatColor.AQUA,
+            "仵",
             pcp -> pcp.getParty() != null,
             "&b",
             (sender, receiver) -> {
                 return sender.getParty().getPlayerSet().contains(receiver);
             }),
-    SPLEEF("Spleef",
-            ChatColor.GOLD,
-            null,
-            null),
     STAFF("Staff",
-            ChatColor.LIGHT_PURPLE,
+            "仴",
             pcp -> pcp.getRank().hasPermission(ProxyRank.MODERATOR),
             "&a"),
-    SUPERJUMP("SuperJump",
-            ChatColor.GOLD,
-            null,
-            null),
     TICKET("Ticket",
-            ChatColor.GOLD,
+            "件",
             pcp -> pcp.getRank().hasPermission(ProxyRank.MODERATOR),
             null,
             null,
             false),
     VIP("VIP",
-            ChatColor.DARK_PURPLE,
+            "仹",
             pcp -> pcp.getRank().hasPermission(ProxyRank.VIP),
             "&d");
 
     private final String displayName;
-    private final ChatColor tagColor;
+    private final String tag;
     private final Function<ProxyCorePlayer, Boolean> available;
     private final BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive;
 
@@ -75,35 +63,35 @@ public enum ChatChannel {
     private final boolean showBaseTag;
 
     ChatChannel(String name,
-                ChatColor tagColor,
+                String tag,
                 Function<ProxyCorePlayer, Boolean> available,
                 String playerChatColor) {
-        this(name, tagColor, available, playerChatColor, null);
+        this(name, tag, available, playerChatColor, null);
     }
 
     ChatChannel(String name,
-                ChatColor tagColor,
+                String tag,
                 Function<ProxyCorePlayer, Boolean> available,
                 String playerChatColor,
                 BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive) {
-        this(name, tagColor, available, playerChatColor, receive, true);
+        this(name, tag, available, playerChatColor, receive, true);
     }
 
     ChatChannel(String name,
-                ChatColor tagColor,
+                String tag,
                 Function<ProxyCorePlayer, Boolean> available,
                 String playerChatColor,
                 BiFunction<ProxyCorePlayer, ProxyCorePlayer, Boolean> receive,
                 boolean showBaseTag) {
         this.showBaseTag = showBaseTag;
         this.displayName = name;
-        this.tagColor = tagColor;
+        this.tag = tag;
         this.available = available;
         playerChatColor = playerChatColor == null ? Chat.PLAYER_CHAT : playerChatColor;
         this.receive = receive;
 
-        if (tagColor != null) {
-            tagComponent = new TextComponent(Chat.TAG_BRACE + "[" + tagColor + name + Chat.TAG_BRACE + "] ");
+        if (tag != null) {
+            tagComponent = new TextComponent(tag + Chat.SPACE_1);
         } else {
             tagComponent = new TextComponent();
         }
@@ -136,15 +124,11 @@ public enum ChatChannel {
     }
 
     public boolean isShowingTag() {
-        return tagColor != null;
+        return tag != null;
     }
 
     public String getDisplayName() {
         return displayName;
-    }
-
-    public ChatColor getTagColor() {
-        return tagColor;
     }
 
     public boolean isAvailable(ProxyCorePlayer pcp) {

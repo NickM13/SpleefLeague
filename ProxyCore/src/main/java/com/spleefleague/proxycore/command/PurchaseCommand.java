@@ -5,6 +5,7 @@ import com.spleefleague.proxycore.ProxyCore;
 import com.spleefleague.proxycore.player.ProxyCorePlayer;
 import com.spleefleague.proxycore.player.ranks.ProxyRank;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 
 import java.util.UUID;
@@ -32,7 +33,7 @@ public class PurchaseCommand extends Command {
         ProxyCore.getInstance().sendMessage(pcp, "You are now rank " + rank.getDisplayName() + ChatColor.GRAY + "!");
     }
 
-    private static long MILLIS_TO_DAYS = 1000 * 60 * 60 * 24;
+    private static final long MILLIS_TO_DAYS = 1000 * 60 * 60 * 24;
 
     private void purchaseTempRank(ProxyCorePlayer pcp, String rankName, Integer time) {
         ProxyRank rank = ProxyCore.getInstance().getRankManager().getRank(rankName);
@@ -45,8 +46,18 @@ public class PurchaseCommand extends Command {
         ProxyCore.getInstance().sendMessage(pcp, "You received some crates!");
     }
 
-    private void purchaseBooster(ProxyCorePlayer pcp, String boosterName) {
-        System.out.println("Boosters not set up yet");
+    private void purchaseNetworkBooster(ProxyCorePlayer pcp, String boosterName) {
+        TextComponent component = new TextComponent();
+        component.addExtra(pcp.getChatName());
+        component.addExtra(" has purchased a network booster!");
+        ProxyCore.getInstance().sendMessage(pcp, "");
+    }
+
+    private void purchasePersonalBooster(ProxyCorePlayer pcp, String boosterName) {
+        TextComponent component = new TextComponent();
+        component.addExtra(pcp.getChatName());
+        component.addExtra(" has purchased a network booster!");
+        ProxyCore.getInstance().sendMessage(pcp, "");
     }
 
     @Override
@@ -98,7 +109,11 @@ public class PurchaseCommand extends Command {
                 purchaseCrate(pcp, strings[2], Integer.parseInt(strings[3]));
                 break;
             case BOOSTER:
-                purchaseBooster(pcp, strings[2]);
+                if (strings[2].equalsIgnoreCase("network")) {
+                    purchaseNetworkBooster(pcp, strings[3]);
+                } else if (strings[2].equalsIgnoreCase("personal")) {
+                    purchasePersonalBooster(pcp, strings[3]);
+                }
                 break;
         }
     }

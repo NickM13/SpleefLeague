@@ -15,10 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
@@ -68,19 +65,23 @@ public class MenuListener implements Listener {
 
     @EventHandler
     public void onInventoryInteract(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null || (event.getCurrentItem() == null && event.getCursor().getType().isAir()))
+        if (event.getClickedInventory() == null || (event.getCurrentItem() == null && (event.getCursor() == null || event.getCursor().getType().isAir())))
             return;
         CorePlayer cp = Core.getInstance().getPlayers().get(event.getWhoClicked().getName());
 
-        if (cp.getMenu().getInventoryMenuContainer() instanceof InventoryMenuContainerChest
-                && event.getClickedInventory().getType() == InventoryType.CHEST) {
-            cp.getMenu().onInventoryInteract(event);
-        } else if (event.getCurrentItem() != null && !cp.canBuild()) {
-            InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getCurrentItem());
-            if (menu != null) {
-                menu.callAction(cp);
-            }
+        if (event.getClick() == ClickType.NUMBER_KEY) {
             event.setCancelled(true);
+        } else {
+            if (cp.getMenu().getInventoryMenuContainer() instanceof InventoryMenuContainerChest
+                    && event.getClickedInventory().getType() == InventoryType.CHEST) {
+                cp.getMenu().onInventoryInteract(event);
+            } else if (event.getCurrentItem() != null) {
+                InventoryMenuItem menu = InventoryMenuAPI.getHotbarItem(event.getCurrentItem());
+                if (menu != null) {
+                    menu.callAction(cp);
+                }
+                event.setCancelled(true);
+            }
         }
     }
 

@@ -31,6 +31,26 @@ public class Chat {
             TAG = ChatColor.GOLD + "",
             TICKET_PREFIX = ChatColor.GOLD + "",
             TICKET_ISSUE = ChatColor.GREEN + "",
-            SCOREBOARD_DEFAULT = ChatColor.WHITE + "";
+            SCOREBOARD_DEFAULT = ChatColor.WHITE + "",
+            SPACE_1 =    "亄",
+            SPACE_2 =    "亅",
+            SPACE_3 =    "了",
+            SPACE_4 =    "亇",
+            SPACE_5 =    "予",
+            SPACE_6 =    "争",
+            SPACE_7 =    "亊",
+            SPACE_8 =    "事",
+            SPACE_9 =    "二",
+            SPACE_10 =   "亍",
+            SPACE_16 =   "于",
+            SPACE_32 =   "亏",
+            SPACE_48 =   "亐",
+            SPACE_64 =   "云",
+            SPACE_128 =  "互",
+            SPACE_256 =  "亓",
+            SPACE_512 =  "五",
+            SPACE_1024 = "井",
+            SPACE_44 =   "亖",
+            SPACE_50 =   "亗";
 
 }

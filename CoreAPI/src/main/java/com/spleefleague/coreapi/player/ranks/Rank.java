@@ -45,7 +45,7 @@ public class Rank extends DBEntity {
     @Override
     public void afterLoad() {
         if (displayName.isEmpty()) chatTag = "";
-        else chatTag = Chat.TAG_BRACE + "[" + Chat.RANK + displayName + Chat.TAG_BRACE + "] ";
+        else chatTag = displayName + Chat.SPACE_1;
     }
 
     public String getChatTag() {

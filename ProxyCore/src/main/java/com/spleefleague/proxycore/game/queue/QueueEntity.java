@@ -30,7 +30,6 @@ public abstract class QueueEntity {
     // x is millis since join time
     // f(x) = 0.1(x / 1000)^2 + 50
     public void calcRatings() {
-        //ratingDiff = (int) (0.1 * Math.pow((System.currentTimeMillis() - joinTime) / 1000f, 2) + 50);
         ratingDiff = (int) (0.1 * Math.pow((System.currentTimeMillis() - joinTime) / 1000f, 2) + 100);
     }
 

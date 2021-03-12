@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 /**
@@ -29,8 +30,18 @@ public class GearSteamPack extends Gear {
     @Override
     protected boolean onActivate(CorePlayer corePlayer) {
         GlobalWorld globalWorld = corePlayer.getGlobalWorld();
-        
+
         return false;
+    }
+
+    @Override
+    public ItemStack getGearItem(CorePlayer corePlayer) {
+        return null;
+    }
+
+    @Override
+    protected void createGearItems() {
+
     }
 
     @Override

@@ -181,6 +181,11 @@ public class CoreFriendsList extends FriendsList {
 
     }
 
+    public static class FriendInfoResult {
+        FriendInfo friendInfo;
+        CoreOfflinePlayer corePlayer;
+    }
+
     public List<FriendInfo> getAllSorted(FriendSortStyle... sortStyles) {
         List<FriendInfo> sorted = new ArrayList<>(friends.values());
 

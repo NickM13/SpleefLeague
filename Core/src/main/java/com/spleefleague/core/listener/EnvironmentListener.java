@@ -201,19 +201,13 @@ public class EnvironmentListener implements Listener {
     @EventHandler
     public void onDropItem(PlayerDropItemEvent event) {
         CorePlayer corePlayer = Core.getInstance().getPlayers().get(event.getPlayer());
-        if (!corePlayer.canBuild()) {
-            event.setCancelled(true);
-            Block block = corePlayer.getPlayer().getTargetBlockExact(5, FluidCollisionMode.ALWAYS);
-            if (block != null
-                    && block.getType().equals(Material.WATER)
-                    && SLMainHotbar.getItemHotbar().createItem(corePlayer).equals(event.getItemDrop().getItemStack())) {
-                Random rand = new Random();
-                Core.getInstance().sendMessage(corePlayer, WISHES.get(rand.nextInt(WISHES.size())));
-            }
-        } else {
-            if (InventoryMenuItemHotbar.isHotbarItem(event.getItemDrop().getItemStack())) {
-                event.getItemDrop().remove();
-            }
+        event.setCancelled(true);
+        Block block = corePlayer.getPlayer().getTargetBlockExact(5, FluidCollisionMode.ALWAYS);
+        if (block != null
+                && block.getType().equals(Material.WATER)
+                && SLMainHotbar.getItemHotbar().createItem(corePlayer).equals(event.getItemDrop().getItemStack())) {
+            Random rand = new Random();
+            Core.getInstance().sendMessage(corePlayer, WISHES.get(rand.nextInt(WISHES.size())));
         }
     }
     
