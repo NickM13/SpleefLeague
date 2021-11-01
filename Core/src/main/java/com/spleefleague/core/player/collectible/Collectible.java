@@ -265,7 +265,7 @@ public abstract class Collectible extends Vendorable {
         return skins.keySet();
     }
 
-    public final ItemStack getDisplayItem(String skin) {
+    public ItemStack getDisplayItem(String skin) {
         if (skin == null || skin.isEmpty() || !skins.containsKey(skin)) {
             return getDisplayItem();
         }

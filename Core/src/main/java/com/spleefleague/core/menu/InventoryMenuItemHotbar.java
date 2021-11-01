@@ -190,6 +190,7 @@ public class InventoryMenuItemHotbar extends InventoryMenuItemDynamic {
     @Override
     public ItemStack createItem(CorePlayer cp) {
         ItemStack item = super.createItem(cp);
+        if (item == null) return null;
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.getPersistentDataContainer().set(new NamespacedKey(Core.getInstance(), "hotbar"), PersistentDataType.STRING, hotbarTag);

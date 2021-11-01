@@ -284,6 +284,7 @@ public class BuildWorld extends FakeWorld<BuildWorldPlayer> {
                 for (int z = (int) fillBox.getLow().z; z <= fillBox.getHigh().z; z++) {
                     Block block = getWorld().getBlockAt(x, y, z);
                     if (!block.getType().isAir()) {
+                        System.out.println(getWorld().getBlockAt(x, y, z).getBlockData());
                         fillBlocks.put(new BlockPosition(x, y, z), new FakeBlock(getWorld().getBlockAt(x, y, z).getBlockData()));
                         block.setType(Material.AIR);
                     }

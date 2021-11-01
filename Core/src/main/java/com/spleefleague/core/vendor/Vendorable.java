@@ -457,7 +457,7 @@ public abstract class Vendorable extends DBEntity implements Cloneable {
      *
      * @return Display ItemStack
      */
-    public final ItemStack getDisplayItem() {
+    public ItemStack getDisplayItem() {
         return displayItem;
     }
 

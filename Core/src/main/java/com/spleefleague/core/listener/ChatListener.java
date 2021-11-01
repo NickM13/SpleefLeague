@@ -33,45 +33,46 @@ public class ChatListener implements Listener {
     private static final String GOGOGADGET = "go go gadget, ";
 
     @EventHandler
-    public void onChatMessageSend(AsyncPlayerChatEvent e) {
-        CorePlayer cp = Core.getInstance().getPlayers().get(e.getPlayer());
+    public void onChatMessageSend(AsyncPlayerChatEvent event) {
+        CorePlayer cp = Core.getInstance().getPlayers().get(event.getPlayer());
 
         if (cp == null) {
-            e.getPlayer().sendMessage("Error sending your message");
-            e.setCancelled(true);
+            event.getPlayer().sendMessage("Error sending your message");
+            event.setCancelled(true);
             return;
         }
 
         if (cp.isMuted()) {
             Infraction infraction = cp.getMute();
             if (infraction.getType() == InfractionType.MUTE_SECRET) {
-                Chat.sendFakeMessage(cp, cp.getChatChannel(), e.getMessage());
+                Chat.sendFakeMessage(cp, cp.getChatChannel(), event.getMessage());
             } else {
                 Core.getInstance().sendMessage(cp, "You're muted!");
             }
+            event.setCancelled(true);
             return;
         }
 
-        for (char c : e.getMessage().toCharArray()) {
+        for (char c : event.getMessage().toCharArray()) {
             if (c >= 20000 && c < 30000) {
                 if (!cp.getRank().hasPermission(CoreRank.DEVELOPER)) {
                     Chat.sendMessageToPlayerError(cp, new TextComponent("You can't send that!"));
 
-                    e.setCancelled(true);
+                    event.setCancelled(true);
                 }
             }
         }
 
-        if (e.getMessage().length() > GOGOGADGET.length() + 1 && e.getMessage().substring(0, GOGOGADGET.length()).equalsIgnoreCase(GOGOGADGET)) {
+        if (event.getMessage().length() > GOGOGADGET.length() + 1 && event.getMessage().substring(0, GOGOGADGET.length()).equalsIgnoreCase(GOGOGADGET)) {
             Bukkit.getScheduler().runTask(Core.getInstance(), () -> {
-                Bukkit.dispatchCommand(e.getPlayer(), e.getMessage().substring(GOGOGADGET.length()));
+                Bukkit.dispatchCommand(event.getPlayer(), event.getMessage().substring(GOGOGADGET.length()));
             });
         }
 
-        Chat.sendMessage(cp, e.getMessage());
+        Chat.sendMessage(cp, event.getMessage());
 
-        CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + e.getMessage());
+        CoreLogger.logInfo("<" + cp.getPlayer().getName() + "> " + event.getMessage());
 
-        e.setCancelled(true);
+        event.setCancelled(true);
     }
 }

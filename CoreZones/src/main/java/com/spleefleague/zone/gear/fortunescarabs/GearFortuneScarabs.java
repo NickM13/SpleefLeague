@@ -38,8 +38,8 @@ public class GearFortuneScarabs extends Gear {
 
     @Override
     protected void createGearItems() {
-        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 1));
-        unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 2));
+        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, 3));
+        unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, 3));
     }
 
     private void startDrilling(CorePlayer corePlayer, BlockPosition pos) {

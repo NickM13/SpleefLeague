@@ -8,8 +8,7 @@ package com.spleefleague.core.util.variable;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.spleefleague.coreapi.database.variable.DBVariable;
 import net.minecraft.server.v1_15_R1.Vec3D;
@@ -117,7 +116,7 @@ public class Point extends DBVariable<List<Double>> {
         return results;
     }
 
-    public List<BlockRaycastResult> castBlocks(Vector direction, double maxDist) {
+    private List<BlockRaycastResult> castBlocks(double x, double y, double z, Vector direction, double maxDist) {
         direction = direction.normalize();
         double px = x < 0 ? x + -Math.floor(x) : x;
         double py = y < 0 ? y + -Math.floor(y) : y;
@@ -218,11 +217,114 @@ public class Point extends DBVariable<List<Double>> {
             remainY -= minRemain;
             remainZ -= minRemain;
         }
+        return result;
+    }
 
+    /**
+     * TODO: This only supports up to 1x1x1 (sizes of 0.5), and then is unreliable for center blocks
+     *
+     * @param direction
+     * @param size
+     * @param maxDist
+     * @return
+     */
+    public List<BlockRaycastResult> castBlocks(Vector direction, Vector size, double maxDist) {
+        List<BlockRaycastResult> results = new ArrayList<>();
+        if (direction.getX() >= 0) {
+            if (direction.getY() >= 0) {
+                if (direction.getZ() >= 0) {
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                } else {
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                }
+            } else {
+                if (direction.getZ() >= 0) {
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                } else {
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                }
+            }
+        } else {
+            if (direction.getY() >= 0) {
+                if (direction.getZ() >= 0) {
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                } else {
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                }
+            } else {
+                if (direction.getZ() >= 0) {
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                } else {
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y + size.getY(), z - size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x - size.getX(), y + size.getY(), z + size.getZ(), direction, maxDist));
+                    results.addAll(castBlocks(x + size.getX(), y - size.getY(), z + size.getZ(), direction, maxDist));
+                }
+            }
+        }
+        Map<BlockPosition, BlockRaycastResult> uniqueResults = new HashMap<>();
+        for (BlockRaycastResult rr1 : results) {
+            if (!uniqueResults.containsKey(rr1.getBlockPos()) || rr1.getDistance() < uniqueResults.get(rr1.getBlockPos()).getDistance()) {
+                uniqueResults.put(rr1.getBlockPos(), rr1);
+            }
+        }
+
+        List<BlockRaycastResult> resultSorted = new ArrayList<>(uniqueResults.values());
+        resultSorted.sort(Comparator.comparingDouble(BlockRaycastResult::getDistance));
+        return resultSorted;
+    }
+
+    public List<BlockRaycastResult> castBlocks(Vector direction, double maxDist) {
         List<BlockRaycastResult> resultSorted = new ArrayList<>();
 
-        boolean inserted = false;
-        for (BlockRaycastResult rr1 : result) {
+        boolean inserted;
+        for (BlockRaycastResult rr1 : castBlocks(this.x, this.y, this.z, direction, maxDist)) {
+            inserted = false;
             for (int i = 0; i < resultSorted.size(); i++) {
                 BlockRaycastResult rr2 = resultSorted.get(i);
                 if (rr1.getDistance() < rr2.getDistance()) {

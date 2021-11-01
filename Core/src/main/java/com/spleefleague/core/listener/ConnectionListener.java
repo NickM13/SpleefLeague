@@ -39,13 +39,6 @@ public class ConnectionListener implements Listener {
         event.setJoinMessage("");
         Player player = event.getPlayer();
         CorePlugin.onPlayerJoin(player);
-
-        CorePlayer cp = Core.getInstance().getPlayers().get(player);
-        cp.gotoSpawn();
-        PersonalScoreboard.initPlayerScoreboard(cp);
-        Core.getInstance().applyVisibilities(cp);
-        Core.getInstance().getPartyManager().onConnect(cp);
-        NoteBlockMusic.onPlayerJoin(player.getUniqueId());
     }
 
     @EventHandler

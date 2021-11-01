@@ -37,7 +37,7 @@ public class GearHookshot extends Gear {
         projectileStats.lifeTicks = 7;
         projectileStats.fireRange = 12D;
         projectileStats.collidable = false;
-        projectileStats.size = 0.5;
+        projectileStats.size = 0.125;
         projectileStats.noClip = true;
         projectileStats.bounces = 1;
     }
@@ -82,8 +82,8 @@ public class GearHookshot extends Gear {
 
     @Override
     protected void createGearItems() {
-        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 1));
-        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.BLAZE_ROD, 2));
+        available = applyPersistents(InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, 1));
+        unavailable = applyPersistents(InventoryMenuUtils.createCustomItem(Material.IRON_NUGGET, 2));
     }
 
     @Override

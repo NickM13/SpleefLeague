@@ -84,7 +84,7 @@ public class HookshotProjectile extends FakeEntitySnowball {
     private static final Material HOOK_BLOCK = Material.CHISELED_STONE_BRICKS;
 
     @Override
-    protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
+    protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult, Vector direction) {
         if (!isHooked()) {
             BlockPosition pos = blockRaycastResult.getBlockPos();
             Material material = projectileWorld.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getType();

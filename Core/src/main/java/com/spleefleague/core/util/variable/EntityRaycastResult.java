@@ -12,7 +12,7 @@ public class EntityRaycastResult extends RaycastResult {
     private Entity entity;
     private Vector offset;
 
-    EntityRaycastResult(Double distance, Vector intersection, Entity entity) {
+    public EntityRaycastResult(Double distance, Vector intersection, Entity entity) {
         super(distance, intersection);
         this.entity = entity;
         this.offset = intersection.clone().subtract(entity.getLocation().toVector());

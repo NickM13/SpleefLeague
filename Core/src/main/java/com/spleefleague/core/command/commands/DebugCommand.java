@@ -45,6 +45,18 @@ public class DebugCommand extends CoreCommand {
 
     @CommandAnnotation
     public void debugRank(CorePlayer sender,
+                          @LiteralArg("blocktypes") String l,
+                          @EnumArg Material material) {
+        success(sender, "Material: " + material);
+        success(sender, "Block: " + material.isBlock());
+        success(sender, "Solid: " + material.isSolid());
+        success(sender, "Air: " + material.isAir());
+        success(sender, "Interactable: " + material.isInteractable());
+        success(sender, "Occluding: " + material.isOccluding());
+    }
+
+    @CommandAnnotation
+    public void debugRank(CorePlayer sender,
                           @LiteralArg("rank") String l,
                           String mode,
                           String season,

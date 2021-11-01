@@ -9,7 +9,6 @@ import com.spleefleague.core.util.CoreUtils;
 import com.spleefleague.core.util.variable.BlockRaycastResult;
 import com.spleefleague.core.util.variable.EntityRaycastResult;
 import com.spleefleague.core.util.variable.Point;
-import com.spleefleague.core.util.variable.RaycastResult;
 import com.spleefleague.core.world.FakeBlock;
 import net.minecraft.server.v1_15_R1.EntitySnowball;
 import net.minecraft.server.v1_15_R1.EntityTypes;
@@ -22,11 +21,11 @@ import org.bukkit.craftbukkit.v1_15_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -45,17 +44,15 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
     protected int lifeTicks;
     private BlockPosition lastBlock = null;
     private final Vector size;
-    private double charge;
     private int breakAfter;
 
-    public FakeEntitySnowball(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
+    public FakeEntitySnowball(ProjectileWorld<? extends ProjectileWorldPlayer> projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats) {
         this(projectileWorld, shooter, location, projectileStats, 1.);
     }
 
-    public FakeEntitySnowball(ProjectileWorld projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
+    public FakeEntitySnowball(ProjectileWorld<? extends ProjectileWorldPlayer> projectileWorld, CorePlayer shooter, Location location, ProjectileStats projectileStats, Double charge) {
         super(EntityTypes.SNOWBALL, ((CraftWorld) projectileWorld.getWorld()).getHandle());
         this.cpShooter = shooter;
-        this.charge = charge;
 
         this.projectileWorld = projectileWorld;
         this.projectileStats = projectileStats;
@@ -140,6 +137,37 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
         }
     }
 
+    private void checkBlockHit(CraftEntity craftEntity, Point center, Vector direction) {
+        List<BlockRaycastResult> results = center.castBlocks(direction, size, direction.length());
+        for (BlockRaycastResult blockResult : results) {
+            FakeBlock fb = projectileWorld.getFakeBlock(blockResult.getBlockPos());
+            Material mat;
+            if (!blockResult.getBlockPos().equals(lastBlock)) {
+                blockChange(craftEntity, blockResult);
+                if (projectileWorld.checkProjectileBlock(this, craftEntity, blockResult)) {
+                    return;
+                }
+            }
+            if (fb != null) {
+                mat = fb.getBlockData().getMaterial();
+            } else {
+                mat = projectileWorld.getWorld().getBlockAt(
+                        blockResult.getBlockPos().getX(),
+                        blockResult.getBlockPos().getY(),
+                        blockResult.getBlockPos().getZ()).getType();
+            }
+            if (mat.isSolid()) {
+                Vector distanced = direction.clone().normalize().multiply(blockResult.getDistance());
+                if (onBlockHit(craftEntity, blockResult, new Vector(
+                        lastLoc.getX() + distanced.getX(),
+                        lastLoc.getY() + distanced.getY(),
+                        lastLoc.getZ() + distanced.getZ()))) {
+                    return;
+                }
+            }
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -149,7 +177,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
             killEntity();
             return;
         }
-        List<RaycastResult> results = new ArrayList<>();
+        craftEntity.setVelocity(craftEntity.getVelocity().multiply(projectileStats.drag));
         if (lastLoc != null) {
             Vector pos = new Vector(getPositionVector().getX(), getPositionVector().getY(), getPositionVector().getZ());
             Vector direction = pos.subtract(lastLoc.toVector());
@@ -160,7 +188,9 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                     setStuck(null);
                 }
             }
+            Point center = new Point(this.locX(), this.locY(), this.locZ());
             if (projectileStats.collidable) {
+                boolean hit = false;
                 List<Entity> entities = new ArrayList<>();
                 for (ProjectileWorldPlayer pwp : projectileWorld.getPlayerMap().values()) {
                     if (pwp.getCorePlayer().getBattleState() == BattleState.BATTLER &&
@@ -168,48 +198,20 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                         entities.add(pwp.getPlayer());
                     }
                 }
-                if (stuck == null) {
-                    results.addAll(lastLoc.cast(direction, size, direction.length(), entities));
-                } else {
-                    results.addAll(lastLoc.castEntities(direction, size, direction.length(), entities));
+                for (EntityRaycastResult entityResult : lastLoc.castEntities(direction, size, direction.length(), entities)) {
+                    Entity hitEntity = entityResult.getEntity();
+                    if (!hitEntity.equals(lastHit)) {
+                        onEntityHit(craftEntity, entityResult);
+                        lastHit = hitEntity;
+                        hit = true;
+                        break;
+                    }
+                }
+                if (!hit && stuck == null) {
+                    checkBlockHit(craftEntity, center, direction);
                 }
             } else {
-                results.addAll(lastLoc.castBlocks(direction, direction.length()));
-            }
-        }
-        craftEntity.setVelocity(craftEntity.getVelocity().multiply(projectileStats.drag));
-        for (RaycastResult result : results) {
-            if (result instanceof BlockRaycastResult) {
-                BlockRaycastResult blockResult = (BlockRaycastResult) result;
-                FakeBlock fb = projectileWorld.getFakeBlock(blockResult.getBlockPos());
-                Material mat;
-                if (!blockResult.getBlockPos().equals(lastBlock)) {
-                    blockChange(craftEntity, blockResult);
-                    if (projectileWorld.checkProjectileBlock(this, craftEntity, blockResult)) {
-                        break;
-                    }
-                }
-                if (fb != null) {
-                    mat = fb.getBlockData().getMaterial();
-                } else {
-                    mat = projectileWorld.getWorld().getBlockAt(
-                            blockResult.getBlockPos().getX(),
-                            blockResult.getBlockPos().getY(),
-                            blockResult.getBlockPos().getZ()).getType();
-                }
-                if (!mat.isAir()) {
-                    if (onBlockHit(craftEntity, blockResult)) {
-                        break;
-                    }
-                }
-            } else if (result instanceof EntityRaycastResult) {
-                EntityRaycastResult entityResult = (EntityRaycastResult) result;
-                Entity hitEntity = entityResult.getEntity();
-                if (!hitEntity.equals(lastHit)) {
-                    onEntityHit(craftEntity, entityResult);
-                    lastHit = hitEntity;
-                    break;
-                }
+                checkBlockHit(craftEntity, center, direction);
             }
         }
 
@@ -227,7 +229,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
 
     }
 
-    protected boolean blockBounce(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
+    protected boolean blockBounce(Entity craftEntity, BlockRaycastResult blockRaycastResult, Vector intersection) {
         if (projectileStats.bounciness > 0) {
             switch (blockRaycastResult.getAxis()) {
                 case 1:
@@ -236,9 +238,9 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                             getMot().getY() * projectileStats.bounciness,
                             getMot().getZ() * projectileStats.bounciness));
                     craftEntity.teleport(new Location(projectileWorld.getWorld(),
-                            blockRaycastResult.getIntersection().getX() + (craftEntity.getVelocity().getX() < 0 ? -0.01 : 0.01),
-                            blockRaycastResult.getIntersection().getY(),
-                            blockRaycastResult.getIntersection().getZ()));
+                            intersection.getX() + (craftEntity.getVelocity().getX() < 0 ? -0.01 : 0.01),
+                            intersection.getY(),
+                            intersection.getZ()));
                     break;
                 case 2:
                     craftEntity.setVelocity(new Vector(
@@ -248,14 +250,14 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                     if (craftEntity.getVelocity().getY() >= 0 && craftEntity.getVelocity().getY() < 0.03 && craftEntity.getVelocity().setY(0).length() < 0.005) {
                         setStuck(blockRaycastResult.getBlockPos());
                         craftEntity.teleport(new Location(projectileWorld.getWorld(),
-                                blockRaycastResult.getIntersection().getX(),
-                                blockRaycastResult.getIntersection().getY(),
-                                blockRaycastResult.getIntersection().getZ()));
+                                intersection.getX(),
+                                intersection.getY(),
+                                intersection.getZ()));
                     } else {
                         craftEntity.teleport(new Location(projectileWorld.getWorld(),
-                                blockRaycastResult.getIntersection().getX(),
-                                blockRaycastResult.getIntersection().getY() + (getMot().getY() < 0 ? -0.01 : 0.01),
-                                blockRaycastResult.getIntersection().getZ()));
+                                intersection.getX(),
+                                intersection.getY() + (getMot().getY() < 0 ? -0.01 : 0.01),
+                                intersection.getZ()));
                     }
                     break;
                 case 3:
@@ -264,15 +266,15 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
                             getMot().getY() * projectileStats.bounciness,
                             getMot().getZ() * -projectileStats.bounciness));
                     craftEntity.teleport(new Location(projectileWorld.getWorld(),
-                            blockRaycastResult.getIntersection().getX(),
-                            blockRaycastResult.getIntersection().getY(),
-                            blockRaycastResult.getIntersection().getZ() + (craftEntity.getVelocity().getZ() < 0 ? -0.01 : 0.01)));
+                            intersection.getX(),
+                            intersection.getY(),
+                            intersection.getZ() + (craftEntity.getVelocity().getZ() < 0 ? -0.01 : 0.01)));
                     break;
                 default:
                     craftEntity.teleport(new Location(projectileWorld.getWorld(),
-                            blockRaycastResult.getIntersection().getX(),
-                            blockRaycastResult.getIntersection().getY(),
-                            blockRaycastResult.getIntersection().getZ()));
+                            intersection.getX(),
+                            intersection.getY(),
+                            intersection.getZ()));
                     craftEntity.setVelocity(craftEntity.getVelocity().multiply(-projectileStats.bounciness));
                     break;
             }
@@ -298,7 +300,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
      * @param blockRaycastResult Raycast Result
      * @return Should ignore next raycast results
      */
-    protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult) {
+    protected boolean onBlockHit(Entity craftEntity, BlockRaycastResult blockRaycastResult, Vector intersection) {
         if (breakAfter <= 0) {
             projectileWorld.onProjectileBlockHit(cpShooter, blockRaycastResult, projectileStats);
         } else {
@@ -310,7 +312,7 @@ public class FakeEntitySnowball extends EntitySnowball implements FakeEntity {
             killEntity();
             return true;
         } else {
-            return blockBounce(craftEntity, blockRaycastResult);
+            return blockBounce(craftEntity, blockRaycastResult, intersection);
         }
     }
 

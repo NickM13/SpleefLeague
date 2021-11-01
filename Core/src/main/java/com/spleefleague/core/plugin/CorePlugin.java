@@ -19,6 +19,7 @@ import com.spleefleague.core.game.battle.Battle;
 import com.spleefleague.core.game.manager.BattleManager;
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.logger.CoreLoggerFilter;
+import com.spleefleague.core.music.NoteBlockMusic;
 import com.spleefleague.core.player.BattleState;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.PlayerManager;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
+import com.spleefleague.core.player.scoreboard.PersonalScoreboard;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleChallenge;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleForceStart;
 import com.spleefleague.coreapi.utils.packet.spigot.battle.PacketSpigotBattleSpectate;
@@ -234,7 +236,14 @@ public abstract class CorePlugin extends JavaPlugin {
         for (PlayerManager<?, ?> playerManager : playerManagers) {
             playerManager.onPlayerJoin(player);
         }
-        Core.getInstance().getPlayers().get(player).refreshHotbar();
+
+        CorePlayer cp = Core.getInstance().getPlayers().get(player);
+        cp.refreshHotbar();
+        cp.gotoSpawn();
+        PersonalScoreboard.initPlayerScoreboard(cp);
+        Core.getInstance().applyVisibilities(cp);
+        Core.getInstance().getPartyManager().onConnect(cp);
+        NoteBlockMusic.onPlayerJoin(player.getUniqueId());
     }
 
     public static void onPlayerQuit(UUID uuid) {

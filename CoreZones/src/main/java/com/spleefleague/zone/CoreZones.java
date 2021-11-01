@@ -113,4 +113,8 @@ public class CoreZones extends CorePlugin {
         return new TextComponent(Chat.TAG_BRACE + "[" + Chat.TAG + "SL Zones" + Chat.TAG_BRACE + "] " + Chat.DEFAULT);
     }
 
+    @Override
+    public void reloadCollectibles() {
+        Gear.reload();
+    }
 }

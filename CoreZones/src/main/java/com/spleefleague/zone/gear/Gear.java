@@ -2,7 +2,6 @@ package com.spleefleague.zone.gear;
 
 import com.spleefleague.core.logger.CoreLogger;
 import com.spleefleague.core.menu.InventoryMenuAPI;
-import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.player.collectible.Holdable;
 import com.spleefleague.core.util.CoreUtils;
@@ -54,9 +53,6 @@ public abstract class Gear extends Holdable {
 
     }
 
-    /**
-     * Load hats from the SpleefLeague:Hats collection
-     */
     public static void init() {
         reload();
 
@@ -67,6 +63,7 @@ public abstract class Gear extends Holdable {
                 .setAvailability(cp -> !cp.isInBattle() && cp.getCollectibles().hasActive(Gear.class) && cp.getCollectibles().isEnabled(Gear.class))
                 .setAction(cp -> cp.getCollectibles().getActive(Gear.class).onRightClick(cp));
 
+        /*
         InventoryMenuAPI.createItemHotbar(40, "GearOffhand")
                 .setName(cp -> cp.getCollectibles().getActiveName(Gear.class))
                 .setDisplayItem(cp -> cp.getCollectibles().getActive(Gear.class).getGearOffhandItem(cp))
@@ -75,6 +72,7 @@ public abstract class Gear extends Holdable {
                         cp.getCollectibles().hasActive(Gear.class) &&
                         cp.getCollectibles().isEnabled(Gear.class) &&
                         cp.getCollectibles().getActive(Gear.class).hasOffhand(cp));
+        */
     }
 
     public static void reload() {
@@ -112,11 +110,13 @@ public abstract class Gear extends Holdable {
         this.identifier = identifier;
         this.name = name;
         this.material = Material.BLAZE_ROD;
+        createGearItems();
     }
 
     @Override
     public void afterLoad() {
         super.afterLoad();
+        createGearItems();
     }
 
     protected abstract void createGearItems();

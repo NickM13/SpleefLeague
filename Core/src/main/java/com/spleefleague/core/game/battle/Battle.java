@@ -494,10 +494,11 @@ public abstract class Battle<BP extends BattlePlayer> {
                         if (frozen) {
                             if (e.getTo() != null &&
                                     (e.getFrom().getBlockX() != e.getTo().getBlockX() ||
-                                    e.getFrom().getBlockZ() != e.getTo().getBlockZ())) {
+                                            e.getFrom().getBlockY() != e.getTo().getBlockY() ||
+                                            e.getFrom().getBlockZ() != e.getTo().getBlockZ())) {
                                 e.getPlayer().teleport(new Location(e.getFrom().getWorld(),
                                         e.getFrom().getX(),
-                                        e.getTo().getY(),
+                                        e.getFrom().getY(),
                                         e.getFrom().getZ(),
                                         e.getTo().getYaw(),
                                         e.getTo().getPitch()));

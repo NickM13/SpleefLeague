@@ -1,13 +1,14 @@
 package com.spleefleague.zone.gear.wayfinder;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import com.spleefleague.core.menu.InventoryMenuUtils;
 import com.spleefleague.core.player.CorePlayer;
 import com.spleefleague.core.util.MathUtils;
-import com.spleefleague.core.util.variable.Point;
 import com.spleefleague.core.world.global.GlobalWorld;
 import com.spleefleague.zone.CoreZones;
 import com.spleefleague.zone.fragments.FragmentContainer;
 import com.spleefleague.zone.gear.Gear;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 3/3/2021
  */
 public class GearWayfinder extends Gear {
+
+    private ItemStack lampEmpty, lampFill0, lampFill1, lampFill2;
 
     public GearWayfinder() {
         super(GearType.WAYFINDER);
@@ -75,7 +78,10 @@ public class GearWayfinder extends Gear {
 
     @Override
     protected void createGearItems() {
-
+        lampEmpty = applyPersistents(InventoryMenuUtils.createCustomItem(Material.LEVER, 1));
+        lampFill0 = applyPersistents(InventoryMenuUtils.createCustomItem(Material.TORCH, 11));
+        lampFill1 = applyPersistents(InventoryMenuUtils.createCustomItem(Material.TORCH, 12));
+        lampFill2 = applyPersistents(InventoryMenuUtils.createCustomItem(Material.TORCH, 13));
     }
 
     @Override
@@ -95,7 +101,7 @@ public class GearWayfinder extends Gear {
 
     @Override
     public ItemStack getGearItem(CorePlayer corePlayer) {
-        return null;
+        return lampFill2;
     }
 
 }

@@ -162,10 +162,7 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
 
     @SuppressWarnings("unused")
     public List<net.minecraft.server.v1_15_R1.Entity> shootProjectileCharged(CorePlayer shooter, ProjectileStats projectileStats, double charge) {
-        return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone()
-                        .add(shooter.getPlayer().getLocation().getDirection()
-                                .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
-                                .multiply(0.15).add(new org.bukkit.util.Vector(0, -0.15, 0))),
+        return shootProjectileCharged(shooter, shooter.getPlayer().getEyeLocation().clone(),
                 projectileStats,
                 charge);
     }
@@ -182,10 +179,7 @@ public class ProjectileWorld<PWP extends ProjectileWorldPlayer> extends FakeWorl
 
     @SuppressWarnings("unused")
     public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, ProjectileStats projectileStats) {
-        return shootProjectile(shooter, shooter.getPlayer().getEyeLocation().clone()
-                .add(shooter.getPlayer().getLocation().getDirection()
-                        .crossProduct(new org.bukkit.util.Vector(0, 1, 0)).normalize()
-                        .multiply(0.15).add(new Vector(0, -0.15, 0))), projectileStats);
+        return shootProjectile(shooter, shooter.getPlayer().getEyeLocation().clone(), projectileStats);
     }
 
     public List<net.minecraft.server.v1_15_R1.Entity> shootProjectile(CorePlayer shooter, Location location, ProjectileStats projectileStats) {
